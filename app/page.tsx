@@ -286,7 +286,7 @@ export default function Dashboard() {
               return (
                 <div
                   key={m.symbol}
-                  className="glass-card p-2 text-center hover:!transform-none"
+                  className="glass-card px-2 py-3 text-center hover:!transform-none"
                 >
                   <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-1 truncate">
                     {m.name}
