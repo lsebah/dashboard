@@ -28,12 +28,12 @@ interface MarketsResponse {
 
 // ─── News data ───────────────────────────────────────────────────────
 const newsItems = [
-  { text: 'Bank of America bat les estimations Q1 : $1.11/action vs $1.01 attendu', tag: 'Earnings', positive: true },
-  { text: 'Morgan Stanley depasse les previsions Q1 sur le revenu', tag: 'Earnings', positive: true },
-  { text: 'S&P 500 et Nasdaq atteignent de nouveaux sommets historiques', tag: 'Indices', positive: true },
-  { text: 'Kering chute de -9.3% : ventes Gucci sous les attentes', tag: 'Europe', positive: false },
-  { text: 'Marches europeens en baisse sur tensions US-Iran', tag: 'Geopolitique', positive: false },
-  { text: 'Consensus S&P 500 : croissance benefices >10% au T1, 17% sur 2026', tag: 'Outlook', positive: true },
+  { text: 'Bank of America bat les estimations Q1 : $1.11/action vs $1.01 attendu', tag: 'Earnings', positive: true, url: 'https://www.cnbc.com/2026/04/15/bank-of-america-bac-earnings-q1-2026.html' },
+  { text: 'Morgan Stanley depasse les previsions Q1 sur le revenu', tag: 'Earnings', positive: true, url: 'https://www.cnbc.com/2026/04/15/morgan-stanley-ms-earnings-1q-2026.html' },
+  { text: 'S&P 500 et Nasdaq atteignent de nouveaux sommets historiques', tag: 'Indices', positive: true, url: 'https://www.cnbc.com/2026/04/14/stock-market-today-live-updates.html' },
+  { text: 'Kering chute de -9.3% : ventes Gucci sous les attentes', tag: 'Europe', positive: false, url: 'https://www.cnbc.com/2026/04/15/kering-stock-q1-earnings-gucci-sales-iran-war-middle-east-luxury.html' },
+  { text: 'Marches europeens en baisse sur tensions US-Iran', tag: 'Geopolitique', positive: false, url: 'https://www.cnbc.com/2026/04/15/european-markets-stox-600-ftse-dax-cac-iran-latest-oil-prices.html' },
+  { text: 'Consensus S&P 500 : croissance benefices >10% au T1, 17% sur 2026', tag: 'Outlook', positive: true, url: 'https://www.morningstar.com/markets' },
 ]
 
 // ─── Link categories ────────────────────────────────────────────────
@@ -300,15 +300,19 @@ export default function Dashboard() {
           <div className="flex-1 h-px bg-gradient-to-r from-indigo-500/20 to-transparent ml-3" />
         </div>
 
-        <div className="glass-card p-4 space-y-2.5">
+        <div className="glass-card p-4 space-y-1">
           {newsItems.map((item, i) => (
-            <div key={i} className="flex items-start gap-3 text-sm">
-              <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.positive ? 'bg-emerald-400' : 'bg-red-400'}`} />
-              <span className="text-slate-300">{item.text}</span>
+            <a
+              key={i}
+              href={item.url}
+              className="flex items-center gap-3 text-sm no-underline rounded-lg px-2 py-1.5 -mx-2 hover:bg-white/5 transition-colors group"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.positive ? 'bg-emerald-400' : 'bg-red-400'}`} />
+              <span className="text-slate-300 group-hover:text-white transition-colors">{item.text}</span>
               <span className="ml-auto text-[10px] text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full flex-shrink-0">
                 {item.tag}
               </span>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -328,8 +332,6 @@ export default function Dashboard() {
                 <a
                   key={link.name}
                   href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="glass-card p-5 flex items-center gap-4 group cursor-pointer no-underline"
                 >
                   <div
