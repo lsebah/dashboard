@@ -158,6 +158,14 @@ const categories = [
 ]
 
 // ─── Helpers ─────────────────────────────────────────────────────────
+function decodeEntities(str: string): string {
+  return str
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
 function formatPrice(price: number | null, symbol: string): string {
   if (price === null) return '--'
   if (symbol === 'EURUSD=X') return price.toFixed(4)
@@ -335,7 +343,7 @@ export default function Dashboard() {
               className="flex items-center gap-3 text-xs no-underline rounded-lg px-2 py-1 -mx-2 hover:bg-white/5 transition-colors group"
             >
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.positive ? 'bg-emerald-400' : 'bg-red-400'}`} />
-              <span className="text-slate-300 group-hover:text-white transition-colors">{item.text}</span>
+              <span className="text-slate-300 group-hover:text-white transition-colors">{decodeEntities(item.text)}</span>
               <span className="ml-auto text-[10px] text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full flex-shrink-0">
                 {item.tag}
               </span>

@@ -14,6 +14,17 @@ interface NewsItem {
   date: string
 }
 
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
+}
+
 function parseRssItems(xml: string): Array<{ title: string; link: string; pubDate: string }> {
   const items: Array<{ title: string; link: string; pubDate: string }> = []
   const itemRegex = /<item>([\s\S]*?)<\/item>/g
@@ -21,7 +32,8 @@ function parseRssItems(xml: string): Array<{ title: string; link: string; pubDat
 
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1]
-    const title = block.match(/<title><!\[CDATA\[(.*?)\]\]>|<title>(.*?)<\/title>/)?.[1] || block.match(/<title>(.*?)<\/title>/)?.[1] || ''
+    const rawTitle = block.match(/<title><!\[CDATA\[(.*?)\]\]>|<title>(.*?)<\/title>/)?.[1] || block.match(/<title>(.*?)<\/title>/)?.[1] || ''
+    const title = decodeHtmlEntities(rawTitle)
     const link = block.match(/<link>(.*?)<\/link>/)?.[1] || ''
     const pubDate = block.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] || ''
     if (title && link) {
