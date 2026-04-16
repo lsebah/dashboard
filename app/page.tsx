@@ -26,15 +26,12 @@ interface MarketsResponse {
   fallback?: boolean
 }
 
-// ─── News data ───────────────────────────────────────────────────────
-const newsItems = [
-  { text: 'Bank of America bat les estimations Q1 : $1.11/action vs $1.01 attendu', tag: 'Earnings', positive: true, url: 'https://www.cnbc.com/2026/04/15/bank-of-america-bac-earnings-q1-2026.html' },
-  { text: 'Morgan Stanley depasse les previsions Q1 sur le revenu', tag: 'Earnings', positive: true, url: 'https://www.cnbc.com/2026/04/15/morgan-stanley-ms-earnings-1q-2026.html' },
-  { text: 'S&P 500 et Nasdaq atteignent de nouveaux sommets historiques', tag: 'Indices', positive: true, url: 'https://www.cnbc.com/2026/04/14/stock-market-today-live-updates.html' },
-  { text: 'Kering chute de -9.3% : ventes Gucci sous les attentes', tag: 'Europe', positive: false, url: 'https://www.cnbc.com/2026/04/15/kering-stock-q1-earnings-gucci-sales-iran-war-middle-east-luxury.html' },
-  { text: 'Marches europeens en baisse sur tensions US-Iran', tag: 'Geopolitique', positive: false, url: 'https://www.cnbc.com/2026/04/15/european-markets-stox-600-ftse-dax-cac-iran-latest-oil-prices.html' },
-  { text: 'Consensus S&P 500 : croissance benefices >10% au T1, 17% sur 2026', tag: 'Outlook', positive: true, url: 'https://www.morningstar.com/markets' },
-]
+interface NewsItem {
+  text: string
+  url: string
+  tag: string
+  positive: boolean
+}
 
 // ─── Link categories ────────────────────────────────────────────────
 const categories = [
@@ -172,6 +169,7 @@ export default function Dashboard() {
   const [markets, setMarkets] = useState<MarketItem[]>([])
   const [marketsUpdated, setMarketsUpdated] = useState('')
   const [isFallback, setIsFallback] = useState(false)
+  const [news, setNews] = useState<NewsItem[]>([])
 
   // Clock
   useEffect(() => {
@@ -205,48 +203,62 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }, [])
 
+  // News
+  const fetchNews = useCallback(async () => {
+    try {
+      const res = await fetch('/api/news')
+      const data = await res.json()
+      if (data.news?.length > 0) setNews(data.news)
+    } catch { /* silent */ }
+  }, [])
+
   useEffect(() => {
     fetchWeather()
     fetchMarkets()
+    fetchNews()
     const weatherInterval = setInterval(fetchWeather, 30 * 60 * 1000) // 30 min
     const marketsInterval = setInterval(fetchMarkets, 5 * 60 * 1000)  // 5 min
+    const newsInterval = setInterval(fetchNews, 15 * 60 * 1000)       // 15 min
     return () => {
       clearInterval(weatherInterval)
       clearInterval(marketsInterval)
+      clearInterval(newsInterval)
     }
-  }, [fetchWeather, fetchMarkets])
+  }, [fetchWeather, fetchMarkets, fetchNews])
 
   return (
-    <main className="min-h-screen px-6 py-10 max-w-6xl mx-auto">
+    <main className="min-h-screen px-6 py-4 max-w-6xl mx-auto">
 
-      {/* ── Header with weather ──────────────────────────────────── */}
-      <header className="text-center mb-10">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-          Dashboard
-        </h1>
-        <div className="text-lg text-slate-400">{time}</div>
-        <div className="text-sm text-slate-500 capitalize mb-3">{date}</div>
+      {/* ── Header: single line ──────────────────────────────────── */}
+      <header className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <span className="text-slate-500 text-sm">|</span>
+          <span className="text-lg text-slate-300 font-medium">{time}</span>
+          <span className="text-sm text-slate-500 capitalize">{date}</span>
+        </div>
         {weather && (
-          <div className="inline-flex items-center gap-3 glass-card px-5 py-2.5 !rounded-full text-sm">
-            <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 text-sm">
+            <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
             </svg>
             <span className="text-slate-300">{weather.location}</span>
-            <span className="text-white font-semibold text-base">{weather.temp}&deg;C</span>
-            <span className="text-slate-500">|</span>
+            <span className="text-white font-semibold">{weather.temp}&deg;C</span>
+            <span className="text-slate-600">|</span>
             <span className="text-blue-400">{weather.low}&deg;</span>
             <span className="text-slate-600">/</span>
             <span className="text-orange-400">{weather.high}&deg;</span>
-            <span className="text-slate-500 text-xs">{weather.description}</span>
           </div>
         )}
       </header>
 
       {/* ── Markets Widget ───────────────────────────────────────── */}
       {markets.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center gap-2 mb-4">
-            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <section className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
             </svg>
             <h2 className="category-title">Marches</h2>
@@ -266,13 +278,13 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-9 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
             {markets.map((m) => {
               const isUp = (m.changePct ?? 0) >= 0
               return (
                 <div
                   key={m.symbol}
-                  className="glass-card p-3 text-center hover:!transform-none"
+                  className="glass-card p-2 text-center hover:!transform-none"
                 >
                   <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-1 truncate">
                     {m.name}
@@ -291,21 +303,22 @@ export default function Dashboard() {
       )}
 
       {/* ── News Widget ──────────────────────────────────────────── */}
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {news.length > 0 && (
+      <section className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5" />
           </svg>
           <h2 className="category-title">News du jour</h2>
           <div className="flex-1 h-px bg-gradient-to-r from-indigo-500/20 to-transparent ml-3" />
         </div>
 
-        <div className="glass-card p-4 space-y-1">
-          {newsItems.map((item, i) => (
+        <div className="glass-card p-3 space-y-0">
+          {news.map((item, i) => (
             <a
               key={i}
               href={item.url}
-              className="flex items-center gap-3 text-sm no-underline rounded-lg px-2 py-1.5 -mx-2 hover:bg-white/5 transition-colors group"
+              className="flex items-center gap-3 text-xs no-underline rounded-lg px-2 py-1 -mx-2 hover:bg-white/5 transition-colors group"
             >
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.positive ? 'bg-emerald-400' : 'bg-red-400'}`} />
               <span className="text-slate-300 group-hover:text-white transition-colors">{item.text}</span>
@@ -316,26 +329,27 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ── Link Categories ──────────────────────────────────────── */}
-      <div className="space-y-10">
+      <div className="space-y-4">
         {categories.map((category) => (
           <section key={category.title}>
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-2 mb-2">
               <span className="text-indigo-400">{category.icon}</span>
               <h2 className="category-title">{category.title}</h2>
               <div className="flex-1 h-px bg-gradient-to-r from-indigo-500/20 to-transparent ml-3" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {category.links.map((link) => (
                 <a
                   key={link.name}
                   href={link.url}
-                  className="glass-card p-5 flex items-center gap-4 group cursor-pointer no-underline"
+                  className="glass-card p-2.5 flex items-center gap-2.5 group cursor-pointer no-underline"
                 >
                   <div
-                    className="p-3 rounded-xl transition-all duration-300 group-hover:scale-110"
+                    className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
                     style={{
                       backgroundColor: `${link.color}15`,
                       color: link.color,
@@ -344,10 +358,10 @@ export default function Dashboard() {
                     {link.icon}
                   </div>
                   <div>
-                    <div className="font-semibold text-white group-hover:text-indigo-300 transition-colors">
+                    <div className="font-semibold text-sm text-white group-hover:text-indigo-300 transition-colors">
                       {link.name}
                     </div>
-                    <div className="text-sm text-slate-500">
+                    <div className="text-xs text-slate-500">
                       {link.description}
                     </div>
                   </div>
@@ -367,7 +381,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────── */}
-      <footer className="text-center mt-12 text-sm text-slate-600">
+      <footer className="text-center mt-4 text-xs text-slate-600">
         Laurent Sebah &middot; Capital Management France
       </footer>
     </main>
