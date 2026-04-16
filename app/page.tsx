@@ -230,28 +230,30 @@ export default function Dashboard() {
     <main className="min-h-screen px-8 py-6 max-w-6xl mx-auto">
 
       {/* ── Header: single line ──────────────────────────────────── */}
-      <header className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <span className="text-slate-500 text-sm">|</span>
-          <span className="text-lg text-slate-300 font-medium">{time}</span>
-          <span className="text-sm text-slate-500 capitalize">{date}</span>
-        </div>
-        {weather && (
-          <div className="flex items-center gap-2 text-sm">
-            <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
-            </svg>
-            <span className="text-slate-300">{weather.location}</span>
-            <span className="text-white font-semibold">{weather.temp}&deg;C</span>
-            <span className="text-slate-600">|</span>
-            <span className="text-blue-400">{weather.low}&deg;</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-orange-400">{weather.high}&deg;</span>
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <span className="text-slate-500 text-sm">|</span>
+            <span className="text-lg text-slate-300 font-medium">{time}</span>
           </div>
-        )}
+          {weather && (
+            <div className="flex items-center gap-2 text-sm">
+              <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+              </svg>
+              <span className="text-slate-300">{weather.location}</span>
+              <span className="text-white font-semibold">{weather.temp}&deg;C</span>
+              <span className="text-slate-600">|</span>
+              <span className="text-blue-400">{weather.low}&deg;</span>
+              <span className="text-slate-600">/</span>
+              <span className="text-orange-400">{weather.high}&deg;</span>
+            </div>
+          )}
+        </div>
+        <div className="text-sm text-slate-500 capitalize mt-1">{date}</div>
       </header>
 
       {/* ── Markets Widget ───────────────────────────────────────── */}
