@@ -227,10 +227,10 @@ export default function Dashboard() {
   }, [fetchWeather, fetchMarkets, fetchNews])
 
   return (
-    <main className="min-h-screen px-6 py-4 max-w-6xl mx-auto">
+    <main className="min-h-screen px-8 py-6 max-w-6xl mx-auto">
 
       {/* ── Header: single line ──────────────────────────────────── */}
-      <header className="flex items-center justify-between mb-5">
+      <header className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Dashboard
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
       {/* ── Markets Widget ───────────────────────────────────────── */}
       {markets.length > 0 && (
-        <section className="mb-4">
+        <section className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
@@ -332,7 +332,7 @@ export default function Dashboard() {
       )}
 
       {/* ── Link Categories ──────────────────────────────────────── */}
-      <div className="space-y-4">
+      <div className="space-y-5">
         {categories.map((category) => (
           <section key={category.title}>
             <div className="flex items-center gap-2 mb-2">
@@ -341,7 +341,7 @@ export default function Dashboard() {
               <div className="flex-1 h-px bg-gradient-to-r from-indigo-500/20 to-transparent ml-3" />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {category.links.map((link) => (
                 <a
                   key={link.name}
@@ -381,7 +381,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────── */}
-      <footer className="text-center mt-4 text-xs text-slate-600">
+      <footer className="text-center mt-6 text-xs text-slate-600">
         Laurent Sebah &middot; Capital Management France
       </footer>
     </main>
