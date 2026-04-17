@@ -190,6 +190,7 @@ export default function Dashboard() {
   const [marketsUpdated, setMarketsUpdated] = useState('')
   const [isFallback, setIsFallback] = useState(false)
   const [news, setNews] = useState<NewsItem[]>([])
+  const [refreshing, setRefreshing] = useState(false)
 
   // Clock
   useEffect(() => {
@@ -232,6 +233,15 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }, [])
 
+  const refreshAll = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      await Promise.all([fetchWeather(), fetchMarkets(), fetchNews()])
+    } finally {
+      setRefreshing(false)
+    }
+  }, [fetchWeather, fetchMarkets, fetchNews])
+
   useEffect(() => {
     fetchWeather()
     fetchMarkets()
@@ -260,16 +270,19 @@ export default function Dashboard() {
             <span className="text-lg text-slate-300 font-medium">{time}</span>
           </div>
           {weather && (
-            <div className="flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
-              </svg>
-              <span className="text-slate-300">{weather.location}</span>
-              <span className="text-white font-semibold">{weather.temp}&deg;C</span>
-              <span className="text-slate-600">|</span>
-              <span className="text-blue-400">{weather.low}&deg;</span>
-              <span className="text-slate-600">/</span>
-              <span className="text-orange-400">{weather.high}&deg;</span>
+            <div className="flex flex-col items-end text-xs leading-tight">
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                </svg>
+                <span className="text-slate-300">{weather.location}</span>
+                <span className="text-white font-semibold">{weather.temp}&deg;C</span>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-blue-400">{weather.low}&deg;</span>
+                <span className="text-slate-600">/</span>
+                <span className="text-orange-400">{weather.high}&deg;</span>
+              </div>
             </div>
           )}
         </div>
@@ -403,8 +416,24 @@ export default function Dashboard() {
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────── */}
-      <footer className="text-center mt-6 text-xs text-slate-600">
-        Laurent Sebah &middot; Capital Management France
+      <footer className="flex flex-col items-center gap-3 mt-6 text-xs text-slate-600">
+        <button
+          onClick={refreshAll}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-indigo-300 hover:border-indigo-400/40 transition-colors disabled:opacity-50"
+          title="Tout rafraichir"
+        >
+          <svg
+            className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+          </svg>
+          <span>{refreshing ? 'Rafraichissement...' : 'Rafraichir'}</span>
+        </button>
+        <div>Laurent Sebah &middot; Capital Management France</div>
       </footer>
     </main>
   )
