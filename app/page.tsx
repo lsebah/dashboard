@@ -190,6 +190,7 @@ export default function Dashboard() {
   const [marketsUpdated, setMarketsUpdated] = useState('')
   const [isFallback, setIsFallback] = useState(false)
   const [news, setNews] = useState<NewsItem[]>([])
+  const [refreshing, setRefreshing] = useState(false)
 
   // Clock
   useEffect(() => {
@@ -231,6 +232,15 @@ export default function Dashboard() {
       if (data.news?.length > 0) setNews(data.news)
     } catch { /* silent */ }
   }, [])
+
+  const refreshAll = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      await Promise.all([fetchWeather(), fetchMarkets(), fetchNews()])
+    } finally {
+      setRefreshing(false)
+    }
+  }, [fetchWeather, fetchMarkets, fetchNews])
 
   useEffect(() => {
     fetchWeather()
@@ -406,8 +416,24 @@ export default function Dashboard() {
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────── */}
-      <footer className="text-center mt-6 text-xs text-slate-600">
-        Laurent Sebah &middot; Capital Management France
+      <footer className="flex flex-col items-center gap-3 mt-6 text-xs text-slate-600">
+        <button
+          onClick={refreshAll}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-indigo-300 hover:border-indigo-400/40 transition-colors disabled:opacity-50"
+          title="Tout rafraichir"
+        >
+          <svg
+            className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+          </svg>
+          <span>{refreshing ? 'Rafraichissement...' : 'Rafraichir'}</span>
+        </button>
+        <div>Laurent Sebah &middot; Capital Management France</div>
       </footer>
     </main>
   )
