@@ -247,7 +247,7 @@ export default function Dashboard() {
     fetchMarkets()
     fetchNews()
     const weatherInterval = setInterval(fetchWeather, 30 * 60 * 1000) // 30 min
-    const marketsInterval = setInterval(fetchMarkets, 5 * 60 * 1000)  // 5 min
+    const marketsInterval = setInterval(fetchMarkets, 15 * 60 * 1000) // 15 min
     const newsInterval = setInterval(fetchNews, 15 * 60 * 1000)       // 15 min
     return () => {
       clearInterval(weatherInterval)
