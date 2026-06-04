@@ -45,6 +45,7 @@ export function buildObservations(
 
 /** Sous-jacent le moins performant (pertinent pour les worst-of). */
 export function worstOf(product: Product): Underlying | undefined {
+  if (product.sousJacents.length === 0) return undefined
   const withPerf = product.sousJacents.filter((u) => typeof u.perf === 'number')
   if (withPerf.length === 0) return product.sousJacents[0]
   return withPerf.reduce((a, b) => ((a.perf ?? 0) <= (b.perf ?? 0) ? a : b))
@@ -56,7 +57,12 @@ export function prochaineObservation(
   now: Date = new Date(),
 ): Observation | undefined {
   const today = now.toISOString().slice(0, 10)
-  return product.observations.find((o) => o.dateObservation >= today)
+  return (product.observations ?? []).find((o) => o.dateObservation >= today)
+}
+
+/** Date du prochain événement : depuis le calendrier, sinon champ `nextEvent`. */
+export function prochainEvenement(product: Product): string | undefined {
+  return prochaineObservation(product)?.dateObservation ?? product.nextEvent
 }
 
 /** Nombre de mois (arrondi) entre aujourd'hui et la maturité. */
@@ -96,7 +102,9 @@ export function situation(product: Product): Situation {
 
   const terms = product.terms
   const protectionPct =
-    terms.kind === 'autocall' ? terms.protectionPct : undefined
+    terms?.kind === 'autocall'
+      ? terms.protectionPct
+      : (product.pdiPct ?? undefined)
   const niveau = 100 + perf // niveau du sous-jacent en % de l'initial
 
   if (perf >= 0) return 'positive'
@@ -107,9 +115,11 @@ export function situation(product: Product): Situation {
   return 'sans_stress'
 }
 
-/** Coupon annualisé indicatif, si défini. */
+/** Coupon annualisé indicatif, si défini (termsheet, sinon cellule Excel). */
 export function couponPa(product: Product): number | undefined {
-  return product.terms.kind === 'autocall' ? product.terms.couponPa : undefined
+  if (product.terms?.kind === 'autocall' && typeof product.terms.couponPa === 'number')
+    return product.terms.couponPa
+  return product.couponPaPct
 }
 
 const MOIS_FR = [

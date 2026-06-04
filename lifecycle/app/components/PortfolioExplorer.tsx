@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import {
-  prochaineObservation,
+  prochainEvenement,
   situation,
   couponPa,
   formatDateFr,
@@ -24,6 +24,7 @@ function ticker(s: string): string {
 
 function lastLabel(p: Product): { text: string; cls: string } {
   if (p.statut === 'rappele') return { text: 'CALLED', cls: 'text-emerald-600 font-semibold' }
+  if (p.statut === 'vendu') return { text: 'SOLD', cls: 'text-blue-600 font-semibold' }
   if (p.statut === 'echu') return { text: 'ÉCHU', cls: 'text-slate-400' }
   if (typeof p.prixMarche === 'number')
     return { text: p.prixMarche.toFixed(2), cls: 'text-slate-800' }
@@ -110,9 +111,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               <tbody className="divide-y divide-slate-100">
                 {list.map((p) => {
                   const s = situation(p)
-                  const next = prochaineObservation(p)
+                  const nextEvt = prochainEvenement(p)
                   const last = lastLabel(p)
                   const t = p.terms
+                  const memoire =
+                    (t?.kind === 'autocall' && t.effetMemoire) ||
+                    /[ée]moire/i.test(p.description ?? '')
                   const isSel = p.id === selected?.id
                   return (
                     <tr
@@ -145,7 +149,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                           : '—'}
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">
-                        {next ? formatDateFr(next.dateObservation) : '—'}
+                        {nextEvt ? formatDateFr(nextEvt) : '—'}
                       </td>
                       <td className="px-2 py-1.5 text-slate-500">{p.devise}</td>
                       <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
@@ -161,22 +165,24 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                         {assetLabel(p.assetClass)}
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap">{p.productType ?? '—'}</td>
-                      <td className="px-2 py-1.5 text-center">
-                        {t.kind === 'autocall' && t.effetMemoire ? '✓' : ''}
-                      </td>
+                      <td className="px-2 py-1.5 text-center">{memoire ? '✓' : ''}</td>
                       <td className="px-2 py-1.5 tabular-nums">{formatPct(couponPa(p))}</td>
                       <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-                        {t.kind === 'autocall'
-                          ? t.degressif
-                            ? 'Dégr.'
-                            : `${t.barriereRappelPct ?? 100}%`
-                          : '—'}
+                        {p.barriereAutocall ??
+                          (t?.kind === 'autocall'
+                            ? t.degressif
+                              ? 'Dégr.'
+                              : `${t.barriereRappelPct ?? 100}%`
+                            : '—')}
                       </td>
                       <td className="px-2 py-1.5 tabular-nums">
-                        {t.kind === 'autocall' && t.barriereCouponPct ? `${t.barriereCouponPct}%` : '—'}
+                        {p.barriereCoupon ??
+                          (t?.kind === 'autocall' && t.barriereCouponPct
+                            ? `${t.barriereCouponPct}%`
+                            : '—')}
                       </td>
                       <td className="px-2 py-1.5 tabular-nums">
-                        {typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—'}
+                        {p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—')}
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
                         {p.clients?.join(', ') ?? '—'}

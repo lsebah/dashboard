@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
 import { buildObservations } from './lifecycle'
+import { portfolioImport } from './portfolio-import'
 
 // ── 1) MAREX — Inverse (Barrier) Autocall sur United States Oil Fund ─────────
 const usoObs = ['2026-06-12', '2026-09-14', '2026-12-14', '2027-03-12']
@@ -273,4 +274,12 @@ const bnpDefense: Product = {
     '260311_5Y_Athena Airbag Mensuel sur Thales Safran et Rheinmetall_Mensuel_XS3266363806_BNP.PDF',
 }
 
-export const products: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso]
+// Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
+const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso]
+
+// Portefeuille = produits détaillés + import "catalogue" (dédupliqué par ISIN).
+const detailedIsins = new Set(detailed.map((p) => p.isin))
+export const products: Product[] = [
+  ...detailed,
+  ...portfolioImport.filter((p) => !detailedIsins.has(p.isin)),
+]

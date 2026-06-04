@@ -49,7 +49,8 @@ export type BasketType =
 /** Statut de vie du produit. */
 export type ProductStatus =
   | 'vivant' // en cours
-  | 'rappele' // remboursé par anticipation (autocall déclenché)
+  | 'rappele' // remboursé par anticipation (autocall déclenché) — "CALLED"
+  | 'vendu' // cédé sur le secondaire — "SOLD"
   | 'echu' // arrivé à maturité
   | 'monitore' // suivi sans position (watchlist)
 
@@ -176,11 +177,12 @@ export interface Product {
   sousJacents: Underlying[]
   basket: BasketType
 
-  // — Mécanisme (selon la famille) —
-  terms: ProductTerms
+  // — Mécanisme (selon la famille). Optionnel : renseigné finement pour les
+  //   produits décodés depuis une termsheet ; absent pour un import "catalogue". —
+  terms?: ProductTerms
 
-  // — Calendrier d'observation —
-  observations: Observation[]
+  // — Calendrier d'observation (optionnel tant que non importé). —
+  observations?: Observation[]
 
   // — Monitoring (optionnel, renseigné par le suivi) —
   prixMarche?: number // valorisation secondaire mark-to-market, en %
@@ -192,7 +194,14 @@ export interface Product {
   productType?: string // Phoenix / Athena / Booster / Airbag / Participation / Call Spread / Callable…
   pnlPct?: number // P&L courant, en %
   pdiPct?: number // PDI — barrière de protection (down-and-in), en %
-  clients?: string[] // CLIENT INFO — codes clients alloués (axe d'allocation)
+  clients?: string[] // CLIENT INFO — codes clients (NON versionné : chargé d'un fichier local)
+  nextEvent?: string // prochaine échéance (ISO) quand le calendrier n'est pas importé
+  // Cellules "résumé" de l'Excel, conservées telles quelles pour l'affichage
+  // tabulaire (les barrières crédit/taux portent des taux, d'où le format texte) :
+  couponPaPct?: number
+  barriereAutocall?: string
+  barriereCoupon?: string
+  pdiText?: string
 
   // — Divers —
   termsheetFichier?: string

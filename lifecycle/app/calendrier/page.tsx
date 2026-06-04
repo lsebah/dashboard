@@ -16,7 +16,7 @@ export default function CalendrierPage() {
 
   const lignes: Ligne[] = products
     .flatMap((p) =>
-      p.observations
+      (p.observations ?? [])
         .filter((o) => o.dateObservation >= today)
         .map((o) => ({
           date: o.dateObservation,

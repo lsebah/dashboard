@@ -22,13 +22,27 @@ npm run dev   # http://localhost:3001
 ## Structure
 
 ```
-lib/types.ts        Modèle de données multi-classes (equity / taux / crédit…)
-lib/lifecycle.ts    Dérivations : prochaine observation, statut, situation, formats
-lib/products.ts     Amorce : 4 produits réels encodés depuis leurs termsheets
-app/page.tsx        Portefeuille (cartes type vizibility + synthèse)
-app/calendrier      Calendrier transversal des observations
-app/produits/nouveau  Masque de saisie d'un produit (v1)
+lib/types.ts          Modèle de données multi-classes (equity / taux / crédit / FX / commo)
+lib/lifecycle.ts      Dérivations : prochain événement, statut, situation, formats
+lib/products.ts       4 produits décodés par termsheet (calendriers complets) + import
+lib/portfolio-import.ts  Catalogue importé du fichier Excel "Lifecycle" (caractéristiques seules)
+app/page.tsx          Portefeuille : Tableau (style Excel) + Synopsis (carte vizibility)
+app/components/        Explorateur, carte synopsis, libellés partagés
+app/calendrier         Calendrier transversal des observations
+app/produits/nouveau   Masque de saisie d'un produit (v1)
 ```
+
+## Import & confidentialité
+
+`lib/portfolio-import.ts` reprend un échantillon représentatif du classeur
+Excel « Lifecycle » couvrant toutes les classes (equity / crédit / taux / FX /
+commodity). **Seules les caractéristiques produits sont versionnées** : aucune
+donnée client ni commission / revenu / salaire n'entre dans le repo.
+
+L'axe d'allocation **par client** se rebranchera via un fichier **local non
+suivi** (`data/allocations.local.json`, ignoré par git), pour que l'identité des
+clients ne figure jamais dans l'historique. L'import complet (~160 lignes) se
+fera depuis un export propre du classeur (CSV/JSON via le bouton « Export »).
 
 ## Modèle de données
 
@@ -48,9 +62,11 @@ barrière dégressive.
 
 1. **Masque & listing** ✅ (v1)
 2. **Calendrier des observations** ✅ (v1 transversal)
-3. **Interprétation multi-classes** — modéliser taux & crédit sur termsheets réelles
-4. **Prix mark-to-market** — source de prix des sous-jacents (Bloomberg via import,
+3. **Vue Tableau (Excel) + Synopsis (carte)** ✅
+4. **Import du portefeuille** ✅ (échantillon multi-classes ; complet via export Excel)
+5. **Interprétation taux & crédit** — affiner CLN / TARN / CMS sur termsheets réelles
+6. **Prix mark-to-market** — source de prix des sous-jacents (Bloomberg via import,
    ou source marché pour la version cloud)
-5. **Allocation par client** — positions par client (stockage hors repo)
-6. **Accès client** — authentification + base de données + vue par client
+7. **Allocation par client** — fichier local non versionné, puis stockage dédié
+8. **Accès client** — authentification + base de données + vue par client
 ```

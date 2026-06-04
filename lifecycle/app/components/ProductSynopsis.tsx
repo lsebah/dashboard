@@ -1,10 +1,10 @@
 import type { Product } from '@/lib/types'
 import {
-  prochaineObservation,
   moisRestants,
   avancement,
   situation,
   couponPa,
+  prochainEvenement,
   formatDateFr,
   formatPct,
   formatMontant,
@@ -14,30 +14,35 @@ import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
 /** Carte « Synopsis produit » — reproduit la fiche de vizibility. */
 export default function ProductSynopsis({ product }: { product: Product }) {
   const s = situation(product)
-  const next = prochaineObservation(product)
+  const next = prochainEvenement(product)
   const mois = moisRestants(product)
   const progress = Math.round(avancement(product) * 100)
   const terms = product.terms
   const cpa = couponPa(product)
 
   const protection =
-    terms.kind === 'autocall'
+    terms?.kind === 'autocall'
       ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}`
-      : '—'
+      : product.pdiText ?? (typeof product.pdiPct === 'number' ? `${product.pdiPct}%` : '—')
 
   const rappel =
-    terms.kind === 'autocall'
+    terms?.kind === 'autocall'
       ? terms.degressif
         ? `Dégressif (≤ ${terms.barriereRappelPct ?? 100}%)`
         : `${terms.barriereRappelPct ?? 100}% (${freqLabel(product.frequence)})`
-      : '—'
+      : product.barriereAutocall ?? '—'
+
+  const memoire =
+    (terms?.kind === 'autocall' && terms.effetMemoire) || /[ée]moire/i.test(product.description ?? '')
 
   const barriereCoupon =
-    terms.kind === 'autocall' && terms.barriereCouponPct
-      ? `${terms.barriereCouponPct}%${terms.effetMemoire ? ' avec effet Mémoire' : ''}`
-      : terms.kind === 'autocall' && terms.effetMemoire
-        ? 'effet Mémoire'
-        : '—'
+    terms?.kind === 'autocall' && terms.barriereCouponPct
+      ? `${terms.barriereCouponPct}%${memoire ? ' avec effet Mémoire' : ''}`
+      : product.barriereCoupon
+        ? `${product.barriereCoupon}${memoire ? ' avec effet Mémoire' : ''}`
+        : memoire
+          ? 'effet Mémoire'
+          : '—'
 
   return (
     <div className="card p-4 flex flex-col gap-3">
@@ -61,6 +66,9 @@ export default function ProductSynopsis({ product }: { product: Product }) {
       {/* Titre + badges */}
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold text-cmf-navy">{product.nom}</h3>
+        {product.productType && (
+          <span className="text-[11px] text-slate-500">· {product.productType}</span>
+        )}
         {product.badges?.map((b) => (
           <span key={b} className="badge">
             {b}
@@ -79,11 +87,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
         </div>
         <div className="flex justify-between text-[11px]">
           <span className="text-slate-600">
-            {next
-              ? `Prochaine observation le ${formatDateFr(next.dateObservation)}${
-                  next.autocallActif === false ? ' (rappel non-actif)' : ''
-                }`
-              : 'Échéance atteinte'}
+            {next ? `Prochain événement le ${formatDateFr(next)}` : 'Échéance atteinte'}
           </span>
           <span className="text-slate-400">{mois} mois restants</span>
         </div>
@@ -95,9 +99,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           <dt className="field-label w-28 shrink-0">Coupon p.a.</dt>
           <dd className="text-slate-700">
             {cpa ? formatPct(cpa) : '—'}
-            {terms.kind === 'autocall' && terms.effetMemoire && (
-              <span className="text-slate-400"> · effet mémoire</span>
-            )}
+            {memoire && <span className="text-slate-400"> · effet mémoire</span>}
           </dd>
         </div>
         <div className="flex gap-2">
@@ -118,10 +120,13 @@ export default function ProductSynopsis({ product }: { product: Product }) {
       <div className="flex items-end justify-between border-t border-slate-100 pt-3">
         <div className="text-xs">
           <div className="field-label mb-1">
-            Sous-jacent
-            {product.sousJacents.length > 1
-              ? `s (${product.basket === 'worst_of' ? 'moins performant' : product.basket})`
-              : ''}
+            {product.sousJacents.length > 0
+              ? `Sous-jacent${
+                  product.sousJacents.length > 1
+                    ? `s (${product.basket === 'worst_of' ? 'moins performant' : product.basket})`
+                    : ''
+                }`
+              : 'Sous-jacents'}
           </div>
           <ul className="space-y-0.5">
             {product.sousJacents.slice(0, 3).map((u) => (
@@ -140,6 +145,9 @@ export default function ProductSynopsis({ product }: { product: Product }) {
                 </span>
               </li>
             ))}
+            {product.sousJacents.length === 0 && (
+              <li className="text-slate-400">{product.description ?? '—'}</li>
+            )}
           </ul>
         </div>
         <div className="text-right">
