@@ -55,6 +55,9 @@ const marexUso: Product = {
     couponPct: 3.775,
   }),
   statut: 'vivant',
+  rr: 'LS',
+  productType: 'Reverse Convertible',
+  description: '1Y Inverse Reverse Autocall USO',
   badges: ['Inverse', 'Coupon garanti'],
   termsheetFichier:
     '260326_1Y_Inverse Reverse Autocall USO_Trimestriel_XS3262011201_MAREX.PDF',
@@ -126,7 +129,12 @@ const bnpSx5e: Product = {
     rappelActifAPartirDe: 4, // Oxygène : actif à partir du T4
   }),
   prixMarche: 100.38,
+  pnlPct: 0.38,
+  pdiPct: 60,
   statut: 'vivant',
+  rr: 'LS',
+  productType: 'Athena',
+  description: '8Y Athena Airbag SX5E 8x Repo',
   badges: ['Oxygène — 60%', 'Décrément', 'Effet mémoire'],
   termsheetFichier:
     '260312_8Y_Athena Airbag SX5E 8x Repo_Annuel_XS3291617812_BNP.PDF',
@@ -180,7 +188,11 @@ const socgenEnergy: Product = {
     autocallActif: false,
     resultat: 'Échéance : bonus +35% si perf. moyenne ≥ -10%',
   }),
+  pdiPct: 60,
   statut: 'vivant',
+  rr: 'LS',
+  productType: 'Autocall',
+  description: '5Y Autocall Équipondéré TTE + Shell + ENI',
   badges: ['Équipondéré', 'Dégressif', 'Collatéralisé'],
   termsheetFichier:
     '250325_4Y_Autocall Equipondéré TotalEnergies ENI Shell_Annuel_FRSG00015XB8_SOCGEN.pdf',
@@ -251,7 +263,11 @@ const bnpDefense: Product = {
     niveauRappelPct: 85,
     montantRemboursementPct: (n) => 110.26667 + n * 0.93333,
   }),
+  pdiPct: 50,
   statut: 'vivant',
+  rr: 'LS',
+  productType: 'Athena',
+  description: '5Y Athena Airbag Wof Safran + Thales + Rheinmetall',
   badges: ['Airbag', 'Worst-of', 'Mensuel'],
   termsheetFichier:
     '260311_5Y_Athena Airbag Mensuel sur Thales Safran et Rheinmetall_Mensuel_XS3266363806_BNP.PDF',

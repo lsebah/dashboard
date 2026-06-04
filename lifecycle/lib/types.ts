@@ -186,6 +186,14 @@ export interface Product {
   prixMarche?: number // valorisation secondaire mark-to-market, en %
   statut?: ProductStatus
 
+  // — Suivi / reporting (colonnes du fichier Excel "Lifecycle") —
+  rr?: string // gérant / relationship manager (LS, PD, JLL…)
+  description?: string // libellé lisible, ex. "5Y Phoenix Memory Wof Micron + Marvell"
+  productType?: string // Phoenix / Athena / Booster / Airbag / Participation / Call Spread / Callable…
+  pnlPct?: number // P&L courant, en %
+  pdiPct?: number // PDI — barrière de protection (down-and-in), en %
+  clients?: string[] // CLIENT INFO — codes clients alloués (axe d'allocation)
+
   // — Divers —
   termsheetFichier?: string
   badges?: string[]
