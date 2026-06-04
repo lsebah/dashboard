@@ -122,6 +122,130 @@ export function couponPa(product: Product): number | undefined {
   return product.couponPaPct
 }
 
+// ─── Reconstruction mathématique (à partir des `terms` décodés) ──────────────
+
+/** Une ligne d'échéancier reconstruite (date d'observation → mécanique). */
+export interface EcheanceLigne {
+  n: number
+  date: string
+  niveauRappelPct?: number // barrière d'autocall (dégressive le cas échéant)
+  remboursementPct?: number // remboursement total si rappelé à cette date
+  couponPct?: number
+  actif: boolean // false pendant l'Oxygène (lock-out)
+  passe: boolean // date déjà écoulée
+}
+
+/** Reconstruit l'échéancier d'observation lisible d'un produit autocall. */
+export function echeancier(product: Product, now: Date = new Date()): EcheanceLigne[] {
+  const today = now.toISOString().slice(0, 10)
+  return (product.observations ?? []).map((o) => ({
+    n: o.n,
+    date: o.dateObservation,
+    niveauRappelPct: o.niveauRappelPct,
+    remboursementPct: o.montantRemboursementPct,
+    couponPct: o.couponPct,
+    actif: o.autocallActif !== false,
+    passe: o.dateObservation < today,
+  }))
+}
+
+/** Amplitude de dégressivité de la barrière de rappel (départ → fin), si step-down. */
+export function degressivite(
+  product: Product,
+): { depart: number; fin: number; pas: number } | undefined {
+  const obs = (product.observations ?? []).filter(
+    (o) => typeof o.niveauRappelPct === 'number',
+  )
+  if (obs.length < 2) return undefined
+  const depart = obs[0].niveauRappelPct!
+  const fin = obs[obs.length - 1].niveauRappelPct!
+  if (depart === fin) return undefined
+  return { depart, fin, pas: (depart - fin) / (obs.length - 1) }
+}
+
+/** Un scénario de dénouement (à des fins pédagogiques / d'aide à la décision). */
+export interface Scenario {
+  titre: string
+  condition: string
+  resultat: string
+  ton: 'positif' | 'neutre' | 'negatif'
+}
+
+/** Reconstruit les scénarios de remboursement à partir des termes décodés. */
+export function scenariosMaturite(product: Product): Scenario[] {
+  const t = product.terms
+  if (t?.kind !== 'autocall') return []
+
+  const panier =
+    product.basket === 'worst_of'
+      ? 'le sous-jacent le moins performant'
+      : product.basket === 'equipondere'
+        ? 'la performance moyenne du panier'
+        : 'le sous-jacent'
+  const obs = (product.observations ?? []).filter(
+    (o) => typeof o.niveauRappelPct === 'number',
+  )
+  const barrDepart = obs[0]?.niveauRappelPct ?? t.barriereRappelPct ?? 100
+  const barrFin = obs.length ? obs[obs.length - 1].niveauRappelPct! : barrDepart
+  const styleKI = t.protectionStyle === 'europeenne' ? 'européenne' : 'américaine'
+  const remboursementMax =
+    product.observations?.[product.observations.length - 1]?.montantRemboursementPct
+
+  // — Sens inverse (ex. Reverse / Inverse Autocall) —
+  if (t.sens === 'inverse') {
+    return [
+      {
+        titre: 'Rappel anticipé',
+        condition: `${panier} ≤ ${barrDepart}% à une date d'observation`,
+        resultat: 'Remboursement 100% du capital + coupon garanti de la période',
+        ton: 'positif',
+      },
+      {
+        titre: 'Sans franchissement',
+        condition: `à l'échéance, ${panier} < ${t.protectionPct}% (barrière haute ${styleKI})`,
+        resultat: 'Remboursement 100% + coupons cumulés',
+        ton: 'neutre',
+      },
+      {
+        titre: 'Barrière haute franchie',
+        condition: `à l'échéance, ${panier} ≥ ${t.protectionPct}%`,
+        resultat: 'Perte en capital (proportionnelle à la hausse du sous-jacent)',
+        ton: 'negatif',
+      },
+    ]
+  }
+
+  // — Sens standard (Phoenix / Athena / Airbag / Autocall) —
+  const degr = barrDepart !== barrFin ? ` (barrière dégressive ${barrDepart}% → ${barrFin}%)` : ''
+  const scenarios: Scenario[] = [
+    {
+      titre: 'Rappel anticipé',
+      condition: `${panier} ≥ barrière de rappel à une date d'observation${degr}`,
+      resultat: `Remboursement 100% du capital + coupon(s)${
+        remboursementMax ? ` — jusqu'à ${remboursementMax.toFixed(2)}% si rappel tardif` : ''
+      }`,
+      ton: 'positif',
+    },
+    {
+      titre: 'À maturité, capital protégé',
+      condition: `non rappelé et ${panier} ≥ ${t.protectionPct}% (barrière ${styleKI})`,
+      resultat: `Remboursement 100% du capital${
+        t.bonusFinalPct ? ` + bonus +${t.bonusFinalPct}%` : ''
+      }`,
+      ton: t.bonusFinalPct ? 'positif' : 'neutre',
+    },
+    {
+      titre: 'À maturité, barrière franchie',
+      condition: `${panier} < ${t.protectionPct}% à l'échéance`,
+      resultat: t.airbag
+        ? `Perte amortie (airbag) : capital × niveau / ${barrFin}%`
+        : 'Perte en capital : capital × niveau final du sous-jacent',
+      ton: 'negatif',
+    },
+  ]
+  return scenarios
+}
+
 const MOIS_FR = [
   'janv.',
   'févr.',

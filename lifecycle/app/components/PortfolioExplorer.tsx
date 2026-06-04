@@ -11,6 +11,7 @@ import {
 } from '@/lib/lifecycle'
 import { SITUATION_COLOR, SITUATION_LABEL, freqLabel, assetLabel } from './labels'
 import ProductSynopsis from './ProductSynopsis'
+import ProductReconstruction from './ProductReconstruction'
 
 function annees(p: Product): number {
   const d0 = new Date(p.dateConstatationInitiale).getTime()
@@ -214,14 +215,17 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             </table>
           </div>
 
-          {/* Synopsis du produit sélectionné */}
+          {/* Synopsis + reconstruction du produit sélectionné */}
           <div className="xl:col-span-1">
-            <div className="sticky top-4">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            <div className="sticky top-4 flex flex-col gap-3">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Synopsis produit
               </div>
               {selected ? (
-                <ProductSynopsis product={selected} />
+                <>
+                  <ProductSynopsis product={selected} />
+                  <ProductReconstruction product={selected} />
+                </>
               ) : (
                 <div className="card p-4 text-sm text-slate-400">
                   Sélectionnez un produit.
