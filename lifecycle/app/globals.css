@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cmf-navy: #0f2748;
+}
+
+body {
+  background: #f1f5f9;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 border border-amber-200;
+  }
+  .field-label {
+    @apply text-xs font-medium text-slate-500;
+  }
+  .input {
+    @apply w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:border-cmf-blue focus:outline-none focus:ring-1 focus:ring-cmf-blue;
+  }
+}
