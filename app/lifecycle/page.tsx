@@ -49,7 +49,7 @@ export default function PortefeuillePage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-cmf-navy">Portefeuille</h1>
         <a
-          href="/produits/nouveau"
+          href="/lifecycle/produits/nouveau"
           className="rounded-md bg-cmf-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
         >
           + Nouveau produit

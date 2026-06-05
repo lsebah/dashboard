@@ -163,7 +163,7 @@ export default function NouveauProduit() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-cmf-navy">Nouveau produit</h1>
-        <a href="/" className="text-sm text-cmf-blue hover:underline">
+        <a href="/lifecycle" className="text-sm text-cmf-blue hover:underline">
           ← Retour au portefeuille
         </a>
       </div>
