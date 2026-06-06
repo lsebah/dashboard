@@ -7,6 +7,7 @@
 import type { Product } from './types'
 import { buildObservations } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
+import { termsheetUrl, termsheetFile } from './termsheets'
 
 // ── 1) MAREX — Inverse (Barrier) Autocall sur United States Oil Fund ─────────
 const usoObs = ['2026-06-12', '2026-09-14', '2026-12-14', '2027-03-12']
@@ -281,9 +282,14 @@ const bnpDefense: Product = {
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso]
 
-// Portefeuille = produits détaillés + import "catalogue" (dédupliqué par ISIN).
+// Portefeuille = produits détaillés + import "catalogue" (dédupliqué par ISIN),
+// avec liaison de la termsheet (PDF SharePoint) par ISIN.
 const detailedIsins = new Set(detailed.map((p) => p.isin))
 export const products: Product[] = [
   ...detailed,
   ...portfolioImport.filter((p) => !detailedIsins.has(p.isin)),
-]
+].map((p) => ({
+  ...p,
+  termsheetUrl: p.termsheetUrl ?? termsheetUrl(p.isin),
+  termsheetFichier: p.termsheetFichier ?? termsheetFile(p.isin),
+}))

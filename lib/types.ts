@@ -205,5 +205,6 @@ export interface Product {
 
   // — Divers —
   termsheetFichier?: string
+  termsheetUrl?: string // lien SharePoint vers la termsheet (PDF)
   badges?: string[]
 }

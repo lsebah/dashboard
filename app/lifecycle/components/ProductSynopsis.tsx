@@ -76,6 +76,19 @@ export default function ProductSynopsis({ product }: { product: Product }) {
         ))}
       </div>
 
+      {/* Termsheet */}
+      {product.termsheetUrl && (
+        <a
+          href={product.termsheetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-cmf-blue hover:underline inline-flex items-center gap-1 w-fit"
+          title={product.termsheetFichier}
+        >
+          📄 Termsheet ↗
+        </a>
+      )}
+
       {/* Timeline */}
       <div>
         <div className="flex justify-between text-[11px] text-slate-500">

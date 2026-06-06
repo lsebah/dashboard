@@ -293,6 +293,18 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
                         {p.isin}
+                        {p.termsheetUrl && (
+                          <a
+                            href={p.termsheetUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-slate-400 hover:text-cmf-blue"
+                            title="Ouvrir la termsheet (PDF)"
+                          >
+                            📄
+                          </a>
+                        )}
                       </span>
                     </td>
                     <td className={`px-2 py-1.5 tabular-nums ${last.cls}`}>{last.text}</td>
