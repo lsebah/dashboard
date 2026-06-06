@@ -37,6 +37,37 @@ function lastLabel(p: Product): { text: string; cls: string } {
 
 type SortVal = string | number | undefined
 
+// Valeur numérique de tête d'une chaîne (« 85% », « 2,50% » → 85 / 2.5).
+function pctNum(s?: string): number | undefined {
+  if (!s) return undefined
+  const m = s.match(/-?\d+(?:[.,]\d+)?/)
+  return m ? parseFloat(m[0].replace(',', '.')) : undefined
+}
+function bAutocallVal(p: Product): number | undefined {
+  if (p.barriereAutocall) return pctNum(p.barriereAutocall)
+  const t = p.terms
+  if (t?.kind === 'autocall' && !t.degressif) return t.barriereRappelPct ?? 100
+  return undefined
+}
+function bCouponVal(p: Product): number | undefined {
+  if (p.barriereCoupon) return pctNum(p.barriereCoupon)
+  const t = p.terms
+  return t?.kind === 'autocall' ? t.barriereCouponPct : undefined
+}
+function pdiVal(p: Product): number | undefined {
+  return p.pdiText ? pctNum(p.pdiText) : p.pdiPct
+}
+function memVal(p: Product): number {
+  const t = p.terms
+  return (t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '')
+    ? 1
+    : 0
+}
+function sjVal(p: Product): string | undefined {
+  const u = p.sousJacents[0]
+  return u ? ticker(u.bloomberg ?? u.nom) : undefined
+}
+
 // Colonnes du tableau (ordre = ordre des cellules du corps). `key` ⇒ triable.
 const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
   { label: 'RR', key: 'rr' },
@@ -53,13 +84,13 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
   { label: 'Description', key: 'desc' },
   { label: 'Eq/Cr', key: 'asset' },
   { label: 'Type', key: 'type' },
-  { label: 'Mém.', align: 'center' },
+  { label: 'Mém.', key: 'mem', align: 'center' },
   { label: 'Cpn p.a.', key: 'cpn' },
-  { label: 'B. Autocall' },
-  { label: 'B. Coupon' },
-  { label: 'PDI' },
+  { label: 'B. Autocall', key: 'bauto' },
+  { label: 'B. Coupon', key: 'bcoupon' },
+  { label: 'PDI', key: 'pdi' },
   { label: 'Client', key: 'client' },
-  { label: 'Sous-jacents' },
+  { label: 'Sous-jacents', key: 'sj' },
 ]
 
 function compare(a: SortVal, b: SortVal): number {
@@ -70,6 +101,7 @@ function compare(a: SortVal, b: SortVal): number {
 export default function PortfolioExplorer({ products }: { products: Product[] }) {
   const [view, setView] = useState<'table' | 'cards'>('table')
   const [client, setClient] = useState<string>('')
+  const [liveOnly, setLiveOnly] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({
     key: 'issue',
@@ -91,12 +123,16 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     [map, products],
   )
 
-  const filtered = useMemo(
-    () =>
-      client
-        ? products.filter((p) => allocsOf(p).some((a) => a.client === client))
-        : products,
-    [products, client, allocsOf],
+  const filtered = useMemo(() => {
+    let l = products
+    if (client) l = l.filter((p) => allocsOf(p).some((a) => a.client === client))
+    if (liveOnly) l = l.filter((p) => typeof p.prixMarche === 'number')
+    return l
+  }, [products, client, liveOnly, allocsOf])
+
+  const nbLive = useMemo(
+    () => products.filter((p) => typeof p.prixMarche === 'number').length,
+    [products],
   )
 
   const sorters: Record<string, (p: Product) => SortVal> = useMemo(
@@ -116,7 +152,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       asset: (p) => p.assetClass,
       type: (p) => p.productType,
       cpn: (p) => couponPa(p),
+      mem: (p) => memVal(p),
+      bauto: (p) => bAutocallVal(p),
+      bcoupon: (p) => bCouponVal(p),
+      pdi: (p) => pdiVal(p),
       client: (p) => allocsOf(p)[0]?.client,
+      sj: (p) => sjVal(p),
     }),
     [allocsOf],
   )
@@ -148,18 +189,33 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     <div>
       {/* Barre d'outils */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
+        <div className="flex items-center gap-2">
+          <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
+            <button
+              onClick={() => setView('table')}
+              className={`px-3 py-1.5 ${view === 'table' ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+            >
+              Tableau
+            </button>
+            <button
+              onClick={() => setView('cards')}
+              className={`px-3 py-1.5 ${view === 'cards' ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+            >
+              Cartes
+            </button>
+          </div>
           <button
-            onClick={() => setView('table')}
-            className={`px-3 py-1.5 ${view === 'table' ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+            onClick={() => setLiveOnly((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+              liveOnly
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+            title="N'afficher que les produits LIVE (avec un prix)"
           >
-            Tableau
-          </button>
-          <button
-            onClick={() => setView('cards')}
-            className={`px-3 py-1.5 ${view === 'cards' ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
-          >
-            Cartes
+            <span className={`w-2 h-2 rounded-full ${liveOnly ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+            LIVE
+            <span className="text-xs text-slate-400">{nbLive}</span>
           </button>
         </div>
         <select

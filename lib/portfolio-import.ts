@@ -70,6 +70,37 @@ interface Row {
   pdi?: string
 }
 
+// Codes clients (colonne CLIENT INFO de l'Excel), par ISIN. Seed d'affichage ;
+// l'utilisateur peut surcharger l'allocation localement (localStorage).
+const CLIENTS: Record<string, string[]> = {
+  XS3317870197: ['APPN - 05277'],
+  XS3304996484: ['ALVES - 06001'],
+  XS3309979311: ['ALVES - 06001'],
+  XS3283137407: ['APPN - 05277'],
+  XS3153607810: ['VIA - 08001'],
+  FR0014013N00: ['SPG - 05774'],
+  XS3149199807: ['ALVES - 06001'],
+  XS3148625976: ['APPN - 05277'],
+  XS2925309945: ['ALVES - 06001'],
+  FRIP000014P8: ['GRICOURT - 05474'],
+  XS2769371209: ['GRICOURT - 05474'],
+  XS2872777334: ['ARCHE - 05272'],
+  XS2884074795: ['PRESTINVEST - 05773'],
+  XS3073984430: ['CAPITALL - 01227'],
+  XS2979390502: ['SCALA - 05722'],
+  XS2975786000: ['SAMY - 01674'],
+  XS2919373816: ['SCALA - 05722'],
+  XS2576621366: ['SCALA - 05722'],
+  XS2442403130: ['SAMY - 01674'],
+  XS2464629414: ['SAMY - 01674'],
+  XS2110091449: ['SCALA - 05722'],
+  FR001400T357: ['MANTU - 05626'],
+  CH1271361060: ['SOCIPAR - 05762'],
+  'FEI-2025': ['MACIF'],
+  XS2621505341: ['PRESTINVEST - 05773'],
+  XS2863761933: ['VIA - 08001'],
+}
+
 function mk(r: Row): Product {
   const issue = iso(r.issue)!
   return {
@@ -99,6 +130,7 @@ function mk(r: Row): Product {
     barriereAutocall: r.bAuto,
     barriereCoupon: r.bCoupon,
     pdiText: r.pdi,
+    clients: CLIENTS[r.isin],
   }
 }
 

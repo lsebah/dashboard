@@ -59,6 +59,7 @@ const marexUso: Product = {
   rr: 'LS',
   productType: 'Reverse Convertible',
   description: '1Y Inverse Reverse Autocall USO',
+  clients: ['NATAF - 05627'],
   badges: ['Inverse', 'Coupon garanti'],
   termsheetFichier:
     '260326_1Y_Inverse Reverse Autocall USO_Trimestriel_XS3262011201_MAREX.PDF',
@@ -136,6 +137,7 @@ const bnpSx5e: Product = {
   rr: 'LS',
   productType: 'Athena',
   description: '8Y Athena Airbag SX5E 8x Repo',
+  clients: ['ALVES - 06001'],
   badges: ['Oxygène — 60%', 'Décrément', 'Effet mémoire'],
   termsheetFichier:
     '260312_8Y_Athena Airbag SX5E 8x Repo_Annuel_XS3291617812_BNP.PDF',
@@ -194,6 +196,7 @@ const socgenEnergy: Product = {
   rr: 'LS',
   productType: 'Autocall',
   description: '5Y Autocall Équipondéré TTE + Shell + ENI',
+  clients: ['SPG - 05774'],
   badges: ['Équipondéré', 'Dégressif', 'Collatéralisé'],
   termsheetFichier:
     '250325_4Y_Autocall Equipondéré TotalEnergies ENI Shell_Annuel_FRSG00015XB8_SOCGEN.pdf',
@@ -269,6 +272,7 @@ const bnpDefense: Product = {
   rr: 'LS',
   productType: 'Athena',
   description: '5Y Athena Airbag Wof Safran + Thales + Rheinmetall',
+  clients: ['ALVES - 06001'],
   badges: ['Airbag', 'Worst-of', 'Mensuel'],
   termsheetFichier:
     '260311_5Y_Athena Airbag Mensuel sur Thales Safran et Rheinmetall_Mensuel_XS3266363806_BNP.PDF',
