@@ -51,7 +51,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           : '—'
 
   return (
-    <div className="card p-4 flex flex-col gap-3">
+    <div className="card p-4 flex flex-col gap-3 h-full">
       {/* En-tête */}
       <div className="flex items-start justify-between gap-2">
         <div className="text-xs text-slate-500">
@@ -169,7 +169,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
       </dl>
 
       {/* Sous-jacents + prix */}
-      <div className="flex items-end justify-between border-t border-slate-100 pt-3">
+      <div className="flex items-end justify-between border-t border-slate-100 pt-3 mt-auto">
         <div className="text-xs">
           <div className="field-label mb-1">
             {product.sousJacents.length > 0

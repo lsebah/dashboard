@@ -109,15 +109,18 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
   { label: 'Sous-jacents', key: 'sj' },
 ]
 
-// Colonnes figées à gauche (restent visibles au scroll horizontal).
-// Les offsets `left` doivent suivre les largeurs cumulées (RR=40px, Issue=96px).
-const FROZEN: Record<string, string> = {
-  rr: 'sticky left-0 w-10',
-  issue: 'sticky left-10 w-24',
-  isin: 'sticky left-[136px] w-[152px]',
-  last: 'sticky left-[288px] w-[64px]',
-  pnl: 'sticky left-[352px] w-[76px] shadow-[6px_0_6px_-4px_rgba(15,23,42,0.12)]',
-}
+// Mise en page deux panneaux (étanche, pas de superposition possible) :
+// panneau gauche figé (identité + prix + P&L + accès TS), panneau droit défilant.
+type Col = { label: string; key?: string; align?: 'center'; noSort?: boolean }
+const LEFT_COLS: Col[] = [
+  { label: 'RR', key: 'rr' },
+  { label: 'Issue', key: 'issue' },
+  { label: 'ISIN', key: 'isin' },
+  { label: 'TS', key: 'ts', noSort: true },
+  { label: 'Last', key: 'last' },
+  { label: 'P&L', key: 'pnl' },
+]
+const RIGHT_COLS: Col[] = COLUMNS.slice(5) // à partir de « Next event »
 
 function compare(a: SortVal, b: SortVal): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b
@@ -129,6 +132,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const [client, setClient] = useState<string>('')
   const [liveOnly, setLiveOnly] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [hoverId, setHoverId] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({
     key: 'issue',
     dir: 'desc',
@@ -205,6 +209,174 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' },
     )
   }
+
+  // En-tête d'une colonne (triable sauf `noSort`).
+  const headerCell = (c: Col) => {
+    const active = !c.noSort && c.key && sort.key === c.key
+    return (
+      <th
+        key={c.label}
+        onClick={c.noSort ? undefined : () => toggleSort(c.key)}
+        className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 ${
+          c.align === 'center' ? 'text-center' : 'text-left'
+        } ${c.key && !c.noSort ? 'cursor-pointer select-none hover:text-cmf-navy' : ''}`}
+        title={c.key && !c.noSort ? 'Trier' : undefined}
+      >
+        <span className="inline-flex items-center gap-1">
+          {c.label}
+          {active && <span className="text-cmf-blue">{sort.dir === 'asc' ? '▲' : '▼'}</span>}
+          {c.key && !c.noSort && !active && <span className="text-slate-300">↕</span>}
+        </span>
+      </th>
+    )
+  }
+
+  // Cellule de corps pour une colonne donnée (rendu identique gauche/droite).
+  const bodyCell = (p: Product, key?: string) => {
+    const t = p.terms
+    switch (key) {
+      case 'rr':
+        return <td key="rr" className="px-2 py-1.5 text-slate-500">{p.rr ?? '—'}</td>
+      case 'issue':
+        return <td key="issue" className="px-2 py-1.5 whitespace-nowrap text-slate-500">{formatDateFr(p.dateEmission)}</td>
+      case 'isin': {
+        const s = situation(p)
+        return (
+          <td key="isin" className="px-2 py-1.5 font-mono whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
+              {p.isin}
+            </span>
+          </td>
+        )
+      }
+      case 'ts':
+        return (
+          <td key="ts" className="px-2 py-1.5 text-center">
+            {p.termsheetUrl ? (
+              <a
+                href={p.termsheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-cmf-blue hover:underline font-medium"
+                title="Ouvrir la termsheet (OneDrive)"
+              >
+                TS
+              </a>
+            ) : (
+              <span className="text-slate-300">—</span>
+            )}
+          </td>
+        )
+      case 'last': {
+        const last = lastLabel(p)
+        return <td key="last" className={`px-2 py-1.5 tabular-nums ${last.cls}`}>{last.text}</td>
+      }
+      case 'pnl':
+        return (
+          <td
+            key="pnl"
+            className={`px-2 py-1.5 tabular-nums ${
+              typeof p.pnlPct === 'number'
+                ? p.pnlPct >= 0
+                  ? 'text-emerald-600'
+                  : 'text-red-600'
+                : 'text-slate-400'
+            }`}
+          >
+            {typeof p.pnlPct === 'number' ? `${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(2)}%` : '—'}
+          </td>
+        )
+      case 'next':
+        return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
+      case 'cy':
+        return <td key="cy" className="px-2 py-1.5 text-slate-500">{p.devise}</td>
+      case 'amount':
+        return <td key="amount" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{p.nominal.toLocaleString('fr-FR')}</td>
+      case 'issuer':
+        return <td key="issuer" className="px-2 py-1.5 whitespace-nowrap">{p.emetteur.split(' ')[0]}</td>
+      case 'freq':
+        return <td key="freq" className="px-2 py-1.5 text-slate-500">{freqLabel(p.frequence)}</td>
+      case 'y':
+        return <td key="y" className="px-2 py-1.5 tabular-nums">{annees(p) != null ? `${annees(p)}Y` : '—'}</td>
+      case 'desc':
+        return <td key="desc" className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>{p.description ?? p.nom}</td>
+      case 'asset':
+        return <td key="asset" className={`px-2 py-1.5 ${p.assetClass === 'credit' ? 'text-orange-600 font-medium' : 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
+      case 'type':
+        return <td key="type" className="px-2 py-1.5 whitespace-nowrap">{p.productType ?? '—'}</td>
+      case 'mem':
+        return <td key="mem" className="px-2 py-1.5 text-center">{(t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '') ? '✓' : ''}</td>
+      case 'cpn':
+        return <td key="cpn" className="px-2 py-1.5 tabular-nums">{formatPct(couponPa(p))}</td>
+      case 'bauto':
+        return <td key="bauto" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{p.barriereAutocall ?? (t?.kind === 'autocall' ? (t.degressif ? 'Dégr.' : `${t.barriereRappelPct ?? 100}%`) : '—')}</td>
+      case 'bcoupon':
+        return (
+          <td key="bcoupon" className="px-2 py-1.5 tabular-nums whitespace-nowrap">
+            {(() => {
+              const cb =
+                t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
+                  ? `${t.barriereCouponPct}%`
+                  : p.barriereCoupon
+              const air = t?.kind === 'autocall' && t.airbag
+              if (air)
+                return (
+                  <span>
+                    <span className="text-amber-600">Airbag</span>
+                    {cb ? ` · ${cb}` : ''}
+                  </span>
+                )
+              return cb ?? '—'
+            })()}
+          </td>
+        )
+      case 'pdi':
+        return <td key="pdi" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{t?.kind === 'autocall' ? `${t.protectionPct}% ${t.protectionStyle === 'europeenne' ? 'KIE' : 'KIA'}` : (p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—'))}</td>
+      case 'client': {
+        const allocs = allocsOf(p)
+        return (
+          <td key="client" className="px-2 py-1.5 whitespace-nowrap text-slate-600">
+            {allocs.length > 0 ? allocs.map((a) => a.client).join(', ') : <span className="text-slate-300">+ affecter</span>}
+          </td>
+        )
+      }
+      case 'sj':
+        return (
+          <td key="sj" className="px-2 py-1.5 whitespace-nowrap">
+            <div className="flex gap-2">
+              {p.sousJacents.slice(0, 3).map((u) => (
+                <span key={u.nom} className="inline-flex items-center gap-1">
+                  <span className="text-slate-500">{ticker(u.bloomberg ?? u.nom)}</span>
+                  <span
+                    className={`tabular-nums ${
+                      typeof u.perf === 'number'
+                        ? u.perf >= 0
+                          ? 'text-emerald-600'
+                          : 'text-red-600'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(0)}%` : '—'}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </td>
+        )
+      default:
+        return <td key={key} className="px-2 py-1.5" />
+    }
+  }
+
+  // Survol synchronisé entre les deux panneaux (même produit surligné).
+  const rowProps = (p: Product) => ({
+    onClick: () => setOpenId(p.id),
+    onMouseEnter: () => setHoverId(p.id),
+    onMouseLeave: () => setHoverId(null),
+    className: `cursor-pointer ${hoverId === p.id ? 'bg-orange-50' : ''}`,
+  })
 
   const opened = openId ? products.find((p) => p.id === openId) ?? null : null
 
@@ -295,172 +467,45 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       </div>
 
       {view === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
           {list.map((p) => (
-            <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left">
+            <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left h-full">
               <ProductSynopsis product={p} />
             </button>
           ))}
         </div>
       ) : (
-        <div className="card overflow-auto max-h-[calc(100vh-20rem)]">
-          <table className="w-full text-[12px] border-separate border-spacing-0">
-            <thead className="bg-slate-50 text-slate-500 sticky top-0 z-20">
-              <tr>
-                {COLUMNS.map((c) => {
-                  const active = c.key && sort.key === c.key
-                  return (
-                    <th
-                      key={c.label}
-                      onClick={() => toggleSort(c.key)}
-                      className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 ${
-                        c.align === 'center' ? 'text-center' : 'text-left'
-                      } ${c.key ? 'cursor-pointer select-none hover:text-cmf-navy' : ''} ${
-                        c.key && FROZEN[c.key] ? `${FROZEN[c.key]} top-0 z-30 bg-slate-50` : ''
-                      }`}
-                      title={c.key ? 'Trier' : undefined}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {c.label}
-                        {active && (
-                          <span className="text-cmf-blue">{sort.dir === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                        {c.key && !active && <span className="text-slate-300">↕</span>}
-                      </span>
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {list.map((p) => {
-                const s = situation(p)
-                const nextEvt = prochainEvenement(p)
-                const last = lastLabel(p)
-                const t = p.terms
-                const memoire =
-                  (t?.kind === 'autocall' && t.effetMemoire) ||
-                  /[ée]moire/i.test(p.description ?? '')
-                const allocs = allocsOf(p)
-                return (
-                  <tr
-                    key={p.id}
-                    onClick={() => setOpenId(p.id)}
-                    className="group cursor-pointer hover:bg-orange-50"
-                  >
-                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-20 bg-white group-hover:bg-orange-50`}>
-                      {p.rr ?? '—'}
-                    </td>
-                    <td
-                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-20 bg-white group-hover:bg-orange-50`}
-                    >
-                      {formatDateFr(p.dateEmission)}
-                    </td>
-                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-20 bg-white group-hover:bg-orange-50`}>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
-                        {p.isin}
-                      </span>
-                    </td>
-                    <td className={`px-2 py-1.5 tabular-nums ${FROZEN.last} z-20 bg-white group-hover:bg-orange-50 ${last.cls}`}>
-                      {last.text}
-                    </td>
-                    <td
-                      className={`px-2 py-1.5 tabular-nums ${FROZEN.pnl} z-20 bg-white group-hover:bg-orange-50 ${
-                        typeof p.pnlPct === 'number'
-                          ? p.pnlPct >= 0
-                            ? 'text-emerald-600'
-                            : 'text-red-600'
-                          : 'text-slate-400'
-                      }`}
-                    >
-                      {typeof p.pnlPct === 'number'
-                        ? `${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(2)}%`
-                        : '—'}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">
-                      {nextEvt ? formatDateFr(nextEvt) : '—'}
-                    </td>
-                    <td className="px-2 py-1.5 text-slate-500">{p.devise}</td>
-                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-                      {p.nominal.toLocaleString('fr-FR')}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{p.emetteur.split(' ')[0]}</td>
-                    <td className="px-2 py-1.5 text-slate-500">{freqLabel(p.frequence)}</td>
-                    <td className="px-2 py-1.5 tabular-nums">
-                      {annees(p) != null ? `${annees(p)}Y` : '—'}
-                    </td>
-                    <td className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>
-                      {p.description ?? p.nom}
-                    </td>
-                    <td className={`px-2 py-1.5 ${p.assetClass === 'credit' ? 'text-orange-600 font-medium' : 'text-slate-500'}`}>
-                      {assetLabel(p.assetClass)}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{p.productType ?? '—'}</td>
-                    <td className="px-2 py-1.5 text-center">{memoire ? '✓' : ''}</td>
-                    <td className="px-2 py-1.5 tabular-nums">{formatPct(couponPa(p))}</td>
-                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-                      {p.barriereAutocall ??
-                        (t?.kind === 'autocall'
-                          ? t.degressif
-                            ? 'Dégr.'
-                            : `${t.barriereRappelPct ?? 100}%`
-                          : '—')}
-                    </td>
-                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-                      {(() => {
-                        const cb =
-                          t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
-                            ? `${t.barriereCouponPct}%`
-                            : p.barriereCoupon
-                        const air = t?.kind === 'autocall' && t.airbag
-                        if (air)
-                          return (
-                            <span>
-                              <span className="text-amber-600">Airbag</span>
-                              {cb ? ` · ${cb}` : ''}
-                            </span>
-                          )
-                        return cb ?? '—'
-                      })()}
-                    </td>
-                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-                      {t?.kind === 'autocall'
-                        ? `${t.protectionPct}% ${t.protectionStyle === 'europeenne' ? 'KIE' : 'KIA'}`
-                        : (p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—'))}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">
-                      {allocs.length > 0 ? (
-                        allocs.map((a) => a.client).join(', ')
-                      ) : (
-                        <span className="text-slate-300">+ affecter</span>
-                      )}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        {p.sousJacents.slice(0, 3).map((u) => (
-                          <span key={u.nom} className="inline-flex items-center gap-1">
-                            <span className="text-slate-500">{ticker(u.bloomberg ?? u.nom)}</span>
-                            <span
-                              className={`tabular-nums ${
-                                typeof u.perf === 'number'
-                                  ? u.perf >= 0
-                                    ? 'text-emerald-600'
-                                    : 'text-red-600'
-                                  : 'text-slate-300'
-                              }`}
-                            >
-                              {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(0)}%` : '—'}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
-                    </td>
+        // Deux panneaux : gauche figé (identité + prix + P&L + TS), droit défilant.
+        // Garantit qu'aucune colonne ne se superpose au scroll horizontal.
+        <div className="card overflow-y-auto max-h-[calc(100vh-20rem)]">
+          <div className="flex min-w-full">
+            <table className="text-[12px] border-separate border-spacing-0 shrink-0 bg-white shadow-[8px_0_10px_-8px_rgba(15,23,42,0.25)]">
+              <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
+                <tr>{LEFT_COLS.map(headerCell)}</tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {list.map((p) => (
+                  <tr key={p.id} {...rowProps(p)}>
+                    {LEFT_COLS.map((c) => bodyCell(p, c.key))}
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+            <div className="overflow-x-auto flex-1">
+              <table className="w-full text-[12px] border-separate border-spacing-0">
+                <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
+                  <tr>{RIGHT_COLS.map(headerCell)}</tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {list.map((p) => (
+                    <tr key={p.id} {...rowProps(p)}>
+                      {RIGHT_COLS.map((c) => bodyCell(p, c.key))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

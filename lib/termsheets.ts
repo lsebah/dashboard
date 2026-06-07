@@ -6,8 +6,11 @@
 // ─────────────────────────────────────────────────────────────────────────
 import index from './termsheets-index.json'
 
-const BASE =
-  'https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/Documents/Documents/Termsheets/'
+// Site OneDrive personnel + dossier (chemin relatif serveur) des termsheets.
+const ONEDRIVE_SITE =
+  'https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance'
+const TERMSHEETS_FOLDER =
+  '/personal/l_sebah_cmf_finance/Documents/Documents/Termsheets'
 
 // ISIN = 2 lettres + 9 alphanum + 1 chiffre (clé de contrôle).
 const ISIN_RE = /[A-Z]{2}[A-Z0-9]{9}[0-9]/
@@ -33,8 +36,16 @@ export function termsheetFile(isin: string): string | undefined {
   return TERMSHEET_FILES[isin]
 }
 
-/** Lien cliquable (PDF SharePoint) pour un ISIN, si la termsheet est connue. */
+/**
+ * Lien OneDrive (visionneuse) pour un ISIN, si la termsheet est connue.
+ * Le chemin direct du fichier renvoie un 404 sur OneDrive perso ; on passe par
+ * `onedrive.aspx?id=<chemin fichier>&parent=<dossier>` qui ouvre la visionneuse.
+ */
 export function termsheetUrl(isin: string): string | undefined {
   const f = TERMSHEET_FILES[isin]
-  return f ? encodeURI(BASE + f) : undefined
+  if (!f) return undefined
+  const filePath = `${TERMSHEETS_FOLDER}/${f}`
+  return `${ONEDRIVE_SITE}/_layouts/15/onedrive.aspx?id=${encodeURIComponent(
+    filePath,
+  )}&parent=${encodeURIComponent(TERMSHEETS_FOLDER)}`
 }
