@@ -85,10 +85,12 @@ function sjVal(p: Product): string | undefined {
 }
 
 // Colonnes du tableau (ordre = ordre des cellules du corps). `key` ⇒ triable.
-const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
+type Col = { label: string; key?: string; align?: 'center'; noSort?: boolean }
+const COLUMNS: Col[] = [
   { label: 'RR', key: 'rr' },
   { label: 'Issue', key: 'issue' },
   { label: 'ISIN', key: 'isin' },
+  { label: 'TS', key: 'ts', noSort: true },
   { label: 'Last', key: 'last' },
   { label: 'P&L', key: 'pnl' },
   { label: 'Next event', key: 'next' },
@@ -109,18 +111,28 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
   { label: 'Sous-jacents', key: 'sj' },
 ]
 
-// Mise en page deux panneaux (étanche, pas de superposition possible) :
-// panneau gauche figé (identité + prix + P&L + accès TS), panneau droit défilant.
-type Col = { label: string; key?: string; align?: 'center'; noSort?: boolean }
-const LEFT_COLS: Col[] = [
-  { label: 'RR', key: 'rr' },
-  { label: 'Issue', key: 'issue' },
-  { label: 'ISIN', key: 'isin' },
-  { label: 'TS', key: 'ts', noSort: true },
-  { label: 'Last', key: 'last' },
-  { label: 'P&L', key: 'pnl' },
-]
-const RIGHT_COLS: Col[] = COLUMNS.slice(5) // à partir de « Next event »
+// Colonnes figées à gauche : largeurs px fixes → offsets `left` cumulés. Chaque
+// cellule figée porte SON fond opaque (pas de transparence) ⇒ aucun caractère du
+// panneau défilant ne transparaît derrière au scroll horizontal.
+const FROZEN_W: Record<string, number> = {
+  rr: 40,
+  issue: 88,
+  isin: 132,
+  ts: 34,
+  last: 62,
+  pnl: 74,
+}
+const FROZEN_ORDER = ['rr', 'issue', 'isin', 'ts', 'last', 'pnl']
+const FROZEN_LEFT: Record<string, number> = (() => {
+  const m: Record<string, number> = {}
+  let x = 0
+  for (const k of FROZEN_ORDER) {
+    m[k] = x
+    x += FROZEN_W[k]
+  }
+  return m
+})()
+const isFrozen = (key?: string) => !!key && key in FROZEN_W
 
 function compare(a: SortVal, b: SortVal): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b
@@ -210,14 +222,22 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     )
   }
 
-  // En-tête d'une colonne (triable sauf `noSort`).
+  // En-tête d'une colonne (triable sauf `noSort`). Figée + sticky top si gauche.
   const headerCell = (c: Col) => {
     const active = !c.noSort && c.key && sort.key === c.key
+    const frozen = isFrozen(c.key)
     return (
       <th
         key={c.label}
         onClick={c.noSort ? undefined : () => toggleSort(c.key)}
-        className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 ${
+        style={
+          frozen
+            ? { left: FROZEN_LEFT[c.key!], width: FROZEN_W[c.key!], minWidth: FROZEN_W[c.key!] }
+            : undefined
+        }
+        className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 bg-slate-50 sticky top-0 ${
+          frozen ? 'z-30' : 'z-10'
+        }${c.key === 'pnl' ? ' border-r border-slate-200' : ''} ${
           c.align === 'center' ? 'text-center' : 'text-left'
         } ${c.key && !c.noSort ? 'cursor-pointer select-none hover:text-cmf-navy' : ''}`}
         title={c.key && !c.noSort ? 'Trier' : undefined}
@@ -231,18 +251,36 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     )
   }
 
-  // Cellule de corps pour une colonne donnée (rendu identique gauche/droite).
+  // Attributs d'une cellule figée : offset `left`, largeur fixe, z-index, et
+  // fond opaque (blanc, ou orange sur la ligne survolée) pour masquer le défilant.
+  const frozenAttrs = (key: string, p: Product) => ({
+    style: {
+      left: FROZEN_LEFT[key],
+      width: FROZEN_W[key],
+      minWidth: FROZEN_W[key],
+    } as React.CSSProperties,
+    cls: `sticky z-20 ${hoverId === p.id ? 'bg-orange-50' : 'bg-white'}${
+      key === 'pnl' ? ' border-r border-slate-200' : ''
+    }`,
+  })
+
+  // Cellule de corps pour une colonne donnée.
   const bodyCell = (p: Product, key?: string) => {
     const t = p.terms
     switch (key) {
-      case 'rr':
-        return <td key="rr" className="px-2 py-1.5 text-slate-500">{p.rr ?? '—'}</td>
-      case 'issue':
-        return <td key="issue" className="px-2 py-1.5 whitespace-nowrap text-slate-500">{formatDateFr(p.dateEmission)}</td>
+      case 'rr': {
+        const f = frozenAttrs('rr', p)
+        return <td key="rr" style={f.style} className={`px-2 py-1.5 text-slate-500 ${f.cls}`}>{p.rr ?? '—'}</td>
+      }
+      case 'issue': {
+        const f = frozenAttrs('issue', p)
+        return <td key="issue" style={f.style} className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${f.cls}`}>{formatDateFr(p.dateEmission)}</td>
+      }
       case 'isin': {
         const s = situation(p)
+        const f = frozenAttrs('isin', p)
         return (
-          <td key="isin" className="px-2 py-1.5 font-mono whitespace-nowrap">
+          <td key="isin" style={f.style} className={`px-2 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
             <span className="inline-flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
               {p.isin}
@@ -250,9 +288,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </td>
         )
       }
-      case 'ts':
+      case 'ts': {
+        const f = frozenAttrs('ts', p)
         return (
-          <td key="ts" className="px-2 py-1.5 text-center">
+          <td key="ts" style={f.style} className={`px-2 py-1.5 text-center ${f.cls}`}>
             {p.termsheetUrl ? (
               <a
                 href={p.termsheetUrl}
@@ -269,25 +308,30 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             )}
           </td>
         )
+      }
       case 'last': {
         const last = lastLabel(p)
-        return <td key="last" className={`px-2 py-1.5 tabular-nums ${last.cls}`}>{last.text}</td>
+        const f = frozenAttrs('last', p)
+        return <td key="last" style={f.style} className={`px-2 py-1.5 tabular-nums ${last.cls} ${f.cls}`}>{last.text}</td>
       }
-      case 'pnl':
+      case 'pnl': {
+        const f = frozenAttrs('pnl', p)
         return (
           <td
             key="pnl"
+            style={f.style}
             className={`px-2 py-1.5 tabular-nums ${
               typeof p.pnlPct === 'number'
                 ? p.pnlPct >= 0
                   ? 'text-emerald-600'
                   : 'text-red-600'
                 : 'text-slate-400'
-            }`}
+            } ${f.cls}`}
           >
             {typeof p.pnlPct === 'number' ? `${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(2)}%` : '—'}
           </td>
         )
+      }
       case 'next':
         return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
       case 'cy':
@@ -475,37 +519,23 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           ))}
         </div>
       ) : (
-        // Deux panneaux : gauche figé (identité + prix + P&L + TS), droit défilant.
-        // Garantit qu'aucune colonne ne se superpose au scroll horizontal.
-        <div className="card overflow-y-auto max-h-[calc(100vh-20rem)]">
-          <div className="flex min-w-full">
-            <table className="text-[12px] border-separate border-spacing-0 shrink-0 bg-white shadow-[8px_0_10px_-8px_rgba(15,23,42,0.25)]">
-              <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
-                <tr>{LEFT_COLS.map(headerCell)}</tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {list.map((p) => (
-                  <tr key={p.id} {...rowProps(p)}>
-                    {LEFT_COLS.map((c) => bodyCell(p, c.key))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="overflow-x-auto flex-1">
-              <table className="w-full text-[12px] border-separate border-spacing-0">
-                <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
-                  <tr>{RIGHT_COLS.map(headerCell)}</tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {list.map((p) => (
-                    <tr key={p.id} {...rowProps(p)}>
-                      {RIGHT_COLS.map((c) => bodyCell(p, c.key))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        // Un seul conteneur défilant (x ET y) ⇒ la barre de défilement horizontale
+        // reste collée en bas de la fenêtre visible (plus besoin de descendre tout
+        // en bas de la liste). Les 6 premières colonnes sont figées à gauche
+        // (sticky + fond opaque), le reste défile sous elles sans transparence.
+        <div className="card overflow-auto max-h-[calc(100vh-14rem)]">
+          <table className="text-[12px] border-separate border-spacing-0 w-max min-w-full">
+            <thead className="text-slate-500">
+              <tr>{COLUMNS.map(headerCell)}</tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {list.map((p) => (
+                <tr key={p.id} {...rowProps(p)}>
+                  {COLUMNS.map((c) => bodyCell(p, c.key))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
