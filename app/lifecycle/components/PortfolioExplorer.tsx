@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import type { Product } from '@/lib/types'
+import { useEffect, useMemo, useState } from 'react'
+import type { Product, Observation } from '@/lib/types'
 import {
   prochainEvenement,
   situation,
@@ -207,6 +207,38 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   }
 
   const opened = openId ? products.find((p) => p.id === openId) ?? null : null
+
+  // Niveaux du worst-of constatés aux dates d'observation (récupérés depuis Yahoo
+  // côté serveur), fusionnés dans le produit ouvert pour activer le suivi des
+  // coupons et le P&L coupons inclus.
+  const [niveaux, setNiveaux] = useState<Record<string, number> | null>(null)
+  useEffect(() => {
+    setNiveaux(null)
+    if (!opened) return
+    let annule = false
+    fetch(`/api/lifecycle/niveaux?isin=${encodeURIComponent(opened.isin)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!annule) setNiveaux(d?.niveaux ?? {})
+      })
+      .catch(() => {
+        if (!annule) setNiveaux({})
+      })
+    return () => {
+      annule = true
+    }
+  }, [opened])
+
+  const openedAug = useMemo<Product | null>(() => {
+    if (!opened) return null
+    if (!niveaux || !opened.observations) return opened
+    const obs: Observation[] = opened.observations.map((o) =>
+      typeof niveaux[o.dateObservation] === 'number'
+        ? { ...o, niveauConstatePct: niveaux[o.dateObservation] }
+        : o,
+    )
+    return { ...opened, observations: obs }
+  }, [opened, niveaux])
 
   return (
     <div>
@@ -450,15 +482,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         onClose={() => setOpenId(null)}
         title={opened ? `${opened.nom} · ${opened.isin}` : ''}
       >
-        {opened && (
+        {opened && openedAug && (
           <div className="flex flex-col gap-3">
-            <ProductSynopsis product={opened} />
+            <ProductSynopsis product={openedAug} />
             <ClientAssign
               allocs={allocsOf(opened)}
               devise={opened.devise}
               onChange={(next) => setClients(opened.isin, next)}
             />
-            <ProductReconstruction product={opened} />
+            <ProductReconstruction product={openedAug} />
           </div>
         )}
       </Modal>

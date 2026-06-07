@@ -6,6 +6,8 @@ import {
   couponPa,
   prochainEvenement,
   prochaineObservation,
+  couponsEncaissesPct,
+  pnlAvecCoupons,
   formatDateFr,
   formatPct,
   formatMontant,
@@ -205,16 +207,26 @@ export default function ProductSynopsis({ product }: { product: Product }) {
             {formatPct(product.prixMarche)}
           </div>
           <div className="text-[11px] text-slate-500">Prix (mark-to-market)</div>
-          {typeof product.pnlPct === 'number' && (
-            <div
-              className={`text-[11px] tabular-nums ${
-                product.pnlPct >= 0 ? 'text-emerald-600' : 'text-red-600'
-              }`}
-            >
-              P&amp;L {product.pnlPct >= 0 ? '+' : ''}
-              {product.pnlPct.toFixed(2)}%
-            </div>
-          )}
+          {(() => {
+            const coupons = couponsEncaissesPct(product)
+            const pnl = pnlAvecCoupons(product) ?? product.pnlPct
+            if (typeof pnl !== 'number') return null
+            return (
+              <>
+                <div
+                  className={`text-[11px] tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                >
+                  P&amp;L {pnl >= 0 ? '+' : ''}
+                  {pnl.toFixed(2)}%
+                </div>
+                {typeof coupons === 'number' && coupons > 0 && (
+                  <div className="text-[10px] text-slate-400 tabular-nums">
+                    dont coupons encaissés +{coupons.toFixed(2)}%
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
       </div>
     </div>
