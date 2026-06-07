@@ -93,6 +93,14 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
   { label: 'Sous-jacents', key: 'sj' },
 ]
 
+// Colonnes figées à gauche (restent visibles au scroll horizontal).
+// Les offsets `left` doivent suivre les largeurs cumulées (RR=40px, Issue=96px).
+const FROZEN: Record<string, string> = {
+  rr: 'sticky left-0 w-10',
+  issue: 'sticky left-10 w-24',
+  isin: 'sticky left-[136px]',
+}
+
 function compare(a: SortVal, b: SortVal): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b
   return String(a).localeCompare(String(b), 'fr')
@@ -242,7 +250,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           ))}
         </div>
       ) : (
-        <div className="card overflow-auto max-h-[calc(100vh-15rem)]">
+        <div className="card overflow-auto max-h-[calc(100vh-17rem)]">
           <table className="w-full text-[11px] border-collapse">
             <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
               <tr>
@@ -254,7 +262,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                       onClick={() => toggleSort(c.key)}
                       className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 ${
                         c.align === 'center' ? 'text-center' : 'text-left'
-                      } ${c.key ? 'cursor-pointer select-none hover:text-cmf-navy' : ''}`}
+                      } ${c.key ? 'cursor-pointer select-none hover:text-cmf-navy' : ''} ${
+                        c.key && FROZEN[c.key] ? `${FROZEN[c.key]} top-0 z-20 bg-slate-50` : ''
+                      }`}
                       title={c.key ? 'Trier' : undefined}
                     >
                       <span className="inline-flex items-center gap-1">
@@ -285,11 +295,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                     onClick={() => setOpenId(p.id)}
                     className="cursor-pointer hover:bg-blue-50/60"
                   >
-                    <td className="px-2 py-1.5 text-slate-500">{p.rr ?? '—'}</td>
-                    <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
+                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-10 bg-white`}>
+                      {p.rr ?? '—'}
+                    </td>
+                    <td
+                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-10 bg-white`}
+                    >
                       {formatDateFr(p.dateEmission)}
                     </td>
-                    <td className="px-2 py-1.5 font-mono whitespace-nowrap">
+                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-10 bg-white`}>
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
                         {p.isin}
