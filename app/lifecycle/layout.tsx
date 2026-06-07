@@ -22,7 +22,7 @@ export default function LifecycleLayout({
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <header className="bg-cmf-navy text-white">
-        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+        <div className="mx-auto max-w-[1800px] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <a href="/" className="text-slate-300 hover:text-white transition-colors" title="Retour au Dashboard">
               ←
@@ -45,7 +45,7 @@ export default function LifecycleLayout({
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-6 py-6">{children}</main>
+      <main className="mx-auto max-w-[1800px] px-4 py-6">{children}</main>
     </div>
   )
 }

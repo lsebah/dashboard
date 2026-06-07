@@ -98,8 +98,7 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
 const FROZEN: Record<string, string> = {
   rr: 'sticky left-0 w-10',
   issue: 'sticky left-10 w-24',
-  isin: 'sticky left-[136px] w-36',
-  last: 'sticky left-[280px]',
+  isin: 'sticky left-[136px]',
 }
 
 function compare(a: SortVal, b: SortVal): number {
@@ -322,9 +321,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                         )}
                       </span>
                     </td>
-                    <td className={`px-2 py-1.5 tabular-nums ${last.cls} ${FROZEN.last} z-10 bg-white`}>
-                      {last.text}
-                    </td>
+                    <td className={`px-2 py-1.5 tabular-nums ${last.cls}`}>{last.text}</td>
                     <td
                       className={`px-2 py-1.5 tabular-nums ${
                         typeof p.pnlPct === 'number'
