@@ -827,11 +827,224 @@ const barclaysCopperMiners: Product = {
     '250721_5Y_Phoenix Memory Copper Miners (Wof  BHP.US + FCX.US + AAL.LN)_Semestriel_XS3062217446_BARCLAYS.pdf',
 }
 
+// ── XS3109495153 — Santander Phoenix Mémoire Intel + Rheinmetall + Renault ───
+const irrObs = [
+  '2025-11-12', '2026-02-11', '2026-05-11', '2026-08-11', '2026-11-12',
+  '2027-02-11', '2027-05-11', '2027-08-11', '2027-11-12', '2028-02-11',
+  '2028-05-11', '2028-08-11', '2028-11-13', '2029-02-12', '2029-05-11',
+  '2029-08-13', '2029-11-13', '2030-02-11', '2030-05-13', '2030-08-12',
+]
+const irrPay = [
+  '2025-11-19', '2026-02-19', '2026-05-19', '2026-08-19', '2026-11-19',
+  '2027-02-19', '2027-05-19', '2027-08-19', '2027-11-19', '2028-02-21',
+  '2028-05-19', '2028-08-21', '2028-11-20', '2029-02-19', '2029-05-21',
+  '2029-08-20', '2029-11-19', '2030-02-19', '2030-05-20', '2030-08-19',
+]
+// Autocall dégressif 100%→80% (-1,25%/trim.) ; non-call n=1-2 ; n=20 = maturité.
+const irrAer: (number | undefined)[] = [
+  undefined, undefined, 100, 98.75, 97.5, 96.25, 95, 93.75, 92.5, 91.25,
+  90, 88.75, 87.5, 86.25, 85, 83.75, 82.5, 81.25, 80, undefined,
+]
+const santanderIntelRhmRno: Product = {
+  id: 'XS3109495153',
+  nom: 'Phoenix Mémoire Intel + Rheinmetall + Renault',
+  isin: 'XS3109495153',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 950_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-07-21',
+  dateEmission: '2025-09-15',
+  dateConstatationFinale: '2030-08-12',
+  dateEcheance: '2030-08-19',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Intel Corp', bloomberg: 'INTC US', isin: 'US4581401001', marche: 'NASDAQ' },
+    { nom: 'Rheinmetall AG', bloomberg: 'RHM GY', isin: 'DE0007030009', marche: 'XETRA' },
+    { nom: 'Renault SA', bloomberg: 'RNO FP', isin: 'FR0000131906', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 17.75,
+    barriereCouponPct: 75,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(irrObs, irrPay, {
+    niveauRappelPct: (n) => irrAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 4.4375,
+    niveauCouponPct: 75,
+    rappelActifAPartirDe: 3,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Intel + Rheinmetall + Renault',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250915_5Y_Phoenix Memory  Wof Intel +  Rheinmetall  +  Renault_Trimestriel_XS3109495153_SANTANDER.pdf',
+}
+
+// ── XS3149224761 — Santander Phoenix Mémoire Mensuel MSFT + Nvidia + Marvell ──
+const semObs = [
+  '2025-09-22', '2025-10-20', '2025-11-20', '2025-12-22', '2026-01-20',
+  '2026-02-20', '2026-03-20', '2026-04-20', '2026-05-20', '2026-06-22',
+  '2026-07-20', '2026-08-20', '2026-09-21', '2026-10-20', '2026-11-20',
+  '2026-12-21', '2027-01-20', '2027-02-22', '2027-03-22', '2027-04-20',
+  '2027-05-20', '2027-06-21', '2027-07-20', '2027-08-20', '2027-09-20',
+  '2027-10-20', '2027-11-22', '2027-12-20', '2028-01-20', '2028-02-22',
+  '2028-03-20', '2028-04-20', '2028-05-22', '2028-06-20', '2028-07-20',
+  '2028-08-21',
+]
+const semPay = [
+  '2025-09-29', '2025-10-28', '2025-11-28', '2025-12-29', '2026-01-28',
+  '2026-02-27', '2026-03-30', '2026-04-28', '2026-05-28', '2026-06-29',
+  '2026-07-28', '2026-08-28', '2026-09-28', '2026-10-28', '2026-11-30',
+  '2026-12-28', '2027-01-28', '2027-02-26', '2027-03-30', '2027-04-28',
+  '2027-05-28', '2027-06-28', '2027-07-28', '2027-08-30', '2027-09-28',
+  '2027-10-28', '2027-11-29', '2027-12-28', '2028-01-28', '2028-02-28',
+  '2028-03-28', '2028-04-28', '2028-05-29', '2028-06-28', '2028-07-28',
+  '2028-08-28',
+]
+// Autocall mensuel dégressif 90%→78,5% (-0,5%/mois) ; non-call n=1-11 ; n=36 = maturité.
+const semAer: (number | undefined)[] = [
+  undefined, undefined, undefined, undefined, undefined, undefined,
+  undefined, undefined, undefined, undefined, undefined,
+  90, 89.5, 89, 88.5, 88, 87.5, 87, 86.5, 86, 85.5, 85, 84.5, 84, 83.5,
+  83, 82.5, 82, 81.5, 81, 80.5, 80, 79.5, 79, 78.5, undefined,
+]
+const santanderMsftNvdaMrvl: Product = {
+  id: 'XS3149224761',
+  nom: 'Phoenix Mémoire Mensuel Microsoft + Nvidia + Marvell',
+  isin: 'XS3149224761',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 410_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-08-20',
+  dateEmission: '2025-09-10',
+  dateConstatationFinale: '2028-08-21',
+  dateEcheance: '2028-08-28',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Microsoft Corp', bloomberg: 'MSFT US', isin: 'US5949181045', marche: 'NASDAQ' },
+    { nom: 'Nvidia Corp', bloomberg: 'NVDA US', isin: 'US67066G1040', marche: 'NASDAQ' },
+    { nom: 'Marvell Technology Inc', bloomberg: 'MRVL US', isin: 'US5738741041', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 11.4,
+    barriereCouponPct: 70,
+    barriereRappelPct: 90,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(semObs, semPay, {
+    niveauRappelPct: (n) => semAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 0.95,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 12,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '3Y Phoenix Mémoire Mensuel Wof Microsoft + Nvidia + Marvell (11,4 %)',
+  badges: ['Worst-of', 'Mensuel', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250910_3Y_Phoenix Memoire Mensuel  MRVL + MSFT + NVDA  11.4%_Mensuel_XS3149224761_SANTANDER.pdf',
+}
+
+// ── FRIP00000HS8 — Morgan Stanley Phoenix Mémoire Kering + URW ───────────────
+const kerObs = [
+  '2024-07-29', '2024-10-29', '2025-01-29', '2025-04-29', '2025-07-29',
+  '2025-10-29', '2026-01-29', '2026-04-29', '2026-07-29', '2026-10-29',
+  '2027-01-29', '2027-04-29', '2027-07-29', '2027-10-29', '2028-01-31',
+  '2028-04-28', '2028-07-31', '2028-10-30', '2029-01-29', '2029-04-30',
+]
+const kerPay = [
+  '2024-08-05', '2024-11-05', '2025-02-05', '2025-05-07', '2025-08-05',
+  '2025-11-05', '2026-02-05', '2026-05-07', '2026-08-05', '2026-11-05',
+  '2027-02-05', '2027-05-06', '2027-08-05', '2027-11-05', '2028-02-07',
+  '2028-05-08', '2028-08-07', '2028-11-06', '2029-02-05', '2029-05-08',
+]
+// Autocall à barrière constante 100% ; non-call n=1-3 ; n=20 = maturité.
+const kerAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 100, 100, 100, 100, 100, 100,
+  100, 100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const msKeringUrw: Product = {
+  id: 'FRIP00000HS8',
+  nom: 'Phoenix Mémoire Kering + Unibail-Rodamco-Westfield',
+  isin: 'FRIP00000HS8',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-04-29',
+  dateEmission: '2024-05-14',
+  dateConstatationFinale: '2029-04-30',
+  dateEcheance: '2029-05-08',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Kering SA', bloomberg: 'KER FP', isin: 'FR0000121485', marche: 'Euronext Paris' },
+    { nom: 'Unibail-Rodamco-Westfield', bloomberg: 'URW FP', isin: 'FR0013326246', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 9.0,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(kerObs, kerPay, {
+    niveauRappelPct: (n) => kerAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.25,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Kering + Unibail-Rodamco-Westfield',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '240514_5Y_Phoenix Memory on KER + URW_Trimestriel_FRIP00000HS8_MSCO.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
   santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
+  santanderIntelRhmRno, santanderMsftNvdaMrvl, msKeringUrw,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
