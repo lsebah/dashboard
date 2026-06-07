@@ -5,6 +5,7 @@
 //  aux barrières…).
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product, Observation, Underlying } from './types'
+import { couponLedger } from './coupons-ledger'
 
 /** Construit un calendrier d'observations à partir de listes de dates. */
 export function buildObservations(
@@ -60,9 +61,14 @@ export function prochaineObservation(
   return (product.observations ?? []).find((o) => o.dateObservation >= today)
 }
 
-/** Date du prochain événement : depuis le calendrier, sinon champ `nextEvent`. */
+/**
+ * Date du prochain événement — UNIQUEMENT depuis le calendrier décodé de la
+ * termsheet (prochaine observation ≥ aujourd'hui). On NE retombe PAS sur le champ
+ * `nextEvent` issu de l'Excel : il peut être faux/périmé (la TS fait foi). Un
+ * produit non décodé affiche donc « — » tant que sa termsheet n'est pas saisie.
+ */
 export function prochainEvenement(product: Product): string | undefined {
-  return prochaineObservation(product)?.dateObservation ?? product.nextEvent
+  return prochaineObservation(product)?.dateObservation
 }
 
 /** Nombre de mois (arrondi) entre aujourd'hui et la maturité. */
@@ -257,12 +263,22 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     const past = o.dateObservation <= today
     const barriere = o.niveauCouponPct
     const niveau = o.niveauConstatePct
+    // Condition du coupon : le REGISTRE (write-once) fait foi pour les dates déjà
+    // constatées ; sinon on la dérive du niveau worst-of constaté vs la barrière
+    // (actions) ; sinon « à constater » tant qu'on n'a pas l'info.
+    const enregistre = couponLedger(product.isin, o.dateObservation)
+    const conditionRemplie: boolean | undefined =
+      enregistre !== undefined
+        ? enregistre === 'paye'
+        : typeof niveau === 'number' && typeof barriere === 'number'
+          ? niveau >= barriere
+          : undefined
     let statut: CouponStatut
     if (!past) {
       statut = 'a_venir'
-    } else if (typeof niveau !== 'number' || typeof barriere !== 'number') {
+    } else if (conditionRemplie === undefined) {
       statut = 'a_constater'
-    } else if (niveau >= barriere) {
+    } else if (conditionRemplie) {
       const rattrape = memoire && mem > 0
       cumul += cpn + (memoire ? mem : 0)
       mem = 0
