@@ -24,7 +24,9 @@ export default function ProductSynopsis({ product }: { product: Product }) {
 
   const protection =
     terms?.kind === 'autocall'
-      ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}`
+      ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}${
+          terms.airbag ? ' · Airbag' : ''
+        }`
       : product.pdiText ?? (typeof product.pdiPct === 'number' ? `${product.pdiPct}%` : '—')
 
   const rappel =

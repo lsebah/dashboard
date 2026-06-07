@@ -36,8 +36,16 @@ function lastLabel(p: Product): { text: string; cls: string } {
   if (p.statut === 'rappele') return { text: 'CALLED', cls: 'text-emerald-600 font-semibold' }
   if (p.statut === 'vendu') return { text: 'SOLD', cls: 'text-blue-600 font-semibold' }
   if (p.statut === 'echu') return { text: 'ÉCHU', cls: 'text-slate-400' }
-  if (typeof p.prixMarche === 'number')
-    return { text: p.prixMarche.toFixed(2), cls: 'text-slate-800' }
+  if (typeof p.prixMarche === 'number') {
+    // Prix : vert au-dessus de 100, noir à 100, rouge en dessous.
+    const cls =
+      p.prixMarche > 100
+        ? 'text-emerald-600'
+        : p.prixMarche < 100
+          ? 'text-red-600'
+          : 'text-slate-900'
+    return { text: p.prixMarche.toFixed(2), cls }
+  }
   return { text: 'Live', cls: 'text-slate-400' }
 }
 
@@ -61,6 +69,8 @@ function bCouponVal(p: Product): number | undefined {
   return t?.kind === 'autocall' ? t.barriereCouponPct : undefined
 }
 function pdiVal(p: Product): number | undefined {
+  const t = p.terms
+  if (t?.kind === 'autocall') return t.protectionPct // PDI = barrière de protection (TS)
   return p.pdiText ? pctNum(p.pdiText) : p.pdiPct
 }
 function memVal(p: Product): number {
@@ -377,14 +387,27 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                             : `${t.barriereRappelPct ?? 100}%`
                           : '—')}
                     </td>
-                    <td className="px-2 py-1.5 tabular-nums">
-                      {p.barriereCoupon ??
-                        (t?.kind === 'autocall' && t.barriereCouponPct
-                          ? `${t.barriereCouponPct}%`
-                          : '—')}
+                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
+                      {(() => {
+                        const cb =
+                          t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
+                            ? `${t.barriereCouponPct}%`
+                            : p.barriereCoupon
+                        const air = t?.kind === 'autocall' && t.airbag
+                        if (air)
+                          return (
+                            <span>
+                              <span className="text-amber-600">Airbag</span>
+                              {cb ? ` · ${cb}` : ''}
+                            </span>
+                          )
+                        return cb ?? '—'
+                      })()}
                     </td>
-                    <td className="px-2 py-1.5 tabular-nums">
-                      {p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—')}
+                    <td className="px-2 py-1.5 tabular-nums whitespace-nowrap">
+                      {t?.kind === 'autocall'
+                        ? `${t.protectionPct}% ${t.protectionStyle === 'europeenne' ? 'KIE' : 'KIA'}`
+                        : (p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—'))}
                     </td>
                     <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">
                       {allocs.length > 0 ? (
