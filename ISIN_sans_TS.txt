@@ -1,0 +1,56 @@
+ISIN SANS TERMSHEET — produits LIVE à compléter
+Capital Management France · Lifecycle · 2026-06-07
+================================================================
+
+À M'ENVOYER (termsheet introuvable sur le OneDrive) — 32 ISIN
+----------------------------------------------------------------
+# ISIN            Devise  Dernier   (nom si connu via reporting)
+1  FR0014018KY5    EUR     —
+2  FRSG000188R4    EUR     —         (Société Générale)
+3  XS3287495306    EUR     94.82     Athena Airbag BNP/BBVA — émis 13/04/26, 6Y
+4  FR1459ABB977    EUR     71.83
+5  FRIP00001UV3    EUR     —
+6  XS3064231932    EUR     36.91
+7  FRSG00016HO2    EUR     101.21    (Société Générale)
+8  XS3045607119    EUR     101.73    (aucune trace trouvée — ISIN à vérifier ?)
+9  FRIP00001G19    EUR     —
+10 FRSG00015XO1    EUR     117.36    (Société Générale)
+11 XS2938576522    EUR     —
+12 XS2953818841    EUR     —
+13 XS2941097813    EUR     108.65
+14 FR1459AB6586    EUR     —
+15 FR001400WR56    EUR     —
+16 XS2642227883    EUR     —
+17 FR001400T985    EUR     97.17
+18 XS2922143750    EUR     —
+19 FR001400SDV1    EUR     —
+20 XS2863767542    EUR     71.50
+21 XS2804857568    EUR     87.75
+22 XS0461632811    EUR     —
+23 XS2772970781    EUR     95.69
+24 XS2759139525    EUR     —
+25 CH1322036596    EUR     —
+26 FR001400P397    EUR     —
+27 XS2110106908    GBP     —
+28 CH1322027827    EUR     —
+29 FR001400GV92    EUR     103.46
+30 XS2465015720    EUR     97.88
+31 XS2569852416    EUR     98.20
+32 XS2444096874    EUR     100.09
+
+DÉJÀ RETROUVÉES SUR LE ONEDRIVE — décodage en cours (5)
+----------------------------------------------------------------
+FRIP00001NZ9   Autocallable Note on MXEADT50 (MSCI EM décrément), MSCO, 10Y trim.
+XS2482711673   CLN sur Société Générale Subordonnée (Goldman Sachs), 3Y
+CH0593640243   Autocall Airbag FORECEC + BGCHA2E + IGCAIAD (EFG), 6Y annuel
+XS2803802532   Participation S&P 500 (CERTI+) Low Strike 75 (CIBC), 2Y in fine
+CH0587314615   Warrant Senior Loan (EFG), 3Y in fine
+
+NOTE
+----------------------------------------------------------------
+- "FEI" (ligne du feed) n'est pas un ISIN produit → exclu.
+- Les 11 produits déjà complétés aujourd'hui ne figurent pas ici.
+- Pour chaque ISIN ci-dessus, l'envoi de la termsheet (PDF) me permet de
+  décoder la mécanique complète : calendrier d'observations, barrières
+  d'autocall (dégressives le cas échéant), barrière de coupon, coupon p.a.,
+  PDI/protection, airbag, décrément.

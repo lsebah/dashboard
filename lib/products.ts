@@ -3644,6 +3644,177 @@ const bnpCallableCsi500: Product = {
   badges: ['Single', 'Callable', '90 % protégé', 'Booster'],
 }
 
+// ── FRIP00001NZ9 — Morgan Stanley Autocall croissant décrément MXEADT50 ───────
+// Autocall dégressif sans coupon : le montant de remboursement croît de +2,60 %
+// par observation (110,40 %→201,40 %) ; barrière dégressive 100→73,75 % ; non-call
+// la 1re année (obs marchés 1-3) ; autocall possible à partir de l'obs n°4.
+const frinObs = [
+  '2026-07-24', '2026-10-26', '2027-01-25', '2027-04-26', '2027-07-26', '2027-10-25',
+  '2028-01-24', '2028-04-24', '2028-07-24', '2028-10-24', '2029-01-24', '2029-04-24',
+  '2029-07-24', '2029-10-24', '2030-01-24', '2030-04-24', '2030-07-24', '2030-10-24',
+  '2031-01-24', '2031-04-24', '2031-07-24', '2031-10-24', '2032-01-26', '2032-04-26',
+  '2032-07-26', '2032-10-25', '2033-01-24', '2033-04-25', '2033-07-25', '2033-10-24',
+  '2034-01-24', '2034-04-24', '2034-07-24', '2034-10-24', '2035-01-24', '2035-04-24',
+]
+const frinPay = [
+  '2026-07-31', '2026-11-02', '2027-02-01', '2027-05-03', '2027-08-02', '2027-11-01',
+  '2028-01-31', '2028-05-02', '2028-07-31', '2028-10-31', '2029-01-31', '2029-05-02',
+  '2029-07-31', '2029-10-31', '2030-01-31', '2030-05-02', '2030-07-31', '2030-10-31',
+  '2031-01-31', '2031-05-02', '2031-07-31', '2031-10-31', '2032-02-02', '2032-05-03',
+  '2032-08-02', '2032-11-01', '2033-01-31', '2033-05-02', '2033-08-01', '2033-10-31',
+  '2034-01-31', '2034-05-02', '2034-07-31', '2034-10-31', '2035-01-31', '2035-05-02',
+]
+const frinAer = Array.from({ length: 36 }, (_, i) => Math.round((100 - 0.75 * i) * 100) / 100)
+const frinErv = Array.from({ length: 36 }, (_, i) => Math.round((110.4 + 2.6 * i) * 100) / 100)
+const msMxeadt50: Product = {
+  id: 'FRIP00001NZ9',
+  nom: 'Autocall croissant — MSCI Europe Aerospace & Defense décrément',
+  isin: 'FRIP00001NZ9',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-07-24',
+  dateEmission: '2025-08-14',
+  dateConstatationFinale: '2035-07-24',
+  dateEcheance: '2035-07-31',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    {
+      nom: 'MSCI Europe Aerospace & Defense Top 10 Select 50 Points Decrement EUR',
+      bloomberg: 'MXEADT50 Index',
+    },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    decrement: '50 pts/an',
+    bonusFinalPct: 204,
+  },
+  observations: buildObservations(frinObs, frinPay, {
+    niveauRappelPct: (n) => frinAer[n - 1],
+    montantRemboursementPct: (n) => frinErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall croissant',
+  description:
+    '10Y Autocall croissant sur indice décrément Défense Europe — sans coupon, remboursement 110,4→201,4 %, barrière dégressive 100→73,75 %, KI 50 % européen, prime finale 204 % si ≥ 73 %',
+  badges: ['Single', 'Décrément', 'Dégressif', 'Sans coupon'],
+}
+
+// ── XS2482711673 — Goldman Sachs CLN single-name SG Subordonnée 4,60 % ────────
+const gsClnSgSub: Product = {
+  id: 'XS2482711673',
+  nom: 'CLN Société Générale subordonnée 4,60 %',
+  isin: 'XS2482711673',
+  emetteur: 'Goldman Sachs Finance Corp International',
+  garant: 'The Goldman Sachs Group, Inc.',
+  assetClass: 'credit',
+  family: 'credit_linked',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2023-06-16',
+  dateEmission: '2023-06-16',
+  dateConstatationFinale: '2026-06-20',
+  dateEcheance: '2026-06-20',
+  frequence: 'annuel',
+  basket: 'single',
+  sousJacents: [{ nom: 'Société Générale SA — dette subordonnée (entité de référence)' }],
+  terms: {
+    kind: 'credit',
+    type: 'single_name',
+    entitesReference: ['Société Générale SA (subordonnée)'],
+    nbEntites: 1,
+    couponPct: 4.6,
+    couponPa: 4.6,
+    couponGaranti: false,
+    zeroRecovery: false,
+    nbDefautsWipe: 1,
+    prixEmissionPct: 100,
+    inFine: true,
+    protectionCapital: false,
+  },
+  rr: 'LS',
+  productType: 'CLN',
+  description:
+    '3Y CLN single-name sur SG subordonnée — coupon 4,60 % p.a. annuel, capital au pair sauf événement de crédit (recouvrement par enchère)',
+  badges: ['Crédit', 'Single name', 'Coupon fixe'],
+}
+
+// ── CH0593640243 — EFG Participation Airbag worst-of fonds Chine ──────────────
+const efgChinaParticipation: Product = {
+  id: 'CH0593640243',
+  nom: 'Participation Airbag fonds Chine (BNPP + BlackRock + Invesco)',
+  isin: 'CH0593640243',
+  emetteur: 'EFG International Finance (Guernsey) Ltd.',
+  garant: 'EFG International AG',
+  assetClass: 'equity',
+  family: 'participation',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2021-02-16',
+  dateEmission: '2021-02-22',
+  dateConstatationFinale: '2027-05-17',
+  dateEcheance: '2027-05-24',
+  frequence: 'in_fine',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas China Equity Fund', bloomberg: 'FORECEC LX', niveauInitial: 230.05 },
+    { nom: 'BlackRock GF China Fund', bloomberg: 'BGCHA2E LX', niveauInitial: 29.01 },
+    { nom: 'Invesco Greater China Equity Fund', bloomberg: 'IGCAIAD LX', niveauInitial: 23.64 },
+  ],
+  pdiPct: 80,
+  pdiText: '80 % (airbag ×1,25)',
+  rr: 'LS',
+  productType: 'Participation (Airbag)',
+  description:
+    '6Y Participation worst-of fonds Chine — airbag 80 %, participation 70 % à la hausse, in fine (filename « Autocall » trompeur : pas d’autocall ni coupon)',
+  badges: ['Worst-of', 'Airbag 80 %', 'Participation 70 %'],
+}
+
+// ── CH0587314615 — EFG Call Warrant sur indice Leonteq European Senior Loans ──
+const efgWarrantSeniorLoans: Product = {
+  id: 'CH0587314615',
+  nom: 'Call Warrant — Leonteq European Senior Loans 3%RC',
+  isin: 'CH0587314615',
+  emetteur: 'EFG International Finance (Guernsey) Ltd.',
+  garant: 'EFG International AG',
+  assetClass: 'equity',
+  family: 'other',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 5.64,
+  dateConstatationInitiale: '2024-03-11',
+  dateEmission: '2024-03-18',
+  dateConstatationFinale: '2027-03-11',
+  dateEcheance: '2027-03-18',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Leonteq European Senior Loans Fund 3%RC Index', bloomberg: 'LEONIES3 Index' },
+  ],
+  rr: 'LS',
+  productType: 'Warrant Call',
+  description:
+    '3Y Call Warrant ATM (strike 100 %) sur indice Leonteq European Senior Loans 3%RC — participation 100 % au-dessus du strike, SANS protection (perte totale possible)',
+  badges: ['Warrant', 'Sans protection'],
+}
+
 // ── Produits « identité seule » (reporting mensuel, termsheet à fournir) ──────
 function addAnnees(d: string, y: number): string {
   const dt = new Date(d)
@@ -3663,6 +3834,7 @@ function metaProduct(p: {
   frequence?: Frequency
   basket?: BasketType
   sousJacents?: Underlying[]
+  terms?: Product['terms']
   pdiPct?: number
   pdiText?: string
   description?: string
@@ -3684,6 +3856,7 @@ function metaProduct(p: {
     frequence: p.frequence ?? 'autre',
     basket: p.basket ?? 'single',
     sousJacents: p.sousJacents ?? [],
+    terms: p.terms,
     pdiPct: p.pdiPct,
     pdiText: p.pdiText,
     rr: 'LS',
@@ -3796,10 +3969,263 @@ const metaProducts: Product[] = [
   }),
 ]
 
+// Identité depuis le reporting mensuel — fournée 2026-06 (suite). Pour les taux
+// le coupon p.a. et la référence (CMS/TEC) viennent du libellé ; les barrières de
+// taux exactes et le calendrier restent « à fournir » via la termsheet.
+const metaProducts2: Product[] = [
+  // — Taux : Phoenix Bearish CMS/TEC (capital garanti) —
+  metaProduct({
+    isin: 'XS2772970781', nom: 'Autocall Bearish CMS 10Y', emetteur: 'BNP Paribas',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-05-27', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
+    description: '5Y Autocall Bearish sur EUR CMS 10Y — capital garanti (barrières/coupon à fournir)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR001400WR56', nom: 'Phoenix Bearish CMS 10Y — 2,30/2,80, coupon 6 %', emetteur: 'BNP Paribas',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2025-01-31', dureeAnnees: 12, frequence: 'trimestriel', basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 6, capitalGaranti: true },
+    description: '12Y Phoenix Bearish CMS 10Y — coupon 6 % p.a., barrières 2,30 % / 2,80 % (à confirmer TS)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS3064231932', nom: 'Phoenix Bearish CMS — coupon 6 %', emetteur: 'BNP Paribas',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2025-07-11', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 6, capitalGaranti: true },
+    description: '12Y Phoenix Bearish CMS — coupon 6 % p.a. (barrière ~2 %, à confirmer TS)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FRSG00016HO2', nom: 'Phoenix Bearish CMS 10Y — 2,25/3,25, coupon 5,50 %', emetteur: 'Société Générale',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2025-06-19', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 5.5, capitalGaranti: true },
+    description: '12Y Phoenix Bearish CMS 10Y — coupon 5,50 % p.a., barrières 2,25 % / 3,25 % (à confirmer TS)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FRSG00015XO1', nom: 'Phoenix Bearish CMS 10Y — 2,15/2,70, coupon 5 %', emetteur: 'Société Générale',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2025-04-16', dureeAnnees: 10, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 5, capitalGaranti: true },
+    description: '10Y Phoenix Bearish CMS 10Y — coupon 5 % p.a., barrières 2,15 % / 2,70 % (à confirmer TS)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR001400P397', nom: 'Phoenix Bearish In Fine CMS 10Y — 2,50/3,00', emetteur: 'Société Générale',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-04-10', dureeAnnees: 12, frequence: 'in_fine', basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true, inFine: true },
+    description: '12Y Phoenix Bearish In Fine CMS 10Y — barrières 2,50 % / 3,00 % (coupon/calendrier à fournir)',
+    badges: ['Taux', 'Bearish', 'In fine', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2804857568', nom: 'Phoenix Bearish CMS 10Y', emetteur: 'BNP Paribas',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-07-09', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
+    description: '12Y Phoenix Bearish CMS 10Y — capital garanti (barrières/coupon à fournir)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS0461632811', nom: 'Phoenix Bearish CMS 10Y — 2,50/3,15', emetteur: 'Deutsche Bank',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-05-28', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 10Y' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
+    description: '5Y Phoenix Bearish CMS 10Y — barrières 2,50 % / 3,15 % (coupon/calendrier à fournir)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR001400SDV1', nom: 'Phoenix Bearish TEC 10', emetteur: 'CIC',
+    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-10-28', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'TEC 10 (OAT 10 ans)' }],
+    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'TEC 10', capitalGaranti: true },
+    description: '12Y Phoenix Bearish TEC 10 — capital garanti (barrières/coupon à fournir)',
+    badges: ['Taux', 'Bearish', 'TS à fournir'],
+  }),
+  // — Taux : TARN steepener CMS30-CMS2 —
+  metaProduct({
+    isin: 'XS2465015720', nom: 'TARN steepener CMS 30Y-2Y — 5,75 % ×2', emetteur: 'BNP Paribas',
+    productType: 'TARN', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2023-02-14', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 30Y − CMS 2Y' }],
+    terms: { kind: 'rates', type: 'tarn', tauxReference: 'EUR CMS 30Y', tauxReference2: 'EUR CMS 2Y', couponConditionnelPa: 5.75, multiplicateur: 2, capitalGaranti: true },
+    description: '12Y TARN steepener (CMS 30Y−2Y) — coupon 5,75 % ×2 (cible/calendrier à fournir)',
+    badges: ['Taux', 'TARN', 'Steepener', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2444096874', nom: 'TARN steepener CMS 30Y-2Y — 4,20 % ×2', emetteur: 'BNP Paribas',
+    productType: 'TARN', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2022-12-06', dureeAnnees: 6, basket: 'single',
+    sousJacents: [{ nom: 'EUR CMS 30Y − CMS 2Y' }],
+    terms: { kind: 'rates', type: 'tarn', tauxReference: 'EUR CMS 30Y', tauxReference2: 'EUR CMS 2Y', couponConditionnelPa: 4.2, multiplicateur: 2, capitalGaranti: true },
+    description: '6Y TARN steepener (CMS 30Y−2Y) — coupon 4,20 % ×2 (cible/calendrier à fournir)',
+    badges: ['Taux', 'TARN', 'Steepener', 'TS à fournir'],
+  }),
+  // — Taux : Callable / FRN / ZC —
+  metaProduct({
+    isin: 'XS2569852416', nom: 'Callable FRN 3,61 %', emetteur: 'CIBC',
+    productType: 'Callable FRN', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2023-01-12', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Taux fixe rappelable' }],
+    terms: { kind: 'rates', type: 'callable', couponConditionnelPa: 3.61, capitalGaranti: true, callable: true },
+    description: '5Y Callable Fixed Rate Note CIBC — coupon 3,61 % p.a., rappelable émetteur',
+    badges: ['Taux', 'Callable', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2110106908', nom: 'GBP Zero-Coupon Callable 12YNC4', emetteur: 'Citigroup',
+    productType: 'Callable ZC', assetClass: 'rates', family: 'rates_structured', devise: 'GBP',
+    dateEmission: '2024-02-14', dureeAnnees: 12, frequence: 'in_fine', basket: 'single',
+    sousJacents: [{ nom: 'Note zéro-coupon GBP rappelable' }],
+    terms: { kind: 'rates', type: 'callable', capitalGaranti: true, callable: true, inFine: true },
+    description: '12Y GBP Zero-Coupon Note rappelable (non-call 4 ans) — Citi',
+    badges: ['Taux', 'Callable', 'GBP', 'TS à fournir'],
+  }),
+  // — Crédit : CLN tranches iTraxx zero-recovery —
+  metaProduct({
+    isin: 'XS2642227883', nom: 'CLN tranche iTraxx 4-7 % zero-recovery', emetteur: 'BNP Paribas',
+    productType: 'CLN tranche', assetClass: 'credit', family: 'credit_linked',
+    dateEmission: '2024-12-13', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Tranche iTraxx 4-7 % (zero-recovery)' }],
+    terms: { kind: 'credit', type: 'tranche', indexReference: 'iTraxx (à préciser)', attachementPct: 4, detachementPct: 7, zeroRecovery: true, levier: Math.round((1 / 0.03) * 10) / 10, inFine: true, protectionCapital: false },
+    description: '5Y CLN tranche iTraxx 4-7 % zero-recovery — levier ≈ 33× (coupon à fournir)',
+    badges: ['Crédit', 'Tranche', 'Zero-recovery', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2863767542', nom: 'CLN tranche iTraxx 3-6 % zero-recovery', emetteur: 'BNP Paribas',
+    productType: 'CLN tranche', assetClass: 'credit', family: 'credit_linked',
+    dateEmission: '2024-10-14', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Tranche iTraxx 3-6 % (zero-recovery)' }],
+    terms: { kind: 'credit', type: 'tranche', indexReference: 'iTraxx (à préciser)', attachementPct: 3, detachementPct: 6, zeroRecovery: true, levier: Math.round((1 / 0.03) * 10) / 10, inFine: true, protectionCapital: false },
+    description: '5Y CLN tranche iTraxx 3-6 % zero-recovery — levier ≈ 33× (coupon à fournir)',
+    badges: ['Crédit', 'Tranche', 'Zero-recovery', 'TS à fournir'],
+  }),
+  // — Actions : Athena / Phoenix (identité) —
+  metaProduct({
+    isin: 'XS3287495306', nom: 'Athena Airbag BBVA', emetteur: 'BNP Paribas',
+    productType: 'Athena Airbag', dateEmission: '2026-04-13', dureeAnnees: 6, basket: 'single',
+    sousJacents: [{ nom: 'Banco Bilbao Vizcaya Argentaria', bloomberg: 'BBVA SM', marche: 'BME' }],
+    description: '6Y Athena Airbag — BBVA', badges: ['Airbag', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2953818841', nom: 'Athena Wof Microsoft + Alphabet', emetteur: 'CIBC',
+    productType: 'Athena', dateEmission: '2025-02-19', dureeAnnees: 3, basket: 'worst_of',
+    sousJacents: [
+      { nom: 'Microsoft Corp', bloomberg: 'MSFT US', marche: 'NASDAQ' },
+      { nom: 'Alphabet Inc (Google)', bloomberg: 'GOOGL US', marche: 'NASDAQ' },
+    ],
+    description: '3Y Athena Wof — Microsoft + Alphabet', badges: ['Worst-of', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2941097813', nom: 'Athena Airbag Wof Santander + BNP + TotalEnergies', emetteur: 'BBVA',
+    productType: 'Athena Airbag', dateEmission: '2025-02-14', dureeAnnees: 5, basket: 'worst_of',
+    sousJacents: [
+      { nom: 'Banco Santander', bloomberg: 'SAN SM', marche: 'BME' },
+      { nom: 'BNP Paribas', bloomberg: 'BNP FP', marche: 'Euronext Paris' },
+      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', marche: 'Euronext Paris' },
+    ],
+    description: '5Y Athena Airbag Wof — Santander + BNP + TotalEnergies', badges: ['Worst-of', 'Airbag', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR1459AB6586', nom: 'Phoenix Rendement Orange (décrément 0,74)', emetteur: 'Goldman Sachs International',
+    productType: 'Phoenix', dateEmission: '2025-03-15', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'Orange SA (décrément 0,74)', bloomberg: 'ORA FP', marche: 'Euronext Paris' }],
+    description: '12Y Phoenix « Rendement Orange » — sous-jacent Orange à décrément 0,74 (TS retrouvée, décodage à venir)',
+    badges: ['Single', 'Décrément', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2922143750', nom: 'Athena Bearish Nasdaq-100', emetteur: 'Banco Santander',
+    productType: 'Athena (bearish)', dateEmission: '2024-11-06', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Nasdaq-100', bloomberg: 'NDX Index' }],
+    description: '5Y Athena Bearish (inverse) sur Nasdaq-100', badges: ['Single', 'Bearish', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR001400T985', nom: 'SPHINX 15', emetteur: 'BNP Paribas',
+    productType: 'Structuré (à préciser)', dateEmission: '2024-12-02', dureeAnnees: 12, basket: 'single',
+    description: 'SPHINX 15 — type et sous-jacent à confirmer (TS à fournir)', badges: ['TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'CH1322036596', nom: 'Phoenix Mémoire Porsche', emetteur: 'Banque Internationale à Luxembourg',
+    productType: 'Phoenix', dateEmission: '2024-04-26', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Porsche AG', bloomberg: 'P911 GY', marche: 'XETRA' }],
+    description: '5Y Phoenix Mémoire — Porsche AG (ticker à confirmer : AG vs SE)', badges: ['Single', 'Effet mémoire', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'CH1322027827', nom: 'Phoenix Mémoire Wof Moderna + Pfizer + Sanofi', emetteur: 'Banque Internationale à Luxembourg',
+    productType: 'Phoenix', dateEmission: '2024-02-02', dureeAnnees: 5, basket: 'worst_of',
+    sousJacents: [
+      { nom: 'Moderna Inc', bloomberg: 'MRNA US', marche: 'NASDAQ' },
+      { nom: 'Pfizer Inc', bloomberg: 'PFE US', marche: 'NYSE' },
+      { nom: 'Sanofi SA', bloomberg: 'SAN FP', marche: 'Euronext Paris' },
+    ],
+    description: '5Y Phoenix Mémoire Wof — Moderna + Pfizer + Sanofi', badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FR001400GV92', nom: 'Phoenix Mémoire Wof Porsche + Volkswagen', emetteur: 'Morgan Stanley',
+    productType: 'Phoenix', dateEmission: '2023-04-04', dureeAnnees: 5, basket: 'worst_of',
+    sousJacents: [
+      { nom: 'Porsche AG', bloomberg: 'P911 GY', marche: 'XETRA' },
+      { nom: 'Volkswagen AG', bloomberg: 'VOW3 GY', marche: 'XETRA' },
+    ],
+    description: '5Y Phoenix Mémoire Wof — Porsche + Volkswagen', badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2938576522', nom: 'Athena Dégressif Équipondéré TotalEnergies + Eni + Shell', emetteur: 'Bank of America',
+    productType: 'Athena', dateEmission: '2025-03-26', dureeAnnees: 5, basket: 'equipondere',
+    sousJacents: [
+      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', marche: 'Euronext Paris' },
+      { nom: 'Eni SpA', bloomberg: 'ENI IM', marche: 'Borsa Italiana' },
+      { nom: 'Shell PLC', bloomberg: 'SHEL LN', marche: 'London Stock Exchange' },
+    ],
+    description: '5Y Athena dégressif équipondéré — TotalEnergies + Eni + Shell', badges: ['Équipondéré', 'Dégressif', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2759139525', nom: 'Athena Airbag Kering', emetteur: 'BNP Paribas',
+    productType: 'Athena Airbag', dateEmission: '2024-05-10', dureeAnnees: 5, basket: 'single',
+    sousJacents: [{ nom: 'Kering SA', bloomberg: 'KER FP', marche: 'Euronext Paris' }],
+    description: '5Y Athena Airbag — Kering', badges: ['Single', 'Airbag', 'TS à fournir'],
+  }),
+  // — Actions : autocall sur indice à décrément (« Quartz ») —
+  metaProduct({
+    isin: 'FR1459ABB977', nom: 'Quartz 53 — Crédit Agricole décrément 1,1', emetteur: 'Goldman Sachs International',
+    productType: 'Autocall décrément', family: 'participation',
+    dateEmission: '2026-01-20', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'Crédit Agricole SA (décrément 1,1)', bloomberg: 'ACA FP', marche: 'Euronext Paris' }],
+    description: '12Y Autocall « Quartz 53 » — Crédit Agricole à décrément 1,1', badges: ['Single', 'Décrément', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FRIP00001UV3', nom: 'Quartz 51 — BNP décrément 4,2', emetteur: 'Morgan Stanley',
+    productType: 'Autocall décrément', family: 'participation',
+    dateEmission: '2025-11-11', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'BNP Paribas (décrément 4,2)', bloomberg: 'BNP FP', marche: 'Euronext Paris' }],
+    description: '12Y Autocall « Quartz 51 » — BNP Paribas à décrément 4,2', badges: ['Single', 'Décrément', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'FRIP00001G19', nom: 'Quartz 45 — Eni décrément 0,96', emetteur: 'Morgan Stanley',
+    productType: 'Autocall décrément', family: 'participation',
+    dateEmission: '2025-04-25', dureeAnnees: 12, basket: 'single',
+    sousJacents: [{ nom: 'Eni SpA (décrément 0,96 pts)', bloomberg: 'ENI IM', marche: 'Borsa Italiana' }],
+    description: '12Y Autocall « Quartz 45 » — Eni à décrément 0,96 pt', badges: ['Single', 'Décrément', 'TS à fournir'],
+  }),
+]
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
-  ...metaProducts,
+  msMxeadt50, gsClnSgSub, efgChinaParticipation, efgWarrantSeniorLoans,
+  ...metaProducts, ...metaProducts2,
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
   santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
