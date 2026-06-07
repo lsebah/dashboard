@@ -206,6 +206,109 @@ export function scenariosTaux(product: Product): Scenario[] {
   return scenarios
 }
 
+// ─── Suivi des coupons (Phoenix : payé / mis en mémoire / rattrapé) ─────────
+
+const round2 = (v: number) => Math.round(v * 100) / 100
+
+export type CouponStatut =
+  | 'paye' // condition remplie, coupon de la période payé
+  | 'rattrape' // condition remplie, coupon(s) en mémoire rattrapé(s)
+  | 'manque' // condition non remplie, coupon non payé (en mémoire si effet mémoire)
+  | 'a_constater' // date passée mais niveau du sous-jacent non encore renseigné
+  | 'a_venir' // date d'observation future
+
+export interface CouponLigne {
+  n: number
+  date: string
+  datePaiement?: string
+  couponPct: number
+  barriereCouponPct?: number
+  niveauConstatePct?: number
+  statut: CouponStatut
+  cumulPayePct: number // coupons cumulés effectivement payés à ce stade
+  enMemoirePct: number // coupons actuellement en mémoire (non encore payés)
+}
+
+/** Produit distribuant des coupons périodiques (vs in fine / snowball / crédit). */
+export function distribueCoupons(product: Product): boolean {
+  const t = product.terms
+  if (t?.kind === 'rates') return !t.inFine
+  if (t?.kind === 'credit') return false
+  return (product.observations ?? []).some((o) => typeof o.couponPct === 'number')
+}
+
+/**
+ * Sous-programme Phoenix : pour chaque date d'observation à coupon, détermine si
+ * le coupon a été payé, manqué (mis en mémoire) ou rattrapé, à partir du niveau
+ * du worst-of constaté (`niveauConstatePct`) vs la barrière de coupon. Tant que
+ * le niveau n'est pas renseigné pour une date passée, le statut est « à constater ».
+ */
+export function suiviCoupons(product: Product, now: Date = new Date()): CouponLigne[] {
+  const t = product.terms
+  const memoire =
+    (t?.kind === 'autocall' && t.effetMemoire) || (t?.kind === 'rates' && !!t.effetMemoire)
+  const today = now.toISOString().slice(0, 10)
+  let mem = 0
+  let cumul = 0
+  const out: CouponLigne[] = []
+  for (const o of product.observations ?? []) {
+    const cpn = o.couponPct
+    if (typeof cpn !== 'number') continue
+    const past = o.dateObservation <= today
+    const barriere = o.niveauCouponPct
+    const niveau = o.niveauConstatePct
+    let statut: CouponStatut
+    if (!past) {
+      statut = 'a_venir'
+    } else if (typeof niveau !== 'number' || typeof barriere !== 'number') {
+      statut = 'a_constater'
+    } else if (niveau >= barriere) {
+      const rattrape = memoire && mem > 0
+      cumul += cpn + (memoire ? mem : 0)
+      mem = 0
+      statut = rattrape ? 'rattrape' : 'paye'
+    } else {
+      if (memoire) mem += cpn
+      statut = 'manque'
+    }
+    out.push({
+      n: o.n,
+      date: o.dateObservation,
+      datePaiement: o.datePaiement,
+      couponPct: cpn,
+      barriereCouponPct: barriere,
+      niveauConstatePct: niveau,
+      statut,
+      cumulPayePct: round2(cumul),
+      enMemoirePct: round2(mem),
+    })
+  }
+  return out
+}
+
+/** Coupons réellement encaissés à ce jour (%), ou undefined si non constatable. */
+export function couponsEncaissesPct(
+  product: Product,
+  now: Date = new Date(),
+): number | undefined {
+  if (!distribueCoupons(product)) return 0
+  const passes = suiviCoupons(product, now).filter((l) => l.statut !== 'a_venir')
+  if (passes.length === 0) return 0
+  if (passes.some((l) => l.statut === 'a_constater')) return undefined
+  return passes[passes.length - 1].cumulPayePct
+}
+
+/**
+ * P&L = prix de marché + coupons encaissés − 100 (si distribution de coupon).
+ * Tant que les niveaux d'observation ne sont pas renseignés, retombe sur le P&L
+ * de prix seul (prix − 100).
+ */
+export function pnlAvecCoupons(product: Product, now: Date = new Date()): number | undefined {
+  if (typeof product.prixMarche !== 'number') return undefined
+  const coupons = couponsEncaissesPct(product, now)
+  return round2(product.prixMarche + (coupons ?? 0) - 100)
+}
+
 // ─── Reconstruction mathématique (à partir des `terms` décodés) ──────────────
 
 /** Une ligne d'échéancier reconstruite (date d'observation → mécanique). */

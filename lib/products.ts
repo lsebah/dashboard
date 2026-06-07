@@ -5,7 +5,7 @@
 //  worst-of, autocall standard & inverse, Airbag, Oxygène, barrière dégressive.
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
-import { buildObservations } from './lifecycle'
+import { buildObservations, pnlAvecCoupons } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
 import { termsheetUrl, termsheetFile } from './termsheets'
 import {
@@ -3518,11 +3518,10 @@ export const products: Product[] = feedIsins.map((isin) => {
   const base = defByIsin.get(isin) ?? minimal(isin)
   const price = priceByIsin[isin]
   const allocs = allocByIsin[isin]
-  return {
+  const merged: Product = {
     ...base,
     prixMarche: price ?? base.prixMarche,
     statut: statutByIsin[isin] ?? base.statut ?? 'vivant',
-    pnlPct: typeof price === 'number' ? Math.round((price - 100) * 100) / 100 : base.pnlPct,
     nominal: amountByIsin[isin] ?? base.nominal,
     devise: deviseByIsin[isin] ?? base.devise,
     clients: allocs ? allocs.map((a) => a.client) : base.clients,
@@ -3530,4 +3529,11 @@ export const products: Product[] = feedIsins.map((isin) => {
     termsheetUrl: base.termsheetUrl ?? termsheetUrl(isin),
     termsheetFichier: base.termsheetFichier ?? termsheetFile(isin),
   }
+  // P&L = prix + coupons encaissés − 100 (retombe sur prix − 100 tant que les
+  // niveaux d'observation ne sont pas renseignés).
+  merged.pnlPct =
+    typeof merged.prixMarche === 'number'
+      ? pnlAvecCoupons(merged) ?? Math.round((merged.prixMarche - 100) * 100) / 100
+      : base.pnlPct
+  return merged
 })

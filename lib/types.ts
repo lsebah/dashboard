@@ -86,6 +86,10 @@ export interface Observation {
   // — Coupon —
   niveauCouponPct?: number // barrière de coupon, en % du niveau initial
   couponPct?: number // coupon de la période, en % du nominal
+  // Niveau du worst-of effectivement constaté à cette date d'observation, en %
+  // du niveau initial (renseigné a posteriori depuis l'historique des sous-jacents).
+  // Permet de savoir si le coupon a été payé / mis en mémoire / rattrapé.
+  niveauConstatePct?: number
   // — Résultat (rempli au fil de la vie du produit) —
   statut?: 'a_venir' | 'passe' | 'rappele'
   resultat?: string

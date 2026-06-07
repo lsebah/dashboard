@@ -5,9 +5,78 @@ import {
   scenariosMaturite,
   scenariosTaux,
   scenariosCredit,
+  suiviCoupons,
+  distribueCoupons,
   formatDateFr,
   type Scenario,
+  type CouponStatut,
 } from '@/lib/lifecycle'
+
+const COUPON_STATUT: Record<CouponStatut, { label: string; cls: string }> = {
+  paye: { label: 'Payé', cls: 'text-emerald-600' },
+  rattrape: { label: 'Rattrapé', cls: 'text-emerald-600' },
+  manque: { label: 'Manqué (mémoire)', cls: 'text-red-600' },
+  a_constater: { label: 'À constater', cls: 'text-slate-400' },
+  a_venir: { label: 'À venir', cls: 'text-slate-400' },
+}
+
+/** Suivi des coupons (Phoenix) : payé / mis en mémoire / rattrapé par observation. */
+function CouponSuivi({ product }: { product: Product }) {
+  if (!distribueCoupons(product)) return null
+  const lignes = suiviCoupons(product)
+  if (lignes.length === 0) return null
+  const encaisses = lignes.filter((l) => l.statut !== 'a_venir')
+  const aConstater = encaisses.some((l) => l.statut === 'a_constater')
+  const cumul = encaisses.length ? encaisses[encaisses.length - 1].cumulPayePct : 0
+  return (
+    <div>
+      <div className="field-label mb-1 flex items-center justify-between">
+        <span>Suivi des coupons</span>
+        <span className="text-[11px] text-slate-500 normal-case">
+          {aConstater
+            ? 'coupons encaissés : à constater (niveaux des sous-jacents requis)'
+            : `coupons encaissés : ${cumul.toFixed(2)}%`}
+        </span>
+      </div>
+      <div className="max-h-56 overflow-y-auto rounded border border-slate-100">
+        <table className="w-full text-[11px]">
+          <thead className="bg-slate-50 text-slate-500 sticky top-0">
+            <tr>
+              <th className="text-left font-medium px-2 py-1">#</th>
+              <th className="text-left font-medium px-2 py-1">Observation</th>
+              <th className="text-right font-medium px-2 py-1">Coupon</th>
+              <th className="text-right font-medium px-2 py-1">Barrière</th>
+              <th className="text-right font-medium px-2 py-1">Niveau</th>
+              <th className="text-left font-medium px-2 py-1">Statut</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {lignes.map((l) => {
+              const s = COUPON_STATUT[l.statut]
+              return (
+                <tr key={l.n} className={l.statut === 'a_venir' ? 'text-slate-400' : ''}>
+                  <td className="px-2 py-1 tabular-nums">{l.n}</td>
+                  <td className="px-2 py-1 whitespace-nowrap">{formatDateFr(l.date)}</td>
+                  <td className="px-2 py-1 text-right tabular-nums">{l.couponPct}%</td>
+                  <td className="px-2 py-1 text-right tabular-nums">
+                    {typeof l.barriereCouponPct === 'number' ? `${l.barriereCouponPct}%` : '—'}
+                  </td>
+                  <td className="px-2 py-1 text-right tabular-nums">
+                    {typeof l.niveauConstatePct === 'number' ? `${l.niveauConstatePct}%` : '—'}
+                  </td>
+                  <td className={`px-2 py-1 whitespace-nowrap ${s.cls}`}>
+                    {s.label}
+                    {l.statut === 'manque' && l.enMemoirePct > 0 ? ` · ${l.enMemoirePct}%` : ''}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 /** Liste de scénarios (carte) — réutilisée par les reconstructions taux/crédit. */
 function ScenarioList({ scenarios }: { scenarios: Scenario[] }) {
@@ -166,6 +235,9 @@ export default function ProductReconstruction({ product }: { product: Product })
           </table>
         </div>
       </div>
+
+      {/* Suivi des coupons (payé / mémoire / rattrapé) */}
+      <CouponSuivi product={product} />
 
       {/* Scénarios de dénouement */}
       <div>
