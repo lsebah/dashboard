@@ -359,8 +359,87 @@ const bbvaRaceAcaNovob: Product = {
     '251030_5Y_Phoenix Memory Degressif RACE + ACA + NOVOB_Trimestriel_XS3148625976_BBVA.pdf',
 }
 
+// ── 6) Santander — Phoenix Mémoire Bancaires Françaises (Wof GLE+ACA+BNP) ────
+//    Décodé (Series 5007). Autocall dégressif 100→71,25 % (−1,25 %/trim.),
+//    28 observations, non-call 3 trim., coupon 2,3375 %/trim. à mémoire (9,35 % p.a.),
+//    barrière coupon 70 %, protection KI 50 % européenne.
+const bkObs = [
+  '2026-03-05', '2026-06-05', '2026-09-07', '2026-12-07', '2027-03-05',
+  '2027-06-07', '2027-09-06', '2027-12-06', '2028-03-06', '2028-06-05',
+  '2028-09-05', '2028-12-05', '2029-03-05', '2029-06-05', '2029-09-05',
+  '2029-12-05', '2030-03-05', '2030-06-05', '2030-09-05', '2030-12-05',
+  '2031-03-05', '2031-06-05', '2031-09-05', '2031-12-05', '2032-03-05',
+  '2032-06-07', '2032-09-06', '2032-12-06',
+]
+const bkPay = [
+  '2026-03-19', '2026-06-19', '2026-09-21', '2026-12-21', '2027-03-19',
+  '2027-06-21', '2027-09-20', '2027-12-20', '2028-03-20', '2028-06-19',
+  '2028-09-19', '2028-12-19', '2029-03-19', '2029-06-19', '2029-09-19',
+  '2029-12-19', '2030-03-19', '2030-06-19', '2030-09-19', '2030-12-19',
+  '2031-03-19', '2031-06-19', '2031-09-19', '2031-12-19', '2032-03-19',
+  '2032-06-21', '2032-09-20', '2032-12-20',
+]
+const bkAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98.75, 97.5, 96.25, 95, 93.75, 92.5,
+  91.25, 90, 88.75, 87.5, 86.25, 85, 83.75, 82.5, 81.25, 80, 78.75, 77.5,
+  76.25, 75, 73.75, 72.5, 71.25, undefined,
+]
+
+const santanderBancaires: Product = {
+  id: 'XS3231258727',
+  nom: 'Phoenix Mémoire Bancaires Françaises',
+  isin: 'XS3231258727',
+  valor: '150224206',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-12-05',
+  dateEmission: '2025-12-19',
+  dateConstatationFinale: '2032-12-06',
+  dateEcheance: '2032-12-20',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Société Générale SA', bloomberg: 'GLE FP', isin: 'FR0000130809', marche: 'Euronext Paris' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris' },
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.35,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bkObs, bkPay, {
+    niveauRappelPct: (n) => bkAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.3375,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '7Y Phoenix Mémoire Bancaires Françaises (GLE + ACA + BNP)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '251219_7Y_Phoenix Memoire Bancaires Francaises_Trimestriel_XS3231258727_SANTANDER.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
-const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob]
+const detailed: Product[] = [
+  bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob, santanderBancaires,
+]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
 const defByIsin = new Map<string, Product>()
