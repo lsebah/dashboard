@@ -294,6 +294,43 @@ export function scenariosMaturite(product: Product): Scenario[] {
   return scenarios
 }
 
+/** Scénarios de dénouement pour un produit de crédit (CLN / tranche). */
+export function scenariosCredit(product: Product): Scenario[] {
+  const t = product.terms
+  if (t?.kind !== 'credit') return []
+  const idx = t.indexReference ?? 'le portefeuille de référence'
+  const tranche =
+    typeof t.attachementPct === 'number' && typeof t.detachementPct === 'number'
+      ? `tranche ${t.attachementPct}% – ${t.detachementPct}%`
+      : 'la tranche'
+  const rec = t.zeroRecovery ? 'zero recovery (perte = 100% par nom)' : `recouvrement ${t.recouvrementPct ?? '—'}%`
+  const scenarios: Scenario[] = [
+    {
+      titre: 'Aucun événement de crédit',
+      condition: `aucun défaut n'atteint la ${tranche} de ${idx}`,
+      resultat: `Remboursement 100% du capital + coupons ${t.couponPct ?? t.couponPa ?? ''}%`,
+      ton: 'positif',
+    },
+  ]
+  if (typeof t.nbDefautsBuffer === 'number') {
+    scenarios.push({
+      titre: 'Défauts sous le point d’attachement',
+      condition: `jusqu'à ~${t.nbDefautsBuffer} défaut(s) absorbé(s) par la subordination (${rec})`,
+      resultat: 'Capital et coupons intacts',
+      ton: 'neutre',
+    })
+  }
+  scenarios.push({
+    titre: 'Défauts dans la tranche',
+    condition: `au-delà du point d'attachement (${rec})`,
+    resultat: `Perte en capital proportionnelle${
+      typeof t.nbDefautsWipe === 'number' ? ` — capital épuisé à ~${t.nbDefautsWipe} défauts` : ''
+    } ; coupons réduits sur le nominal résiduel`,
+    ton: 'negatif',
+  })
+  return scenarios
+}
+
 const MOIS_FR = [
   'janv.',
   'févr.',

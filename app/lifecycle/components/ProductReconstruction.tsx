@@ -1,12 +1,34 @@
-import type { Product, RatesTerms } from '@/lib/types'
+import type { Product, RatesTerms, CreditTerms } from '@/lib/types'
 import {
   echeancier,
   degressivite,
   scenariosMaturite,
   scenariosTaux,
+  scenariosCredit,
   formatDateFr,
   type Scenario,
 } from '@/lib/lifecycle'
+
+/** Liste de scénarios (carte) — réutilisée par les reconstructions taux/crédit. */
+function ScenarioList({ scenarios }: { scenarios: Scenario[] }) {
+  return (
+    <div>
+      <div className="field-label mb-1.5">Scénarios de dénouement</div>
+      <ul className="space-y-1.5">
+        {scenarios.map((s) => (
+          <li key={s.titre} className={`rounded-md border p-2 ${TON[s.ton]}`}>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
+              <span className={`w-1.5 h-1.5 rounded-full ${TON_DOT[s.ton]}`} />
+              {s.titre}
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Si {s.condition}</div>
+            <div className="text-[11px] text-slate-700">→ {s.resultat}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 const TON: Record<Scenario['ton'], string> = {
   positif: 'border-emerald-200 bg-emerald-50',
@@ -47,6 +69,9 @@ export default function ProductReconstruction({ product }: { product: Product })
   const t = product.terms
   if (t?.kind === 'rates' && product.observations?.length) {
     return <RatesReconstruction product={product} t={t} />
+  }
+  if (t?.kind === 'credit') {
+    return <CreditReconstruction product={product} t={t} />
   }
   if (t?.kind !== 'autocall' || !(product.observations?.length)) {
     return (
@@ -262,6 +287,76 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
           ))}
         </ul>
       </div>
+    </div>
+  )
+}
+
+/** Reconstruction d'un produit de CRÉDIT (CLN / tranche d'indice iTraxx). */
+function CreditReconstruction({ product, t }: { product: Product; t: CreditTerms }) {
+  const scenarios = scenariosCredit(product)
+  const width =
+    typeof t.attachementPct === 'number' && typeof t.detachementPct === 'number'
+      ? t.detachementPct - t.attachementPct
+      : undefined
+
+  const chips: string[] = []
+  if (t.indexReference) chips.push(t.indexReference)
+  if (typeof t.attachementPct === 'number' && typeof t.detachementPct === 'number')
+    chips.push(`Tranche ${t.attachementPct}% – ${t.detachementPct}%`)
+  if (typeof t.levier === 'number') chips.push(`Levier ×${t.levier}`)
+  chips.push(t.zeroRecovery ? 'Zero recovery' : `Recouvrement ${t.recouvrementPct ?? '—'}%`)
+  if (t.couponGaranti) chips.push('Coupon garanti')
+  if (t.inFine) chips.push('In fine')
+  chips.push(t.protectionCapital ? 'Capital protégé' : 'Capital à risque')
+
+  const rows: { label: string; value: string }[] = []
+  if (t.indexReference) rows.push({ label: 'Référence', value: t.indexReference })
+  if (typeof t.nbEntites === 'number')
+    rows.push({ label: 'Portefeuille', value: `${t.nbEntites} noms` })
+  if (typeof t.attachementPct === 'number' && typeof t.detachementPct === 'number')
+    rows.push({
+      label: 'Tranche',
+      value: `${t.attachementPct}% – ${t.detachementPct}%${width ? ` (épaisseur ${width.toFixed(2)}%)` : ''}`,
+    })
+  if (typeof t.couponPct === 'number')
+    rows.push({ label: 'Coupon', value: `${t.couponPct}%${t.couponGaranti ? ' garanti' : ''}` })
+  if (typeof t.prixEmissionPct === 'number')
+    rows.push({ label: 'Prix d’émission', value: `${t.prixEmissionPct}% (escompte → 100%)` })
+  if (typeof t.nbDefautsBuffer === 'number')
+    rows.push({ label: 'Coussin', value: `~${t.nbDefautsBuffer} défaut(s) avant perte` })
+  if (typeof t.nbDefautsWipe === 'number')
+    rows.push({ label: 'Capital épuisé', value: `~${t.nbDefautsWipe} défauts` })
+
+  return (
+    <div className="card p-4 flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
+        <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {chips.map((c) => (
+          <span key={c} className="badge">
+            {c}
+          </span>
+        ))}
+      </div>
+
+      <dl className="text-xs grid grid-cols-1 gap-1">
+        {rows.map((r) => (
+          <div key={r.label} className="flex gap-2">
+            <dt className="field-label w-32 shrink-0">{r.label}</dt>
+            <dd className="text-slate-700">{r.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="rounded-md bg-orange-50 border border-orange-200 p-2 text-[11px] text-orange-700">
+        Produit de crédit : le capital est réduit par les défauts qui franchissent le
+        point d’attachement de la tranche{t.zeroRecovery ? ' (zero recovery : 100% de perte par nom)' : ''}.
+      </div>
+
+      <ScenarioList scenarios={scenarios} />
     </div>
   )
 }

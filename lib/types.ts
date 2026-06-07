@@ -118,18 +118,29 @@ export interface AutocallTerms {
 }
 
 /**
- * Crédit (CLN / FTD / tranche). Ébauche — à compléter sur termsheet réelle.
- * (En attente d'un exemple de produit crédit.)
+ * Crédit (CLN / FTD / tranche d'indice iTraxx). Le capital est à risque via les
+ * événements de crédit (défauts) qui « rongent » la tranche entre le point
+ * d'attachement et de détachement. Souvent zero-recovery (perte = 100% du nom).
  */
 export interface CreditTerms {
   kind: 'credit'
-  entitesReference: string[] // entités/indice de référence (ex. iTraxx Europe S40)
   type: 'single_name' | 'first_to_default' | 'tranche' | 'index'
-  attachementPct?: number // point d'attachement (tranche)
-  detachementPct?: number // point de détachement (tranche)
-  recouvrementPct?: number // taux de recouvrement supposé
-  couponPa?: number
-  protectionCapital?: boolean
+  indexReference?: string // ex. "iTraxx Europe Crossover Série 42"
+  entitesReference?: string[] // liste de noms (FTD / single name)
+  nbEntites?: number // nombre de noms du portefeuille (ex. 125)
+  attachementPct?: number // point d'attachement (tranche), en %
+  detachementPct?: number // point de détachement (tranche), en %
+  recouvrementPct?: number // taux de recouvrement supposé, en %
+  zeroRecovery?: boolean // recouvrement fixé à 0% (perte = 100% du nom)
+  levier?: number // levier de tranche = 1 / (détachement − attachement)
+  nbDefautsBuffer?: number // défauts absorbés avant d'entamer la tranche
+  nbDefautsWipe?: number // défauts cumulés qui épuisent la tranche
+  couponPct?: number // coupon par période, en %
+  couponPa?: number // coupon annualisé, en %
+  couponGaranti?: boolean // coupon non réduit par les événements de crédit
+  prixEmissionPct?: number // prix d'émission (ZC à escompte, ex. 53.6)
+  inFine?: boolean
+  protectionCapital?: boolean // capital protégé (false pour ces CLN)
 }
 
 /**

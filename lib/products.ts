@@ -3021,6 +3021,231 @@ const bnpBearishTrim = phoenixBearish({
     '250807_12Y_Phoenix Bearish  CMS10 Trimestriel 2.52.9 - 8%_Trimestriel_XS3073984430_BNP.PDF',
 })
 
+// ── XS3148555405 — BBVA Phoenix Mémoire BNP + Crédit Agricole + Intesa ───────
+const baiObs = [
+  '2026-02-06', '2026-05-06', '2026-08-06', '2026-11-06', '2027-02-08',
+  '2027-05-06', '2027-08-06', '2027-11-08', '2028-02-07', '2028-05-08',
+  '2028-08-07', '2028-11-06', '2029-02-06', '2029-05-07', '2029-08-06',
+  '2029-11-06', '2030-02-06', '2030-05-06', '2030-08-06', '2030-11-06',
+]
+const baiPay = [
+  '2026-02-13', '2026-05-13', '2026-08-13', '2026-11-13', '2027-02-15',
+  '2027-05-13', '2027-08-13', '2027-11-15', '2028-02-14', '2028-05-15',
+  '2028-08-14', '2028-11-13', '2029-02-13', '2029-05-14', '2029-08-13',
+  '2029-11-13', '2030-02-13', '2030-05-13', '2030-08-13', '2030-11-13',
+]
+// Autocall dégressif 100%→70% (-2,5%/trim. puis plancher 70%) ; non-call n=1-2 ; n=20 = maturité.
+const baiAer: (number | undefined)[] = [
+  undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85, 82.5, 80, 77.5,
+  75, 72.5, 70, 70, 70, 70, 70, undefined,
+]
+const bbvaBnpAcaIntesa: Product = {
+  id: 'XS3148555405',
+  nom: 'Phoenix Mémoire BNP + Crédit Agricole + Intesa Sanpaolo',
+  isin: 'XS3148555405',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 430_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-10-06',
+  dateEmission: '2025-11-06',
+  dateConstatationFinale: '2030-11-06',
+  dateEcheance: '2030-11-13',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris' },
+    { nom: 'Intesa Sanpaolo S.p.A.', bloomberg: 'ISP IM', isin: 'IT0000072618', marche: 'Borsa Italiana' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 55,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(baiObs, baiPay, {
+    niveauRappelPct: (n) => baiAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.25,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 3,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof BNP + Crédit Agricole + Intesa Sanpaolo',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '251106_5Y_Phoenix Memory Wof BNP + Credit Agricole + Intesa_Trimestriel_XS3148555405_BBVA.pdf',
+}
+
+// ── Helper : CLN tranche d'indice iTraxx (capital à risque sur défauts) ───────
+function creditCLN(p: {
+  isin: string
+  nom: string
+  emetteur: string
+  garant?: string
+  notationEmetteur?: string
+  nominal: number
+  freq: Product['frequence']
+  emission: string
+  echeance: string
+  index: string
+  nbEntites: number
+  attach: number
+  detach: number
+  couponPct: number
+  zeroRecovery?: boolean
+  couponGaranti?: boolean
+  prixEmissionPct?: number
+  inFine?: boolean
+  nbDefautsBuffer?: number
+  nbDefautsWipe?: number
+  couponDates: string[]
+  description: string
+  termsheetFichier: string
+}): Product {
+  const levier = Math.round((1 / ((p.detach - p.attach) / 100)) * 100) / 100
+  return {
+    id: p.isin,
+    nom: p.nom,
+    isin: p.isin,
+    emetteur: p.emetteur,
+    garant: p.garant,
+    notationEmetteur: p.notationEmetteur,
+    assetClass: 'credit',
+    family: 'credit_linked',
+    devise: 'EUR',
+    nominal: p.nominal,
+    valeurNominale: 1000,
+    prixEmission: p.prixEmissionPct ?? 100,
+    dateConstatationInitiale: p.emission,
+    dateEmission: p.emission,
+    dateConstatationFinale: p.echeance,
+    dateEcheance: p.echeance,
+    frequence: p.freq,
+    basket: 'single',
+    sousJacents: [{ nom: p.index, marche: 'Crédit' }],
+    terms: {
+      kind: 'credit',
+      type: 'tranche',
+      indexReference: p.index,
+      nbEntites: p.nbEntites,
+      attachementPct: p.attach,
+      detachementPct: p.detach,
+      zeroRecovery: p.zeroRecovery ?? false,
+      recouvrementPct: p.zeroRecovery ? 0 : undefined,
+      levier,
+      nbDefautsBuffer: p.nbDefautsBuffer,
+      nbDefautsWipe: p.nbDefautsWipe,
+      couponPct: p.couponPct,
+      couponPa: p.couponPct,
+      couponGaranti: p.couponGaranti,
+      prixEmissionPct: p.prixEmissionPct,
+      inFine: p.inFine,
+      protectionCapital: false,
+    },
+    observations: buildObservations(p.couponDates, p.couponDates, {
+      montantRemboursementPct: 100,
+      couponPct: p.couponPct,
+    }),
+    rr: 'LS',
+    productType: 'CLN tranche',
+    description: p.description,
+    badges: ['Crédit', `Tranche ${p.attach}-${p.detach}%`, p.zeroRecovery ? 'Zero recovery' : 'Recouvrement'],
+    termsheetFichier: p.termsheetFichier,
+  }
+}
+
+const bnpClnCrossover = creditCLN({
+  isin: 'XS2975786000',
+  nom: 'ZC CLN Tranche Crossover (iTraxx XO S42)',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  nominal: 910_000,
+  freq: 'annuel',
+  emission: '2025-03-17',
+  echeance: '2028-01-06',
+  index: 'iTraxx Europe Crossover Série 42',
+  nbEntites: 75,
+  attach: 1.333,
+  detach: 13.333,
+  couponPct: 0.3,
+  zeroRecovery: true,
+  couponGaranti: true,
+  prixEmissionPct: 53.6,
+  inFine: true,
+  nbDefautsBuffer: 1,
+  nbDefautsWipe: 10,
+  couponDates: ['2026-01-06', '2027-01-06', '2028-01-06'],
+  description: '3Y CLN tranche Crossover (iTraxx XO S42, 1,333 %–13,333 %), zero recovery, ZC à 53,6 %, capital à risque',
+  termsheetFichier: '250317_3Y_ZC CLN Tranche Crossover_in fine_XS2975786000_BNP.pdf',
+})
+
+const sgClnMain = creditCLN({
+  isin: 'XS2059726096',
+  nom: 'CLN Main Tranche 2,4–6,4 % (iTraxx Main)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 500_000,
+  freq: 'annuel',
+  emission: '2020-01-13',
+  echeance: '2027-01-11',
+  index: 'iTraxx Europe Main',
+  nbEntites: 125,
+  attach: 2.4,
+  detach: 6.4,
+  couponPct: 4.1,
+  zeroRecovery: true,
+  couponDates: [
+    '2021-01-11', '2022-01-10', '2023-01-10', '2024-01-10', '2025-01-10',
+    '2026-01-12', '2027-01-11',
+  ],
+  nbDefautsBuffer: 3,
+  nbDefautsWipe: 8,
+  description: '7Y CLN tranche iTraxx Main (2,4 %–6,4 %, levier ×25), coupon 4,10 %, zero recovery, capital à risque',
+  termsheetFichier: '200113_7Y_CLN Main Tranche 4-8 - 4.10% p.a _Annuel_XS2059726096_SOCGEN.pdf',
+})
+
+const bbvaClnZeroRecovery = creditCLN({
+  isin: 'XS2641318121',
+  nom: 'Tranched CLN Zero Recovery (iTraxx S40)',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A / Moody’s A3',
+  nominal: 1_000_000,
+  freq: 'annuel',
+  emission: '2024-02-12',
+  echeance: '2031-01-09',
+  index: 'iTraxx Europe Série 40',
+  nbEntites: 125,
+  attach: 2.4,
+  detach: 5.6,
+  couponPct: 6.85,
+  zeroRecovery: true,
+  nbDefautsBuffer: 3,
+  nbDefautsWipe: 7,
+  couponDates: [
+    '2025-01-09', '2026-01-09', '2027-01-09', '2028-01-09', '2029-01-09',
+    '2030-01-09', '2031-01-09',
+  ],
+  description: '7Y CLN tranche iTraxx S40 (2,4 %–5,6 %, levier ×31,25), coupon 6,85 %, zero recovery, capital à risque',
+  termsheetFichier:
+    '240212_7Y_Tranched CLN Zero Recovery Credit Linked Notes due 2031_Annuel_ XS2641318121_BBVA.pdf',
+})
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -3035,6 +3260,7 @@ const detailed: Product[] = [
   bnpEnergie, bnpTechUs, bbvaSgoElRi, msMerqubeTtef,
   sgPhoenixCms10, sgBearish320, dbBearish350, bnpBearish325, sgBearish635,
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
+  bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).

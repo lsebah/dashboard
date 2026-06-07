@@ -110,6 +110,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
 
       {/* Monitoring de la prochaine observation (depuis le calendrier décodé) */}
       {nextObs &&
+        terms?.kind !== 'credit' &&
         (() => {
           const isRates = terms?.kind === 'rates'
           const ref = isRates ? terms.tauxReference ?? 'taux' : 'worst'
