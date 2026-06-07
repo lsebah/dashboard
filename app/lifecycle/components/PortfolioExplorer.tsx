@@ -497,7 +497,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // reste collée en bas de la fenêtre visible (plus besoin de descendre tout
         // en bas de la liste). Les 6 premières colonnes sont figées à gauche
         // (sticky + fond opaque), le reste défile sous elles sans transparence.
-        <div className="card overflow-auto max-h-[calc(100vh-14rem)]">
+        <div className="card overflow-auto max-h-[calc(100vh_-_14rem)]">
           <table className="text-[12px] border-separate border-spacing-0 w-max min-w-full">
             <thead className="text-slate-500">
               <tr>{COLUMNS.map(headerCell)}</tr>

@@ -97,7 +97,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      <div className="card overflow-auto max-h-[calc(100vh-14rem)]">
+      <div className="card overflow-auto max-h-[calc(100vh_-_14rem)]">
         <table className="w-full text-[13px]">
           <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide sticky top-0">
             <tr>
