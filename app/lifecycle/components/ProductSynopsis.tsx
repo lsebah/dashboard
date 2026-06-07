@@ -13,6 +13,7 @@ import {
   formatMontant,
 } from '@/lib/lifecycle'
 import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
+import { rateNow } from '@/lib/rates-levels'
 
 /** Carte « Synopsis produit » — reproduit la fiche de vizibility.
  *  `compact` : masque de taille UNIVERSELLE (hauteur fixe) pour la grille de
@@ -119,7 +120,11 @@ export default function ProductSynopsis({
         </div>
         <div className="flex justify-between text-[11px]">
           <span className="text-slate-600">
-            {next ? `Prochain événement le ${formatDateFr(next)}` : 'Échéance atteinte'}
+            {next
+              ? `Prochain événement le ${formatDateFr(next)}`
+              : (product.observations?.length ?? 0) === 0
+                ? 'Calendrier à décoder'
+                : 'Échéance atteinte'}
           </span>
           <span className="text-slate-400">{mois} mois restants</span>
         </div>
@@ -194,23 +199,43 @@ export default function ProductSynopsis({
               : 'Sous-jacents'}
           </div>
           <ul className="space-y-0.5">
-            {product.sousJacents.slice(0, 3).map((u) => (
-              <li key={u.nom} className="flex gap-3">
-                <span className="text-slate-700 truncate max-w-[160px]">{u.nom}</span>
-                <span
-                  className={`ml-auto tabular-nums ${
-                    typeof u.perf === 'number'
-                      ? u.perf >= 0
-                        ? 'text-emerald-600'
-                        : 'text-red-600'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(2)}%` : '—'}
-                </span>
-              </li>
-            ))}
-            {product.sousJacents.length === 0 && (
+            {terms?.kind === 'rates'
+              ? (() => {
+                  // Taux : niveau courant du taux de référence vs barrière (strike).
+                  const ref = terms.tauxReference ?? product.sousJacents[0]?.nom ?? 'taux'
+                  const now = rateNow(terms.tauxReference)
+                  const barr = terms.barriereCouponTauxPct ?? terms.barriereRappelTauxPct
+                  return (
+                    <li className="flex gap-3">
+                      <span className="text-slate-700 truncate max-w-[150px]">{ref}</span>
+                      <span className="ml-auto tabular-nums text-slate-700">
+                        {typeof now === 'number' ? `${now.toFixed(2)} %` : '—'}
+                        {typeof barr === 'number' && (
+                          <span className="text-slate-400"> / barr. {barr}%</span>
+                        )}
+                      </span>
+                    </li>
+                  )
+                })()
+              : product.sousJacents.slice(0, 3).map((u) => (
+                  <li key={u.nom} className="flex gap-3">
+                    <span className="text-slate-700 truncate max-w-[150px]">{u.nom}</span>
+                    <span
+                      className={`ml-auto tabular-nums ${
+                        typeof u.perf === 'number'
+                          ? u.perf >= 0
+                            ? 'text-emerald-600'
+                            : 'text-red-600'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {typeof u.perf === 'number'
+                        ? `${u.perf >= 0 ? '+' : ''}${u.perf.toFixed(1)} %`
+                        : '—'}
+                    </span>
+                  </li>
+                ))}
+            {product.sousJacents.length === 0 && terms?.kind !== 'rates' && (
               <li className="text-slate-400">{product.description ?? '—'}</li>
             )}
           </ul>

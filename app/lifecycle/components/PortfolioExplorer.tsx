@@ -118,10 +118,20 @@ const COLUMNS: Col[] = [
 const FROZEN_W: Record<string, number> = {
   rr: 40,
   issue: 88,
-  isin: 132,
-  ts: 34,
+  isin: 118,
+  ts: 26,
   last: 62,
   pnl: 74,
+}
+
+// Couleur par classe d'actif : Equity en noir, une couleur distincte sinon.
+const ASSET_COLOR: Record<string, string> = {
+  equity: 'text-slate-900',
+  rates: 'text-indigo-600',
+  credit: 'text-orange-600',
+  commodity: 'text-amber-700',
+  fx: 'text-teal-600',
+  hybrid: 'text-fuchsia-600',
 }
 const FROZEN_ORDER = ['rr', 'issue', 'isin', 'ts', 'last', 'pnl']
 const FROZEN_LEFT: Record<string, number> = (() => {
@@ -281,7 +291,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         const s = situation(p)
         const f = frozenAttrs('isin', p)
         return (
-          <td key="isin" style={f.style} className={`px-2 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
+          <td key="isin" style={f.style} className={`pl-2 pr-0.5 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
             <span className="inline-flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
               {p.isin}
@@ -292,7 +302,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'ts': {
         const f = frozenAttrs('ts', p)
         return (
-          <td key="ts" style={f.style} className={`px-2 py-1.5 text-center ${f.cls}`}>
+          <td key="ts" style={f.style} className={`px-0.5 py-1.5 text-center ${f.cls}`}>
             {p.termsheetUrl ? (
               <a
                 href={p.termsheetUrl}
@@ -348,7 +358,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'desc':
         return <td key="desc" className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>{p.description ?? p.nom}</td>
       case 'asset':
-        return <td key="asset" className={`px-2 py-1.5 ${p.assetClass === 'credit' ? 'text-orange-600 font-medium' : 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
+        return <td key="asset" className={`px-2 py-1.5 font-medium ${ASSET_COLOR[p.assetClass] ?? 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
       case 'type':
         return <td key="type" className="px-2 py-1.5 whitespace-nowrap">{p.productType ?? '—'}</td>
       case 'mem':
@@ -377,8 +387,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             })()}
           </td>
         )
-      case 'pdi':
-        return <td key="pdi" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{t?.kind === 'autocall' ? `${t.protectionPct}% ${t.protectionStyle === 'europeenne' ? 'KIE' : 'KIA'}` : (p.pdiText ?? (typeof p.pdiPct === 'number' ? `${p.pdiPct}%` : '—'))}</td>
+      case 'pdi': {
+        const v = pdiVal(p)
+        return <td key="pdi" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{typeof v === 'number' ? `${v}%` : '—'}</td>
+      }
       case 'client': {
         const allocs = allocsOf(p)
         return (
