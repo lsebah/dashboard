@@ -1250,6 +1250,228 @@ const msFerroviaires: Product = {
     '260121_5Y_Phoenix Mémoire Ferrovaires_Trimestriel_FRIP000020P5_MSCO.pdf',
 }
 
+// ── XS3231246805 — Santander Phoenix Mémoire Micron + Marvell ───────────────
+const muObs = [
+  '2026-03-11', '2026-06-11', '2026-09-11', '2026-12-11', '2027-03-11',
+  '2027-06-11', '2027-09-13', '2027-12-13', '2028-03-13', '2028-06-12',
+  '2028-09-11', '2028-12-11', '2029-03-12', '2029-06-11', '2029-09-11',
+  '2029-12-11', '2030-03-11', '2030-06-11', '2030-09-11', '2030-12-11',
+]
+const muPay = [
+  '2026-04-07', '2026-07-06', '2026-10-06', '2027-01-06', '2027-04-06',
+  '2027-07-06', '2027-10-06', '2028-01-06', '2028-04-06', '2028-07-06',
+  '2028-10-06', '2029-01-08', '2029-04-06', '2029-07-06', '2029-10-08',
+  '2030-01-07', '2030-04-08', '2030-07-08', '2030-10-07', '2031-01-06',
+]
+// Autocall dégressif 100%→53,05% (-3,13%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const muAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 96.87, 93.74, 90.61, 87.48, 84.35,
+  81.22, 78.09, 74.96, 71.83, 68.7, 65.57, 62.44, 59.31, 56.18, 53.05, undefined,
+]
+const santanderMicronMarvell: Product = {
+  id: 'XS3231246805',
+  nom: 'Phoenix Mémoire Micron + Marvell',
+  isin: 'XS3231246805',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 400_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-12-11',
+  dateEmission: '2026-01-06',
+  dateConstatationFinale: '2030-12-11',
+  dateEcheance: '2031-01-06',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Micron Technology Inc', bloomberg: 'MU US', isin: 'US5951121038', marche: 'NASDAQ' },
+    { nom: 'Marvell Technology Inc', bloomberg: 'MRVL US', isin: 'US5738741041', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 12.8,
+    barriereCouponPct: 50,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(muObs, muPay, {
+    niveauRappelPct: (n) => muAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.2,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Micron + Marvell (Quanto EUR)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier:
+    '260106_5Y_Phoenix Memoire MRVL + MU_Trimestriel_XS3231246805_SANTANDER.pdf',
+}
+
+// ── XS3309979311 — BNP Phoenix Snowball Mensuel Microsoft + Salesforce + SAP ─
+const swObs = [
+  '2026-04-20', '2026-05-20', '2026-06-22', '2026-07-20', '2026-08-20',
+  '2026-09-21', '2026-10-20', '2026-11-20', '2026-12-21', '2027-01-20',
+  '2027-02-22', '2027-03-22', '2027-04-20', '2027-05-20', '2027-06-21',
+  '2027-07-20', '2027-08-20', '2027-09-20', '2027-10-20', '2027-11-22',
+  '2027-12-20', '2028-01-20', '2028-02-22', '2028-03-20', '2028-04-20',
+  '2028-05-22', '2028-06-20', '2028-07-20', '2028-08-21', '2028-09-20',
+  '2028-10-20', '2028-11-20', '2028-12-20', '2029-01-22', '2029-02-20',
+  '2029-03-20', '2029-04-20', '2029-05-21', '2029-06-20', '2029-07-20',
+  '2029-08-20', '2029-09-20', '2029-10-22', '2029-11-20', '2029-12-20',
+  '2030-01-22', '2030-02-20', '2030-03-20', '2030-04-23', '2030-05-20',
+  '2030-06-20', '2030-07-22', '2030-08-20', '2030-09-20', '2030-10-21',
+  '2030-11-20', '2030-12-20', '2031-01-21', '2031-02-20', '2031-03-20',
+]
+const swPay = [
+  '2026-05-05', '2026-06-03', '2026-07-06', '2026-08-03', '2026-09-03',
+  '2026-10-05', '2026-11-03', '2026-12-04', '2027-01-06', '2027-02-03',
+  '2027-03-08', '2027-04-07', '2027-05-04', '2027-06-03', '2027-07-05',
+  '2027-08-03', '2027-09-03', '2027-10-04', '2027-11-03', '2027-12-06',
+  '2028-01-03', '2028-02-03', '2028-03-07', '2028-04-03', '2028-05-05',
+  '2028-06-05', '2028-07-04', '2028-08-03', '2028-09-04', '2028-10-04',
+  '2028-11-03', '2028-12-04', '2029-01-08', '2029-02-05', '2029-03-06',
+  '2029-04-05', '2029-05-07', '2029-06-04', '2029-07-04', '2029-08-03',
+  '2029-09-03', '2029-10-04', '2029-11-05', '2029-12-04', '2030-01-08',
+  '2030-02-05', '2030-03-06', '2030-04-03', '2030-05-08', '2030-06-03',
+  '2030-07-04', '2030-08-05', '2030-09-03', '2030-10-04', '2030-11-04',
+  '2030-12-04', '2031-01-08', '2031-02-04', '2031-03-06', '2031-04-03',
+]
+// Snowball mensuel : autocall dégressif 98%→51% (-1%/mois) ; non-call n=1-11 ; n=60 = maturité.
+const swAer: (number | undefined)[] = [
+  undefined, undefined, undefined, undefined, undefined, undefined,
+  undefined, undefined, undefined, undefined, undefined,
+  98, 97, 96, 95, 94, 93, 92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81,
+  80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 65, 64, 63,
+  62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, undefined,
+]
+const bnpSoftware: Product = {
+  id: 'XS3309979311',
+  nom: 'Phoenix Mémoire Mensuel Software (Microsoft + Salesforce + SAP)',
+  isin: 'XS3309979311',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-20',
+  dateEmission: '2026-04-07',
+  dateConstatationFinale: '2031-03-20',
+  dateEcheance: '2031-04-03',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Microsoft Corp', bloomberg: 'MSFT UW', isin: 'US5949181045', marche: 'NASDAQ' },
+    { nom: 'Salesforce Inc', bloomberg: 'CRM UN', isin: 'US79466L3024', marche: 'NYSE' },
+    { nom: 'SAP SE', bloomberg: 'SAP GY', isin: 'DE0007164600', marche: 'XETRA' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.2,
+    barriereCouponPct: 50,
+    barriereRappelPct: 98,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(swObs, swPay, {
+    niveauRappelPct: (n) => swAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 0.767,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 12,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Snowball Mensuel Wof Microsoft + Salesforce + SAP',
+  badges: ['Worst-of', 'Mensuel', 'Dégressif', 'Snowball'],
+  termsheetFichier:
+    '260407_5Y_Phoenix Mémoire Software (CRM + MSFT + SAP)_Trimestriel_XS3309979311_BNP.pdf',
+}
+
+// ── XS3317870197 — BNP Phoenix Snowball Accor + Carnival + United Airlines ───
+const accObs = [
+  '2026-06-29', '2026-09-28', '2026-12-28', '2027-03-30', '2027-06-28',
+  '2027-09-27', '2027-12-27', '2028-03-27', '2028-06-27', '2028-09-27',
+  '2028-12-27', '2029-03-27', '2029-06-27', '2029-09-27', '2029-12-27',
+  '2030-03-27', '2030-06-27', '2030-09-27', '2030-12-27', '2031-03-27',
+]
+const accPay = [
+  '2026-07-13', '2026-10-12', '2027-01-12', '2027-04-13', '2027-07-12',
+  '2027-10-11', '2028-01-10', '2028-04-10', '2028-07-11', '2028-10-11',
+  '2029-01-11', '2029-04-12', '2029-07-11', '2029-10-11', '2030-01-11',
+  '2030-04-10', '2030-07-11', '2030-10-11', '2031-01-13', '2031-04-10',
+]
+// Autocall dégressif 90%→52,5% (-2,5%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const accAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 90, 87.5, 85, 82.5, 80, 77.5, 75, 72.5,
+  70, 67.5, 65, 62.5, 60, 57.5, 55, 52.5, undefined,
+]
+const bnpAccorCarnivalUal: Product = {
+  id: 'XS3317870197',
+  nom: 'Phoenix Mémoire Accor + Carnival + United Airlines',
+  isin: 'XS3317870197',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-27',
+  dateEmission: '2026-04-10',
+  dateConstatationFinale: '2031-03-27',
+  dateEcheance: '2031-04-10',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Accor SA', bloomberg: 'AC FP', isin: 'FR0000120404', marche: 'Euronext Paris' },
+    { nom: 'Carnival Corp', bloomberg: 'CCL UN', isin: 'US1436583006', marche: 'NYSE' },
+    { nom: 'United Airlines Holdings Inc', bloomberg: 'UAL UW', isin: 'US9100471096', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 13.0,
+    barriereCouponPct: 50,
+    barriereRappelPct: 90,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(accObs, accPay, {
+    niveauRappelPct: (n) => accAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.25,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Accor + Carnival + United Airlines',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '260410_5Y_Phoenix Mémoire Worst of Accor + Carnival corp  + United Airlines_Trimestriel_XS3317870197_BNP.PDF',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -1257,6 +1479,7 @@ const detailed: Product[] = [
   santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
   santanderIntelRhmRno, santanderMsftNvdaMrvl, msKeringUrw,
   efgAmdIntelNvda, msIEdgeAi, msFerroviaires,
+  santanderMicronMarvell, bnpSoftware, bnpAccorCarnivalUal,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
