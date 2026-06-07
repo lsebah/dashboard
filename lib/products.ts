@@ -131,18 +131,19 @@ const bnpSx5e: Product = {
   terms: {
     kind: 'autocall',
     sens: 'standard',
-    effetMemoire: true,
-    couponPa: 11.0,
+    effetMemoire: false, // Athena à prime : pas de coupon mémoire (TS)
+    couponPa: 11.0, // rendement indicatif du step de prime (2,75 %/trim.), pas un coupon distribué
     barriereRappelPct: 100,
     protectionPct: 60,
     protectionStyle: 'europeenne',
     decrement: 'Financing Cost Decrement',
     bonusFinalPct: 88,
   },
+  // Athena : la prime de remboursement croît de 2,75 %/trimestre (108,25 % + n×2,75 %).
+  // PAS de coupon périodique distribué ⇒ on ne met pas couponPct (sinon double compte au P&L).
   observations: buildObservations(sx5eObs, sx5ePay, {
     niveauRappelPct: 100,
     montantRemboursementPct: (n) => 108.25 + n * 2.75,
-    couponPct: 2.75,
     rappelActifAPartirDe: 4, // non-call : rappel actif à partir du T4
   }),
   prixMarche: 100.38,
@@ -151,9 +152,9 @@ const bnpSx5e: Product = {
   statut: 'vivant',
   rr: 'LS',
   productType: 'Athena',
-  description: '8Y Athena Airbag SX5E 8x Repo',
+  description: '8Y Athena SX5E 8x Repo — prime 108,25 %+n×2,75 %, non-call 3 obs., KI 60 % européen',
   clients: ['ALVES - 06001'],
-  badges: ['Non-call (3 obs.)', 'Décrément', 'Effet mémoire'],
+  badges: ['Non-call (3 obs.)', 'Décrément'],
   termsheetFichier:
     '260312_8Y_Athena Airbag SX5E 8x Repo_Annuel_XS3291617812_BNP.PDF',
 }
@@ -1907,9 +1908,9 @@ const sgLvmh: Product = {
   terms: {
     kind: 'autocall',
     sens: 'standard',
-    effetMemoire: true,
+    effetMemoire: false, // Athena à prime : pas de coupon mémoire (TS)
     degressif: false,
-    couponPa: 10.0,
+    couponPa: 10.0, // prime indicative (+5 %/semestre) ; aucun coupon distribué
     barriereRappelPct: 100,
     protectionPct: 70,
     protectionStyle: 'europeenne',
@@ -1922,7 +1923,7 @@ const sgLvmh: Product = {
   }),
   rr: 'LS',
   productType: 'Athena',
-  description: '5Y Athena Autocall LVMH — coupon au rappel 100%+i×5%, KI 70% européen, bonus +50%',
+  description: '5Y Athena Autocall LVMH — prime au rappel 100%+i×5%, KI 70% européen, bonus +50%',
   badges: ['Single', 'Athena', 'Bonus +50%'],
   termsheetFichier: 'TS_FRSG00015O52.pdf',
 }
