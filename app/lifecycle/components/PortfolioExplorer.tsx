@@ -114,9 +114,9 @@ const COLUMNS: { label: string; key?: string; align?: 'center' }[] = [
 const FROZEN: Record<string, string> = {
   rr: 'sticky left-0 w-10',
   issue: 'sticky left-10 w-24',
-  isin: 'sticky left-[136px] w-[150px]',
-  last: 'sticky left-[286px] w-[60px]',
-  pnl: 'sticky left-[346px] w-[72px]',
+  isin: 'sticky left-[136px] w-[152px]',
+  last: 'sticky left-[288px] w-[64px]',
+  pnl: 'sticky left-[352px] w-[76px] shadow-[6px_0_6px_-4px_rgba(15,23,42,0.12)]',
 }
 
 function compare(a: SortVal, b: SortVal): number {
@@ -304,7 +304,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         </div>
       ) : (
         <div className="card overflow-auto max-h-[calc(100vh-20rem)]">
-          <table className="w-full text-[11px] border-collapse">
+          <table className="w-full text-[12px] border-separate border-spacing-0">
             <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
               <tr>
                 {COLUMNS.map((c) => {
@@ -346,17 +346,17 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                   <tr
                     key={p.id}
                     onClick={() => setOpenId(p.id)}
-                    className="cursor-pointer hover:bg-blue-50/60"
+                    className="group cursor-pointer hover:bg-orange-50"
                   >
-                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-10 bg-white`}>
+                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-10 bg-white group-hover:bg-orange-50`}>
                       {p.rr ?? '—'}
                     </td>
                     <td
-                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-10 bg-white`}
+                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-10 bg-white group-hover:bg-orange-50`}
                     >
                       {formatDateFr(p.dateEmission)}
                     </td>
-                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-10 bg-white`}>
+                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-10 bg-white group-hover:bg-orange-50`}>
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
                         {p.isin}
@@ -374,11 +374,11 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                         )}
                       </span>
                     </td>
-                    <td className={`px-2 py-1.5 tabular-nums ${FROZEN.last} z-10 bg-white ${last.cls}`}>
+                    <td className={`px-2 py-1.5 tabular-nums ${FROZEN.last} z-10 bg-white group-hover:bg-orange-50 ${last.cls}`}>
                       {last.text}
                     </td>
                     <td
-                      className={`px-2 py-1.5 tabular-nums ${FROZEN.pnl} z-10 bg-white ${
+                      className={`px-2 py-1.5 tabular-nums ${FROZEN.pnl} z-10 bg-white group-hover:bg-orange-50 ${
                         typeof p.pnlPct === 'number'
                           ? p.pnlPct >= 0
                             ? 'text-emerald-600'
