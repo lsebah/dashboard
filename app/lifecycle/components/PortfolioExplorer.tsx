@@ -305,7 +305,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       ) : (
         <div className="card overflow-auto max-h-[calc(100vh-20rem)]">
           <table className="w-full text-[12px] border-separate border-spacing-0">
-            <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
+            <thead className="bg-slate-50 text-slate-500 sticky top-0 z-20">
               <tr>
                 {COLUMNS.map((c) => {
                   const active = c.key && sort.key === c.key
@@ -316,7 +316,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                       className={`font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 ${
                         c.align === 'center' ? 'text-center' : 'text-left'
                       } ${c.key ? 'cursor-pointer select-none hover:text-cmf-navy' : ''} ${
-                        c.key && FROZEN[c.key] ? `${FROZEN[c.key]} top-0 z-20 bg-slate-50` : ''
+                        c.key && FROZEN[c.key] ? `${FROZEN[c.key]} top-0 z-30 bg-slate-50` : ''
                       }`}
                       title={c.key ? 'Trier' : undefined}
                     >
@@ -348,37 +348,25 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                     onClick={() => setOpenId(p.id)}
                     className="group cursor-pointer hover:bg-orange-50"
                   >
-                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-10 bg-white group-hover:bg-orange-50`}>
+                    <td className={`px-2 py-1.5 text-slate-500 ${FROZEN.rr} z-20 bg-white group-hover:bg-orange-50`}>
                       {p.rr ?? '—'}
                     </td>
                     <td
-                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-10 bg-white group-hover:bg-orange-50`}
+                      className={`px-2 py-1.5 whitespace-nowrap text-slate-500 ${FROZEN.issue} z-20 bg-white group-hover:bg-orange-50`}
                     >
                       {formatDateFr(p.dateEmission)}
                     </td>
-                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-10 bg-white group-hover:bg-orange-50`}>
+                    <td className={`px-2 py-1.5 font-mono whitespace-nowrap ${FROZEN.isin} z-20 bg-white group-hover:bg-orange-50`}>
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
                         {p.isin}
-                        {p.termsheetUrl && (
-                          <a
-                            href={p.termsheetUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-slate-400 hover:text-cmf-blue"
-                            title="Ouvrir la termsheet (PDF)"
-                          >
-                            📄
-                          </a>
-                        )}
                       </span>
                     </td>
-                    <td className={`px-2 py-1.5 tabular-nums ${FROZEN.last} z-10 bg-white group-hover:bg-orange-50 ${last.cls}`}>
+                    <td className={`px-2 py-1.5 tabular-nums ${FROZEN.last} z-20 bg-white group-hover:bg-orange-50 ${last.cls}`}>
                       {last.text}
                     </td>
                     <td
-                      className={`px-2 py-1.5 tabular-nums ${FROZEN.pnl} z-10 bg-white group-hover:bg-orange-50 ${
+                      className={`px-2 py-1.5 tabular-nums ${FROZEN.pnl} z-20 bg-white group-hover:bg-orange-50 ${
                         typeof p.pnlPct === 'number'
                           ? p.pnlPct >= 0
                             ? 'text-emerald-600'
