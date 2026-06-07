@@ -2021,6 +2021,280 @@ const bbvaLvmhTotalAirbag: Product = {
   termsheetFichier: 'TS_XS3250077966_strikée.pdf',
 }
 
+// ── XS3362988811 — BNP Phoenix Snowball Leonardo + Rheinmetall + Safran ──────
+const lrsObs = [
+  '2026-08-13', '2026-11-13', '2027-02-15', '2027-05-13', '2027-08-13',
+  '2027-11-15', '2028-02-14', '2028-05-15', '2028-08-14', '2028-11-13',
+  '2029-02-13', '2029-05-14', '2029-08-13', '2029-11-13', '2030-02-13',
+  '2030-05-13', '2030-08-13', '2030-11-13', '2031-02-13', '2031-05-13',
+]
+const lrsPay = [
+  '2026-08-27', '2026-11-27', '2027-03-01', '2027-05-27', '2027-08-27',
+  '2027-11-29', '2028-02-28', '2028-05-29', '2028-08-28', '2028-11-27',
+  '2029-02-27', '2029-05-28', '2029-08-27', '2029-11-27', '2030-02-27',
+  '2030-05-27', '2030-08-27', '2030-11-27', '2031-02-27', '2031-05-27',
+]
+// Autocall dégressif 89%→66,5% (-1,5%/trim.) ; non-call n=1-4 ; n=20 = maturité.
+const lrsAer: (number | undefined)[] = [
+  undefined, undefined, undefined, undefined, 89, 87.5, 86, 84.5, 83, 81.5,
+  80, 78.5, 77, 75.5, 74, 72.5, 71, 69.5, 68, 66.5,
+]
+const bnpLeonardoRhmSaf: Product = {
+  id: 'XS3362988811',
+  nom: 'Phoenix Snowball Leonardo + Rheinmetall + Safran',
+  isin: 'XS3362988811',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-05-13',
+  dateEmission: '2026-06-04',
+  dateConstatationFinale: '2031-05-13',
+  dateEcheance: '2031-05-27',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Leonardo SpA', bloomberg: 'LDO IM', isin: 'IT0003856405', marche: 'Borsa Italiana' },
+    { nom: 'Rheinmetall AG', bloomberg: 'RHM GY', isin: 'DE0007030009', marche: 'XETRA' },
+    { nom: 'Safran SA', bloomberg: 'SAF FP', isin: 'FR0000073272', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 11.15,
+    barriereCouponPct: 65,
+    barriereRappelPct: 89,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(lrsObs, lrsPay, {
+    niveauRappelPct: (n) => lrsAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.7875,
+    niveauCouponPct: 65,
+    rappelActifAPartirDe: 5,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Snowball Wof Leonardo + Rheinmetall + Safran (défense)',
+  badges: ['Worst-of', 'Dégressif', 'Snowball'],
+  termsheetFichier: 'TS_XS3362988811.PDF',
+}
+
+// ── XS3362988902 — BNP Phoenix Snowball GE + Lockheed Martin + RTX ───────────
+const gltObs = [
+  '2026-08-13', '2026-11-13', '2027-02-16', '2027-05-13', '2027-08-13',
+  '2027-11-15', '2028-02-14', '2028-05-15', '2028-08-14', '2028-11-13',
+  '2029-02-13', '2029-05-14', '2029-08-13', '2029-11-13', '2030-02-13',
+  '2030-05-13', '2030-08-13', '2030-11-13', '2031-02-13', '2031-05-13',
+]
+const gltPay = [
+  '2026-08-27', '2026-11-27', '2027-03-02', '2027-05-27', '2027-08-27',
+  '2027-11-29', '2028-02-28', '2028-05-29', '2028-08-28', '2028-11-27',
+  '2029-02-27', '2029-05-28', '2029-08-27', '2029-11-27', '2030-02-27',
+  '2030-05-27', '2030-08-27', '2030-11-27', '2031-02-27', '2031-05-27',
+]
+// Autocall dégressif 91%→76% (-1%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const gltAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82,
+  81, 80, 79, 78, 77, 76, undefined,
+]
+const bnpGeLmtRtx: Product = {
+  id: 'XS3362988902',
+  nom: 'Phoenix Snowball GE + Lockheed Martin + RTX',
+  isin: 'XS3362988902',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-05-13',
+  dateEmission: '2026-06-04',
+  dateConstatationFinale: '2031-05-13',
+  dateEcheance: '2031-05-27',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'General Electric Co', bloomberg: 'GE UN', isin: 'US3696043013', marche: 'NYSE' },
+    { nom: 'Lockheed Martin Corp', bloomberg: 'LMT UN', isin: 'US5398301094', marche: 'NYSE' },
+    { nom: 'RTX Corp', bloomberg: 'RTX UN', isin: 'US75513E1010', marche: 'NYSE' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 8.15,
+    barriereCouponPct: 60,
+    barriereRappelPct: 91,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(gltObs, gltPay, {
+    niveauRappelPct: (n) => gltAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.0375,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Snowball Wof GE + Lockheed Martin + RTX (EUR Quanto, défense US)',
+  badges: ['Worst-of', 'Dégressif', 'Snowball', 'Quanto EUR'],
+  termsheetFichier: 'TS_XS3362988902.PDF',
+}
+
+// ── XS3049573440 — Santander Phoenix Mémoire Hermès + Kering + LVMH (luxe) ───
+const luxObs = [
+  '2025-08-11', '2025-11-10', '2026-02-10', '2026-05-11', '2026-08-10',
+  '2026-11-10', '2027-02-10', '2027-05-10', '2027-08-10', '2027-11-10',
+  '2028-02-10', '2028-05-10', '2028-08-10', '2028-11-10', '2029-02-12',
+  '2029-05-10', '2029-08-10', '2029-11-12', '2030-02-11', '2030-05-10',
+  '2030-08-12', '2030-11-11', '2031-02-10', '2031-05-12',
+]
+const luxPay = [
+  '2025-08-18', '2025-11-17', '2026-02-16', '2026-05-18', '2026-08-17',
+  '2026-11-16', '2027-02-16', '2027-05-17', '2027-08-16', '2027-11-16',
+  '2028-02-16', '2028-05-16', '2028-08-16', '2028-11-16', '2029-02-16',
+  '2029-05-16', '2029-08-16', '2029-11-16', '2030-02-18', '2030-05-16',
+  '2030-08-16', '2030-11-18', '2031-02-17', '2031-05-16',
+]
+// Autocall dégressif 100%→80% (-1,5%/trim. puis plancher 80%) ; non-call n=1-3 ; n=24 = maturité.
+const luxAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98.5, 97, 95.5, 94, 92.5, 91, 89.5,
+  88, 86.5, 85, 83.5, 82, 80.5, 80, 80, 80, 80, 80, 80, undefined,
+]
+const santanderLuxe: Product = {
+  id: 'XS3049573440',
+  nom: 'Phoenix Mémoire Hermès + Kering + LVMH',
+  isin: 'XS3049573440',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-04-28',
+  dateEmission: '2025-05-16',
+  dateConstatationFinale: '2031-05-12',
+  dateEcheance: '2031-05-16',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Hermès International', bloomberg: 'RMS FP', isin: 'FR0000052292', marche: 'Euronext Paris' },
+    { nom: 'Kering SA', bloomberg: 'KER FP', isin: 'FR0000121485', marche: 'Euronext Paris' },
+    { nom: 'LVMH Moët Hennessy Louis Vuitton SE', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.4,
+    barriereCouponPct: 80,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(luxObs, luxPay, {
+    niveauRappelPct: (n) => luxAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.35,
+    niveauCouponPct: 80,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '6Y Phoenix Mémoire Wof Hermès + Kering + LVMH (luxe)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250516_6Y_Phoenix Memoire Wof Hermes + Kering + LVMH _Trimestriel_XS3049573440_SANTANDER.pdf',
+}
+
+// ── XS2759191286 — BNP Phoenix Mémoire Renault + Stellantis ──────────────────
+// (ISIN de corps de termsheet : XS2759185551 ; clé conservée = ISIN du feed)
+const rsObs = [
+  '2024-07-18', '2024-10-18', '2025-01-20', '2025-04-22', '2025-07-18',
+  '2025-10-20', '2026-01-19', '2026-04-20', '2026-07-20', '2026-10-19',
+  '2027-01-18', '2027-04-19', '2027-07-19', '2027-10-18', '2028-01-18',
+  '2028-04-18', '2028-07-18', '2028-10-18', '2029-01-18', '2029-04-18',
+  '2029-07-18', '2029-10-18', '2030-01-18', '2030-04-18',
+]
+const rsPay = [
+  '2024-08-01', '2024-11-01', '2025-02-03', '2025-05-07', '2025-08-01',
+  '2025-11-03', '2026-02-02', '2026-05-05', '2026-08-03', '2026-11-02',
+  '2027-02-01', '2027-05-03', '2027-08-02', '2027-11-01', '2028-02-01',
+  '2028-05-03', '2028-08-01', '2028-11-01', '2029-02-01', '2029-05-03',
+  '2029-08-01', '2029-11-01', '2030-02-01', '2030-05-07',
+]
+// Autocall constant 100% ; actif dès n=1 ; n=24 = maturité.
+const rsAer: (number | undefined)[] = [
+  100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+  100, 100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const bnpRenaultStellantis: Product = {
+  id: 'XS2759191286',
+  nom: 'Phoenix Mémoire Renault + Stellantis',
+  isin: 'XS2759191286',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 800_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-04-18',
+  dateEmission: '2024-05-02',
+  dateConstatationFinale: '2030-04-18',
+  dateEcheance: '2030-05-07',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Renault SA', bloomberg: 'RNO FP', isin: 'FR0000131906', marche: 'Euronext Paris' },
+    { nom: 'Stellantis NV', bloomberg: 'STLAM IM', isin: 'NL00150001Q9', marche: 'Borsa Italiana' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 11.2,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(rsObs, rsPay, {
+    niveauRappelPct: (n) => rsAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.8,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '6Y Phoenix Mémoire Wof Renault + Stellantis',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '240502_6Y_Phoenix Memory  Wof Stellantis + Renault_Trimestriel_XS2759191286_BNP.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -2031,6 +2305,7 @@ const detailed: Product[] = [
   santanderMicronMarvell, bnpSoftware, bnpAccorCarnivalUal,
   bbvaHealthcareBonus, bbvaRearmement, santanderMaterials, marexUsoInverse,
   bnpSilverMiners, barclaysBnpVeoliaEngie, sgLvmh, bbvaLvmhTotalAirbag,
+  bnpLeonardoRhmSaf, bnpGeLmtRtx, santanderLuxe, bnpRenaultStellantis,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
