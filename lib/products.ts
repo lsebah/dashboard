@@ -635,10 +635,76 @@ const gsSnowball: Product = {
     '240403_5Y_Autocall Airbag  Wof PFE + ROG.SE + SAN.FP_Trimestriel_XS2653912068_GS.pdf',
 }
 
+// ── XS3103610385 — Santander Phoenix Mémoire Schneider + Siemens Energy + Total
+// (le nom de fichier mentionne « Suez » à tort ; sous-jacents réels ci-dessous)
+const sseObs = [
+  '2025-12-29', '2026-06-24', '2026-12-28', '2027-06-24', '2027-12-27',
+  '2028-06-26', '2028-12-26', '2029-06-25', '2029-12-26', '2030-06-24',
+]
+const ssePay = [
+  '2026-01-19', '2026-07-20', '2027-01-18', '2027-07-19', '2028-01-18',
+  '2028-07-18', '2029-01-18', '2029-07-18', '2030-01-18', '2030-07-18',
+]
+// Autocall « low-strike » dégressif 80%→71,25% (-1,25%/sem.) ; non-call sur la
+// 1re obs ; n=10 = maturité (rachat final à barrière 40%).
+const sseAer: (number | undefined)[] = [
+  undefined, 80, 78.75, 77.5, 76.25, 75, 73.75, 72.5, 71.25, undefined,
+]
+const santanderSchneiderEnrTte: Product = {
+  id: 'XS3103610385',
+  nom: 'Phoenix Mémoire Schneider + Siemens Energy + TotalEnergies',
+  isin: 'XS3103610385',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-06-24',
+  dateEmission: '2025-07-18',
+  dateConstatationFinale: '2030-06-24',
+  dateEcheance: '2030-07-18',
+  frequence: 'semestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Schneider Electric SE', bloomberg: 'SU FP', isin: 'FR0000121972', marche: 'Euronext Paris' },
+    { nom: 'Siemens Energy AG', bloomberg: 'ENR GY', isin: 'DE000ENER6Y0', marche: 'XETRA' },
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.0,
+    barriereCouponPct: 60,
+    barriereRappelPct: 80,
+    protectionPct: 40,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(sseObs, ssePay, {
+    niveauRappelPct: (n) => sseAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 5,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Schneider + Siemens Energy + TotalEnergies',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250718_5Y_Phoenix Memory Wof Suez + Siemens Energy TotalEnergies_Semestriel_XS3103610385_SANTANDER.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
+  santanderSchneiderEnrTte,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
