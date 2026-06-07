@@ -507,10 +507,72 @@ const santanderBnpGleAca: Product = {
     '250516_6Y_Phoenix Memoire BNP  Société Générale  Crédit Agricole _Trimestriel_XS3049563219 _SANTANDER.pdf',
 }
 
+// ── XS2862503435 — Barclays Phoenix Memory Wof ASML + Saint-Gobain + Total ──
+const aspObs = [
+  '2025-03-27', '2025-09-29', '2026-03-27', '2026-09-28', '2027-03-30',
+  '2027-09-27', '2028-03-27', '2028-09-27', '2029-03-27', '2029-09-27',
+]
+const aspPay = [
+  '2025-04-10', '2025-10-13', '2026-04-14', '2026-10-12', '2027-04-13',
+  '2027-10-11', '2028-04-10', '2028-10-11', '2029-04-12', '2029-10-11',
+]
+// Autocall à barrière constante 100% ; non-call sur la 1re obs ; n=10 = maturité.
+const aspAer: (number | undefined)[] = [
+  undefined, 100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const barclaysAsmlSgoTte: Product = {
+  id: 'XS2862503435',
+  nom: 'Phoenix Mémoire ASML + Saint-Gobain + TotalEnergies',
+  isin: 'XS2862503435',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 2_200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-09-27',
+  dateEmission: '2024-10-11',
+  dateConstatationFinale: '2029-09-27',
+  dateEcheance: '2029-10-11',
+  frequence: 'semestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'ASML Holding NV', bloomberg: 'ASML NA', marche: 'Euronext Amsterdam' },
+    { nom: 'Compagnie de Saint-Gobain SA', bloomberg: 'SGO FP', marche: 'Euronext Paris' },
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 11.0,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(aspObs, aspPay, {
+    niveauRappelPct: (n) => aspAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 5.5,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof ASML + Saint-Gobain + TotalEnergies',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '241011_5Y_Phoenix Memory  Wof ASML + Saint-Gobin + TotalEnergies_Semestriel_XS2862503435_BARCLAYS.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
-  santanderBancaires, santanderBnpGleAca,
+  santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
