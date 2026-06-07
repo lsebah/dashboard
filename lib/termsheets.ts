@@ -5,6 +5,7 @@
 //  Ajouter une termsheet = ajouter son nom dans l'index (re-synchro du dossier).
 // ─────────────────────────────────────────────────────────────────────────
 import index from './termsheets-index.json'
+import type { Frequency } from './types'
 
 // Site OneDrive personnel + dossier (chemin relatif serveur) des termsheets.
 const ONEDRIVE_SITE =
@@ -49,3 +50,102 @@ export function termsheetUrl(isin: string): string | undefined {
     filePath,
   )}&parent=${encodeURIComponent(TERMSHEETS_FOLDER)}`
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+//  Convention de nommage du dossier Termsheets :
+//   YYMMDD_<durée>Y_<Nom commercial>_<Fréquence>_<ISIN>_<ÉMETTEUR>.pdf
+//  ex. « 260220_5Y_Phoenix Memoire Réarmement Europe_Trimestriel_XS3250102665_BBVA.pdf »
+//  - YYMMDD  : date de strike / émission
+//  - <durée>Y: maturité en années (5Y, 10Y, 12Y…)
+//  - Fréquence : Mensuel | Trimestriel | Semestriel | Annuel | In Fine
+//  - ÉMETTEUR : code court (BNP, SOCGEN, BBVA, GS, MSCO, CITI, CIBC, EFG…)
+//  `parseTermsheetName` lit un nom (même non conforme) ; `canonicalTermsheetName`
+//  reconstruit le nom propre à partir des métadonnées d'un produit.
+// ─────────────────────────────────────────────────────────────────────────
+export interface TermsheetMeta {
+  fichier: string
+  isin?: string
+  dateEmission?: string // ISO (yyyy-mm-dd)
+  dureeAnnees?: number
+  nom?: string
+  frequence?: Frequency
+  emetteur?: string // code court tel qu'écrit dans le nom de fichier
+  conforme: boolean // respecte la convention complète
+}
+
+const FREQ_FROM_LABEL: Record<string, Frequency> = {
+  mensuel: 'mensuel',
+  trimestriel: 'trimestriel',
+  semestriel: 'semestriel',
+  annuel: 'annuel',
+  'in fine': 'in_fine',
+  in_fine: 'in_fine',
+  infine: 'in_fine',
+}
+const FREQ_LABEL_CANON: Record<Frequency, string> = {
+  mensuel: 'Mensuel',
+  trimestriel: 'Trimestriel',
+  semestriel: 'Semestriel',
+  annuel: 'Annuel',
+  in_fine: 'In Fine',
+  autre: 'Autre',
+}
+
+/** Analyse un nom de fichier de termsheet (tolérant aux variantes). */
+export function parseTermsheetName(fichier: string): TermsheetMeta {
+  const base = fichier.replace(/\.(pdf|txt)$/i, '')
+  const isin = base.match(ISIN_RE)?.[0]
+  const tokens = base.split('_').map((t) => t.trim()).filter(Boolean)
+
+  const dateM = tokens[0]?.match(/^(\d{2})(\d{2})(\d{2})$/)
+  const dateEmission = dateM ? `20${dateM[1]}-${dateM[2]}-${dateM[3]}` : undefined
+
+  const iTenor = tokens.findIndex((t) => /^(\d+(?:\.\d+)?)Y+$/i.test(t))
+  const dureeAnnees =
+    iTenor >= 0 ? parseFloat(tokens[iTenor].match(/^(\d+(?:\.\d+)?)Y+$/i)![1]) : undefined
+
+  const iFreq = tokens.findIndex((t) => FREQ_FROM_LABEL[t.toLowerCase()] !== undefined)
+  const frequence = iFreq >= 0 ? FREQ_FROM_LABEL[tokens[iFreq].toLowerCase()] : undefined
+
+  // Émetteur = dernier jeton s'il n'est pas l'ISIN et ressemble à un code.
+  const last = tokens[tokens.length - 1]
+  const emetteur =
+    last && last !== isin && /^[A-Za-z().+\- ]{2,}$/.test(last) ? last : undefined
+
+  // Nom = jetons entre durée et fréquence (sinon entre date et ISIN).
+  let nom: string | undefined
+  if (iTenor >= 0 && iFreq > iTenor) nom = tokens.slice(iTenor + 1, iFreq).join(' ').trim() || undefined
+  else if (isin) {
+    const iIsin = tokens.findIndex((t) => t.includes(isin))
+    if (iIsin > 1) nom = tokens.slice(1, iIsin).join(' ').trim() || undefined
+  }
+
+  const conforme = !!(dateEmission && dureeAnnees && frequence && isin && emetteur)
+  return { fichier, isin, dateEmission, dureeAnnees, nom, frequence, emetteur, conforme }
+}
+
+/** Reconstruit le nom canonique (convention) à partir des métadonnées produit. */
+export function canonicalTermsheetName(p: {
+  dateEmission: string
+  dureeAnnees: number
+  nom: string
+  frequence: Frequency
+  isin: string
+  emetteur: string // code court (BNP, SOCGEN…)
+}): string {
+  const d = p.dateEmission.replace(/-/g, '').slice(2) // YYMMDD
+  const nom = p.nom.replace(/[\\/_]+/g, ' ').replace(/\s+/g, ' ').trim()
+  const freq = FREQ_LABEL_CANON[p.frequence] || 'Autre'
+  return `${d}_${p.dureeAnnees}Y_${nom}_${freq}_${p.isin}_${p.emetteur}.pdf`
+}
+
+/** Métadonnées de la termsheet d'un ISIN (depuis le nom de fichier). */
+export function termsheetMeta(isin: string): TermsheetMeta | undefined {
+  const f = TERMSHEET_FILES[isin]
+  return f ? parseTermsheetName(f) : undefined
+}
+
+/** Termsheets du dossier dont le nom ne respecte pas la convention (à renommer). */
+export const TERMSHEET_NONCONFORME: TermsheetMeta[] = (index as string[])
+  .map(parseTermsheetName)
+  .filter((m) => !m.conforme)

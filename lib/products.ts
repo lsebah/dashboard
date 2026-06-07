@@ -14,7 +14,7 @@ import type {
 } from './types'
 import { buildObservations, pnlAvecCoupons } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
-import { termsheetUrl, termsheetFile } from './termsheets'
+import { termsheetUrl, termsheetFile, termsheetMeta } from './termsheets'
 import {
   feedIsins,
   priceByIsin,
@@ -3815,6 +3815,42 @@ const efgWarrantSeniorLoans: Product = {
   badges: ['Warrant', 'Sans protection'],
 }
 
+// ── XS2803802532 — CIBC Participation capital protégé S&P 500 (CERTI+ Low 75) ─
+const cibcParticipationSpx: Product = {
+  id: 'XS2803802532',
+  nom: 'Participation capital protégé S&P 500 (CERTI+ Low Strike 75)',
+  isin: 'XS2803802532',
+  emetteur: 'Canadian Imperial Bank of Commerce',
+  notationEmetteur: 'Aa2 / A+ / AA',
+  assetClass: 'equity',
+  family: 'participation',
+  devise: 'USD',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-04-09',
+  dateEmission: '2024-04-23',
+  dateConstatationFinale: '2026-04-09',
+  dateEcheance: '2026-04-23',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [
+    {
+      nom: 'S&P 500 Futures Excess Return Index',
+      bloomberg: 'SPXFP Index',
+      niveauInitial: 455.43,
+      devise: 'USD',
+    },
+  ],
+  pdiPct: 75,
+  pdiText: '75 % (capital protégé, airbag ×1,33)',
+  rr: 'LS',
+  productType: 'Participation (capital protégé)',
+  description:
+    '2Y Participation capital protégé S&P 500 Futures ER — 100 % rendu jusqu’à −25 %, participation 132,5 % à la hausse, airbag sous 75 %, in fine',
+  badges: ['Single', 'Capital protégé', 'Participation 132,5 %'],
+}
+
 // ── Produits « identité seule » (reporting mensuel, termsheet à fournir) ──────
 function addAnnees(d: string, y: number): string {
   const dt = new Date(d)
@@ -4225,6 +4261,7 @@ const metaProducts2: Product[] = [
 const detailed: Product[] = [
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
   msMxeadt50, gsClnSgSub, efgChinaParticipation, efgWarrantSeniorLoans,
+  cibcParticipationSpx,
   ...metaProducts, ...metaProducts2,
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
@@ -4246,24 +4283,89 @@ const detailed: Product[] = [
 const defByIsin = new Map<string, Product>()
 for (const p of [...detailed, ...portfolioImport]) if (!defByIsin.has(p.isin)) defByIsin.set(p.isin, p)
 
-// Produit minimal pour un ISIN présent au feed mais sans définition (à décoder).
+// Code émetteur (nom de fichier) → raison sociale lisible.
+const EMETTEUR_NOM: Record<string, string> = {
+  BNP: 'BNP Paribas',
+  SOCGEN: 'Société Générale',
+  SG: 'Société Générale',
+  BBVA: 'BBVA',
+  GS: 'Goldman Sachs International',
+  MSCO: 'Morgan Stanley',
+  CITI: 'Citigroup',
+  CIBC: 'Canadian Imperial Bank of Commerce',
+  EFG: 'EFG International',
+  BARCLAYS: 'Barclays',
+  SANTANDER: 'Banco Santander',
+  MAREX: 'Marex Financial',
+  DB: 'Deutsche Bank',
+  CIC: 'CIC',
+  BOFA: 'Bank of America',
+  BIL: 'Banque Internationale à Luxembourg',
+  VINGA: 'Vinga',
+}
+function issuerName(code?: string): string {
+  if (!code) return '—'
+  return EMETTEUR_NOM[code.toUpperCase()] ?? code
+}
+
+// Classe d'actif + famille inférées du nom commercial de la termsheet.
+function inferFamilyAsset(nom?: string): { asset: AssetClass; family: ProductFamily } {
+  const s = nom ?? ''
+  if (/CLN|Credit.?Linked|Tranche/i.test(s)) return { asset: 'credit', family: 'credit_linked' }
+  if (/TARN|CMS|Bearish|Callable|FRN|Zero.?Coupon|\bZC\b|Steepener|Range/i.test(s))
+    return { asset: 'rates', family: 'rates_structured' }
+  if (/Participation|Warrant|Call Spread|Mini.?Future|Booster (?!Wof)/i.test(s))
+    return { asset: 'equity', family: 'participation' }
+  if (/Phoenix|Athena|Autocall|Snowball|Airbag|Recovery|Bonus|Reverse/i.test(s))
+    return { asset: 'equity', family: 'autocall' }
+  return { asset: 'equity', family: 'other' }
+}
+function typeFromName(nom?: string): string | undefined {
+  const s = nom ?? ''
+  for (const [re, label] of [
+    [/Phoenix/i, 'Phoenix'],
+    [/Athena/i, 'Athena'],
+    [/Snowball/i, 'Snowball'],
+    [/TARN/i, 'TARN'],
+    [/CLN|Tranche/i, 'CLN'],
+    [/Callable|FRN/i, 'Callable'],
+    [/Participation/i, 'Participation'],
+    [/Warrant/i, 'Warrant'],
+    [/Autocall|Recovery|Reverse/i, 'Autocall'],
+  ] as [RegExp, string][])
+    if (re.test(s)) return label
+  return undefined
+}
+
+// Produit minimal pour un ISIN présent au feed mais sans définition. Si une
+// termsheet existe dans le dossier, on AUTO-RENSEIGNE l'identité depuis son nom
+// de fichier (convention) ⇒ tout fichier déposé fait apparaître son produit.
 function minimal(isin: string): Product {
+  const meta = termsheetMeta(isin)
+  const { asset, family } = inferFamilyAsset(meta?.nom)
+  const fin =
+    meta?.dateEmission && meta?.dureeAnnees
+      ? addAnnees(meta.dateEmission, meta.dureeAnnees)
+      : ''
   return {
     id: isin,
-    nom: isin,
+    nom: meta?.nom ?? isin,
     isin,
-    emetteur: '—',
-    assetClass: 'equity',
-    family: 'other',
+    emetteur: issuerName(meta?.emetteur),
+    assetClass: meta?.nom ? asset : 'equity',
+    family: meta?.nom ? family : 'other',
     devise: deviseByIsin[isin] ?? 'EUR',
     nominal: 0,
-    dateConstatationInitiale: '',
-    dateEmission: '',
-    dateConstatationFinale: '',
-    dateEcheance: '',
-    frequence: 'autre',
+    dateConstatationInitiale: meta?.dateEmission ?? '',
+    dateEmission: meta?.dateEmission ?? '',
+    dateConstatationFinale: fin,
+    dateEcheance: fin,
+    frequence: meta?.frequence ?? 'autre',
     basket: 'single',
     sousJacents: [],
+    productType: typeFromName(meta?.nom),
+    description: meta?.nom,
+    badges: meta ? [meta.conforme ? 'TS — auto' : 'TS à renommer'] : undefined,
   }
 }
 
