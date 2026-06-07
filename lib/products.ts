@@ -287,8 +287,80 @@ const bnpDefense: Product = {
     '260311_5Y_Athena Airbag Mensuel sur Thales Safran et Rheinmetall_Mensuel_XS3266363806_BNP.PDF',
 }
 
+// ── 5) BBVA — Phoenix Mémoire Dégressif Worst-of RACE + ACA + NOVOB ──────────
+//    Décodé depuis la termsheet (Series 34935). Autocall dégressif 100→70 %
+//    (−2 %/trim.), non-call 3 trimestres, coupon 3,25 %/trim. à mémoire (13 % p.a.),
+//    barrière coupon 70 %, protection KI 50 % européenne.
+const raceObs = [
+  '2026-01-16', '2026-04-16', '2026-07-16', '2026-10-16', '2027-01-18',
+  '2027-04-16', '2027-07-16', '2027-10-18', '2028-01-17', '2028-04-18',
+  '2028-07-17', '2028-10-16', '2029-01-16', '2029-04-16', '2029-07-16',
+  '2029-10-16', '2030-01-16', '2030-04-16', '2030-07-16', '2030-10-16',
+]
+const racePay = [
+  '2026-01-23', '2026-04-23', '2026-07-23', '2026-10-23', '2027-01-25',
+  '2027-04-23', '2027-07-23', '2027-10-25', '2028-01-24', '2028-04-25',
+  '2028-07-24', '2028-10-23', '2029-01-23', '2029-04-23', '2029-07-23',
+  '2029-10-23', '2030-01-23', '2030-04-25', '2030-07-23', '2030-10-23',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const raceAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98, 96, 94, 92, 90, 88,
+  86, 84, 82, 80, 78, 76, 74, 72, 70, undefined,
+]
+
+const bbvaRaceAcaNovob: Product = {
+  id: 'XS3148625976',
+  nom: 'Phoenix Mémoire Dégressif RACE + ACA + NOVOB',
+  isin: 'XS3148625976',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria',
+  notationEmetteur: 'Moody’s A2 / S&P A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-10-16',
+  dateEmission: '2025-10-30',
+  dateConstatationFinale: '2030-10-16',
+  dateEcheance: '2030-10-23',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Novo Nordisk', bloomberg: 'NOVOB DC', isin: 'DK0062498333', marche: 'Copenhague' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris' },
+    { nom: 'Ferrari NV', bloomberg: 'RACE IM', isin: 'NL0011585146', marche: 'Borsa Italiana' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 13.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(raceObs, racePay, {
+    niveauRappelPct: (n) => raceAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.25,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Dégressif Wof RACE + ACA + NOVOB',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '251030_5Y_Phoenix Memory Degressif RACE + ACA + NOVOB_Trimestriel_XS3148625976_BBVA.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
-const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso]
+const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
 const defByIsin = new Map<string, Product>()
