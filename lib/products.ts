@@ -2656,6 +2656,204 @@ const sgPhoenixCms10: Product = {
     '240630_12Y_Phoenix Memory sur Taux en Juin 2024 -  2.30%3.20% (ADEQUITY)_Semestriel_FR001400OZR1_.pdf',
 }
 
+// ── Helper : produit Phoenix Bearish sur taux (capital garanti) ──────────────
+function phoenixBearish(p: {
+  isin: string
+  nom: string
+  emetteur: string
+  garant?: string
+  notationEmetteur?: string
+  nominal: number
+  freq: Product['frequence']
+  initial: string
+  emission: string
+  finale: string
+  echeance: string
+  tauxRef: string
+  couponPct: number
+  barriereCoupon: number
+  barriereRappel: number
+  memoire?: boolean
+  couponGaranti?: number
+  inFine?: boolean
+  obs: string[]
+  pay: string[]
+  description: string
+  termsheetFichier: string
+}): Product {
+  // Barrière de rappel = constante sur la fenêtre d'autocall, sauf la dernière
+  // observation (maturité) qui n'est pas un rappel.
+  const rappel = p.obs.map((_, i) => (i < p.obs.length - 1 ? p.barriereRappel : undefined))
+  return {
+    id: p.isin,
+    nom: p.nom,
+    isin: p.isin,
+    emetteur: p.emetteur,
+    garant: p.garant,
+    notationEmetteur: p.notationEmetteur,
+    assetClass: 'rates',
+    family: 'rates_structured',
+    devise: 'EUR',
+    nominal: p.nominal,
+    valeurNominale: 1000,
+    prixEmission: 100,
+    dateConstatationInitiale: p.initial,
+    dateEmission: p.emission,
+    dateConstatationFinale: p.finale,
+    dateEcheance: p.echeance,
+    frequence: p.freq,
+    basket: 'single',
+    sousJacents: [{ nom: p.tauxRef, marche: 'Taux' }],
+    terms: {
+      kind: 'rates',
+      type: 'phoenix_taux',
+      sens: 'bearish',
+      tauxReference: p.tauxRef,
+      effetMemoire: p.memoire ?? false,
+      couponConditionnelPct: p.couponPct,
+      couponConditionnelPa: p.couponPct,
+      couponGarantiPct: p.couponGaranti,
+      barriereCouponTauxPct: p.barriereCoupon,
+      barriereRappelTauxPct: p.barriereRappel,
+      capitalGaranti: true,
+      inFine: p.inFine ?? false,
+    },
+    observations: buildObservations(p.obs, p.pay, {
+      niveauRappelPct: (n) => rappel[n - 1],
+      montantRemboursementPct: 100,
+      couponPct: p.couponPct,
+      niveauCouponPct: p.barriereCoupon,
+      rappelActifAPartirDe: 1,
+    }),
+    rr: 'LS',
+    productType: 'Phoenix Taux',
+    description: p.description,
+    badges: ['Taux', 'Bearish CMS10', 'Capital garanti'],
+    termsheetFichier: p.termsheetFichier,
+  }
+}
+
+const sgBearish320 = phoenixBearish({
+  isin: 'FRSG00014VA7',
+  nom: 'Phoenix Bearish EUR CMS 10Y (3,20 % / 2,40 %)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 600_000,
+  freq: 'annuel',
+  initial: '2024-05-02',
+  emission: '2024-05-09',
+  finale: '2036-05-02',
+  echeance: '2036-05-09',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 7.5,
+  barriereCoupon: 3.2,
+  barriereRappel: 2.4,
+  obs: [
+    '2025-05-02', '2026-05-04', '2027-05-03', '2028-05-02', '2029-05-02',
+    '2030-05-02', '2031-05-02', '2032-05-03', '2033-05-02', '2034-05-02',
+    '2035-05-02', '2036-05-02',
+  ],
+  pay: [
+    '2025-05-09', '2026-05-11', '2027-05-10', '2028-05-09', '2029-05-09',
+    '2030-05-09', '2031-05-09', '2032-05-10', '2033-05-09', '2034-05-09',
+    '2035-05-09', '2036-05-09',
+  ],
+  description: '12Y Phoenix Bearish EUR CMS 10Y — coupon 7,5 % si ≤ 3,20 %, autocall si ≤ 2,40 %, capital garanti',
+  termsheetFichier:
+    '240509_12Y_Phoenix Bearish CMS10  Barrières 3.20%-2.40%_Annuel_FRSG00014VA7_SOCGEN.pdf',
+})
+
+const dbBearish350 = phoenixBearish({
+  isin: 'XS0461619396',
+  nom: 'Phoenix Bearish EUR CMS 10Y (3,50 % / 2,50 %)',
+  emetteur: 'Deutsche Bank AG',
+  notationEmetteur: 'S&P A / Moody’s A1 / Fitch A',
+  nominal: 5_000_000,
+  freq: 'annuel',
+  initial: '2024-04-09',
+  emission: '2024-04-25',
+  finale: '2031-04-09',
+  echeance: '2031-04-25',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 5.4,
+  barriereCoupon: 3.5,
+  barriereRappel: 2.5,
+  inFine: true,
+  obs: [
+    '2025-04-09', '2026-04-13', '2027-04-12', '2028-04-07', '2029-04-11',
+    '2030-04-09', '2031-04-09',
+  ],
+  pay: [
+    '2025-04-25', '2026-04-27', '2027-04-26', '2028-04-25', '2029-04-25',
+    '2030-04-25', '2031-04-25',
+  ],
+  description: '7Y Phoenix Bearish EUR CMS 10Y — coupon 5,4 % si ≤ 3,50 %, autocall si ≤ 2,50 %, capital garanti in fine',
+  termsheetFichier:
+    '240425_7Y_Phoenix Bearish CMS10  - Barrière 3.50%-2.50%_Annuel_XS0461619396_DB.pdf',
+})
+
+const bnpBearish325 = phoenixBearish({
+  isin: 'XS2815466193',
+  nom: 'Phoenix Bearish EUR CMS 10Y (3,25 % / 2,50 %)',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch A+',
+  nominal: 1_000_000,
+  freq: 'annuel',
+  initial: '2024-07-29',
+  emission: '2024-07-31',
+  finale: '2034-07-27',
+  echeance: '2034-07-31',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 6.5,
+  barriereCoupon: 3.25,
+  barriereRappel: 2.5,
+  obs: [
+    '2025-07-29', '2026-07-29', '2027-07-29', '2028-07-27', '2029-07-27',
+    '2030-07-29', '2031-07-29', '2032-07-29', '2033-07-28', '2034-07-27',
+  ],
+  pay: [
+    '2025-07-31', '2026-07-31', '2027-08-02', '2028-07-31', '2029-07-31',
+    '2030-07-31', '2031-07-31', '2032-08-02', '2033-08-01', '2034-07-31',
+  ],
+  description: '10Y Phoenix Bearish EUR CMS 10Y — coupon 6,5 % si ≤ 3,25 %, autocall si ≤ 2,50 %, capital garanti',
+  termsheetFichier:
+    '240731_10Y_Phoenix Bearish CMS10 - Barrière 3.25%-2.50%_Annuel_XS2815466193_BNP.pdf',
+})
+
+const sgBearish635 = phoenixBearish({
+  isin: 'FRSG00015Y19',
+  nom: 'Phoenix Bearish EUR CMS 10Y (6,35 % / 2,10 %)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 2_000_000,
+  freq: 'annuel',
+  initial: '2026-03-31',
+  emission: '2025-04-09',
+  finale: '2037-03-31',
+  echeance: '2037-04-09',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 6.35,
+  barriereCoupon: 3.25,
+  barriereRappel: 2.1,
+  inFine: true,
+  obs: [
+    '2026-03-31', '2027-04-02', '2028-04-03', '2029-03-29', '2030-04-02',
+    '2031-04-02', '2032-04-02', '2033-04-04', '2034-03-31', '2035-04-02',
+    '2036-04-02', '2037-03-31',
+  ],
+  pay: [
+    '2026-04-09', '2027-04-09', '2028-04-10', '2029-04-09', '2030-04-09',
+    '2031-04-09', '2032-04-09', '2033-04-11', '2034-04-11', '2035-04-09',
+    '2036-04-09', '2037-04-09',
+  ],
+  description: '12Y Phoenix Bearish EUR CMS 10Y — coupon 6,35 % si ≤ 3,25 %, autocall si ≤ 2,10 %, capital garanti in fine',
+  termsheetFichier:
+    '250409_12Y_Phoenix Bearish CMS10 - 6.35% _Annuel_FRSG00015Y19_SOCGEN.pdf',
+})
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -2668,7 +2866,7 @@ const detailed: Product[] = [
   bnpSilverMiners, barclaysBnpVeoliaEngie, sgLvmh, bbvaLvmhTotalAirbag,
   bnpLeonardoRhmSaf, bnpGeLmtRtx, santanderLuxe, bnpRenaultStellantis,
   bnpEnergie, bnpTechUs, bbvaSgoElRi, msMerqubeTtef,
-  sgPhoenixCms10,
+  sgPhoenixCms10, sgBearish320, dbBearish350, bnpBearish325, sgBearish635,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
