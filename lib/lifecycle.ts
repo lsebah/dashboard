@@ -12,11 +12,11 @@ export function buildObservations(
   payDates: string[],
   opts: {
     /** Niveau de rappel (% initial) — constant ou fonction de n (1-based). */
-    niveauRappelPct?: number | ((n: number) => number)
+    niveauRappelPct?: number | ((n: number) => number | undefined)
     /** Montant de remboursement si rappelé (% nominal) — constant ou f(n). */
-    montantRemboursementPct?: number | ((n: number) => number)
+    montantRemboursementPct?: number | ((n: number) => number | undefined)
     /** Coupon de la période (% nominal) — constant ou f(n). */
-    couponPct?: number | ((n: number) => number)
+    couponPct?: number | ((n: number) => number | undefined)
     /** Barrière de coupon (% initial). */
     niveauCouponPct?: number
     /** Première période où le rappel devient actif (Oxygène). 1 = dès le départ. */
@@ -24,7 +24,7 @@ export function buildObservations(
   } = {},
 ): Observation[] {
   const val = (
-    v: number | ((n: number) => number) | undefined,
+    v: number | ((n: number) => number | undefined) | undefined,
     n: number,
   ): number | undefined => (typeof v === 'function' ? v(n) : v)
 
