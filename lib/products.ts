@@ -436,9 +436,81 @@ const santanderBancaires: Product = {
     '251219_7Y_Phoenix Memoire Bancaires Francaises_Trimestriel_XS3231258727_SANTANDER.pdf',
 }
 
+// ── XS3049563219 — Santander Phoenix Mémoire BNP + SocGen + Crédit Agricole ──
+const sbgObs = [
+  '2025-08-11', '2025-11-10', '2026-02-10', '2026-05-11', '2026-08-10',
+  '2026-11-10', '2027-02-10', '2027-05-10', '2027-08-10', '2027-11-10',
+  '2028-02-10', '2028-05-10', '2028-08-10', '2028-11-10', '2029-02-12',
+  '2029-05-10', '2029-08-10', '2029-11-12', '2030-02-11', '2030-05-10',
+  '2030-08-12', '2030-11-11', '2031-02-10', '2031-05-12',
+]
+const sbgPay = [
+  '2025-08-18', '2025-11-17', '2026-02-16', '2026-05-18', '2026-08-17',
+  '2026-11-16', '2027-02-16', '2027-05-17', '2027-08-16', '2027-11-16',
+  '2028-02-16', '2028-05-16', '2028-08-16', '2028-11-16', '2029-02-16',
+  '2029-05-16', '2029-08-16', '2029-11-16', '2030-02-18', '2030-05-16',
+  '2030-08-16', '2030-11-18', '2031-02-17', '2031-05-16',
+]
+// Barrière d'autocall dégressive (-1.5%/trim. de 100% à 80%, puis plancher 80%).
+// Non-call jusqu'au n=3 ; n=24 = maturité (rachat final à barrière 50%).
+const sbgAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98.5, 97, 95.5, 94, 92.5, 91,
+  89.5, 88, 86.5, 85, 83.5, 82, 80.5, 80, 80, 80, 80, 80, 80, undefined,
+]
+const santanderBnpGleAca: Product = {
+  id: 'XS3049563219',
+  nom: 'Phoenix Mémoire BNP + SocGen + Crédit Agricole',
+  isin: 'XS3049563219',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-04-28',
+  dateEmission: '2025-05-16',
+  dateConstatationFinale: '2031-05-12',
+  dateEcheance: '2031-05-16',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+    { nom: 'Société Générale SA', bloomberg: 'GLE FP', isin: 'FR0000130809', marche: 'Euronext Paris' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.68,
+    barriereCouponPct: 80,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(sbgObs, sbgPay, {
+    niveauRappelPct: (n) => sbgAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.42,
+    niveauCouponPct: 80,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '6Y Phoenix Mémoire Bancaires Françaises (BNP + GLE + ACA)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250516_6Y_Phoenix Memoire BNP  Société Générale  Crédit Agricole _Trimestriel_XS3049563219 _SANTANDER.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
-  bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob, santanderBancaires,
+  bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
+  santanderBancaires, santanderBnpGleAca,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
