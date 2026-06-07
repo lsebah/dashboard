@@ -1472,6 +1472,265 @@ const bnpAccorCarnivalUal: Product = {
     '260410_5Y_Phoenix Mémoire Worst of Accor + Carnival corp  + United Airlines_Trimestriel_XS3317870197_BNP.PDF',
 }
 
+// ── XS3204634086 — BBVA Autocall + Bonus Europe Healthcare (indice décrément) ─
+// Snowball : trigger d'autocall plat 100%, prime de rappel croissante
+// 110%→215% (+5%/sem.) ; coupon Phoenix 6% digital seulement sur les 3 1res obs ;
+// bonus final 220% si l'indice ≥ 100% à maturité. KI 50% européen.
+const hcObs = [
+  '2027-03-15', '2027-09-13', '2028-03-13', '2028-09-13', '2029-03-13',
+  '2029-09-13', '2030-03-13', '2030-09-13', '2031-03-13', '2031-09-15',
+  '2032-03-15', '2032-09-13', '2033-03-14', '2033-09-13', '2034-03-13',
+  '2034-09-13', '2035-03-13', '2035-09-13', '2036-03-13', '2036-09-15',
+  '2037-03-13', '2037-09-14', '2038-03-15',
+]
+const hcPay = [
+  '2027-03-22', '2027-09-20', '2028-03-20', '2028-09-20', '2029-03-20',
+  '2029-09-20', '2030-03-20', '2030-09-20', '2031-03-20', '2031-09-22',
+  '2032-03-22', '2032-09-20', '2033-03-21', '2033-09-20', '2034-03-20',
+  '2034-09-20', '2035-03-20', '2035-09-20', '2036-03-20', '2036-09-22',
+  '2037-03-20', '2037-09-21', '2038-03-22',
+]
+// Prime de rappel croissante (n=1→22) puis bonus 220% à maturité (n=23).
+const hcErv = [
+  110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175,
+  180, 185, 190, 195, 200, 205, 210, 215, 220,
+]
+const bbvaHealthcareBonus: Product = {
+  id: 'XS3204634086',
+  nom: 'Autocall Bonus Europe Healthcare',
+  isin: 'XS3204634086',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-13',
+  dateEmission: '2026-01-07',
+  dateConstatationFinale: '2038-03-15',
+  dateEcheance: '2038-03-22',
+  frequence: 'semestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Bloomberg Europe Health Care Select Multi Factor Decrement 50pts GR', bloomberg: 'EURHGPT', marche: 'Indice' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 12.0,
+    barriereCouponPct: 100,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 120,
+  },
+  observations: buildObservations(hcObs, hcPay, {
+    niveauRappelPct: (n) => (n <= 22 ? 100 : undefined),
+    montantRemboursementPct: (n) => hcErv[n - 1],
+    couponPct: (n) => (n <= 3 ? 6 : undefined),
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall Bonus',
+  description: '12Y Autocall Bonus sur indice Bloomberg Europe Healthcare (décrément 50 pts)',
+  badges: ['Indice décrément', 'Snowball', 'Bonus'],
+  termsheetFichier:
+    '260107_12Y_Autocall + Bonus Europe Healthcare_Semestriel_XS3204634086_BBVA.pdf',
+}
+
+// ── XS3250102665 — BBVA Phoenix Mémoire « Réarmement Europe » (défense) ──────
+const rearObs = [
+  '2026-04-27', '2026-07-27', '2026-10-26', '2027-01-26', '2027-04-26',
+  '2027-07-26', '2027-10-26', '2028-01-26', '2028-04-26', '2028-07-26',
+  '2028-10-26', '2029-01-26', '2029-04-26', '2029-07-26', '2029-10-26',
+  '2030-01-28', '2030-04-26', '2030-07-26', '2030-10-28', '2031-01-27',
+]
+const rearPay = [
+  '2026-05-05', '2026-08-03', '2026-11-02', '2027-02-02', '2027-05-03',
+  '2027-08-02', '2027-11-02', '2028-02-02', '2028-05-04', '2028-08-02',
+  '2028-11-02', '2029-02-02', '2029-05-04', '2029-08-02', '2029-11-02',
+  '2030-02-04', '2030-05-06', '2030-08-02', '2030-11-04', '2031-02-03',
+]
+// Autocall à barrière constante 90% ; non-call n=1-4 ; n=20 = maturité.
+const rearAer: (number | undefined)[] = [
+  undefined, undefined, undefined, undefined, 90, 90, 90, 90, 90, 90, 90,
+  90, 90, 90, 90, 90, 90, 90, 90, undefined,
+]
+const bbvaRearmement: Product = {
+  id: 'XS3250102665',
+  nom: 'Phoenix Mémoire Réarmement Europe (Leonardo + Rheinmetall + Safran)',
+  isin: 'XS3250102665',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-01-26',
+  dateEmission: '2026-02-20',
+  dateConstatationFinale: '2031-01-27',
+  dateEcheance: '2031-02-03',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Leonardo SpA', bloomberg: 'LDO IM', isin: 'IT0003856405', marche: 'Borsa Italiana' },
+    { nom: 'Rheinmetall AG', bloomberg: 'RHM GY', isin: 'DE0007030009', marche: 'XETRA' },
+    { nom: 'Safran SA', bloomberg: 'SAF FP', isin: 'FR0000073272', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 10.0,
+    barriereCouponPct: 65,
+    barriereRappelPct: 90,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(rearObs, rearPay, {
+    niveauRappelPct: (n) => rearAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.5,
+    niveauCouponPct: 65,
+    rappelActifAPartirDe: 5,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Leonardo + Rheinmetall + Safran (défense européenne)',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '260220_5Y_Phoenix Memoire Réarmement Europe_Trimestriel_XS3250102665_BBVA.pdf',
+}
+
+// ── XS3292034843 — Santander Phoenix Mémoire LafargeHolcim + Heidelberg + Legrand
+const matObs = [
+  '2026-07-24', '2026-10-26', '2027-01-25', '2027-04-26', '2027-07-26',
+  '2027-10-25', '2028-01-24', '2028-04-24', '2028-07-24', '2028-10-24',
+  '2029-01-24', '2029-04-24', '2029-07-24', '2029-10-24', '2030-01-24',
+  '2030-04-24', '2030-07-24', '2030-10-24', '2031-01-24', '2031-04-24',
+  '2031-07-24', '2031-10-24', '2032-01-26', '2032-04-26',
+]
+const matPay = [
+  '2026-08-10', '2026-11-09', '2027-02-08', '2027-05-10', '2027-08-09',
+  '2027-11-08', '2028-02-08', '2028-05-08', '2028-08-08', '2028-11-08',
+  '2029-02-08', '2029-05-08', '2029-08-08', '2029-11-08', '2030-02-08',
+  '2030-05-08', '2030-08-08', '2030-11-08', '2031-02-10', '2031-05-08',
+  '2031-08-08', '2031-11-10', '2032-02-09', '2032-05-10',
+]
+// Autocall dégressif 100%→85% (-1,5%/trim. puis plancher 85%) ; non-call n=1-3 ; n=24 = maturité.
+const matAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98.5, 97, 95.5, 94, 92.5, 91, 89.5,
+  88, 86.5, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, undefined,
+]
+const santanderMaterials: Product = {
+  id: 'XS3292034843',
+  nom: 'Phoenix Mémoire LafargeHolcim + HeidelbergCement + Legrand',
+  isin: 'XS3292034843',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-04-24',
+  dateEmission: '2026-05-08',
+  dateConstatationFinale: '2032-04-26',
+  dateEcheance: '2032-05-10',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'LafargeHolcim Ltd', bloomberg: 'HOLN SW', isin: 'CH0012214059', marche: 'SIX Swiss' },
+    { nom: 'HeidelbergCement AG', bloomberg: 'HEI GY', isin: 'DE0006047004', marche: 'XETRA' },
+    { nom: 'Legrand SA', bloomberg: 'LR FP', isin: 'FR0010307819', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.2,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(matObs, matPay, {
+    niveauRappelPct: (n) => matAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.3,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '6Y Phoenix Mémoire Wof LafargeHolcim + HeidelbergCement + Legrand',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '260508_5YY_Phoenix Memoire Heidelberg materials + Holcim + Legrand_Trimestriel_XS3292034843_SANTANDER.pdf',
+}
+
+// ── XS3262087797 — Marex Inverse Reverse Autocall USO (bearish pétrole) ──────
+// Rappel anticipé si USO ≤ 100% ; risque capital à la HAUSSE (barrière 150%).
+const usoInvObs = ['2026-06-15', '2026-09-14', '2026-12-14', '2027-03-15']
+const usoInvPay = ['2026-06-23', '2026-09-21', '2026-12-21', '2027-03-22']
+const marexUsoInverse: Product = {
+  id: 'XS3262087797',
+  nom: 'Inverse Reverse Autocall USO',
+  isin: 'XS3262087797',
+  emetteur: 'Marex Financial',
+  notationEmetteur: 'S&P BBB',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'USD',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-13',
+  dateEmission: '2026-03-27',
+  dateConstatationFinale: '2027-03-15',
+  dateEcheance: '2027-03-22',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'United States Oil Fund LP', bloomberg: 'USO UP', marche: 'NYSE Arca' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'inverse',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 21.752,
+    barriereRappelPct: 100,
+    protectionPct: 150,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(usoInvObs, usoInvPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: 100,
+    couponPct: 5.438,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Reverse Autocall',
+  description: '1Y Inverse Reverse Autocall USO — coupon 5,438 %/trim. garanti, barrière haute 150 %',
+  badges: ['Inverse', 'Single', 'Coupon garanti'],
+  termsheetFichier:
+    '260327_1Y_Inverse Reverse Autocall USO_Trimestriel_XS3262087797_MAREX.PDF',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -1480,6 +1739,7 @@ const detailed: Product[] = [
   santanderIntelRhmRno, santanderMsftNvdaMrvl, msKeringUrw,
   efgAmdIntelNvda, msIEdgeAi, msFerroviaires,
   santanderMicronMarvell, bnpSoftware, bnpAccorCarnivalUal,
+  bbvaHealthcareBonus, bbvaRearmement, santanderMaterials, marexUsoInverse,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
