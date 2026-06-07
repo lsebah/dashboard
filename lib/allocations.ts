@@ -5,11 +5,9 @@
 //  produit, sans faire entrer l'identité des clients dans le dépôt git.
 // ─────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useState } from 'react'
+import type { ClientAlloc } from './types'
 
-export interface ClientAlloc {
-  client: string // code / nom du client
-  montant?: number // montant alloué (devise du produit)
-}
+export type { ClientAlloc }
 
 /** isin → liste d'allocations clients. */
 export type AllocMap = Record<string, ClientAlloc[]>

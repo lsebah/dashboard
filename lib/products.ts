@@ -8,6 +8,14 @@ import type { Product } from './types'
 import { buildObservations } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
 import { termsheetUrl, termsheetFile } from './termsheets'
+import {
+  feedIsins,
+  priceByIsin,
+  statutByIsin,
+  deviseByIsin,
+  amountByIsin,
+  allocByIsin,
+} from './feed'
 
 // ── 1) MAREX — Inverse (Barrier) Autocall sur United States Oil Fund ─────────
 const usoObs = ['2026-06-12', '2026-09-14', '2026-12-14', '2027-03-12']
@@ -282,14 +290,48 @@ const bnpDefense: Product = {
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [bnpSx5e, bnpDefense, socgenEnergy, marexUso]
 
-// Portefeuille = produits détaillés + import "catalogue" (dédupliqué par ISIN),
-// avec liaison de la termsheet (PDF SharePoint) par ISIN.
-const detailedIsins = new Set(detailed.map((p) => p.isin))
-export const products: Product[] = [
-  ...detailed,
-  ...portfolioImport.filter((p) => !detailedIsins.has(p.isin)),
-].map((p) => ({
-  ...p,
-  termsheetUrl: p.termsheetUrl ?? termsheetUrl(p.isin),
-  termsheetFichier: p.termsheetFichier ?? termsheetFile(p.isin),
-}))
+// Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
+const defByIsin = new Map<string, Product>()
+for (const p of [...detailed, ...portfolioImport]) if (!defByIsin.has(p.isin)) defByIsin.set(p.isin, p)
+
+// Produit minimal pour un ISIN présent au feed mais sans définition (à décoder).
+function minimal(isin: string): Product {
+  return {
+    id: isin,
+    nom: isin,
+    isin,
+    emetteur: '—',
+    assetClass: 'equity',
+    family: 'other',
+    devise: deviseByIsin[isin] ?? 'EUR',
+    nominal: 0,
+    dateConstatationInitiale: '',
+    dateEmission: '',
+    dateConstatationFinale: '',
+    dateEcheance: '',
+    frequence: 'autre',
+    basket: 'single',
+    sousJacents: [],
+  }
+}
+
+// Portefeuille = positions réelles du feed (clé = ISIN), enrichies des
+// définitions, du prix/statut/montant et de l'allocation client. Le P&L et la
+// situation en découlent ; rien n'est figé en dur.
+export const products: Product[] = feedIsins.map((isin) => {
+  const base = defByIsin.get(isin) ?? minimal(isin)
+  const price = priceByIsin[isin]
+  const allocs = allocByIsin[isin]
+  return {
+    ...base,
+    prixMarche: price ?? base.prixMarche,
+    statut: statutByIsin[isin] ?? base.statut ?? 'vivant',
+    pnlPct: typeof price === 'number' ? Math.round((price - 100) * 100) / 100 : base.pnlPct,
+    nominal: amountByIsin[isin] ?? base.nominal,
+    devise: deviseByIsin[isin] ?? base.devise,
+    clients: allocs ? allocs.map((a) => a.client) : base.clients,
+    allocations: allocs ?? base.allocations,
+    termsheetUrl: base.termsheetUrl ?? termsheetUrl(isin),
+    termsheetFichier: base.termsheetFichier ?? termsheetFile(isin),
+  }
+})

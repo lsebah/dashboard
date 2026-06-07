@@ -54,6 +54,12 @@ export type ProductStatus =
   | 'echu' // arrivé à maturité
   | 'monitore' // suivi sans position (watchlist)
 
+/** Allocation d'un produit à un client (code client + montant investi). */
+export interface ClientAlloc {
+  client: string
+  montant?: number
+}
+
 // ─── Sous-jacent ───────────────────────────────────────────────────────────
 export interface Underlying {
   nom: string
@@ -194,7 +200,8 @@ export interface Product {
   productType?: string // Phoenix / Athena / Booster / Airbag / Participation / Call Spread / Callable…
   pnlPct?: number // P&L courant, en %
   pdiPct?: number // PDI — barrière de protection (down-and-in), en %
-  clients?: string[] // CLIENT INFO — codes clients (NON versionné : chargé d'un fichier local)
+  clients?: string[] // CLIENT INFO — codes clients alloués
+  allocations?: ClientAlloc[] // allocation par client (code + montant investi), depuis le feed
   nextEvent?: string // prochaine échéance (ISO) quand le calendrier n'est pas importé
   // Cellules "résumé" de l'Excel, conservées telles quelles pour l'affichage
   // tabulaire (les barrières crédit/taux portent des taux, d'où le format texte) :

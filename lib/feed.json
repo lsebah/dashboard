@@ -1,0 +1,1203 @@
+[
+{
+"isin": "FR0014018KY5",
+"client": "SPG - 05774",
+"amount": 656000.0
+},
+{
+"isin": "XS3292036624",
+"last": 95.73,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 130000.0
+},
+{
+"isin": "FRSG000188R4",
+"client": "SPG - 05774",
+"devise": "EUR",
+"amount": 700000.0
+},
+{
+"isin": "XS3362988902",
+"last": 100.0,
+"client": "ABACUS - 05268",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3362988811",
+"last": 102.61,
+"client": "ABACUS - 05268",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3292034843",
+"last": 102.21,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3292034843",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "XS3317172743",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3287495306",
+"last": 94.82,
+"client": "CURNILLON - 01223",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3317870197",
+"last": 95.96,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3304996484",
+"last": 100.35,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3309979311",
+"last": 101.32,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3262087797",
+"last": 93.63,
+"client": "PRESTINVEST - 05773",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS3250077966",
+"last": 101.04,
+"client": "CURNILLON - 01223",
+"devise": "USD",
+"amount": 500000.0
+},
+{
+"isin": "XS3262011201",
+"last": 96.5,
+"client": "NATAF - 05627",
+"devise": "EUR",
+"amount": 50000.0
+},
+{
+"isin": "FEI",
+"last": 100.0,
+"client": "MACIF",
+"devise": "EUR",
+"amount": 866571.43
+},
+{
+"isin": "XS3283137407",
+"client": "APPN - 05277",
+"amount": 300000.0
+},
+{
+"isin": "XS3256693576",
+"last": 104.73,
+"client": "CURNILLON - 01223",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3291617812",
+"last": 99.14,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3266363806",
+"last": 100.75,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3266613416",
+"last": 82.23,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3266613333",
+"last": 82.49,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3250102665",
+"last": 72.92,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3251223155",
+"last": 72.93,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "FRIP000020P5",
+"last": 89.85,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FR1459ABB977",
+"last": 71.83,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 1000.0
+},
+{
+"isin": "XS3204634086",
+"last": 99.6,
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 1926000.0
+},
+{
+"isin": "XS3231246805",
+"last": 89.12,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3214893623",
+"last": 104.7535,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3231258727",
+"last": 97.05,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3191958233",
+"last": 92.5526,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 330000.0
+},
+{
+"isin": "FR001400U1I0",
+"last": 103.43,
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 400000.0
+},
+{
+"isin": "FRIP00001UV3",
+"client": "CAPITALL - 01227",
+"amount": 1000.0
+},
+{
+"isin": "XS3148555405",
+"last": 99.54,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 250000.0
+},
+{
+"isin": "XS3148625976",
+"last": 94.66,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FEI",
+"last": 100.0,
+"client": "MACIF",
+"devise": "EUR",
+"amount": 3019142.86
+},
+{
+"isin": "XS3153607810",
+"client": "VIA - 08001",
+"amount": 510000.0
+},
+{
+"isin": "FR0014013N00",
+"last": 105.02,
+"client": "SPG - 05774",
+"devise": "EUR",
+"amount": 650000.0
+},
+{
+"isin": "XS3149199807",
+"last": 100.16,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3149213053",
+"last": 97.5361,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3109495153",
+"last": 96.3215,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS3149224761",
+"last": 74.9599,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 560000.0
+},
+{
+"isin": "FRIP00001NZ9",
+"last": 93.4653,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 400000.0
+},
+{
+"isin": "FRIP00001NZ9",
+"last": 98.79,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 225000.0
+},
+{
+"isin": "XS3073984430",
+"last": 98.79,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 410000.0
+},
+{
+"isin": "XS3062217446",
+"last": 85.92,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3103610385",
+"last": 102.21,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS2925309275",
+"last": 103.7774,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2925309945",
+"last": 113.08,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3064231932",
+"last": 36.91,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 290000.0
+},
+{
+"isin": "XS3045914713",
+"last": 80.9,
+"client": "B CAPITAL - 05232",
+"devise": "EUR",
+"amount": 250000.0
+},
+{
+"isin": "FRSG00016HO2",
+"last": 101.21,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 520000.0
+},
+{
+"isin": "XS2769472221",
+"last": 88.4,
+"client": "SPG - 05774",
+"devise": "EUR",
+"amount": 828000.0
+},
+{
+"isin": "XS3045607119",
+"last": 101.73,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 1000.0
+},
+{
+"isin": "CH1278887422",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FRIP00001IZ9",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 2000000.0
+},
+{
+"isin": "FRIP00001I09",
+"last": 106.59,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 400000.0
+},
+{
+"isin": "XS3049563219",
+"last": 101.44,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS3049573440",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 400000.0
+},
+{
+"isin": "XS2621505341",
+"last": 79.7688,
+"client": "PRESTINVEST - 05773",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS3010088303",
+"last": 88.36,
+"client": "APPN - 05277",
+"devise": "TRY",
+"amount": 200000.0
+},
+{
+"isin": "FRIP00001G19",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 1000.0
+},
+{
+"isin": "FRSG00015XO1",
+"last": 117.36,
+"client": "SPG - 05774",
+"devise": "EUR",
+"amount": 661000.0
+},
+{
+"isin": "FEI",
+"last": 100.0,
+"client": "MACIF",
+"devise": "EUR",
+"amount": 6114285.71
+},
+{
+"isin": "XS3006405594",
+"statut": "rappele",
+"client": "ALVES - 06001",
+"amount": 300000.0
+},
+{
+"isin": "FRSG00015Y19",
+"client": "MY WAY - 05692",
+"devise": "EUR",
+"amount": 1150000.0
+},
+{
+"isin": "XS2955900761",
+"statut": "rappele",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2938576522",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 800000.0
+},
+{
+"isin": "FRSG00015XB8",
+"statut": "rappele",
+"client": "SPG - 05774",
+"devise": "EUR",
+"amount": 600000.0
+},
+{
+"isin": "XS2979390502",
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 1950000.0
+},
+{
+"isin": "XS2975786000",
+"last": 92.03,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1465000.0
+},
+{
+"isin": "FR001400XNG1",
+"last": 49.53,
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 2000000.0
+},
+{
+"isin": "FRSG00015VL1",
+"statut": "rappele",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FRSG00015VL1",
+"statut": "rappele",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2653885744",
+"statut": "rappele",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS2953818841",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2941097813",
+"last": 108.6501,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS2941080330",
+"statut": "rappele",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FR1459AB6586",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "FR001400WR56",
+"client": "JLH PATRIM - 05754",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2931046382",
+"statut": "rappele",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FRSG00015O52",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 2000000.0
+},
+{
+"isin": "FRIP000014P8",
+"last": 74.16,
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 1200000.0
+},
+{
+"isin": "XS2919373816",
+"last": 57.25,
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 990000.0
+},
+{
+"isin": "XS2863761933",
+"last": 105.56,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 1000000.0
+},
+{
+"isin": "XS2913745654",
+"statut": "rappele",
+"client": "VIA - 08001",
+"devise": "USD",
+"amount": 400000.0
+},
+{
+"isin": "XS2863761859",
+"statut": "rappele",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2642227883",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "FR001400T985",
+"last": 97.17,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 1000.0
+},
+{
+"isin": "FR001400TVX7",
+"statut": "rappele",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 2000000.0
+},
+{
+"isin": "XS2886439467",
+"client": "B CAPITAL - 05232",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "XS2769371209",
+"statut": "rappele",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 980000.0
+},
+{
+"isin": "XS2866922060",
+"statut": "rappele",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 535000.0
+},
+{
+"isin": "XS2922143750",
+"client": "WEALTHOF - 06005",
+"devise": "EUR",
+"amount": 270000.0
+},
+{
+"isin": "XS2902296008",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "FR001400SDV1",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 400000.0
+},
+{
+"isin": "FR001400SDV1",
+"last": 71.501,
+"client": "CASHBEE - 06003",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2863767542",
+"last": 71.501,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 360000.0
+},
+{
+"isin": "FR001400T357",
+"last": 101.65,
+"client": "MANTU - 05626",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2862503435",
+"last": 85.84,
+"client": "APPN - 05277",
+"devise": "USD",
+"amount": 200000.0
+},
+{
+"isin": "XS2897403098",
+"statut": "rappele",
+"client": "EQUINOXE",
+"devise": "EUR",
+"amount": 990000.0
+},
+{
+"isin": "XS2884074795",
+"statut": "rappele",
+"client": "PRESTINVEST - 05773",
+"devise": "USD",
+"amount": 500000.0
+},
+{
+"isin": "FRSG00015778",
+"statut": "rappele",
+"client": "CAPITALL - 01227",
+"devise": "USD",
+"amount": 120000.0
+},
+{
+"isin": "XS2872777334",
+"statut": "vendu",
+"client": "ARCHE - 05272",
+"devise": "EUR",
+"amount": 3030000.0
+},
+{
+"isin": "XS2792970241",
+"statut": "rappele",
+"client": "CAPITALL - 01227",
+"devise": "USD",
+"amount": 375000.0
+},
+{
+"isin": "XS2792970324",
+"statut": "rappele",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 375000.0
+},
+{
+"isin": "XS2815466193",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 375000.0
+},
+{
+"isin": "FR001400R9L2",
+"statut": "rappele",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 350000.0
+},
+{
+"isin": "XS2769351359",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "XS2804857568",
+"last": 87.75,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 1800000.0
+},
+{
+"isin": "FR001400OZR1",
+"last": 90.37,
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 50000.0
+},
+{
+"isin": "XS2792968187",
+"statut": "rappele",
+"client": "APPN - 05277",
+"amount": 250000.0
+},
+{
+"isin": "XS2759260602",
+"statut": "rappele",
+"client": "B CAPITAL - 05232",
+"devise": "EUR",
+"amount": 130000.0
+},
+{
+"isin": "XS0461632811",
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 1250000.0
+},
+{
+"isin": "XS2772970781",
+"last": 95.69,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 1330000.0
+},
+{
+"isin": "FRIP00000HS8",
+"last": 95.4,
+"client": "EFG - 01334",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "FR001400PQQ9",
+"statut": "rappele",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 495000.0
+},
+{
+"isin": "XS2759139525",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "FRSG00014VA7",
+"last": 90.22,
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FR001400PLW8",
+"statut": "rappele",
+"client": "MANTU - 05626",
+"devise": "EUR",
+"amount": 1500000.0
+},
+{
+"isin": "XS2759191286",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FRSG00014U55",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 240000.0
+},
+{
+"isin": "CH1322036596",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 250000.0
+},
+{
+"isin": "XS0461619396",
+"last": 62.03,
+"client": "MANTU - 05626",
+"devise": "EUR",
+"amount": 5000000.0
+},
+{
+"isin": "XS2803802532",
+"client": "PRESTINVEST - 05773",
+"devise": "EUR",
+"amount": 1000000.0
+},
+{
+"isin": "FR001400PCU1",
+"client": "CARMF - 05227",
+"devise": "USD",
+"amount": 5000000.0
+},
+{
+"isin": "XS2720239487",
+"statut": "rappele",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "FR001400P397",
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 2000000.0
+},
+{
+"isin": "XS2653912068",
+"last": 91.04,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1400000.0
+},
+{
+"isin": "CH0587314615",
+"last": 101.04,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 130000.0
+},
+{
+"isin": "XS2719844560",
+"statut": "vendu",
+"client": "RISE FO",
+"devise": "EUR",
+"amount": 42874000.0
+},
+{
+"isin": "XS2719844727",
+"statut": "vendu",
+"client": "RISE FO",
+"devise": "JPY",
+"amount": 42874000.0
+},
+{
+"isin": "XS2110091449",
+"client": "SCALA - 05722",
+"devise": "JPY",
+"amount": 1000000.0
+},
+{
+"isin": "XS2696236590",
+"statut": "rappele",
+"client": "CANINO - 05226",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "FR001400NSY4",
+"statut": "rappele",
+"client": "CANINO - 05226",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2110106908",
+"client": "SCALA - 05722",
+"devise": "GBP",
+"amount": 630000.0
+},
+{
+"isin": "XS2757009324",
+"statut": "rappele",
+"client": "SCALA - 05722",
+"devise": "GBP",
+"amount": 630000.0
+},
+{
+"isin": "XS2641318121",
+"client": "SAMY - 01674",
+"devise": "GBP",
+"amount": 1000000.0
+},
+{
+"isin": "CH1316655518",
+"last": 90.3,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "CH1322027827",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "CH1305186087",
+"statut": "rappele",
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2663305378",
+"statut": "rappele",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "DE000UL72J39",
+"statut": "rappele",
+"client": "CAPITALL - 01227",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "XS2662792303",
+"statut": "rappele",
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "XS2662781447",
+"statut": "rappele",
+"client": "PRESTINVEST - 05773",
+"devise": "EUR",
+"amount": 1000000.0
+},
+{
+"isin": "CH1271361060",
+"last": 100.0,
+"client": "SOCIPAR - 05762",
+"devise": "EUR",
+"amount": 250000.0
+},
+{
+"isin": "XS2647395511",
+"statut": "rappele",
+"client": "B CAPITAL - 05232",
+"amount": 250000.0
+},
+{
+"isin": "XS2649866485",
+"statut": "rappele",
+"client": "B CAPITAL - 05232",
+"devise": "EUR",
+"amount": 250000.0
+},
+{
+"isin": "XS2647444822",
+"statut": "rappele",
+"client": "FINOFFICE - 05346",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "FR001400LGG0",
+"statut": "vendu",
+"client": "CARMF - 05227",
+"devise": "EUR",
+"amount": 5000000.0
+},
+{
+"isin": "SE0020849388",
+"statut": "rappele",
+"client": "APPN - 05277",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "SE0020849388",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2576621366",
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2482711673",
+"last": 135.15,
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 5000000.0
+},
+{
+"isin": "FR001400GV92",
+"last": 103.46,
+"client": "ALVES - 06001",
+"devise": "EUR",
+"amount": 600000.0
+},
+{
+"isin": "XS2464629414",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1000000.0
+},
+{
+"isin": "XS2465015720",
+"last": 97.88,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 5500000.0
+},
+{
+"isin": "XS2569852416",
+"last": 98.2,
+"client": "SCALA - 05722",
+"devise": "EUR",
+"amount": 1350000.0
+},
+{
+"isin": "XS2444096874",
+"last": 100.089,
+"client": "VIA - 08001",
+"devise": "EUR",
+"amount": 1750000.0
+},
+{
+"isin": "XS2442403130",
+"last": 98.2,
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1500000.0
+},
+{
+"isin": "XS2440513757",
+"statut": "vendu",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1700000.0
+},
+{
+"isin": "FR001400BTX9",
+"statut": "rappele",
+"client": "SEMEPA",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "XS2367945719",
+"statut": "vendu",
+"client": "CANINO - 05226",
+"devise": "USD",
+"amount": 2000000.0
+},
+{
+"isin": "XS2105893841",
+"statut": "rappele",
+"client": "MASFIP",
+"devise": "EUR",
+"amount": 1000000.0
+},
+{
+"isin": "CH1163990570",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 700000.0
+},
+{
+"isin": "CH0593640243",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 1600000.0
+},
+{
+"isin": "FRSG00010W99",
+"statut": "vendu",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 360000.0
+},
+{
+"isin": "XS2059726096",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 500000.0
+},
+{
+"isin": "CH0514676219",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "CH0514676201",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 200000.0
+},
+{
+"isin": "CH0514676193",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 10000000.0
+},
+{
+"isin": "CH0502683763",
+"statut": "vendu",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "CH0502683789",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "FR0013446333",
+"client": "GRICOURT - 05474",
+"devise": "EUR",
+"amount": 5000000.0
+},
+{
+"isin": "CH0470308765",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "CH0446939719",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 300000.0
+},
+{
+"isin": "CH0446939677",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 100000.0
+},
+{
+"isin": "CH0434911688",
+"statut": "rappele",
+"client": "SAMY - 01674",
+"devise": "EUR",
+"amount": 110000.0
+}
+]

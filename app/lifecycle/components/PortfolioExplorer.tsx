@@ -16,14 +16,20 @@ import ProductReconstruction from './ProductReconstruction'
 import ClientAssign from './ClientAssign'
 import Modal from './Modal'
 
-function annees(p: Product): number {
+function annees(p: Product): number | null {
   const d0 = new Date(p.dateConstatationInitiale).getTime()
   const d1 = new Date(p.dateEcheance).getTime()
+  if (Number.isNaN(d0) || Number.isNaN(d1)) return null
   return Math.round((d1 - d0) / (365.25 * 86_400_000))
 }
 
 function ticker(s: string): string {
   return s.split(' ')[0]
+}
+
+// Produit "en cours" : ni rappelé, ni vendu, ni arrivé à maturité.
+function estEnCours(p: Product): boolean {
+  return p.statut !== 'rappele' && p.statut !== 'vendu' && p.statut !== 'echu'
 }
 
 function lastLabel(p: Product): { text: string; cls: string } {
@@ -122,7 +128,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const allocsOf = useMemo(
     () =>
       (p: Product): ClientAlloc[] =>
-        map[p.isin] ?? p.clients?.map((c) => ({ client: c })) ?? [],
+        map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? [],
     [map],
   )
 
@@ -134,14 +140,11 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const filtered = useMemo(() => {
     let l = products
     if (client) l = l.filter((p) => allocsOf(p).some((a) => a.client === client))
-    if (liveOnly) l = l.filter((p) => typeof p.prixMarche === 'number')
+    if (liveOnly) l = l.filter(estEnCours)
     return l
   }, [products, client, liveOnly, allocsOf])
 
-  const nbLive = useMemo(
-    () => products.filter((p) => typeof p.prixMarche === 'number').length,
-    [products],
-  )
+  const nbLive = useMemo(() => products.filter(estEnCours).length, [products])
 
   const sorters: Record<string, (p: Product) => SortVal> = useMemo(
     () => ({
@@ -155,7 +158,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       amount: (p) => p.nominal,
       issuer: (p) => p.emetteur,
       freq: (p) => freqLabel(p.frequence),
-      y: (p) => annees(p),
+      y: (p) => annees(p) ?? undefined,
       desc: (p) => p.description ?? p.nom,
       asset: (p) => p.assetClass,
       type: (p) => p.productType,
@@ -212,19 +215,25 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               Cartes
             </button>
           </div>
-          <button
-            onClick={() => setLiveOnly((v) => !v)}
-            className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
-              liveOnly
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
-            }`}
-            title="N'afficher que les produits LIVE (avec un prix)"
-          >
-            <span className={`w-2 h-2 rounded-full ${liveOnly ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-            LIVE
-            <span className="text-xs text-slate-400">{nbLive}</span>
-          </button>
+          <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
+            <button
+              onClick={() => setLiveOnly(false)}
+              className={`px-3 py-1.5 ${!liveOnly ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+              title="Tout le portefeuille"
+            >
+              Tous <span className="opacity-60">{products.length}</span>
+            </button>
+            <button
+              onClick={() => setLiveOnly(true)}
+              className={`px-3 py-1.5 inline-flex items-center gap-1.5 ${
+                liveOnly ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600'
+              }`}
+              title="En cours uniquement (exclut rappelés / vendus / échus)"
+            >
+              <span className={`w-2 h-2 rounded-full ${liveOnly ? 'bg-white' : 'bg-emerald-500'}`} />
+              LIVE <span className="opacity-70">{nbLive}</span>
+            </button>
+          </div>
         </div>
         <select
           value={client}
@@ -250,7 +259,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           ))}
         </div>
       ) : (
-        <div className="card overflow-auto max-h-[calc(100vh-17rem)]">
+        <div className="card overflow-auto max-h-[calc(100vh-20rem)]">
           <table className="w-full text-[11px] border-collapse">
             <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
               <tr>
@@ -344,7 +353,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                     </td>
                     <td className="px-2 py-1.5 whitespace-nowrap">{p.emetteur.split(' ')[0]}</td>
                     <td className="px-2 py-1.5 text-slate-500">{freqLabel(p.frequence)}</td>
-                    <td className="px-2 py-1.5 tabular-nums">{annees(p)}Y</td>
+                    <td className="px-2 py-1.5 tabular-nums">
+                      {annees(p) != null ? `${annees(p)}Y` : '—'}
+                    </td>
                     <td className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>
                       {p.description ?? p.nom}
                     </td>
