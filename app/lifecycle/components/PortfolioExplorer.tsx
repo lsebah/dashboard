@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import type { Product, Observation } from '@/lib/types'
+import { useMemo, useState } from 'react'
+import type { Product } from '@/lib/types'
+import { useAugmentedProduct } from '@/lib/useProductLevels'
 import {
   prochainEvenement,
   situation,
@@ -424,37 +425,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const opened = openId ? products.find((p) => p.id === openId) ?? null : null
 
-  // Niveaux du worst-of constatés aux dates d'observation (récupérés depuis Yahoo
-  // côté serveur), fusionnés dans le produit ouvert pour activer le suivi des
-  // coupons et le P&L coupons inclus.
-  const [niveaux, setNiveaux] = useState<Record<string, number> | null>(null)
-  useEffect(() => {
-    setNiveaux(null)
-    if (!opened) return
-    let annule = false
-    fetch(`/api/lifecycle/niveaux?isin=${encodeURIComponent(opened.isin)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (!annule) setNiveaux(d?.niveaux ?? {})
-      })
-      .catch(() => {
-        if (!annule) setNiveaux({})
-      })
-    return () => {
-      annule = true
-    }
-  }, [opened])
-
-  const openedAug = useMemo<Product | null>(() => {
-    if (!opened) return null
-    if (!niveaux || !opened.observations) return opened
-    const obs: Observation[] = opened.observations.map((o) =>
-      typeof niveaux[o.dateObservation] === 'number'
-        ? { ...o, niveauConstatePct: niveaux[o.dateObservation] }
-        : o,
-    )
-    return { ...opened, observations: obs }
-  }, [opened, niveaux])
+  // Produit ouvert augmenté des niveaux Yahoo : niveaux du worst-of constatés aux
+  // observations passées (suivi des coupons + P&L coupons inclus) ET niveaux
+  // courants des sous-jacents en % (affichés dans la fiche).
+  const openedAug = useAugmentedProduct(opened)
 
   return (
     <div>
