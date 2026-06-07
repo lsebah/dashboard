@@ -765,11 +765,73 @@ const bnpAlbemarleCf: Product = {
     '250509_6Y_Phoenix Memory Wof CF Industries  + Albermarle_Semestriel_XS3010088303_BNP.pdf',
 }
 
+// ── XS3062217446 — Barclays Phoenix Mémoire Copper Miners (BHP+AngloAm+Freeport)
+const cuObs = [
+  '2026-01-07', '2026-07-07', '2027-01-07', '2027-07-07', '2028-01-07',
+  '2028-07-07', '2029-01-08', '2029-07-09', '2030-01-07', '2030-07-08',
+]
+const cuPay = [
+  '2026-01-21', '2026-07-21', '2027-01-21', '2027-07-21', '2028-01-21',
+  '2028-07-21', '2029-01-22', '2029-07-23', '2030-01-21', '2030-07-22',
+]
+// Autocall à barrière constante 100% ; non-call sur la 1re obs ; n=10 = maturité.
+const cuAer: (number | undefined)[] = [
+  undefined, 100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const barclaysCopperMiners: Product = {
+  id: 'XS3062217446',
+  nom: 'Phoenix Mémoire Copper Miners',
+  isin: 'XS3062217446',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 2_200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-07-07',
+  dateEmission: '2025-07-21',
+  dateConstatationFinale: '2030-07-08',
+  dateEcheance: '2030-07-22',
+  frequence: 'semestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BHP Group Ltd', bloomberg: 'BHP UN', marche: 'NYSE' },
+    { nom: 'Anglo American PLC', bloomberg: 'AAL LN', isin: 'GB00BTK05J60', marche: 'London Stock Exchange' },
+    { nom: 'Freeport-McMoRan Inc.', bloomberg: 'FCX UN', isin: 'US35671D8570', marche: 'NYSE' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 8.5,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(cuObs, cuPay, {
+    niveauRappelPct: (n) => cuAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 4.25,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Copper Miners (BHP + Anglo American + Freeport)',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '250721_5Y_Phoenix Memory Copper Miners (Wof  BHP.US + FCX.US + AAL.LN)_Semestriel_XS3062217446_BARCLAYS.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
-  santanderSchneiderEnrTte, bnpAlbemarleCf,
+  santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
