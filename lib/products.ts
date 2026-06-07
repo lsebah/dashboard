@@ -4381,7 +4381,11 @@ export const products: Product[] = feedIsins.map((isin) => {
     prixMarche: price ?? base.prixMarche,
     statut: statutByIsin[isin] ?? base.statut ?? 'vivant',
     nominal: amountByIsin[isin] ?? base.nominal,
-    devise: deviseByIsin[isin] ?? base.devise,
+    // La devise vient de la DÉFINITION (termsheet/catalogue, fiable) ; le feed ne
+    // sert de repli que pour les produits sans définition (minimal). Évite qu'une
+    // erreur de devise dans l'Excel (ex. XS2863761933 « Gold in USD » saisi EUR)
+    // n'écrase la devise réelle du produit.
+    devise: base.devise ?? deviseByIsin[isin],
     clients: allocs ? allocs.map((a) => a.client) : base.clients,
     allocations: allocs ?? base.allocations,
     termsheetUrl: base.termsheetUrl ?? termsheetUrl(isin),

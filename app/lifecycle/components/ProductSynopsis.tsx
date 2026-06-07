@@ -14,8 +14,17 @@ import {
 } from '@/lib/lifecycle'
 import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
 
-/** Carte « Synopsis produit » — reproduit la fiche de vizibility. */
-export default function ProductSynopsis({ product }: { product: Product }) {
+/** Carte « Synopsis produit » — reproduit la fiche de vizibility.
+ *  `compact` : masque de taille UNIVERSELLE (hauteur fixe) pour la grille de
+ *  cartes ⇒ toutes les cartes ont exactement la même taille. En modal, la
+ *  hauteur s'adapte au contenu (compact=false). */
+export default function ProductSynopsis({
+  product,
+  compact = false,
+}: {
+  product: Product
+  compact?: boolean
+}) {
   const s = situation(product)
   const next = prochainEvenement(product)
   const nextObs = prochaineObservation(product)
@@ -51,7 +60,11 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           : '—'
 
   return (
-    <div className="card p-4 flex flex-col gap-3 h-full">
+    <div
+      className={`card p-4 flex flex-col gap-3 ${
+        compact ? 'h-[500px] overflow-hidden' : 'h-full'
+      }`}
+    >
       {/* En-tête */}
       <div className="flex items-start justify-between gap-2">
         <div className="text-xs text-slate-500">

@@ -511,10 +511,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       </div>
 
       {view === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
           {list.map((p) => (
-            <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left h-full">
-              <ProductSynopsis product={p} />
+            <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left block w-full">
+              <ProductSynopsis product={p} compact />
             </button>
           ))}
         </div>
