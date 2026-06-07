@@ -5,6 +5,7 @@ import {
   situation,
   couponPa,
   prochainEvenement,
+  prochaineObservation,
   formatDateFr,
   formatPct,
   formatMontant,
@@ -15,6 +16,7 @@ import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
 export default function ProductSynopsis({ product }: { product: Product }) {
   const s = situation(product)
   const next = prochainEvenement(product)
+  const nextObs = prochaineObservation(product)
   const mois = moisRestants(product)
   const progress = Math.round(avancement(product) * 100)
   const terms = product.terms
@@ -105,6 +107,31 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           <span className="text-slate-400">{mois} mois restants</span>
         </div>
       </div>
+
+      {/* Monitoring de la prochaine observation (depuis le calendrier décodé) */}
+      {nextObs && (
+        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px]">
+          <div className="field-label mb-0.5">
+            Prochaine observation — {formatDateFr(nextObs.dateObservation)}
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-slate-600">
+            <span>
+              Autocall si worst ≥{' '}
+              <span className="font-medium text-slate-800">
+                {nextObs.autocallActif !== false && typeof nextObs.niveauRappelPct === 'number'
+                  ? `${nextObs.niveauRappelPct}%`
+                  : '— (non-call)'}
+              </span>
+            </span>
+            {typeof nextObs.niveauCouponPct === 'number' && (
+              <span>
+                Coupon si worst ≥{' '}
+                <span className="font-medium text-slate-800">{nextObs.niveauCouponPct}%</span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Mécanisme */}
       <dl className="text-xs space-y-1">
