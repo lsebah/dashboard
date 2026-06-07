@@ -1039,12 +1039,224 @@ const msKeringUrw: Product = {
     '240514_5Y_Phoenix Memory on KER + URW_Trimestriel_FRIP00000HS8_MSCO.pdf',
 }
 
+// ── CH1316655518 — EFG « Athena Airbag » AMD + Intel + Nvidia ────────────────
+// Nommé « Airbag » mais le remboursement sous barrière divise par le niveau
+// initial (pas la barrière) : c'est un KI européen 60% standard, sans airbag.
+const aniObs = [
+  '2024-04-25', '2024-07-25', '2024-10-25', '2025-01-27', '2025-04-25',
+  '2025-07-25', '2025-10-27', '2026-01-26', '2026-04-27', '2026-07-27',
+  '2026-10-26', '2027-01-25',
+]
+const aniPay = [
+  '2024-05-03', '2024-08-01', '2024-11-01', '2025-02-03', '2025-05-05',
+  '2025-08-01', '2025-11-03', '2026-02-02', '2026-05-05', '2026-08-03',
+  '2026-11-02', '2027-02-08',
+]
+const efgAmdIntelNvda: Product = {
+  id: 'CH1316655518',
+  nom: 'Athena Airbag AMD + Intel + Nvidia',
+  isin: 'CH1316655518',
+  emetteur: 'EFG International Finance (Guernsey) Ltd',
+  garant: 'EFG International AG',
+  notationEmetteur: 'Moody’s A3 / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 10_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-01-25',
+  dateEmission: '2024-02-08',
+  dateConstatationFinale: '2027-01-25',
+  dateEcheance: '2027-02-08',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Advanced Micro Devices', bloomberg: 'AMD US', marche: 'NASDAQ' },
+    { nom: 'Intel Corp', bloomberg: 'INTC US', isin: 'US4581401001', marche: 'NASDAQ' },
+    { nom: 'Nvidia Corp', bloomberg: 'NVDA US', isin: 'US67066G1040', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 11.75,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(aniObs, aniPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: 100,
+    couponPct: 2.938,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '3Y Athena AMD + Intel + Nvidia (coupon mémoire, Quanto EUR)',
+  badges: ['Worst-of', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier:
+    '240208_3Y_Athena Airbag AMD + Intel + NVDA_Trimestriel_CH1316655518_EFG.pdf',
+}
+
+// ── FRIP00001I09 — Morgan Stanley Phoenix Mémoire iEdge Transatlantic AI 10 ──
+const iaiObs = [
+  '2025-09-02', '2025-12-01', '2026-03-02', '2026-06-01', '2026-08-31',
+  '2026-11-30', '2027-03-01', '2027-06-01', '2027-08-30', '2027-11-30',
+  '2028-02-29', '2028-05-30', '2028-08-30', '2028-11-30', '2029-02-28',
+  '2029-05-30', '2029-08-30', '2029-11-30', '2030-02-28', '2030-05-30',
+  '2030-08-30', '2030-12-02', '2031-02-28', '2031-05-30', '2031-09-02',
+  '2031-12-01', '2032-03-01', '2032-06-01', '2032-08-30', '2032-11-30',
+  '2033-02-28', '2033-05-31', '2033-08-30', '2033-11-30', '2034-02-28',
+  '2034-05-30', '2034-08-30', '2034-11-30', '2035-02-28', '2035-05-30',
+  '2035-08-30', '2035-11-30', '2036-02-29', '2036-05-30', '2036-09-02',
+  '2036-12-01', '2037-03-02', '2037-06-01',
+]
+const iaiPay = [
+  '2025-09-09', '2025-12-08', '2026-03-09', '2026-06-08', '2026-09-07',
+  '2026-12-07', '2027-03-08', '2027-06-08', '2027-09-06', '2027-12-07',
+  '2028-03-07', '2028-06-06', '2028-09-06', '2028-12-07', '2029-03-07',
+  '2029-06-06', '2029-09-06', '2029-12-07', '2030-03-07', '2030-06-06',
+  '2030-09-06', '2030-12-09', '2031-03-07', '2031-06-06', '2031-09-09',
+  '2031-12-08', '2032-03-08', '2032-06-08', '2032-09-06', '2032-12-07',
+  '2033-03-07', '2033-06-07', '2033-09-06', '2033-12-07', '2034-03-07',
+  '2034-06-06', '2034-09-06', '2034-12-07', '2035-03-07', '2035-06-06',
+  '2035-09-06', '2035-12-07', '2036-03-07', '2036-06-06', '2036-09-09',
+  '2036-12-08', '2037-03-09', '2037-06-08',
+]
+// Autocall dégressif 95%→71% (-1%/trim. de n=4 à n=28) puis plancher 70%
+// (n=29→47) ; non-call n=1-3 ; n=48 = maturité.
+const iaiAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 95, 94, 93, 92, 91, 90, 89, 88, 87, 86,
+  85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 70, 70,
+  70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, undefined,
+]
+const msIEdgeAi: Product = {
+  id: 'FRIP00001I09',
+  nom: 'Phoenix Mémoire iEdge Transatlantic AI 10',
+  isin: 'FRIP00001I09',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-04-29',
+  dateEmission: '2025-05-20',
+  dateConstatationFinale: '2037-06-01',
+  dateEcheance: '2037-06-08',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'iEdge Transatlantic Artificial Intelligence 10 Decrement 50pts GTR', bloomberg: 'IETAI10', marche: 'Indice' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 8.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 95,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    decrement: '50 points',
+  },
+  observations: buildObservations(iaiObs, iaiPay, {
+    niveauRappelPct: (n) => iaiAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.0,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '12Y Phoenix Mémoire sur indice iEdge Transatlantic AI 10 (décrément 50 pts)',
+  badges: ['Indice décrément', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '250520_12Y_Phoenix Memoire iEdge Transatlantic Artificial Intelligence 10 _Annuel_FRIP00001I09 _MSCO.pdf',
+}
+
+// ── FRIP000020P5 — Morgan Stanley Phoenix Mémoire « Ferroviaires » ───────────
+// (Alstom + Thales + Siemens — rail / défense / industrie)
+const ferObs = [
+  '2026-04-07', '2026-07-07', '2026-10-07', '2027-01-07', '2027-04-07',
+  '2027-07-07', '2027-10-07', '2028-01-07', '2028-04-07', '2028-07-07',
+  '2028-10-09', '2029-01-08', '2029-04-09', '2029-07-09', '2029-10-08',
+  '2030-01-07', '2030-04-08', '2030-07-08', '2030-10-07', '2031-01-07',
+]
+const ferPay = [
+  '2026-04-14', '2026-07-14', '2026-10-14', '2027-01-14', '2027-04-14',
+  '2027-07-14', '2027-10-14', '2028-01-14', '2028-04-18', '2028-07-14',
+  '2028-10-16', '2029-01-15', '2029-04-16', '2029-07-16', '2029-10-15',
+  '2030-01-14', '2030-04-15', '2030-07-15', '2030-10-14', '2031-01-14',
+]
+// Autocall dégressif 100%→70% (-2%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const ferAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 98, 96, 94, 92, 90, 88, 86, 84,
+  82, 80, 78, 76, 74, 72, 70, undefined,
+]
+const msFerroviaires: Product = {
+  id: 'FRIP000020P5',
+  nom: 'Phoenix Mémoire Ferroviaires (Alstom + Thales + Siemens)',
+  isin: 'FRIP000020P5',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-01-07',
+  dateEmission: '2026-01-21',
+  dateConstatationFinale: '2031-01-07',
+  dateEcheance: '2031-01-14',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Alstom SA', bloomberg: 'ALO FP', isin: 'FR0010220475', marche: 'Euronext Paris' },
+    { nom: 'Thales SA', bloomberg: 'HO FP', isin: 'FR0000121329', marche: 'Euronext Paris' },
+    { nom: 'Siemens AG', bloomberg: 'SIE GY', isin: 'DE0007236101', marche: 'XETRA' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(ferObs, ferPay, {
+    niveauRappelPct: (n) => ferAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.25,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Alstom + Thales + Siemens',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '260121_5Y_Phoenix Mémoire Ferrovaires_Trimestriel_FRIP000020P5_MSCO.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
   santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
   santanderIntelRhmRno, santanderMsftNvdaMrvl, msKeringUrw,
+  efgAmdIntelNvda, msIEdgeAi, msFerroviaires,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
