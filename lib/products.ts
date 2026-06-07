@@ -700,11 +700,76 @@ const santanderSchneiderEnrTte: Product = {
     '250718_5Y_Phoenix Memory Wof Suez + Siemens Energy TotalEnergies_Semestriel_XS3103610385_SANTANDER.pdf',
 }
 
+// ── XS3010088303 — BNP Phoenix Snowball Wof Albemarle + CF Industries ────────
+const albObs = [
+  '2025-10-27', '2026-04-27', '2026-10-26', '2027-04-26', '2027-10-25',
+  '2028-04-25', '2028-10-25', '2029-04-25', '2029-10-25', '2030-04-25',
+  '2030-10-25', '2031-04-25',
+]
+const albPay = [
+  '2025-11-10', '2026-05-12', '2026-11-09', '2027-05-10', '2027-11-08',
+  '2028-05-10', '2028-11-08', '2029-05-10', '2029-11-08', '2030-05-10',
+  '2030-11-08', '2031-05-12',
+]
+// Autocall dégressif 100%→73% (-3%/sem.) ; non-call sur la 1re obs ;
+// n=12 = maturité (KI européen 50%). Coupon snowball 6,20%×(1+T).
+const albAer: (number | undefined)[] = [
+  undefined, 100, 97, 94, 91, 88, 85, 82, 79, 76, 73, undefined,
+]
+const bnpAlbemarleCf: Product = {
+  id: 'XS3010088303',
+  nom: 'Phoenix Snowball Albemarle + CF Industries',
+  isin: 'XS3010088303',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-04-25',
+  dateEmission: '2025-05-09',
+  dateConstatationFinale: '2031-04-25',
+  dateEcheance: '2031-05-12',
+  frequence: 'semestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Albemarle Corp', bloomberg: 'ALB UN', marche: 'NYSE' },
+    { nom: 'CF Industries Holdings Inc', bloomberg: 'CF UN', marche: 'NYSE' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 12.4,
+    barriereCouponPct: 50,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(albObs, albPay, {
+    niveauRappelPct: (n) => albAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 6.2,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '6Y Phoenix Snowball Wof Albemarle + CF Industries (EUR Quanto)',
+  badges: ['Worst-of', 'Dégressif', 'Snowball'],
+  termsheetFichier:
+    '250509_6Y_Phoenix Memory Wof CF Industries  + Albermarle_Semestriel_XS3010088303_BNP.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
-  santanderSchneiderEnrTte,
+  santanderSchneiderEnrTte, bnpAlbemarleCf,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
