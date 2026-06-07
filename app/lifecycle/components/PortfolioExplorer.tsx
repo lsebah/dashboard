@@ -242,9 +242,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           ))}
         </div>
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="card overflow-auto max-h-[calc(100vh-15rem)]">
           <table className="w-full text-[11px] border-collapse">
-            <thead className="bg-slate-50 text-slate-500 sticky top-0">
+            <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10">
               <tr>
                 {COLUMNS.map((c) => {
                   const active = c.key && sort.key === c.key
