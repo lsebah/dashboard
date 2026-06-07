@@ -569,10 +569,76 @@ const barclaysAsmlSgoTte: Product = {
     '241011_5Y_Phoenix Memory  Wof ASML + Saint-Gobin + TotalEnergies_Semestriel_XS2862503435_BARCLAYS.pdf',
 }
 
+// ── XS2653912068 — GS Snowball Autocall Wof Pfizer + Roche + Sanofi ──────────
+// Pas de coupon conditionnel périodique : la prime de rappel croît (snowball)
+// de 119,5% à 197,5% (+4,875%/trim.), trigger d'autocall constant 100%.
+const gsObs = [
+  '2025-03-11', '2025-06-11', '2025-09-11', '2025-12-11', '2026-03-11',
+  '2026-06-11', '2026-09-11', '2026-12-11', '2027-03-11', '2027-06-11',
+  '2027-09-13', '2027-12-13', '2028-03-13', '2028-06-12', '2028-09-11',
+  '2028-12-11', '2029-03-12',
+]
+const gsPay = [
+  '2025-03-25', '2025-06-25', '2025-09-25', '2025-12-29', '2026-03-25',
+  '2026-06-25', '2026-09-25', '2026-12-28', '2027-03-25', '2027-06-25',
+  '2027-09-27', '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-25',
+  '2028-12-27', '2029-03-26',
+]
+const gsErv = [
+  119.5, 124.375, 129.25, 134.125, 139, 143.875, 148.75, 153.625, 158.5,
+  163.375, 168.25, 173.125, 178, 182.875, 187.75, 192.625, 197.5,
+]
+const gsSnowball: Product = {
+  id: 'XS2653912068',
+  nom: 'Autocall Snowball Pfizer + Roche + Sanofi',
+  isin: 'XS2653912068',
+  emetteur: 'Goldman Sachs Finance Corp International',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: 'Moody’s A2 / S&P BBB+ / Fitch A',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 5_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-03-11',
+  dateEmission: '2024-04-03',
+  dateConstatationFinale: '2029-03-12',
+  dateEcheance: '2029-03-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Pfizer Inc.', bloomberg: 'PFE UN', isin: 'US7170811035', marche: 'NYSE' },
+    { nom: 'Roche Holding AG', bloomberg: 'ROG SE', isin: 'CH0012032048', marche: 'SIX Swiss' },
+    { nom: 'Sanofi S.A.', bloomberg: 'SAN FP', isin: 'FR0000120578', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 19.5,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(gsObs, gsPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => gsErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Snowball',
+  description: '5Y Autocall Snowball Wof Pfizer + Roche + Sanofi (prime croissante)',
+  badges: ['Worst-of', 'Snowball', 'Quanto EUR'],
+  termsheetFichier:
+    '240403_5Y_Autocall Airbag  Wof PFE + ROG.SE + SAN.FP_Trimestriel_XS2653912068_GS.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
-  santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte,
+  santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
