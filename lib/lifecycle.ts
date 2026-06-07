@@ -117,9 +117,57 @@ export function situation(product: Product): Situation {
 
 /** Coupon annualisé indicatif, si défini (termsheet, sinon cellule Excel). */
 export function couponPa(product: Product): number | undefined {
-  if (product.terms?.kind === 'autocall' && typeof product.terms.couponPa === 'number')
-    return product.terms.couponPa
+  const t = product.terms
+  if (t?.kind === 'autocall' && typeof t.couponPa === 'number') return t.couponPa
+  if (t?.kind === 'rates' && typeof t.couponConditionnelPa === 'number')
+    return t.couponConditionnelPa
+  if (t?.kind === 'credit' && typeof t.couponPa === 'number') return t.couponPa
   return product.couponPaPct
+}
+
+/** Scénarios de dénouement pour un produit de taux (Phoenix Bearish CMS, etc.). */
+export function scenariosTaux(product: Product): Scenario[] {
+  const t = product.terms
+  if (t?.kind !== 'rates') return []
+  const taux = t.tauxReference ?? 'le taux de référence'
+  const cmp = t.sens === 'bearish' ? '≤' : '≥'
+  const cmpInv = t.sens === 'bearish' ? '>' : '<'
+  const obs = product.observations ?? []
+  const bRappel = t.barriereRappelTauxPct ?? obs.find((o) => typeof o.niveauRappelPct === 'number')?.niveauRappelPct
+  const bCoupon = t.barriereCouponTauxPct ?? obs.find((o) => typeof o.niveauCouponPct === 'number')?.niveauCouponPct
+  const cpn = t.couponConditionnelPct
+  const scenarios: Scenario[] = []
+
+  if (typeof bRappel === 'number') {
+    scenarios.push({
+      titre: 'Rappel anticipé',
+      condition: `${taux} ${cmp} ${bRappel.toFixed(2)}% à une date d'observation`,
+      resultat: `Remboursement ${t.capitalGaranti ? '100% du capital' : 'du capital'}${
+        t.couponGarantiPct ? ` + coupon garanti ${t.couponGarantiPct}%` : ''
+      }${cpn ? ` + coupons conditionnels${t.effetMemoire ? ' (mémoire)' : ''}` : ''}`,
+      ton: 'positif',
+    })
+  }
+  if (typeof bCoupon === 'number' && cpn) {
+    scenarios.push({
+      titre: 'Coupon conditionnel',
+      condition: `${taux} ${cmp} ${bCoupon.toFixed(2)}% à une date d'observation`,
+      resultat: `Coupon de ${cpn}%${t.effetMemoire ? ' mis en mémoire' : ''} (payé in fine)`,
+      ton: 'neutre',
+    })
+  }
+  scenarios.push({
+    titre: 'À maturité',
+    condition:
+      typeof bCoupon === 'number'
+        ? `non rappelé ; ${taux} ${cmpInv} ${bCoupon.toFixed(2)}% (cas défavorable)`
+        : 'non rappelé',
+    resultat: t.capitalGaranti
+      ? `Capital 100% garanti${t.couponGarantiPct ? ` + coupon garanti ${t.couponGarantiPct}%` : ''} + coupons mémoire acquis`
+      : 'Remboursement selon la formule finale',
+    ton: t.capitalGaranti ? 'neutre' : 'negatif',
+  })
+  return scenarios
 }
 
 // ─── Reconstruction mathématique (à partir des `terms` décodés) ──────────────

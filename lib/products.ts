@@ -2581,6 +2581,81 @@ const msMerqubeTtef: Product = {
     '250528_12Y_Athena TotalEnergies Septembre 2025_0_FRIP00001IZ9_MSCO.pdf',
 }
 
+// ── FR001400OZR1 — SG Phoenix Bearish sur taux EUR CMS 10Y (capital garanti) ─
+// Produit de TAUX : coupon conditionnel 3,75%/sem. (mémoire) si EUR CMS 10Y ≤
+// 3,20% ; rappel anticipé si ≤ 2,30% (dès le sem. 4) ; coupon garanti 7,50%
+// one-off ; capital 100% garanti à maturité ; coupons payés in fine.
+const cmsObs = [
+  '2025-12-22', '2026-06-22', '2026-12-21', '2027-06-21', '2027-12-21',
+  '2028-06-21', '2028-12-21', '2029-06-21', '2029-12-21', '2030-06-21',
+  '2030-12-23', '2031-06-23', '2031-12-22', '2032-06-21', '2032-12-21',
+  '2033-06-21', '2033-12-21', '2034-06-21', '2034-12-21', '2035-06-21',
+  '2035-12-21', '2036-06-23',
+]
+const cmsPay = [
+  '2025-12-29', '2026-06-29', '2026-12-29', '2027-06-28', '2027-12-28',
+  '2028-06-28', '2029-01-02', '2029-06-28', '2030-01-02', '2030-06-28',
+  '2031-01-02', '2031-06-30', '2031-12-31', '2032-06-28', '2032-12-28',
+  '2033-06-28', '2033-12-29', '2034-06-28', '2035-01-02', '2035-06-28',
+  '2036-01-02', '2036-06-30',
+]
+// Barrière de rappel en TAUX : 2,30% sur la fenêtre d'autocall (sem. 4→23) ;
+// non-call sur le sem. 3 (n=1) et le sem. 24 (n=22, maturité).
+const cmsRappel: (number | undefined)[] = [
+  undefined, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3,
+  2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, undefined,
+]
+const sgPhoenixCms10: Product = {
+  id: 'FR001400OZR1',
+  nom: 'Phoenix Bearish EUR CMS 10Y (capital garanti)',
+  isin: 'FR001400OZR1',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  assetClass: 'rates',
+  family: 'rates_structured',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-04-04',
+  dateEmission: '2024-04-04',
+  dateConstatationFinale: '2036-06-23',
+  dateEcheance: '2036-06-30',
+  frequence: 'semestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'EUR CMS 10Y', bloomberg: 'EUAMDB10 Index', marche: 'Taux' },
+  ],
+  terms: {
+    kind: 'rates',
+    type: 'phoenix_taux',
+    sens: 'bearish',
+    tauxReference: 'EUR CMS 10Y',
+    effetMemoire: true,
+    couponConditionnelPct: 3.75,
+    couponConditionnelPa: 7.5,
+    couponGarantiPct: 7.5,
+    barriereCouponTauxPct: 3.2,
+    barriereRappelTauxPct: 2.3,
+    capitalGaranti: true,
+    inFine: true,
+  },
+  observations: buildObservations(cmsObs, cmsPay, {
+    niveauRappelPct: (n) => cmsRappel[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.75,
+    niveauCouponPct: 3.2,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix Taux',
+  description: '12Y Phoenix Bearish EUR CMS 10Y — coupon 3,75%/sem. si ≤ 3,20%, autocall si ≤ 2,30%, capital garanti',
+  badges: ['Taux', 'Bearish CMS10', 'Capital garanti', 'Effet mémoire'],
+  termsheetFichier:
+    '240630_12Y_Phoenix Memory sur Taux en Juin 2024 -  2.30%3.20% (ADEQUITY)_Semestriel_FR001400OZR1_.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -2593,6 +2668,7 @@ const detailed: Product[] = [
   bnpSilverMiners, barclaysBnpVeoliaEngie, sgLvmh, bbvaLvmhTotalAirbag,
   bnpLeonardoRhmSaf, bnpGeLmtRtx, santanderLuxe, bnpRenaultStellantis,
   bnpEnergie, bnpTechUs, bbvaSgoElRi, msMerqubeTtef,
+  sgPhoenixCms10,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).

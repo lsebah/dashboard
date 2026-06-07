@@ -133,19 +133,40 @@ export interface CreditTerms {
 }
 
 /**
- * Taux structuré (CMS steepener / range accrual / TARN / callable…).
- * Ébauche — à compléter sur termsheet réelle. (En attente d'un exemple taux.)
+ * Taux structuré : Phoenix/Autocall sur taux (« Bearish CMS10 »), CMS steepener,
+ * range accrual, TARN, callable…
+ *
+ * Phoenix Bearish CMS10 : produit de taux où le coupon conditionnel est versé si
+ * le taux de référence (ex. EUR CMS 10Y) est SOUS une barrière (sens « bearish »),
+ * avec effet mémoire ; rappel anticipé si le taux passe sous la barrière de rappel.
+ * Souvent capital garanti à maturité + un coupon garanti one-off, paiement in fine.
+ * Le calendrier (barrières de taux par observation) est porté par `observations`
+ * (niveauCouponPct = barrière de coupon en taux ; niveauRappelPct = barrière de
+ * rappel en taux ; couponPct = coupon conditionnel de la période).
  */
 export interface RatesTerms {
   kind: 'rates'
   type:
+    | 'phoenix_taux'
     | 'cms_steepener'
     | 'range_accrual'
     | 'tarn'
     | 'fixed_to_float'
     | 'callable'
     | 'autre'
-  indices: string[] // ex. ["EUR CMS 10Y", "EUR CMS 2Y"]
+  /** « bearish » : coupon/rappel si le taux est BAS (≤ barrière) ; « bullish » : si HAUT. */
+  sens?: 'bearish' | 'bullish'
+  tauxReference?: string // ex. "EUR CMS 10Y"
+  tauxReference2?: string // 2e taux (steepener / TARN), ex. "EUR CMS 2Y"
+  indices?: string[] // compat. ancienne (liste d'indices)
+  effetMemoire?: boolean
+  couponConditionnelPct?: number // coupon conditionnel par période, en %
+  couponConditionnelPa?: number // coupon conditionnel annualisé indicatif, en %
+  couponGarantiPct?: number // coupon garanti one-off (in fine), en %
+  barriereCouponTauxPct?: number // barrière de coupon, en taux (ex. 3.20)
+  barriereRappelTauxPct?: number // barrière de rappel, en taux (ex. 2.30)
+  capitalGaranti?: boolean // capital protégé 100% à maturité (hors défaut émetteur)
+  inFine?: boolean // coupons payés uniquement au dénouement (rappel ou maturité)
   multiplicateur?: number
   capPct?: number
   floorPct?: number

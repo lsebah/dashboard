@@ -1,8 +1,9 @@
-import type { Product } from '@/lib/types'
+import type { Product, RatesTerms } from '@/lib/types'
 import {
   echeancier,
   degressivite,
   scenariosMaturite,
+  scenariosTaux,
   formatDateFr,
   type Scenario,
 } from '@/lib/lifecycle'
@@ -44,6 +45,9 @@ function BarriereCurve({ niveaux }: { niveaux: number[] }) {
  */
 export default function ProductReconstruction({ product }: { product: Product }) {
   const t = product.terms
+  if (t?.kind === 'rates' && product.observations?.length) {
+    return <RatesReconstruction product={product} t={t} />
+  }
   if (t?.kind !== 'autocall' || !(product.observations?.length)) {
     return (
       <div className="card p-4 text-xs text-slate-400">
@@ -139,6 +143,110 @@ export default function ProductReconstruction({ product }: { product: Product })
       </div>
 
       {/* Scénarios de dénouement */}
+      <div>
+        <div className="field-label mb-1.5">Scénarios de dénouement</div>
+        <ul className="space-y-1.5">
+          {scenarios.map((s) => (
+            <li key={s.titre} className={`rounded-md border p-2 ${TON[s.ton]}`}>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
+                <span className={`w-1.5 h-1.5 rounded-full ${TON_DOT[s.ton]}`} />
+                {s.titre}
+              </div>
+              <div className="text-[11px] text-slate-500 mt-0.5">Si {s.condition}</div>
+              <div className="text-[11px] text-slate-700">→ {s.resultat}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+/** Reconstruction d'un produit de TAUX (Phoenix Bearish CMS, steepener, TARN…). */
+function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }) {
+  const lignes = echeancier(product)
+  const scenarios = scenariosTaux(product)
+  const cmp = t.sens === 'bearish' ? '≤' : '≥'
+  const taux = t.tauxReference ?? 'Taux de référence'
+
+  const chips: string[] = []
+  chips.push(`${t.sens === 'bearish' ? 'Bearish' : t.sens === 'bullish' ? 'Bullish' : 'Taux'} · ${taux}`)
+  if (typeof t.barriereCouponTauxPct === 'number')
+    chips.push(`Coupon si ${cmp} ${t.barriereCouponTauxPct.toFixed(2)}%`)
+  if (typeof t.barriereRappelTauxPct === 'number')
+    chips.push(`Autocall si ${cmp} ${t.barriereRappelTauxPct.toFixed(2)}%`)
+  if (t.effetMemoire) chips.push('Effet mémoire')
+  if (typeof t.couponGarantiPct === 'number') chips.push(`Coupon garanti ${t.couponGarantiPct}%`)
+  if (t.capitalGaranti) chips.push('Capital garanti')
+  if (t.inFine) chips.push('Coupons in fine')
+
+  return (
+    <div className="card p-4 flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
+        <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {chips.map((c) => (
+          <span key={c} className="badge">
+            {c}
+          </span>
+        ))}
+      </div>
+
+      <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px] text-slate-600">
+        Coupon conditionnel {t.couponConditionnelPct ? `${t.couponConditionnelPct}%/période` : ''}
+        {t.couponConditionnelPa ? ` (≈ ${t.couponConditionnelPa}% p.a.)` : ''} versé si{' '}
+        <span className="font-medium text-slate-800">{taux} {cmp} barrière de coupon</span>
+        {t.effetMemoire ? ', avec effet mémoire' : ''}. Rappel anticipé si{' '}
+        <span className="font-medium text-slate-800">{taux} {cmp} barrière de rappel</span>.
+      </div>
+
+      {/* Échéancier taux */}
+      <div>
+        <div className="field-label mb-1">Échéancier reconstruit (barrières en taux)</div>
+        <div className="max-h-56 overflow-y-auto rounded border border-slate-100">
+          <table className="w-full text-[11px]">
+            <thead className="bg-slate-50 text-slate-500 sticky top-0">
+              <tr>
+                <th className="text-left font-medium px-2 py-1">#</th>
+                <th className="text-left font-medium px-2 py-1">Observation</th>
+                <th className="text-right font-medium px-2 py-1">B. coupon</th>
+                <th className="text-right font-medium px-2 py-1">B. rappel</th>
+                <th className="text-right font-medium px-2 py-1">Coupon</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {lignes.map((l, i) => {
+                const o = product.observations?.[i]
+                return (
+                  <tr key={l.n} className={l.passe ? 'text-slate-400' : ''}>
+                    <td className="px-2 py-1 tabular-nums">{l.n}</td>
+                    <td className="px-2 py-1 whitespace-nowrap">
+                      {formatDateFr(l.date)}
+                      {!l.actif && (
+                        <span className="ml-1 text-[9px] text-slate-400">non-call</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {typeof o?.niveauCouponPct === 'number' ? `${o.niveauCouponPct.toFixed(2)}%` : '—'}
+                    </td>
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {typeof l.niveauRappelPct === 'number' ? `${l.niveauRappelPct.toFixed(2)}%` : '—'}
+                    </td>
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {typeof l.couponPct === 'number' ? `${l.couponPct}%` : '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Scénarios */}
       <div>
         <div className="field-label mb-1.5">Scénarios de dénouement</div>
         <ul className="space-y-1.5">
