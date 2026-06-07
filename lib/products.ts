@@ -4,7 +4,14 @@
 //  Les 4 produits couvrent : single / indice décrément / panier équipondéré /
 //  worst-of, autocall standard & inverse, Airbag, Oxygène, barrière dégressive.
 // ─────────────────────────────────────────────────────────────────────────
-import type { Product } from './types'
+import type {
+  Product,
+  AssetClass,
+  ProductFamily,
+  Frequency,
+  BasketType,
+  Underlying,
+} from './types'
 import { buildObservations, pnlAvecCoupons } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
 import { termsheetUrl, termsheetFile } from './termsheets'
@@ -3468,8 +3475,331 @@ const sgUnibailSnowball: Product = {
   termsheetFichier: '190926_10Y_ODDO Unibail Rodamco_Annuel_FR0013446333_SOCGEN.pdf',
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  Fournée 2026-06 — produits LIVE encore vides.
+//  • 3 décodés finement (termsheet exécutée trouvée sur OneDrive).
+//  • 8 « identité seule » : métadonnées fiables du reporting mensuel, sans la
+//    mécanique (barrières/coupon/calendrier) faute de termsheet en base.
+//    Badge « TS à fournir » ⇒ à compléter dès réception de la termsheet.
+// ════════════════════════════════════════════════════════════════════════
+
+// ── XS3292036624 — Santander Phoenix Mémoire Engie + Veolia + Schneider ──────
+const engObs = [
+  '2026-09-10', '2026-12-10', '2027-03-10', '2027-06-10', '2027-09-10',
+  '2027-12-10', '2028-03-10', '2028-06-12', '2028-09-11', '2028-12-11',
+  '2029-03-12', '2029-06-11', '2029-09-10', '2029-12-10', '2030-03-11',
+  '2030-06-10', '2030-09-10', '2030-12-10', '2031-03-10', '2031-06-10',
+]
+const engPay = [
+  '2026-09-24', '2026-12-24', '2027-03-24', '2027-06-24', '2027-09-24',
+  '2027-12-24', '2028-03-24', '2028-06-26', '2028-09-25', '2028-12-27',
+  '2029-03-26', '2029-06-25', '2029-09-24', '2029-12-24', '2030-03-25',
+  '2030-06-24', '2030-09-24', '2030-12-24', '2031-03-24', '2031-06-24',
+]
+// Non-call obs 1-2 (coupon seul) ; autocall dégressif 100→70 % de obs 3 à 19 ;
+// obs 20 = maturité (pas d'AER).
+const engAer: (number | undefined)[] = [
+  undefined, undefined, 100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80, 78, 76,
+  74, 72, 70, 70, undefined,
+]
+const santanderEngieVeoliaSchneider: Product = {
+  id: 'XS3292036624',
+  nom: 'Phoenix Mémoire Engie + Veolia + Schneider',
+  isin: 'XS3292036624',
+  emetteur: 'Santander International Products plc',
+  garant: 'Banco Santander S.A.',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-04-29', // strike = plus bas clôture sur la période 29/04→10/06
+  dateEmission: '2026-06-10',
+  dateConstatationFinale: '2031-06-10',
+  dateEcheance: '2031-06-24',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Engie SA', bloomberg: 'ENGI FP', isin: 'FR0010208488', marche: 'Euronext Paris' },
+    { nom: 'Veolia Environnement', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris' },
+    { nom: 'Schneider Electric SE', bloomberg: 'SU FP', isin: 'FR0000121972', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    lookback: true,
+    couponPa: 9.4,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(engObs, engPay, {
+    niveauRappelPct: (n) => engAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.35,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 3,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description:
+    '5Y Phoenix Mémoire Wof — Engie + Veolia + Schneider, autocall dégressif 100→70 %, coupon 9,40 % p.a. (barrière 70 %), KI 50 % européen',
+  badges: ['Worst-of', 'Effet mémoire', 'Dégressif'],
+}
+
+// ── XS3191958233 — BNP Athena Booster Wof SX5E + NKY + SPX (snowball 6,85 %) ──
+const athbObs = ['2026-11-20', '2027-11-22', '2028-11-20', '2029-11-20', '2030-11-20']
+const athbPay = ['2026-12-04', '2027-12-06', '2028-12-04', '2029-12-04', '2030-12-04']
+const bnpAthenaBoosterIndices: Product = {
+  id: 'XS3191958233',
+  nom: 'Athena Booster Wof EuroStoxx 50 + Nikkei 225 + S&P 500',
+  isin: 'XS3191958233',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-11-19',
+  dateEmission: '2025-12-03',
+  dateConstatationFinale: '2030-11-20',
+  dateEcheance: '2030-12-04',
+  frequence: 'annuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'EURO STOXX 50', bloomberg: 'SX5E Index', niveauInitial: 5542.05 },
+    { nom: 'Nikkei 225', bloomberg: 'NKY Index', niveauInitial: 49823.94 },
+    { nom: 'S&P 500', bloomberg: 'SPX Index', niveauInitial: 6642.16 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 6.85,
+    barriereRappelPct: 100,
+    protectionPct: 55,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 134.25, // maturité : 100 % + booster mini 34,25 % si Wof ≥ initial
+  },
+  observations: buildObservations(athbObs, athbPay, {
+    niveauRappelPct: (n) => (n <= 4 ? 100 : undefined),
+    montantRemboursementPct: (n) => (n <= 4 ? Math.round((100 + 6.85 * n) * 100) / 100 : undefined),
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description:
+    '5Y Athena Booster Wof — EuroStoxx 50 + Nikkei 225 + S&P 500, snowball 6,85 %×n, autocall 100 %, KI 55 % européen',
+  badges: ['Worst-of', 'Snowball', 'Booster'],
+}
+
+// ── XS3214893623 — BNP Callable Booster CSI Smallcap 500 (call émetteur, 90 %) ─
+const csiObs = [
+  '2026-06-11', '2026-09-11', '2026-12-11', '2027-03-11', '2027-06-11',
+  '2027-09-13', '2027-12-13', '2028-03-13', '2028-06-12', '2028-09-11',
+]
+const csiPay = [
+  '2026-06-25', '2026-09-25', '2026-12-28', '2027-03-25', '2027-06-25',
+  '2027-09-27', '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-25',
+]
+// Call à la main de l'émetteur : remboursement boosté 108→144 % (pas de coupon).
+const csiBooster = [108, 112, 116, 120, 124, 128, 132, 136, 140, 144]
+const bnpCallableCsi500: Product = {
+  id: 'XS3214893623',
+  nom: 'Callable Booster CSI Smallcap 500 (protection 90 %)',
+  isin: 'XS3214893623',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  assetClass: 'equity',
+  family: 'participation',
+  devise: 'EUR',
+  nominal: 0,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-12-11',
+  dateEmission: '2025-12-29',
+  dateConstatationFinale: '2028-12-11',
+  dateEcheance: '2028-12-27',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'Shanghai', niveauInitial: 7082.8932 },
+  ],
+  pdiPct: 90,
+  pdiText: '90 % (européenne)',
+  observations: buildObservations(csiObs, csiPay, {
+    montantRemboursementPct: (n) => csiBooster[n - 1],
+  }),
+  rr: 'LS',
+  productType: 'Callable Booster',
+  description:
+    '3Y Callable émetteur — CSI Smallcap 500, booster 108→144 % sur call, protection 90 % européenne, participation 100 % à maturité',
+  badges: ['Single', 'Callable', '90 % protégé', 'Booster'],
+}
+
+// ── Produits « identité seule » (reporting mensuel, termsheet à fournir) ──────
+function addAnnees(d: string, y: number): string {
+  const dt = new Date(d)
+  dt.setFullYear(dt.getFullYear() + y)
+  return dt.toISOString().slice(0, 10)
+}
+function metaProduct(p: {
+  isin: string
+  nom: string
+  emetteur: string
+  productType: string
+  dateEmission: string
+  dureeAnnees: number
+  assetClass?: AssetClass
+  family?: ProductFamily
+  devise?: string
+  frequence?: Frequency
+  basket?: BasketType
+  sousJacents?: Underlying[]
+  pdiPct?: number
+  pdiText?: string
+  description?: string
+  badges?: string[]
+}): Product {
+  return {
+    id: p.isin,
+    nom: p.nom,
+    isin: p.isin,
+    emetteur: p.emetteur,
+    assetClass: p.assetClass ?? 'equity',
+    family: p.family ?? 'autocall',
+    devise: p.devise ?? 'EUR',
+    nominal: 0,
+    dateConstatationInitiale: p.dateEmission, // approx (strike ≈ émission) — à préciser
+    dateEmission: p.dateEmission,
+    dateConstatationFinale: addAnnees(p.dateEmission, p.dureeAnnees),
+    dateEcheance: addAnnees(p.dateEmission, p.dureeAnnees),
+    frequence: p.frequence ?? 'autre',
+    basket: p.basket ?? 'single',
+    sousJacents: p.sousJacents ?? [],
+    pdiPct: p.pdiPct,
+    pdiText: p.pdiText,
+    rr: 'LS',
+    productType: p.productType,
+    description: p.description ?? p.nom,
+    badges: p.badges ?? ['TS à fournir'],
+  }
+}
+
+const metaProducts: Product[] = [
+  metaProduct({
+    isin: 'XS3266613416',
+    nom: 'Phoenix Mémoire Réarmement Europe',
+    emetteur: 'BNP Paribas Issuance B.V.',
+    productType: 'Phoenix',
+    dateEmission: '2026-02-26',
+    dureeAnnees: 5,
+    frequence: 'trimestriel',
+    basket: 'worst_of',
+    description: '5Y Phoenix Mémoire Wof — Réarmement Europe (défense)',
+    badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS3266613333',
+    nom: 'Phoenix Mémoire Ferroviaires + Infrastructures',
+    emetteur: 'BNP Paribas Issuance B.V.',
+    productType: 'Phoenix',
+    dateEmission: '2026-02-26',
+    dureeAnnees: 5,
+    frequence: 'trimestriel',
+    basket: 'worst_of',
+    description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infrastructures',
+    badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS3251223155',
+    nom: 'Callable 90 % sur CSI Smallcap 500',
+    emetteur: 'BNP Paribas',
+    productType: 'Callable (capital protégé 90 %)',
+    family: 'participation',
+    dateEmission: '2026-02-06',
+    dureeAnnees: 3,
+    frequence: 'trimestriel',
+    basket: 'single',
+    pdiPct: 90,
+    pdiText: '90 % (européenne)',
+    sousJacents: [{ nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'Shanghai' }],
+    description: '3Y Callable émetteur — CSI Smallcap 500, protection 90 % (indicatif, TS à fournir)',
+    badges: ['Single', 'Callable', '90 % protégé', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS3256693576',
+    nom: 'Athena Airbag Sanofi (décrément 3,76)',
+    emetteur: 'Barclays Bank PLC',
+    productType: 'Athena Airbag',
+    dateEmission: '2026-03-16',
+    dureeAnnees: 10,
+    basket: 'single',
+    sousJacents: [{ nom: 'Sanofi (décrément 3,76)', marche: 'Euronext Paris' }],
+    description: '10Y Athena Airbag — Sanofi à décrément 3,76',
+    badges: ['Single', 'Airbag', 'Décrément', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2769472221',
+    nom: 'Autocall Équipondéré Veolia + Eramet + LVMH',
+    emetteur: 'Goldman Sachs International',
+    productType: 'Autocall',
+    dateEmission: '2025-06-13',
+    dureeAnnees: 5,
+    basket: 'equipondere',
+    sousJacents: [
+      { nom: 'Veolia Environnement', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris' },
+      { nom: 'Eramet SA', bloomberg: 'ERA FP', isin: 'FR0000131757', marche: 'Euronext Paris' },
+      { nom: 'LVMH', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
+    ],
+    description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH',
+    badges: ['Équipondéré', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS2925309275',
+    nom: 'Autocall Airbag Wof Moncler + LVMH + Victoria’s Secret',
+    emetteur: 'Marex Financial',
+    productType: 'Autocall Airbag',
+    dateEmission: '2025-07-15',
+    dureeAnnees: 5,
+    basket: 'worst_of',
+    sousJacents: [
+      { nom: 'Moncler SpA', bloomberg: 'MONC IM', isin: 'IT0004965148', marche: 'Borsa Italiana' },
+      { nom: 'LVMH', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
+      { nom: 'Victoria’s Secret & Co', bloomberg: 'VSCO UN', isin: 'US9263871095', marche: 'NYSE' },
+    ],
+    description: '5Y Autocall Airbag Wof — Moncler + LVMH + Victoria’s Secret',
+    badges: ['Worst-of', 'Airbag', 'TS à fournir'],
+  }),
+  metaProduct({
+    isin: 'XS3149213053',
+    nom: 'Athena Airbag Dégressif ASML + Saint-Gobain + TotalEnergies',
+    emetteur: 'Banco Santander S.A.',
+    productType: 'Athena Airbag',
+    dateEmission: '2025-10-22',
+    dureeAnnees: 5,
+    basket: 'worst_of',
+    sousJacents: [
+      { nom: 'ASML Holding NV', bloomberg: 'ASML NA', isin: 'NL0010273215', marche: 'Euronext Amsterdam' },
+      { nom: 'Saint-Gobain', bloomberg: 'SGO FP', isin: 'FR0000125007', marche: 'Euronext Paris' },
+      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+    ],
+    description: '5Y Athena Airbag dégressif Wof — ASML + Saint-Gobain + TotalEnergies',
+    badges: ['Worst-of', 'Airbag', 'Dégressif', 'TS à fournir'],
+  }),
+]
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
+  santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
+  ...metaProducts,
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
   santanderBancaires, santanderBnpGleAca, barclaysAsmlSgoTte, gsSnowball,
   santanderSchneiderEnrTte, bnpAlbemarleCf, barclaysCopperMiners,
