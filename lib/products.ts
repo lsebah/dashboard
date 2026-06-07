@@ -74,7 +74,7 @@ const marexUso: Product = {
     '260326_1Y_Inverse Reverse Autocall USO_Trimestriel_XS3262011201_MAREX.PDF',
 }
 
-// ── 2) BNP — Athena Airbag SX5E 8x Repo (indice à décrément, Oxygène) ────────
+// ── 2) BNP — Athena Airbag SX5E 8x Repo (indice à décrément, non-call 3 obs.) ─
 const sx5eObs = [
   '2027-03-05', '2027-06-07', '2027-09-06', '2027-12-07', '2028-03-06',
   '2028-06-05', '2028-09-05', '2028-12-05', '2029-03-05', '2029-06-05',
@@ -125,7 +125,6 @@ const bnpSx5e: Product = {
     kind: 'autocall',
     sens: 'standard',
     effetMemoire: true,
-    oxygene: true, // rappel non-actif jusqu'au T4
     couponPa: 11.0,
     barriereRappelPct: 100,
     protectionPct: 60,
@@ -137,7 +136,7 @@ const bnpSx5e: Product = {
     niveauRappelPct: 100,
     montantRemboursementPct: (n) => 108.25 + n * 2.75,
     couponPct: 2.75,
-    rappelActifAPartirDe: 4, // Oxygène : actif à partir du T4
+    rappelActifAPartirDe: 4, // non-call : rappel actif à partir du T4
   }),
   prixMarche: 100.38,
   pnlPct: 0.38,
@@ -147,7 +146,7 @@ const bnpSx5e: Product = {
   productType: 'Athena',
   description: '8Y Athena Airbag SX5E 8x Repo',
   clients: ['ALVES - 06001'],
-  badges: ['Oxygène — 60%', 'Décrément', 'Effet mémoire'],
+  badges: ['Non-call (3 obs.)', 'Décrément', 'Effet mémoire'],
   termsheetFichier:
     '260312_8Y_Athena Airbag SX5E 8x Repo_Annuel_XS3291617812_BNP.PDF',
 }

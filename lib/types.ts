@@ -80,7 +80,7 @@ export interface Observation {
   dateObservation: string // ISO (yyyy-mm-dd)
   datePaiement?: string // ISO
   // — Rappel automatique (autocall) —
-  autocallActif?: boolean // false pendant la période d'Oxygène (lock-out)
+  autocallActif?: boolean // false pendant la période non-call (lock-out)
   niveauRappelPct?: number // niveau de déclenchement, en % du niveau initial
   montantRemboursementPct?: number // remboursement si rappelé, en % du nominal
   // — Coupon —
@@ -98,7 +98,12 @@ export interface AutocallTerms {
   kind: 'autocall'
   sens: 'standard' | 'inverse' // inverse : rappel si sous-jacent SOUS le niveau
   effetMemoire: boolean // coupon à effet mémoire
-  oxygene?: boolean // rappel non-actif sur les premières périodes
+  // Oxygène : feature propre aux Athena. À MATURITÉ uniquement (si le produit
+  // n'a pas été rappelé avant), si le sous-jacent est ≥ au niveau Oxygène, tous
+  // les coupons mémoire sont payés. À ne pas confondre avec la période non-call
+  // (lock-out), qui est gérée par `rappelActifAPartirDe` / `autocallActif`.
+  oxygene?: boolean
+  oxygenePct?: number // niveau Oxygène, en % de l'initial (si feature présente)
   couponPa?: number // coupon annualisé indicatif, en %
   barriereCouponPct?: number // barrière de coupon, en % de l'initial
   barriereRappelPct?: number // niveau de rappel de base, en % de l'initial

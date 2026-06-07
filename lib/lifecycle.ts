@@ -19,7 +19,7 @@ export function buildObservations(
     couponPct?: number | ((n: number) => number | undefined)
     /** Barrière de coupon (% initial). */
     niveauCouponPct?: number
-    /** Première période où le rappel devient actif (Oxygène). 1 = dès le départ. */
+    /** Première période où le rappel devient actif (fin du non-call). 1 = dès le départ. */
     rappelActifAPartirDe?: number
   } = {},
 ): Observation[] {
@@ -131,7 +131,7 @@ export interface EcheanceLigne {
   niveauRappelPct?: number // barrière d'autocall (dégressive le cas échéant)
   remboursementPct?: number // remboursement total si rappelé à cette date
   couponPct?: number
-  actif: boolean // false pendant l'Oxygène (lock-out)
+  actif: boolean // false pendant la période non-call (lock-out)
   passe: boolean // date déjà écoulée
 }
 

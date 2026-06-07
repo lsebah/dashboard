@@ -66,7 +66,9 @@ export default function ProductReconstruction({ product }: { product: Product })
   ]
   if (t.effetMemoire) chips.push('Effet mémoire')
   if (t.airbag) chips.push('Airbag')
-  if (t.oxygene) chips.push('Oxygène')
+  if (t.oxygene) chips.push('Oxygène') // feature Athena : coupons mémoire payés à maturité si ≥ niveau Oxygène
+  const premierRappel = lignes.find((l) => l.actif)?.n
+  if (premierRappel && premierRappel > 1) chips.push(`Non-call (${premierRappel - 1} obs.)`)
   if (degr) chips.push('Barrière dégressive')
   if (t.bonusFinalPct) chips.push(`Bonus +${t.bonusFinalPct}%`)
   if (t.decrement) chips.push(`Décrément · ${t.decrement}`)
@@ -118,7 +120,7 @@ export default function ProductReconstruction({ product }: { product: Product })
                   <td className="px-2 py-1 whitespace-nowrap">
                     {formatDateFr(l.date)}
                     {!l.actif && (
-                      <span className="ml-1 text-[9px] text-amber-600">oxygène</span>
+                      <span className="ml-1 text-[9px] text-slate-400">non-call</span>
                     )}
                   </td>
                   <td className="px-2 py-1 text-right tabular-nums">
