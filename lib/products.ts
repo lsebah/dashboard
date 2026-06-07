@@ -3246,6 +3246,228 @@ const bbvaClnZeroRecovery = creditCLN({
     '240212_7Y_Tranched CLN Zero Recovery Credit Linked Notes due 2031_Annuel_ XS2641318121_BBVA.pdf',
 })
 
+// ── XS2442403130 — BNP TARN CMS 30Y − CMS 2Y (steepener, capital garanti) ────
+const tarnDates = [
+  '2023-02-27', '2023-05-25', '2023-08-25', '2023-11-27', '2024-02-26',
+  '2024-05-27', '2024-08-26', '2024-11-25', '2025-02-25', '2025-05-26',
+  '2025-08-25', '2025-11-25', '2026-02-25', '2026-05-25', '2026-08-25',
+  '2026-11-25', '2027-02-25', '2027-05-25', '2027-08-25', '2027-11-25',
+  '2028-02-25', '2028-05-25', '2028-08-25', '2028-11-27', '2029-02-26',
+  '2029-05-25', '2029-08-27', '2029-11-26', '2030-02-25', '2030-05-27',
+  '2030-08-26', '2030-11-25', '2031-02-25', '2031-05-26', '2031-08-25',
+  '2031-11-25', '2032-02-25', '2032-05-25', '2032-08-25', '2032-11-25',
+  '2033-02-25', '2033-05-25', '2033-08-25', '2033-11-25', '2034-02-27',
+  '2034-05-25', '2034-08-25', '2034-11-27',
+]
+const bnpTarn: Product = {
+  id: 'XS2442403130',
+  nom: 'TARN CMS 30Y − CMS 2Y',
+  isin: 'XS2442403130',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'rates',
+  family: 'rates_structured',
+  devise: 'EUR',
+  nominal: 600_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2022-11-25',
+  dateEmission: '2022-11-25',
+  dateConstatationFinale: '2034-11-23',
+  dateEcheance: '2034-11-25',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [{ nom: 'EUR CMS 30Y − EUR CMS 2Y', marche: 'Taux' }],
+  terms: {
+    kind: 'rates',
+    type: 'tarn',
+    tauxReference: 'EUR CMS 30Y',
+    tauxReference2: 'EUR CMS 2Y',
+    multiplicateur: 2,
+    floorPct: 0,
+    couponGarantiPct: 7.25,
+    cibleTarnPct: 15.5,
+    capitalGaranti: true,
+  },
+  observations: buildObservations(tarnDates, tarnDates, { montantRemboursementPct: 100 }),
+  rr: 'LS',
+  productType: 'TARN',
+  description: '12Y TARN steepener — 8 coupons fixes 7,25 % puis 200 % × (CMS 30Y − CMS 2Y) planché à 0 %, cible 15,5 %, capital garanti',
+  badges: ['Taux', 'Steepener', 'TARN', 'Capital garanti'],
+  termsheetFichier: 'TERMSHEET-CE5643YFR (XS2442403130).pdf',
+}
+
+// ── FR001400T357 — SG Bear Athena USD SOFR CMS 10Y (capital garanti) ─────────
+const sofrObs = [
+  '2025-10-06', '2026-10-06', '2027-10-06', '2028-10-06', '2029-10-05',
+  '2030-10-07', '2031-10-06',
+]
+const sofrPay = [
+  '2025-10-14', '2026-10-14', '2027-10-14', '2028-10-16', '2029-10-15',
+  '2030-10-15', '2031-10-14',
+]
+// Athena bearish : rappel si SOFR CMS 10Y ≤ 2,80% (années 1-6) ; n=7 = maturité.
+const sofrRappel: (number | undefined)[] = [2.8, 2.8, 2.8, 2.8, 2.8, 2.8, undefined]
+const sofrErv = [109, 118, 127, 136, 145, 154, 163]
+const sgBearAthenaSofr: Product = {
+  id: 'FR001400T357',
+  nom: 'Bear Athena USD SOFR CMS 10Y',
+  isin: 'FR001400T357',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  assetClass: 'rates',
+  family: 'rates_structured',
+  devise: 'USD',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-09-30',
+  dateEmission: '2024-10-14',
+  dateConstatationFinale: '2031-10-06',
+  dateEcheance: '2031-10-14',
+  frequence: 'annuel',
+  basket: 'single',
+  sousJacents: [{ nom: 'USD SOFR CMS 10Y', bloomberg: 'USISS010 Index', marche: 'Taux' }],
+  terms: {
+    kind: 'rates',
+    type: 'phoenix_taux',
+    sens: 'bearish',
+    tauxReference: 'USD SOFR CMS 10Y',
+    couponConditionnelPa: 9,
+    barriereRappelTauxPct: 2.8,
+    capitalGaranti: true,
+    inFine: true,
+  },
+  observations: buildObservations(sofrObs, sofrPay, {
+    niveauRappelPct: (n) => sofrRappel[n - 1],
+    montantRemboursementPct: (n) => sofrErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena Taux',
+  description: '7Y Bear Athena USD SOFR CMS 10Y — rappel si ≤ 2,80 % (prime 109→154 %), 163 % à maturité si ≤ 2,80 %, capital garanti',
+  badges: ['Taux', 'Bearish SOFR', 'Capital garanti', 'Athena'],
+  termsheetFichier: '241014_7Y_Bear Athena SOFR CMS10_Annuel_FR001400T357_SOCGEN.pdf',
+}
+
+// ── XS2769351359 — GS Phoenix Mémoire Kering (single, 10Y annuel) ────────────
+const kerSObs = [
+  '2025-07-15', '2026-07-15', '2027-07-15', '2028-07-17', '2029-07-16',
+  '2030-07-15', '2031-07-15', '2032-07-15', '2033-07-15', '2034-07-17',
+]
+const kerSPay = [
+  '2025-07-22', '2026-07-22', '2027-07-22', '2028-07-24', '2029-07-23',
+  '2030-07-22', '2031-07-22', '2032-07-22', '2033-07-24', '2034-07-24',
+]
+const kerSAer: (number | undefined)[] = [
+  100, 100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const gsKering: Product = {
+  id: 'XS2769351359',
+  nom: 'Phoenix Mémoire Kering',
+  isin: 'XS2769351359',
+  emetteur: 'Goldman Sachs International',
+  garant: 'The Goldman Sachs Group, Inc.',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-07-15',
+  dateEmission: '2024-07-15',
+  dateConstatationFinale: '2034-07-17',
+  dateEcheance: '2034-07-17',
+  frequence: 'annuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Kering SA', bloomberg: 'KER FP', isin: 'FR0000121485', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 7.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(kerSObs, kerSPay, {
+    niveauRappelPct: (n) => kerSAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 7,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '10Y Phoenix Mémoire Kering — coupon 7 %/an si ≥ 70 %, autocall 100 %, KI 50 % européen',
+  badges: ['Single', 'Effet mémoire'],
+  termsheetFichier: '240715_10Y_Phoenix Memory Kering 7% _Annuel_XS2769351359_GS.pdf',
+}
+
+// ── FR0013446333 — SG ODDO Snowball Unibail-Rodamco-Westfield (10Y annuel) ───
+const urwObs = [
+  '2020-12-28', '2021-12-27', '2022-12-27', '2023-12-27', '2024-12-27',
+  '2025-12-29', '2026-12-28', '2027-12-27', '2028-12-27', '2029-12-27',
+]
+const urwPay = [
+  '2021-01-05', '2022-01-03', '2023-01-03', '2024-01-04', '2025-01-06',
+  '2026-01-06', '2027-01-05', '2028-01-03', '2029-01-04', '2030-01-04',
+]
+// Autocall dégressif 90%→66% (-3%/an) ; n=10 = maturité.
+const urwAer: (number | undefined)[] = [90, 87, 84, 81, 78, 75, 72, 69, 66, undefined]
+// Prime de rappel snowball 110%→200% (+10%/an).
+const urwErv = [110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
+const sgUnibailSnowball: Product = {
+  id: 'FR0013446333',
+  nom: 'Snowball Unibail-Rodamco-Westfield',
+  isin: 'FR0013446333',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2019-12-27',
+  dateEmission: '2019-12-27',
+  dateConstatationFinale: '2029-12-27',
+  dateEcheance: '2030-01-04',
+  frequence: 'annuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Unibail-Rodamco-Westfield', bloomberg: 'URW NA', isin: 'FR0013326246', marche: 'Euronext Amsterdam' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.0,
+    barriereRappelPct: 90,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 100,
+  },
+  observations: buildObservations(urwObs, urwPay, {
+    niveauRappelPct: (n) => urwAer[n - 1],
+    montantRemboursementPct: (n) => urwErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Snowball',
+  description: '10Y Snowball Unibail — prime croissante 110→200 %, autocall dégressif 90→66 %, KI 50 % européen',
+  badges: ['Single', 'Snowball', 'Dégressif', 'Bonus'],
+  termsheetFichier: '190926_10Y_ODDO Unibail Rodamco_Annuel_FR0013446333_SOCGEN.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -3261,6 +3483,7 @@ const detailed: Product[] = [
   sgPhoenixCms10, sgBearish320, dbBearish350, bnpBearish325, sgBearish635,
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
   bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
+  bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).

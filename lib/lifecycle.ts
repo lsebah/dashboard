@@ -129,6 +129,42 @@ export function couponPa(product: Product): number | undefined {
 export function scenariosTaux(product: Product): Scenario[] {
   const t = product.terms
   if (t?.kind !== 'rates') return []
+
+  // — TARN / steepener (cible de coupon cumulé) —
+  if (t.type === 'tarn') {
+    const r1 = t.tauxReference ?? 'CMS long'
+    const r2 = t.tauxReference2 ?? 'CMS court'
+    const lev = t.multiplicateur ? `${(t.multiplicateur * 100).toFixed(0)}%` : ''
+    const s: Scenario[] = []
+    if (typeof t.couponGarantiPct === 'number')
+      s.push({
+        titre: 'Coupons fixes garantis',
+        condition: 'périodes initiales',
+        resultat: `Coupon garanti ${t.couponGarantiPct}%`,
+        ton: 'positif',
+      })
+    s.push({
+      titre: 'Phase steepener',
+      condition: `pente ${r1} − ${r2} positive`,
+      resultat: `Coupon = ${lev} × (${r1} − ${r2}), planché à ${t.floorPct ?? 0}%`,
+      ton: 'neutre',
+    })
+    if (typeof t.cibleTarnPct === 'number')
+      s.push({
+        titre: 'Cible atteinte (TARN)',
+        condition: `coupons cumulés ≥ ${t.cibleTarnPct}%`,
+        resultat: 'Remboursement anticipé 100% du capital',
+        ton: 'positif',
+      })
+    s.push({
+      titre: 'À maturité',
+      condition: 'cible jamais atteinte',
+      resultat: t.capitalGaranti ? 'Capital 100% garanti' : 'Remboursement selon formule',
+      ton: 'neutre',
+    })
+    return s
+  }
+
   const taux = t.tauxReference ?? 'le taux de référence'
   const cmp = t.sens === 'bearish' ? '≤' : '≥'
   const cmpInv = t.sens === 'bearish' ? '>' : '<'

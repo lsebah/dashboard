@@ -194,6 +194,44 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
   const cmp = t.sens === 'bearish' ? '≤' : '≥'
   const taux = t.tauxReference ?? 'Taux de référence'
 
+  // — TARN / steepener : pas de barrière de taux → carte dédiée —
+  if (t.type === 'tarn') {
+    const tarnChips: string[] = []
+    if (t.tauxReference && t.tauxReference2)
+      tarnChips.push(`${t.tauxReference} − ${t.tauxReference2}`)
+    if (typeof t.multiplicateur === 'number')
+      tarnChips.push(`Levier ×${t.multiplicateur}`)
+    if (typeof t.couponGarantiPct === 'number')
+      tarnChips.push(`Coupon garanti ${t.couponGarantiPct}%`)
+    if (typeof t.cibleTarnPct === 'number') tarnChips.push(`Cible ${t.cibleTarnPct}%`)
+    if (t.capitalGaranti) tarnChips.push('Capital garanti')
+    return (
+      <div className="card p-4 flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
+          <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {tarnChips.map((c) => (
+            <span key={c} className="badge">
+              {c}
+            </span>
+          ))}
+        </div>
+        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px] text-slate-600">
+          TARN (Target Redemption Note) sur la pente de courbe : coupon ={' '}
+          <span className="font-medium text-slate-800">
+            {t.multiplicateur ? `${(t.multiplicateur * 100).toFixed(0)}%` : ''} × ({t.tauxReference} −{' '}
+            {t.tauxReference2})
+          </span>{' '}
+          planché à {t.floorPct ?? 0}%. Remboursement anticipé dès que les coupons cumulés
+          atteignent la cible de {t.cibleTarnPct}%.
+        </div>
+        <ScenarioList scenarios={scenarios} />
+      </div>
+    )
+  }
+
   const chips: string[] = []
   chips.push(`${t.sens === 'bearish' ? 'Bearish' : t.sens === 'bullish' ? 'Bullish' : 'Taux'} · ${taux}`)
   if (typeof t.barriereCouponTauxPct === 'number')
