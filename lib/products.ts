@@ -2295,6 +2295,292 @@ const bnpRenaultStellantis: Product = {
     '240502_6Y_Phoenix Memory  Wof Stellantis + Renault_Trimestriel_XS2759191286_BNP.pdf',
 }
 
+// ── XS2886439467 — BNP Phoenix Mémoire TotalEnergies + Eni + Schlumberger ────
+const eneObs = [
+  '2025-05-06', '2025-11-06', '2026-05-06', '2026-11-06', '2027-05-06',
+  '2027-11-08', '2028-05-08', '2028-11-06',
+]
+const enePay = [
+  '2025-05-20', '2025-11-20', '2026-05-20', '2026-11-20', '2027-05-20',
+  '2027-11-22', '2028-05-22', '2028-11-20',
+]
+// Autocall constant 100% ; non-call n=1 ; n=8 = maturité.
+const eneAer: (number | undefined)[] = [
+  undefined, 100, 100, 100, 100, 100, 100, undefined,
+]
+const bnpEnergie: Product = {
+  id: 'XS2886439467',
+  nom: 'Phoenix Mémoire TotalEnergies + Eni + Schlumberger',
+  isin: 'XS2886439467',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-11-06',
+  dateEmission: '2024-11-20',
+  dateConstatationFinale: '2028-11-06',
+  dateEcheance: '2028-11-20',
+  frequence: 'semestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+    { nom: 'Eni SpA', bloomberg: 'ENI IM', isin: 'IT0003132476', marche: 'Borsa Italiana' },
+    { nom: 'Schlumberger Ltd (SLB)', bloomberg: 'SLB UN', isin: 'AN8068571086', marche: 'NYSE' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 10.0,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 70,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(eneObs, enePay, {
+    niveauRappelPct: (n) => eneAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 5,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 2,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '4Y Phoenix Mémoire Wof TotalEnergies + Eni + Schlumberger (énergie)',
+  badges: ['Worst-of', 'Effet mémoire'],
+  termsheetFichier:
+    '241120_4Y_Phoenix Memory  Wof TotalEnergies + Eni + Schlumberger_Semestriel_XS2886439467_BNP.pdf',
+}
+
+// ── XS3283137407 — BNP Phoenix Mémoire Alphabet + Amazon + CrowdStrike ───────
+const techObs = [
+  '2026-06-02', '2026-09-02', '2026-12-02', '2027-03-02', '2027-06-02',
+  '2027-09-02', '2027-12-02', '2028-03-02', '2028-06-02', '2028-09-05',
+  '2028-12-04', '2029-03-02', '2029-06-04', '2029-09-04', '2029-12-03',
+  '2030-03-04', '2030-06-03', '2030-09-03', '2030-12-02', '2031-03-03',
+]
+const techPay = [
+  '2026-06-16', '2026-09-16', '2026-12-16', '2027-03-16', '2027-06-16',
+  '2027-09-16', '2027-12-16', '2028-03-16', '2028-06-16', '2028-09-19',
+  '2028-12-18', '2029-03-16', '2029-06-18', '2029-09-18', '2029-12-17',
+  '2030-03-18', '2030-06-17', '2030-09-17', '2030-12-16', '2031-03-17',
+]
+// Autocall dégressif 91%→76% (-1%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const techAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82,
+  81, 80, 79, 78, 77, 76, undefined,
+]
+const bnpTechUs: Product = {
+  id: 'XS3283137407',
+  nom: 'Phoenix Mémoire Alphabet + Amazon + CrowdStrike',
+  isin: 'XS3283137407',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-02',
+  dateEmission: '2026-03-16',
+  dateConstatationFinale: '2031-03-03',
+  dateEcheance: '2031-03-17',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Alphabet Inc', bloomberg: 'GOOGL UW', isin: 'US02079K3059', marche: 'NASDAQ' },
+    { nom: 'Amazon.com Inc', bloomberg: 'AMZN UW', isin: 'US0231351067', marche: 'NASDAQ' },
+    { nom: 'CrowdStrike Holdings Inc', bloomberg: 'CRWD UW', isin: 'US22788C1053', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.7,
+    barriereCouponPct: 50,
+    barriereRappelPct: 91,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(techObs, techPay, {
+    niveauRappelPct: (n) => techAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.675,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Alphabet + Amazon + CrowdStrike (EUR Quanto)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier:
+    '260316_5Y_Phoenix Mémoire Wof  Alphabet   Amazon   CrowdStrike_Trimestriel_XS3283137407_BNP.pdf',
+}
+
+// ── XS3317172743 — BBVA Phoenix Mémoire Saint-Gobain + EssilorLuxottica + Pernod
+const sgepObs = [
+  '2026-06-29', '2026-09-28', '2026-12-28', '2027-03-30', '2027-06-28',
+  '2027-09-27', '2027-12-27', '2028-03-27', '2028-06-27', '2028-09-27',
+  '2028-12-27', '2029-03-27', '2029-06-27', '2029-09-27', '2029-12-27',
+  '2030-03-27', '2030-06-27', '2030-09-27', '2030-12-27', '2031-03-27',
+]
+const sgepPay = [
+  '2026-07-06', '2026-10-05', '2027-01-05', '2027-04-06', '2027-07-05',
+  '2027-10-04', '2028-01-03', '2028-04-03', '2028-07-04', '2028-10-04',
+  '2029-01-04', '2029-04-05', '2029-07-04', '2029-10-04', '2030-01-04',
+  '2030-04-03', '2030-07-04', '2030-10-04', '2031-01-06', '2031-04-03',
+]
+// Autocall dégressif 99%→76,5% (-1,5%/trim.) ; non-call n=1-3 ; n=20 = maturité.
+const sgepAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 99, 97.5, 96, 94.5, 93, 91.5, 90, 88.5,
+  87, 85.5, 84, 82.5, 81, 79.5, 78, 76.5, undefined,
+]
+const bbvaSgoElRi: Product = {
+  id: 'XS3317172743',
+  nom: 'Phoenix Mémoire Saint-Gobain + EssilorLuxottica + Pernod Ricard',
+  isin: 'XS3317172743',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-27',
+  dateEmission: '2026-04-14',
+  dateConstatationFinale: '2031-03-27',
+  dateEcheance: '2031-04-03',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Compagnie de Saint-Gobain SA', bloomberg: 'SGO FP', isin: 'FR0000125007', marche: 'Euronext Paris' },
+    { nom: 'EssilorLuxottica SA', bloomberg: 'EL FP', isin: 'FR0000121667', marche: 'Euronext Paris' },
+    { nom: 'Pernod Ricard SA', bloomberg: 'RI FP', isin: 'FR0000120693', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.0,
+    barriereCouponPct: 50,
+    barriereRappelPct: 99,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(sgepObs, sgepPay, {
+    niveauRappelPct: (n) => sgepAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.5,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Saint-Gobain + EssilorLuxottica + Pernod Ricard',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier:
+    '260414_5Y_Phoenix Mémoire Worst of Essilorluxottica + Saint gobain + Pernod Ricard_Trimestriel_XS3317172743_BBVA.pdf',
+}
+
+// ── FRIP00001IZ9 — Morgan Stanley Athena snowball sur indice MerQube TTEF ─────
+// « TotalEnergies Septembre 2025 » mais sous-jacent = indice décrément MerQube
+// TTEF 2,96 pts (PAS l'action). Pas de coupon périodique : prime de rappel
+// croissante 110%→217,5% (+2,5%/trim.), barrière dégressive 100%→70%, KI 50%
+// européen, bonus 220% à maturité si l'indice ≥ 70%.
+const ttefObs = [
+  '2026-09-21', '2026-12-21', '2027-03-19', '2027-06-21', '2027-09-20',
+  '2027-12-20', '2028-03-20', '2028-06-19', '2028-09-19', '2028-12-19',
+  '2029-03-19', '2029-06-19', '2029-09-19', '2029-12-19', '2030-03-19',
+  '2030-06-19', '2030-09-19', '2030-12-19', '2031-03-19', '2031-06-19',
+  '2031-09-19', '2031-12-19', '2032-03-19', '2032-06-21', '2032-09-20',
+  '2032-12-20', '2033-03-21', '2033-06-20', '2033-09-19', '2033-12-19',
+  '2034-03-20', '2034-06-19', '2034-09-19', '2034-12-19', '2035-03-19',
+  '2035-06-19', '2035-09-19', '2035-12-19', '2036-03-19', '2036-06-19',
+  '2036-09-19', '2036-12-19', '2037-03-19', '2037-06-19', '2037-09-21',
+]
+const ttefPay = [
+  '2026-09-28', '2026-12-29', '2027-03-30', '2027-06-28', '2027-09-27',
+  '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-26', '2028-12-28',
+  '2029-03-26', '2029-06-26', '2029-09-26', '2029-12-28', '2030-03-26',
+  '2030-06-26', '2030-09-26', '2030-12-30', '2031-03-26', '2031-06-26',
+  '2031-09-26', '2031-12-30', '2032-03-30', '2032-06-28', '2032-09-27',
+  '2032-12-27', '2033-03-28', '2033-06-27', '2033-09-26', '2033-12-27',
+  '2034-03-27', '2034-06-26', '2034-09-26', '2034-12-28', '2035-03-28',
+  '2035-06-26', '2035-09-26', '2035-12-28', '2036-03-26', '2036-06-26',
+  '2036-09-26', '2036-12-30', '2037-03-26', '2037-06-26', '2037-09-28',
+]
+// Barrière de rappel dégressive 100%→70% (-0,9%/trim. puis plancher 70%) ; n=45 = maturité.
+const ttefAer: (number | undefined)[] = [
+  100.0, 99.1, 98.2, 97.3, 96.4, 95.5, 94.6, 93.7, 92.8, 91.9, 91.0, 90.1,
+  89.2, 88.3, 87.4, 86.5, 85.6, 84.7, 83.8, 82.9, 82.0, 81.1, 80.2, 79.3,
+  78.4, 77.5, 76.6, 75.7, 74.8, 73.9, 73.0, 72.1, 71.2, 70.3, 70.0, 70.0,
+  70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0, undefined,
+]
+// Prime de rappel croissante 110%→217,5% ; bonus 220% à maturité (n=45).
+const ttefErv = [
+  110, 112.5, 115, 117.5, 120, 122.5, 125, 127.5, 130, 132.5, 135, 137.5,
+  140, 142.5, 145, 147.5, 150, 152.5, 155, 157.5, 160, 162.5, 165, 167.5,
+  170, 172.5, 175, 177.5, 180, 182.5, 185, 187.5, 190, 192.5, 195, 197.5,
+  200, 202.5, 205, 207.5, 210, 212.5, 215, 217.5, 220,
+]
+const msMerqubeTtef: Product = {
+  id: 'FRIP00001IZ9',
+  nom: 'Athena Snowball indice MerQube TTEF (« TotalEnergies »)',
+  isin: 'FRIP00001IZ9',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-09-19',
+  dateEmission: '2025-09-19',
+  dateConstatationFinale: '2037-09-21',
+  dateEcheance: '2037-09-28',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'MerQube TTEF 2.96 Index Points Decrement (EUR) Index', bloomberg: 'MQDTT296', marche: 'Indice' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    couponPa: 10.0,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    decrement: '2,96 points',
+    bonusFinalPct: 120,
+  },
+  observations: buildObservations(ttefObs, ttefPay, {
+    niveauRappelPct: (n) => ttefAer[n - 1],
+    montantRemboursementPct: (n) => ttefErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '12Y Athena Snowball sur indice MerQube TotalEnergies décrément (prime croissante 110→217,5 %)',
+  badges: ['Indice décrément', 'Snowball', 'Dégressif', 'Bonus'],
+  termsheetFichier:
+    '250528_12Y_Athena TotalEnergies Septembre 2025_0_FRIP00001IZ9_MSCO.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -2306,6 +2592,7 @@ const detailed: Product[] = [
   bbvaHealthcareBonus, bbvaRearmement, santanderMaterials, marexUsoInverse,
   bnpSilverMiners, barclaysBnpVeoliaEngie, sgLvmh, bbvaLvmhTotalAirbag,
   bnpLeonardoRhmSaf, bnpGeLmtRtx, santanderLuxe, bnpRenaultStellantis,
+  bnpEnergie, bnpTechUs, bbvaSgoElRi, msMerqubeTtef,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
