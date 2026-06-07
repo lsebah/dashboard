@@ -1730,6 +1730,297 @@ const marexUsoInverse: Product = {
     '260327_1Y_Inverse Reverse Autocall USO_Trimestriel_XS3262087797_MAREX.PDF',
 }
 
+// ── XS3045914713 — BNP Phoenix Mémoire Silver Miners ────────────────────────
+const silObs = [
+  '2025-09-10', '2025-12-10', '2026-03-10', '2026-06-10', '2026-09-10',
+  '2026-12-10', '2027-03-10', '2027-06-10', '2027-09-10', '2027-12-10',
+  '2028-03-10', '2028-06-12', '2028-09-11', '2028-12-11', '2029-03-12',
+  '2029-06-11', '2029-09-10', '2029-12-10', '2030-03-11', '2030-06-10',
+]
+const silPay = [
+  '2025-09-24', '2025-12-24', '2026-03-24', '2026-06-24', '2026-09-24',
+  '2026-12-24', '2027-03-24', '2027-06-24', '2027-09-24', '2027-12-24',
+  '2028-03-24', '2028-06-26', '2028-09-25', '2028-12-27', '2029-03-26',
+  '2029-06-25', '2029-09-24', '2029-12-24', '2030-03-25', '2030-06-24',
+]
+// Autocall constant 100% ; non-call n=1-3 ; n=20 = maturité.
+const silAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 100, 100, 100, 100, 100, 100, 100,
+  100, 100, 100, 100, 100, 100, 100, 100, undefined,
+]
+const bnpSilverMiners: Product = {
+  id: 'XS3045914713',
+  nom: 'Phoenix Mémoire Silver Miners',
+  isin: 'XS3045914713',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 250_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-06-10',
+  dateEmission: '2025-07-01',
+  dateConstatationFinale: '2030-06-10',
+  dateEcheance: '2030-06-24',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'First Majestic Silver Corp', bloomberg: 'AG UN', marche: 'NYSE' },
+    { nom: 'Newmont Corp', bloomberg: 'NEM UN', marche: 'NYSE' },
+    { nom: 'Pan American Silver Corp', bloomberg: 'PAAS UN', marche: 'NASDAQ' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 11.0,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(silObs, silPay, {
+    niveauRappelPct: (n) => silAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.75,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof Silver Miners (First Majestic + Newmont + Pan American, Quanto EUR)',
+  badges: ['Worst-of', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier:
+    '250701_5Y_Phoenix Memory Wof Silver Miners - 11%_Trimestriel_XS3045914713_BNP.pdf',
+}
+
+// ── XS3304996484 — Barclays Phoenix Mémoire BNP + Veolia + Engie ─────────────
+const bveObs = [
+  '2026-06-22', '2026-09-21', '2026-12-21', '2027-03-22', '2027-06-21',
+  '2027-09-20', '2027-12-20', '2028-03-20', '2028-06-20', '2028-09-20',
+  '2028-12-20', '2029-03-20', '2029-06-20', '2029-09-20', '2029-12-20',
+  '2030-03-20', '2030-06-20', '2030-09-20', '2030-12-20', '2031-03-20',
+]
+const bvePay = [
+  '2026-07-06', '2026-10-05', '2027-01-06', '2027-04-07', '2027-07-05',
+  '2027-10-04', '2028-01-03', '2028-04-03', '2028-07-04', '2028-10-04',
+  '2029-01-08', '2029-04-05', '2029-07-04', '2029-10-04', '2030-01-08',
+  '2030-04-03', '2030-07-04', '2030-10-04', '2031-01-08', '2031-04-03',
+]
+// Autocall dégressif 100%→76% (-1,5%/trim.) ; non-call n=1-2 ; n=20 = maturité.
+const bveAer: (number | undefined)[] = [
+  undefined, undefined, 100, 98.5, 97, 95.5, 94, 92.5, 91, 89.5, 88, 86.5,
+  85, 83.5, 82, 80.5, 79, 77.5, 76, undefined,
+]
+const barclaysBnpVeoliaEngie: Product = {
+  id: 'XS3304996484',
+  nom: 'Phoenix Mémoire BNP + Veolia + Engie',
+  isin: 'XS3304996484',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 2_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-03-20',
+  dateEmission: '2026-04-07',
+  dateConstatationFinale: '2031-03-20',
+  dateEcheance: '2031-04-03',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+    { nom: 'Veolia Environnement SA', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris' },
+    { nom: 'Engie SA', bloomberg: 'ENGI FP', isin: 'FR0010208488', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.1,
+    barriereCouponPct: 50,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bveObs, bvePay, {
+    niveauRappelPct: (n) => bveAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.525,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 3,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof BNP + Veolia + Engie',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier: 'TS - XS3304996484.pdf',
+}
+
+// ── FRSG00015O52 — SG Athena Autocall LVMH (single) ─────────────────────────
+const lvmhObs = [
+  '2026-03-17', '2026-09-17', '2027-03-17', '2027-09-17', '2028-03-17',
+  '2028-09-18', '2029-03-19', '2029-09-17', '2030-03-18',
+]
+const lvmhPay = [
+  '2026-03-24', '2026-09-24', '2027-03-24', '2027-09-24', '2028-03-24',
+  '2028-09-25', '2029-03-26', '2029-09-24', '2030-03-25',
+]
+// Athena : coupon versé seulement au rappel = 100% + i×5% (croissant) ; rappel
+// à barrière 100% dès la 1re obs ; +50% bonus à maturité si perf ≥ 0%.
+const lvmhErv = [110, 115, 120, 125, 130, 135, 140, 145, 150]
+const sgLvmh: Product = {
+  id: 'FRSG00015O52',
+  nom: 'Athena Autocall LVMH',
+  isin: 'FRSG00015O52',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-03-17',
+  dateEmission: '2025-03-17',
+  dateConstatationFinale: '2030-03-18',
+  dateEcheance: '2030-03-25',
+  frequence: 'semestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'LVMH Moët Hennessy Louis Vuitton SE', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 10.0,
+    barriereRappelPct: 100,
+    protectionPct: 70,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 50,
+  },
+  observations: buildObservations(lvmhObs, lvmhPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => lvmhErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '5Y Athena Autocall LVMH — coupon au rappel 100%+i×5%, KI 70% européen, bonus +50%',
+  badges: ['Single', 'Athena', 'Bonus +50%'],
+  termsheetFichier: 'TS_FRSG00015O52.pdf',
+}
+
+// ── XS3250077966 — BBVA Athena Airbag step-up LVMH + TotalEnergies (« strikée »)
+// Pas de coupon périodique : prime de rappel croissante 110%→160% (~0,83%/mois),
+// barrière de rappel dégressive par année 100→95→90→85→80%, airbag (strike au
+// plus bas des 2 fixings), KI 50% européen, bonus 160% à maturité si worst ≥ 75%.
+const lvtObs = [
+  '2027-03-30', '2027-04-27', '2027-05-27', '2027-06-28', '2027-07-27',
+  '2027-08-27', '2027-09-27', '2027-10-27', '2027-11-29', '2027-12-27',
+  '2028-01-27', '2028-02-28', '2028-03-27', '2028-04-27', '2028-05-29',
+  '2028-06-27', '2028-07-27', '2028-08-28', '2028-09-27', '2028-10-27',
+  '2028-11-27', '2028-12-27', '2029-01-29', '2029-02-27', '2029-03-27',
+  '2029-04-27', '2029-05-28', '2029-06-27', '2029-07-27', '2029-08-27',
+  '2029-09-27', '2029-10-29', '2029-11-27', '2029-12-27', '2030-01-28',
+  '2030-02-27', '2030-03-27', '2030-04-29', '2030-05-27', '2030-06-27',
+  '2030-07-29', '2030-08-27', '2030-09-27', '2030-10-28', '2030-11-27',
+  '2030-12-27', '2031-01-27', '2031-02-27', '2031-03-27', '2031-04-28',
+  '2031-05-27', '2031-06-27', '2031-07-28', '2031-08-27', '2031-09-29',
+  '2031-10-27', '2031-11-27', '2031-12-29', '2032-01-27', '2032-02-27',
+  '2032-03-30',
+]
+const lvtPay = [
+  '2027-04-06', '2027-05-04', '2027-06-03', '2027-07-05', '2027-08-03',
+  '2027-09-03', '2027-10-04', '2027-11-03', '2027-12-06', '2028-01-03',
+  '2028-02-03', '2028-03-06', '2028-04-03', '2028-05-05', '2028-06-05',
+  '2028-07-04', '2028-08-03', '2028-09-04', '2028-10-04', '2028-11-03',
+  '2028-12-04', '2029-01-04', '2029-02-05', '2029-03-06', '2029-04-05',
+  '2029-05-07', '2029-06-04', '2029-07-04', '2029-08-03', '2029-09-03',
+  '2029-10-04', '2029-11-05', '2029-12-04', '2030-01-04', '2030-02-04',
+  '2030-03-06', '2030-04-03', '2030-05-07', '2030-06-03', '2030-07-04',
+  '2030-08-05', '2030-09-03', '2030-10-04', '2030-11-04', '2030-12-04',
+  '2031-01-06', '2031-02-03', '2031-03-06', '2031-04-03', '2031-05-06',
+  '2031-06-03', '2031-07-04', '2031-08-04', '2031-09-03', '2031-10-06',
+  '2031-11-03', '2031-12-04', '2032-01-06', '2032-02-03', '2032-03-05',
+  '2032-04-06',
+]
+const lvtErv = [
+  110.0008, 110.8342, 111.6676, 112.501, 113.3344, 114.1678, 115.0012,
+  115.8346, 116.668, 117.5014, 118.3348, 119.1682, 120.0016, 120.835,
+  121.6684, 122.5018, 123.3352, 124.1686, 125.002, 125.8354, 126.6688,
+  127.5022, 128.3356, 129.169, 130.0024, 130.8358, 131.6692, 132.5026,
+  133.336, 134.1694, 135.0028, 135.8362, 136.6696, 137.503, 138.3364,
+  139.1698, 140.0032, 140.8366, 141.67, 142.5034, 143.3368, 144.1702,
+  145.0036, 145.837, 146.6704, 147.5038, 148.3372, 149.1706, 150.004,
+  150.8374, 151.6708, 152.5042, 153.3376, 154.171, 155.0044, 155.8378,
+  156.6712, 157.5046, 158.338, 159.1714, 160.0048,
+]
+// Barrière de rappel dégressive par année : 100%(an1)→95→90→85→80% ; n=61 = maturité.
+const lvtBarriere = (n: number): number | undefined => {
+  if (n > 60) return undefined
+  if (n <= 12) return 100
+  if (n <= 24) return 95
+  if (n <= 36) return 90
+  if (n <= 48) return 85
+  return 80
+}
+const bbvaLvmhTotalAirbag: Product = {
+  id: 'XS3250077966',
+  nom: 'Athena Airbag LVMH + TotalEnergies',
+  isin: 'XS3250077966',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'S&P A+ / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-01-29',
+  dateEmission: '2026-03-27',
+  dateConstatationFinale: '2032-03-30',
+  dateEcheance: '2032-04-06',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'LVMH Moët Hennessy Louis Vuitton SE', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    airbag: true,
+    couponPa: 10.0,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 60,
+  },
+  observations: buildObservations(lvtObs, lvtPay, {
+    niveauRappelPct: (n) => lvtBarriere(n),
+    montantRemboursementPct: (n) => lvtErv[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '6Y Athena Airbag mensuel Wof LVMH + TotalEnergies (prime croissante 110→160 %, KI 50 %)',
+  badges: ['Worst-of', 'Mensuel', 'Airbag', 'Bonus', 'Dégressif'],
+  termsheetFichier: 'TS_XS3250077966_strikée.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
@@ -1739,6 +2030,7 @@ const detailed: Product[] = [
   efgAmdIntelNvda, msIEdgeAi, msFerroviaires,
   santanderMicronMarvell, bnpSoftware, bnpAccorCarnivalUal,
   bbvaHealthcareBonus, bbvaRearmement, santanderMaterials, marexUsoInverse,
+  bnpSilverMiners, barclaysBnpVeoliaEngie, sgLvmh, bbvaLvmhTotalAirbag,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
