@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import {
@@ -225,6 +225,49 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       return compare(va, vb) * m
     })
   }, [filtered, sort, sorters])
+
+  // Niveaux courants des sous-jacents (Yahoo, batché) → injectés dans `list` pour
+  // afficher la variation en % sur les cartes et la colonne Sous-jacents.
+  const [perfMap, setPerfMap] = useState<Record<string, Record<string, number>>>({})
+  useEffect(() => {
+    const isins = products.map((p) => p.isin)
+    if (isins.length === 0) return
+    let annule = false
+    fetch(`/api/lifecycle/courant?isins=${encodeURIComponent(isins.join(','))}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (annule) return
+        const m: Record<string, Record<string, number>> = {}
+        for (const [isin, v] of Object.entries(d?.courant ?? {})) {
+          const inner: Record<string, number> = {}
+          for (const x of (v as { sj: { nom: string; pct: number | null }[] }).sj ?? [])
+            if (typeof x.pct === 'number') inner[x.nom] = x.pct
+          m[isin] = inner
+        }
+        setPerfMap(m)
+      })
+      .catch(() => {})
+    return () => {
+      annule = true
+    }
+  }, [products])
+
+  const listAug = useMemo(
+    () =>
+      list.map((p) => {
+        const pm = perfMap[p.isin]
+        if (!pm) return p
+        return {
+          ...p,
+          sousJacents: p.sousJacents.map((u) =>
+            typeof pm[u.nom] === 'number'
+              ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
+              : u,
+          ),
+        }
+      }),
+    [list, perfMap],
+  )
 
   const toggleSort = (key?: string) => {
     if (!key) return
@@ -498,7 +541,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
       {view === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-          {list.map((p) => (
+          {listAug.map((p) => (
             <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left block w-full">
               <ProductSynopsis product={p} compact />
             </button>
@@ -515,7 +558,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               <tr>{COLUMNS.map(headerCell)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {list.map((p) => (
+              {listAug.map((p) => (
                 <tr key={p.id} {...rowProps(p)}>
                   {COLUMNS.map((c) => bodyCell(p, c.key))}
                 </tr>
