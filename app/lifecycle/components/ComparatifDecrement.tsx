@@ -130,6 +130,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     { k: 'type', label: 'Type' },
     { k: 'secteur', label: 'Secteur' },
     { k: 'couponPa', label: 'Coupon p.a.', align: 'right' },
+    { k: 'uf', label: 'Upfront', align: 'right' },
     { k: 'memoire', label: 'Mém.', align: 'center' },
     { k: 'barriereCoupon', label: 'B. coupon', align: 'right' },
     { k: 'barriereProtection', label: 'B. prot.', align: 'right' },
@@ -233,6 +234,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className={`px-2 py-1.5 text-right tabular-nums ${coupCls(r.couponPa)}`}>
                   {typeof r.couponPa === 'number' ? `${r.couponPa.toFixed(2)}%` : '—'}
                 </td>
+                <td className="px-2 py-1.5 text-right tabular-nums text-cmf-navy font-medium">{r.uf ?? '—'}</td>
                 <td className="px-2 py-1.5 text-center">{r.memoire ? '✓' : ''}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereCoupon ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereProtection ?? '—'}</td>
