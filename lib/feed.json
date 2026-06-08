@@ -137,7 +137,7 @@
 {"isin": "XS2110106908", "last": 100.992, "client": "SCALA - 05722", "devise": "GBP", "amount": 630000.0, "description": "GBP Linear ZC Note - 12YNC4+1"},
 {"isin": "XS2757009324", "statut": "rappele", "client": "SCALA - 05722", "devise": "GBP", "amount": 630000.0, "description": "CLN iTraxx Main 100% KG"},
 {"isin": "XS2641318121", "last": 90.3, "client": "SAMY - 01674", "devise": "GBP", "amount": 1000000.0, "description": "Tranched CLN Zero Recovery Credit Linked Notes due 2031"},
-{"isin": "CH1316655518", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix/Athena Airbag AMD + Intel + NVDA"},
+{"isin": "CH1316655518", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix/Athena Airbag AMD + Intel + NVDA"},
 {"isin": "CH1322027827", "last": 63.23, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory MRNA + PFE + Sanofi"},
 {"isin": "CH1305186087", "statut": "rappele", "client": "SCALA - 05722", "devise": "EUR", "amount": 500000.0, "description": "Athena 10.52% p.a.sur Indice Bloomberg Luxury Series 1 Decrement 50 Points"},
 {"isin": "XS2663305378", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"},
