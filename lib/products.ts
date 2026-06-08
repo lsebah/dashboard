@@ -4013,66 +4013,12 @@ const metaProducts: Product[] = [
 const metaProducts2: Product[] = [
   // — Taux : Phoenix Bearish CMS/TEC (capital garanti) —
   metaProduct({
-    isin: 'XS2772970781', nom: 'Autocall Bearish CMS 10Y', emetteur: 'BNP Paribas',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2024-05-27', dureeAnnees: 5, basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
-    description: '5Y Autocall Bearish sur EUR CMS 10Y — capital garanti (barrières/coupon à fournir)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FR001400WR56', nom: 'Phoenix Bearish CMS 10Y — 2,30/2,80, coupon 6 %', emetteur: 'BNP Paribas',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2025-01-31', dureeAnnees: 12, frequence: 'trimestriel', basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 6, capitalGaranti: true },
-    description: '12Y Phoenix Bearish CMS 10Y — coupon 6 % p.a., barrières 2,30 % / 2,80 % (à confirmer TS)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FRSG00015XO1', nom: 'Phoenix Bearish CMS 10Y — 2,15/2,70, coupon 5 %', emetteur: 'Société Générale',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2025-04-16', dureeAnnees: 10, basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 5, capitalGaranti: true },
-    description: '10Y Phoenix Bearish CMS 10Y — coupon 5 % p.a., barrières 2,15 % / 2,70 % (à confirmer TS)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FR001400P397', nom: 'Phoenix Bearish In Fine CMS 10Y — 2,50/3,00', emetteur: 'Société Générale',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2024-04-10', dureeAnnees: 12, frequence: 'in_fine', basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true, inFine: true },
-    description: '12Y Phoenix Bearish In Fine CMS 10Y — barrières 2,50 % / 3,00 % (coupon/calendrier à fournir)',
-    badges: ['Taux', 'Bearish', 'In fine', 'TS à fournir'],
-  }),
-  metaProduct({
     isin: 'XS2804857568', nom: 'Phoenix Bearish CMS 10Y', emetteur: 'BNP Paribas',
     productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
     dateEmission: '2024-07-09', dureeAnnees: 12, basket: 'single',
     sousJacents: [{ nom: 'EUR CMS 10Y' }],
     terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
     description: '12Y Phoenix Bearish CMS 10Y — capital garanti (barrières/coupon à fournir)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS0461632811', nom: 'Phoenix Bearish CMS 10Y — 2,50/3,15', emetteur: 'Deutsche Bank',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2024-05-28', dureeAnnees: 5, basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', capitalGaranti: true },
-    description: '5Y Phoenix Bearish CMS 10Y — barrières 2,50 % / 3,15 % (coupon/calendrier à fournir)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FR001400SDV1', nom: 'Phoenix Bearish TEC 10', emetteur: 'CIC',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2024-10-28', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'TEC 10 (OAT 10 ans)' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'TEC 10', capitalGaranti: true },
-    description: '12Y Phoenix Bearish TEC 10 — capital garanti (barrières/coupon à fournir)',
     badges: ['Taux', 'Bearish', 'TS à fournir'],
   }),
   // — Taux : TARN steepener CMS30-CMS2 —
@@ -4317,6 +4263,234 @@ const sgBearishCms10_325 = phoenixBearish({
   termsheetFichier: 'TermSheet_fre_Phoenix Bearish_CMS.EUR.10Y_FRSG00016HO2.pdf',
 })
 
+// ── Vague décodage TS (lot juin 2026) — produits de taux Phoenix Bearish ─────
+// FRSG00015XO1 — SG Phoenix Bearish EUR CMS 10Y (10Y) : 5 % si ≤ 2,70 %, autocall ≤ 2,15 %.
+const sgBearishCms10_270 = phoenixBearish({
+  isin: 'FRSG00015XO1',
+  nom: 'Phoenix Bearish EUR CMS 10Y (2,15 % / 2,70 %)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 30_000_000,
+  freq: 'annuel',
+  initial: '2025-04-16',
+  emission: '2025-04-16',
+  finale: '2035-04-09',
+  echeance: '2035-04-16',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 5,
+  barriereCoupon: 2.7,
+  barriereRappel: 2.15,
+  rappelActif: 1,
+  obs: [
+    '2026-04-09', '2027-04-09', '2028-04-07', '2029-04-09', '2030-04-09',
+    '2031-04-07', '2032-04-09', '2033-04-08', '2034-04-06', '2035-04-09',
+  ],
+  pay: [
+    '2026-04-16', '2027-04-16', '2028-04-18', '2029-04-16', '2030-04-16',
+    '2031-04-16', '2032-04-16', '2033-04-19', '2034-04-17', '2035-04-16',
+  ],
+  description:
+    '10Y Phoenix Bearish EUR CMS 10Y — coupon 5 % p.a. si ≤ 2,70 %, autocall si ≤ 2,15 %, capital garanti',
+  termsheetFichier: '0577401 - FRSG00015XO1 - Autocall Euro 10 Ans.pdf',
+})
+
+// FR001400WR56 — BNP Phoenix Bearish EUR CMS 10Y (12Y, trimestriel) : 1,50 %/trim.
+// (6 % p.a.) si ≤ 2,80 %, autocall ≤ 2,30 % à partir d'1 an de non-call.
+const bnpBearishCms10_280 = phoenixBearish({
+  isin: 'FR001400WR56',
+  nom: 'Phoenix Bearish EUR CMS 10Y (2,30 % / 2,80 %)',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1',
+  nominal: 30_000_000,
+  freq: 'trimestriel',
+  initial: '2025-01-31',
+  emission: '2025-01-31',
+  finale: '2037-03-20',
+  echeance: '2037-03-24',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 1.5,
+  couponPa: 6,
+  barriereCoupon: 2.8,
+  barriereRappel: 2.3,
+  rappelActif: 4, // 1 an de non-call (autocall à partir de la 4e observation)
+  obs: [
+    '2025-06-20', '2025-09-22', '2025-12-22', '2026-03-20', '2026-06-22',
+    '2026-09-22', '2026-12-22', '2027-03-22', '2027-06-22', '2027-09-22',
+    '2027-12-22', '2028-03-22', '2028-06-22', '2028-09-21', '2028-12-21',
+    '2029-03-22', '2029-06-21', '2029-09-20', '2029-12-20', '2030-03-21',
+    '2030-06-20', '2030-09-20', '2030-12-20', '2031-03-20', '2031-06-20',
+    '2031-09-22', '2031-12-22', '2032-03-22', '2032-06-22', '2032-09-22',
+    '2032-12-22', '2033-03-22', '2033-06-22', '2033-09-22', '2033-12-22',
+    '2034-03-22', '2034-06-22', '2034-09-21', '2034-12-21', '2035-03-21',
+    '2035-06-21', '2035-09-20', '2035-12-20', '2036-03-20', '2036-06-20',
+    '2036-09-22', '2036-12-22', '2037-03-20',
+  ],
+  pay: [
+    '2025-06-24', '2025-09-24', '2025-12-24', '2026-03-24', '2026-06-24',
+    '2026-09-24', '2026-12-24', '2027-03-24', '2027-06-24', '2027-09-24',
+    '2027-12-24', '2028-03-24', '2028-06-26', '2028-09-25', '2028-12-27',
+    '2029-03-26', '2029-06-25', '2029-09-24', '2029-12-24', '2030-03-25',
+    '2030-06-24', '2030-09-24', '2030-12-24', '2031-03-24', '2031-06-24',
+    '2031-09-24', '2031-12-24', '2032-03-24', '2032-06-24', '2032-09-24',
+    '2032-12-24', '2033-03-24', '2033-06-24', '2033-09-26', '2033-12-27',
+    '2034-03-24', '2034-06-26', '2034-09-25', '2034-12-27', '2035-03-27',
+    '2035-06-25', '2035-09-24', '2035-12-24', '2036-03-24', '2036-06-24',
+    '2036-09-24', '2036-12-24', '2037-03-24',
+  ],
+  description:
+    '12Y Phoenix Bearish EUR CMS 10Y — coupon 1,50 %/trim. (6 % p.a.) si ≤ 2,80 %, autocall si ≤ 2,30 % (après 1 an), capital garanti',
+  termsheetFichier: 'FR001400WR56.pdf',
+})
+
+// FR001400P397 — SG Phoenix Bearish In Fine EUR CMS 10Y (12Y) : 8,70 % p.a. si ≤ 3 %
+// payé IN FINE (somme à l'échéance/au rappel), autocall ≤ 2,50 %, capital garanti.
+const sgBearishInFineCms10_300 = phoenixBearish({
+  isin: 'FR001400P397',
+  nom: 'Phoenix Bearish In Fine EUR CMS 10Y (2,50 % / 3,00 %)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 2_000_000,
+  freq: 'annuel',
+  initial: '2024-04-10',
+  emission: '2024-04-10',
+  finale: '2036-04-03',
+  echeance: '2036-04-10',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 8.7,
+  barriereCoupon: 3.0,
+  barriereRappel: 2.5,
+  rappelActif: 1,
+  memoire: true,
+  inFine: true,
+  obs: [
+    '2025-04-03', '2026-04-01', '2027-04-05', '2028-04-03', '2029-04-03',
+    '2030-04-03', '2031-04-03', '2032-04-05', '2033-04-04', '2034-03-31',
+    '2035-04-03', '2036-04-03',
+  ],
+  pay: [
+    '2025-04-10', '2026-04-10', '2027-04-12', '2028-04-10', '2029-04-10',
+    '2030-04-10', '2031-04-10', '2032-04-12', '2033-04-11', '2034-04-11',
+    '2035-04-10', '2036-04-10',
+  ],
+  description:
+    '12Y Phoenix Bearish In Fine EUR CMS 10Y — coupon 8,70 % p.a. si ≤ 3,00 % (payé in fine), autocall si ≤ 2,50 %, capital garanti',
+  termsheetFichier:
+    '20240320_FR001400P397_Phoenix Bearish In Fine CMS 10Y  - Barrière 3.00%-2.50% - 12Y_SOCGEN_CARMF.pdf',
+})
+
+// XS0461632811 — Deutsche Bank Phoenix Bearish EUR CMS 10Y (5Y) : 4,25 % si ≤ 3,15 %,
+// autocall ≤ 2,50 %, capital garanti.
+const dbBearishCms10_315 = phoenixBearish({
+  isin: 'XS0461632811',
+  nom: 'Phoenix Bearish EUR CMS 10Y (2,50 % / 3,15 %)',
+  emetteur: 'Deutsche Bank AG',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 1_250_000,
+  freq: 'annuel',
+  initial: '2024-05-28',
+  emission: '2024-05-28',
+  finale: '2029-05-15',
+  echeance: '2029-05-28',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 4.25,
+  barriereCoupon: 3.15,
+  barriereRappel: 2.5,
+  rappelActif: 1,
+  obs: ['2025-05-14', '2026-05-15', '2027-05-14', '2028-05-16', '2029-05-15'],
+  pay: ['2025-05-28', '2026-05-28', '2027-05-28', '2028-05-30', '2029-05-29'],
+  description:
+    '5Y Phoenix Bearish EUR CMS 10Y — coupon 4,25 % p.a. si ≤ 3,15 %, autocall si ≤ 2,50 %, capital garanti',
+  termsheetFichier: 'XS0461632811_Phoenix Bearish CMS10- (2.50-3.15) - 5Y_0800101.pdf',
+})
+
+// XS2772970781 — BNP Phoenix Bearish EUR CMS 10Y (5Y) : 4,25 % si ≤ 3,15 %, autocall ≤ 2,50 %.
+const bnpBearishCms10_315 = phoenixBearish({
+  isin: 'XS2772970781',
+  nom: 'Phoenix Bearish EUR CMS 10Y (2,50 % / 3,15 %)',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  nominal: 1_250_000,
+  freq: 'annuel',
+  initial: '2024-05-27',
+  emission: '2024-05-27',
+  finale: '2029-05-24',
+  echeance: '2029-05-27',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 4.25,
+  barriereCoupon: 3.15,
+  barriereRappel: 2.5,
+  rappelActif: 1,
+  obs: ['2025-05-23', '2026-05-25', '2027-05-25', '2028-05-25', '2029-05-24'],
+  pay: ['2025-05-27', '2026-05-27', '2027-05-27', '2028-05-29', '2029-05-28'],
+  description:
+    '5Y Phoenix Bearish EUR CMS 10Y — coupon 4,25 % p.a. si ≤ 3,15 %, autocall si ≤ 2,50 %, capital garanti',
+  termsheetFichier: 'XS2772970781 - 5Y Phoenix on CMS in EUR - 0800101.pdf',
+})
+
+// FR001400SDV1 — CIC Phoenix Bearish TEC 10 (12Y) : 6,30 % si TEC < 3,15 %, autocall < 2,35 %.
+// ⚠ Capital NON garanti : si TEC ≥ 3,15 % à l'échéance, remboursement amorti (perte). Senior CIC.
+const cicBearishTec10: Product = {
+  id: 'FR001400SDV1',
+  nom: 'Phoenix Bearish TEC 10 (2,35 % / 3,15 %)',
+  isin: 'FR001400SDV1',
+  emetteur: 'CIC',
+  notationEmetteur: 'Senior non garanti',
+  assetClass: 'rates',
+  family: 'rates_structured',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-10-28',
+  dateEmission: '2024-10-28',
+  dateConstatationFinale: '2036-10-21',
+  dateEcheance: '2036-10-28',
+  frequence: 'annuel',
+  basket: 'single',
+  sousJacents: [{ nom: 'TEC 10 (OAT 10 ans)', bloomberg: 'BFRTEC10 Index', marche: 'Taux' }],
+  terms: {
+    kind: 'rates',
+    type: 'phoenix_taux',
+    sens: 'bearish',
+    tauxReference: 'TEC 10',
+    effetMemoire: false,
+    couponConditionnelPct: 6.3,
+    couponConditionnelPa: 6.3,
+    barriereCouponTauxPct: 3.15,
+    barriereRappelTauxPct: 2.35,
+    capitalGaranti: false,
+  },
+  observations: buildObservations(
+    [
+      '2025-10-21', '2026-10-21', '2027-10-21', '2028-10-23', '2029-10-22',
+      '2030-10-21', '2031-10-21', '2032-10-21', '2033-10-21', '2034-10-23',
+      '2035-10-22', '2036-10-21',
+    ],
+    [
+      '2025-10-28', '2026-10-28', '2027-10-28', '2028-10-30', '2029-10-29',
+      '2030-10-28', '2031-10-28', '2032-10-28', '2033-10-28', '2034-10-30',
+      '2035-10-29', '2036-10-28',
+    ],
+    {
+      niveauRappelPct: (n) => (n <= 11 ? 2.35 : undefined),
+      montantRemboursementPct: 100,
+      couponPct: 6.3,
+      niveauCouponPct: 3.15,
+      rappelActifAPartirDe: 1,
+    },
+  ),
+  rr: 'LS',
+  productType: 'Phoenix Taux',
+  description:
+    '12Y Phoenix Bearish TEC 10 (CIC) — coupon 6,30 % p.a. si TEC < 3,15 %, autocall si < 2,35 % ; capital NON garanti (amorti si TEC ≥ 3,15 % à l’échéance)',
+  badges: ['Taux', 'Bearish TEC10', 'Capital non garanti'],
+  termsheetFichier: 'TS_2024-10-02_CIC_PhoenixTEC_FR001400SDV1.pdf',
+}
+
 // ── FR0014018KY5 — BNP Athéna Novo Nordisk (TS 11/05/2026) ──────────────────
 // Single. Trimestriel après 1 an de non-call. Rappel si Novo ≥ 100 % ; prime au
 // rappel = 110,35 % + n×3,45 % (n = 1..16). À maturité : Novo ≥ 100 % ⇒ 169 %
@@ -4465,6 +4639,8 @@ const detailed: Product[] = [
   bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
   bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
   bnpBearishCms2y, sgBearishCms10_325, athenaNovoNordisk, sgBouyguesVinciEiffage,
+  sgBearishCms10_270, bnpBearishCms10_280, sgBearishInFineCms10_300,
+  dbBearishCms10_315, bnpBearishCms10_315, cicBearishTec10,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
