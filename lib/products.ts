@@ -3644,6 +3644,7 @@ const bnpCallableCsi500: Product = {
   description:
     '3Y Callable émetteur — CSI Smallcap 500, booster 108→144 % sur call, protection 90 % européenne, participation 100 % à maturité',
   badges: ['Single', 'Callable', '90 % protégé', 'Booster'],
+  termsheetFichier: 'TS Call 90_ KG China - XS3214893623.PDF',
 }
 
 // ── FRIP00001NZ9 — Morgan Stanley Autocall croissant décrément MXEADT50 ───────
