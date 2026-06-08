@@ -1,6 +1,17 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
+import indicesRaw from '@/lib/decrement-indices.json'
+
+interface IndexInfo {
+  nom?: string
+  description?: string
+  nbComposants?: number
+  secteur?: string
+  decrement?: string
+  source?: string
+}
+const ENRICH = indicesRaw as Record<string, IndexInfo>
 
 interface Row {
   ticker: string
@@ -42,6 +53,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [secteur, setSecteur] = useState<string | null>(null)
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
+  const [open, setOpen] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: keyof Row; dir: 'asc' | 'desc' }>({
     key: 'couponPa',
     dir: 'desc',
@@ -183,9 +195,19 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {list.map((r) => (
-              <tr key={r.ticker} className="hover:bg-orange-50">
-                <td className="px-2 py-1.5 font-mono whitespace-nowrap">{r.ticker}</td>
+            {list.map((r) => {
+              const info = ENRICH[r.ticker]
+              const isOpen = open === r.ticker
+              return (
+              <Fragment key={r.ticker}>
+              <tr
+                onClick={() => setOpen(isOpen ? null : r.ticker)}
+                className={`cursor-pointer ${isOpen ? 'bg-orange-50' : 'hover:bg-orange-50'}`}
+              >
+                <td className="px-2 py-1.5 font-mono whitespace-nowrap">
+                  {info && <span className="text-cmf-blue mr-1">{isOpen ? '▾' : '▸'}</span>}
+                  {r.ticker}
+                </td>
                 <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">{r.type}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.secteur ?? '—'}</td>
@@ -199,7 +221,40 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className="px-2 py-1.5 text-center text-slate-500">{r.departAutocall ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.maturiteMax ?? '—'}</td>
               </tr>
-            ))}
+              {isOpen && (
+                <tr key={r.ticker + '-d'} className="bg-orange-50/40">
+                  <td colSpan={11} className="px-4 py-3">
+                    {info?.nom && <div className="font-semibold text-cmf-navy">{info.nom}</div>}
+                    {info?.description && (
+                      <p className="text-[12px] text-slate-600 mt-0.5 max-w-3xl">{info.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-[12px]">
+                      {typeof info?.nbComposants === 'number' && (
+                        <span><span className="field-label">Composants</span> {info.nbComposants}</span>
+                      )}
+                      {info?.decrement && (
+                        <span><span className="field-label">Décrément</span> {info.decrement}</span>
+                      )}
+                      <span><span className="field-label">Strike</span> {r.strike ?? '—'}</span>
+                      <span><span className="field-label">UF</span> {r.uf ?? '—'}</span>
+                      <span><span className="field-label">Seuil init. AC</span> {r.seuilInitial ?? '—'}</span>
+                      <span><span className="field-label">Fréquence obs</span> {r.frequence ?? '—'}</span>
+                      <span><span className="field-label">Run</span> {r.dateRun ?? '—'}</span>
+                    </div>
+                    {!info && (
+                      <p className="text-[11px] text-slate-400 mt-2">
+                        Fiche indice (one-pager) pas encore intégrée — description &amp; composants à venir.
+                      </p>
+                    )}
+                    {info?.source && (
+                      <p className="text-[11px] text-slate-400 mt-1">Source : {info.source}</p>
+                    )}
+                  </td>
+                </tr>
+              )}
+              </Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>

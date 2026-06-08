@@ -1,0 +1,16 @@
+{
+  "MXEADT50": {
+    "nom": "MSCI Europe Aerospace & Defense (décrément 50 pts)",
+    "secteur": "Defense / Aerospace",
+    "decrement": "50 points/an",
+    "description": "Panier d'actions européennes de la défense et de l'aérospatiale, à décrément fixe de 50 points par an. Sous-jacent de l'Autocall MS FRIP00001NZ9.",
+    "source": "Position FRIP00001NZ9"
+  },
+  "IETAI10": {
+    "nom": "iEdge Transatlantic Artificial Intelligence 10",
+    "nbComposants": 10,
+    "secteur": "AI / Tech / Digital",
+    "description": "10 valeurs transatlantiques de l'intelligence artificielle, indice à décrément. Sous-jacent du Phoenix MS FRIP00001I09.",
+    "source": "Position FRIP00001I09"
+  }
+}
