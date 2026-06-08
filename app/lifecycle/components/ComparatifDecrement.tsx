@@ -49,6 +49,24 @@ function coupCls(v: number | null): string {
   return 'text-slate-700'
 }
 
+// Description générée depuis les données du run (fallback quand pas de one-pager).
+function describe(r: Row): string {
+  let s = `${r.type ?? 'Produit autocall'} sur l'indice à décrément ${r.ticker}`
+  if (r.secteur) s += ` (secteur ${r.secteur})`
+  const p: string[] = []
+  if (typeof r.couponPa === 'number')
+    p.push(`coupon ${r.couponPa.toFixed(2)} % p.a.${r.memoire ? ' à effet mémoire' : ''}`)
+  if (r.barriereCoupon) p.push(`barrière coupon ${r.barriereCoupon}`)
+  if (r.barriereProtection) p.push(`protection ${r.barriereProtection}`)
+  if (r.departAutocall) p.push(`autocall dès ${r.departAutocall}`)
+  if (r.frequence) p.push(`obs. ${r.frequence.toLowerCase()}`)
+  if (r.degressivite) p.push(`dégressivité ${r.degressivite}`)
+  if (r.maturiteMax) p.push(`maturité max ${r.maturiteMax}`)
+  if (typeof r.uf === 'string') p.push(`upfront ${r.uf}`)
+  if (p.length) s += ' — ' + p.join(', ')
+  return s + `. Émetteur ${r.emetteur}.`
+}
+
 export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [secteur, setSecteur] = useState<string | null>(null)
   const [emetteur, setEmetteur] = useState('')
@@ -224,31 +242,36 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               {isOpen && (
                 <tr key={r.ticker + '-d'} className="bg-orange-50/40">
                   <td colSpan={11} className="px-4 py-3">
-                    {info?.nom && <div className="font-semibold text-cmf-navy">{info.nom}</div>}
-                    {info?.description && (
-                      <p className="text-[12px] text-slate-600 mt-0.5 max-w-3xl">{info.description}</p>
-                    )}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="font-semibold text-cmf-navy">{info?.nom ?? r.ticker}</div>
+                      <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-2.5 py-1 text-center">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
+                        <div className="font-bold text-cmf-navy tabular-nums">{r.uf ?? '—'}</div>
+                      </div>
+                    </div>
+                    {/* Description : one-pager si dispo, sinon générée depuis le run */}
+                    <p className="text-[12px] text-slate-600 mt-1 max-w-3xl">
+                      {info?.description ?? describe(r)}
+                    </p>
                     <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-[12px]">
                       {typeof info?.nbComposants === 'number' && (
                         <span><span className="field-label">Composants</span> {info.nbComposants}</span>
                       )}
-                      {info?.decrement && (
-                        <span><span className="field-label">Décrément</span> {info.decrement}</span>
-                      )}
+                      <span><span className="field-label">Décrément</span> {info?.decrement ?? '50 pts (std.)'}</span>
+                      <span><span className="field-label">Coupon</span> {typeof r.couponPa === 'number' ? `${r.couponPa.toFixed(2)}%` : '—'}</span>
+                      <span><span className="field-label">B. coupon</span> {r.barriereCoupon ?? '—'}</span>
+                      <span><span className="field-label">Protection</span> {r.barriereProtection ?? '—'}</span>
                       <span><span className="field-label">Strike</span> {r.strike ?? '—'}</span>
-                      <span><span className="field-label">UF</span> {r.uf ?? '—'}</span>
                       <span><span className="field-label">Seuil init. AC</span> {r.seuilInitial ?? '—'}</span>
                       <span><span className="field-label">Fréquence obs</span> {r.frequence ?? '—'}</span>
+                      <span><span className="field-label">Dégressivité</span> {r.degressivite ?? '—'}</span>
                       <span><span className="field-label">Run</span> {r.dateRun ?? '—'}</span>
                     </div>
-                    {!info && (
-                      <p className="text-[11px] text-slate-400 mt-2">
-                        Fiche indice (one-pager) pas encore intégrée — description &amp; composants à venir.
-                      </p>
-                    )}
-                    {info?.source && (
-                      <p className="text-[11px] text-slate-400 mt-1">Source : {info.source}</p>
-                    )}
+                    <p className="text-[11px] text-slate-400 mt-2">
+                      {info?.source
+                        ? `Source : ${info.source}`
+                        : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}
+                    </p>
                   </td>
                 </tr>
               )}
