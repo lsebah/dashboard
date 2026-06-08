@@ -104,7 +104,14 @@ export type Situation =
 export function situation(product: Product): Situation {
   const wo = worstOf(product)
   const perf = wo?.perf
-  if (typeof perf !== 'number') return 'non_classe'
+  if (typeof perf !== 'number') {
+    // Sans niveau de sous-jacent courant : un produit de taux à capital garanti
+    // ne subit aucun stress sur sa barrière de protection ⇒ « sans stress ».
+    // Les autres (actions/crédit sans niveau) ne peuvent pas être classés.
+    const t = product.terms
+    if (t?.kind === 'rates' && t.capitalGaranti) return 'sans_stress'
+    return 'non_classe'
+  }
 
   const terms = product.terms
   const protectionPct =

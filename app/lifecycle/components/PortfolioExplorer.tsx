@@ -6,6 +6,7 @@ import { useAugmentedProduct } from '@/lib/useProductLevels'
 import {
   prochainEvenement,
   situation,
+  type Situation,
   couponPa,
   formatDateFr,
   formatPct,
@@ -252,22 +253,35 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }
   }, [products])
 
-  const listAug = useMemo(
-    () =>
-      list.map((p) => {
-        const pm = perfMap[p.isin]
-        if (!pm) return p
-        return {
-          ...p,
-          sousJacents: p.sousJacents.map((u) =>
-            typeof pm[u.nom] === 'number'
-              ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
-              : u,
-          ),
-        }
-      }),
-    [list, perfMap],
-  )
+  const augment = (p: Product): Product => {
+    const pm = perfMap[p.isin]
+    if (!pm) return p
+    return {
+      ...p,
+      sousJacents: p.sousJacents.map((u) =>
+        typeof pm[u.nom] === 'number'
+          ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
+          : u,
+      ),
+    }
+  }
+
+  const listAug = useMemo(() => list.map(augment), [list, perfMap])
+
+  // Synthèse « Analyse de risques » calculée sur TOUS les produits en cours, avec
+  // les niveaux courants injectés (sinon la situation serait « non classé » côté
+  // serveur, faute de perf). Indépendante des filtres de la table.
+  const synthese = useMemo(() => {
+    const enCours = products.filter(estEnCours)
+    const total = enCours.reduce((s, p) => s + p.nominal, 0)
+    const counts = new Map<Situation, number>()
+    for (const p of enCours) {
+      const s = situation(augment(p))
+      counts.set(s, (counts.get(s) ?? 0) + 1)
+    }
+    return { n: enCours.length, total, counts }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, perfMap])
 
   const toggleSort = (key?: string) => {
     if (!key) return
@@ -487,6 +501,35 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   return (
     <div>
+      {/* Synthèse « Analyse de risques » (situations calculées en live) */}
+      <div className="card p-4 mb-5">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <div>
+            <div className="text-2xl font-bold text-cmf-navy">{synthese.n}</div>
+            <div className="text-xs text-slate-500">Produits en cours</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-cmf-navy">
+              {(synthese.total / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}M
+            </div>
+            <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {(Object.keys(SITUATION_LABEL) as Situation[]).map((s) => {
+              const n = synthese.counts.get(s) ?? 0
+              if (n === 0) return null
+              return (
+                <div key={s} className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${SITUATION_COLOR[s]}`} />
+                  <span className="text-sm text-slate-700">{SITUATION_LABEL[s]}</span>
+                  <span className="text-sm font-semibold text-slate-900">{n}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Barre d'outils */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
