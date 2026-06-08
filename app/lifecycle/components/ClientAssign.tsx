@@ -2,17 +2,29 @@
 
 import { useState } from 'react'
 import type { ClientAlloc } from '@/lib/allocations'
+import type { ProductStatus } from '@/lib/types'
 import { formatMontant } from '@/lib/lifecycle'
+
+const STATUTS: { value: ProductStatus; label: string; cls: string }[] = [
+  { value: 'vivant', label: 'Vivant', cls: 'bg-emerald-600' },
+  { value: 'vendu', label: 'Vendu', cls: 'bg-blue-600' },
+  { value: 'rappele', label: 'Rappelé', cls: 'bg-violet-600' },
+  { value: 'echu', label: 'Échu', cls: 'bg-slate-500' },
+]
 
 /** Affectation de clients à un produit (saisie locale, non versionnée). */
 export default function ClientAssign({
   allocs,
   devise,
   onChange,
+  statut,
+  onStatut,
 }: {
   allocs: ClientAlloc[]
   devise: string
   onChange: (next: ClientAlloc[]) => void
+  statut?: ProductStatus
+  onStatut?: (s: ProductStatus) => void
 }) {
   const [client, setClient] = useState('')
   const [montant, setMontant] = useState('')
@@ -31,6 +43,7 @@ export default function ClientAssign({
   }
 
   const remove = (c: string) => onChange(allocs.filter((a) => a.client !== c))
+  const cur = statut ?? 'vivant'
 
   return (
     <div className="card p-4 flex flex-col gap-3">
@@ -38,6 +51,27 @@ export default function ClientAssign({
         <h3 className="font-semibold text-cmf-navy text-sm">Allocation client</h3>
         <span className="text-[10px] text-slate-400">local — non versionné</span>
       </div>
+
+      {/* Statut : vendre / rappelé / vivant (forçage local) */}
+      {onStatut && (
+        <div className="flex items-center gap-2">
+          <span className="field-label">Statut</span>
+          <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-xs">
+            {STATUTS.map((s) => (
+              <button
+                key={s.value}
+                onClick={() => onStatut(s.value)}
+                className={`px-2.5 py-1 transition-colors ${
+                  cur === s.value ? `${s.cls} text-white` : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+                title={`Marquer « ${s.label} »`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {allocs.length > 0 ? (
         <ul className="flex flex-wrap gap-1.5">

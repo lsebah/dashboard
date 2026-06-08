@@ -5,14 +5,17 @@
 //  produit, sans faire entrer l'identité des clients dans le dépôt git.
 // ─────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useState } from 'react'
-import type { ClientAlloc } from './types'
+import type { ClientAlloc, ProductStatus } from './types'
 
 export type { ClientAlloc }
 
 /** isin → liste d'allocations clients. */
 export type AllocMap = Record<string, ClientAlloc[]>
+/** isin → statut forcé localement (vendu / rappelé / vivant…). */
+export type StatutMap = Record<string, ProductStatus>
 
 const KEY = 'cmf.lifecycle.allocations.v1'
+const KEY_STATUT = 'cmf.lifecycle.statut.v1'
 
 function read(): AllocMap {
   if (typeof window === 'undefined') return {}
@@ -24,12 +27,24 @@ function read(): AllocMap {
   }
 }
 
+function readStatut(): StatutMap {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = window.localStorage.getItem(KEY_STATUT)
+    return raw ? (JSON.parse(raw) as StatutMap) : {}
+  } catch {
+    return {}
+  }
+}
+
 export function useAllocations() {
   const [map, setMap] = useState<AllocMap>({})
+  const [statut, setStatutMap] = useState<StatutMap>({})
 
   // Chargement initial (au montage uniquement).
   useEffect(() => {
     setMap(read())
+    setStatutMap(readStatut())
   }, [])
 
   const setClients = useCallback((isin: string, allocs: ClientAlloc[]) => {
@@ -46,7 +61,22 @@ export function useAllocations() {
     })
   }, [])
 
-  return { map, setClients }
+  // Force (ou efface, si undefined) le statut d'un produit, localement.
+  const setStatut = useCallback((isin: string, s: ProductStatus | undefined) => {
+    setStatutMap((prev) => {
+      const next = { ...prev }
+      if (!s) delete next[isin]
+      else next[isin] = s
+      try {
+        window.localStorage.setItem(KEY_STATUT, JSON.stringify(next))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }, [])
+
+  return { map, setClients, statut, setStatut }
 }
 
 /** Liste triée et dédupliquée de tous les clients connus (allocations ∪ seed). */

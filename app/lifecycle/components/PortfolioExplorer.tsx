@@ -177,7 +177,14 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     dir: 'asc',
   })
 
-  const { map, setClients } = useAllocations()
+  const { map, setClients, statut: statutMap, setStatut } = useAllocations()
+
+  // Statut forcé localement (Vendu / Rappelé…) appliqué par-dessus le feed, avant
+  // tout calcul (en-cours, situation, libellé prix, synthèse).
+  const productsO = useMemo(
+    () => products.map((p) => (statutMap[p.isin] ? { ...p, statut: statutMap[p.isin] } : p)),
+    [products, statutMap],
+  )
 
   // Allocations effectives d'un produit : localStorage, sinon seed `clients`.
   const allocsOf = useMemo(
@@ -193,7 +200,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   )
 
   const filtered = useMemo(() => {
-    let l = products
+    let l = productsO
     if (client) l = l.filter((p) => allocsOf(p).some((a) => a.client === client))
     if (liveOnly) l = l.filter(estEnCours)
     const needle = q.trim().toLowerCase()
@@ -210,9 +217,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         ].some((s) => (s ?? '').toLowerCase().includes(needle)),
       )
     return l
-  }, [products, client, liveOnly, q, allocsOf])
+  }, [productsO, client, liveOnly, q, allocsOf])
 
-  const nbLive = useMemo(() => products.filter(estEnCours).length, [products])
+  const nbLive = useMemo(() => productsO.filter(estEnCours).length, [productsO])
 
   const sorters: Record<string, (p: Product) => SortVal> = useMemo(
     () => ({
@@ -307,7 +314,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   // les niveaux courants injectés (sinon la situation serait « non classé » côté
   // serveur, faute de perf). Indépendante des filtres de la table.
   const synthese = useMemo(() => {
-    const enCours = products.filter(estEnCours)
+    const enCours = productsO.filter(estEnCours)
     const total = enCours.reduce((s, p) => s + p.nominal, 0)
     const counts = new Map<Situation, number>()
     for (const p of enCours) {
@@ -316,7 +323,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }
     return { n: enCours.length, total, counts }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, perfMap])
+  }, [productsO, perfMap])
 
   const toggleSort = (key?: string) => {
     if (!key) return
@@ -549,7 +556,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     className: `cursor-pointer ${hoverId === p.id ? 'bg-orange-50' : ''}`,
   })
 
-  const opened = openId ? products.find((p) => p.id === openId) ?? null : null
+  const opened = openId ? productsO.find((p) => p.id === openId) ?? null : null
 
   // Produit ouvert augmenté des niveaux Yahoo : niveaux du worst-of constatés aux
   // observations passées (suivi des coupons + P&L coupons inclus) ET niveaux
@@ -723,6 +730,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               allocs={allocsOf(opened)}
               devise={opened.devise}
               onChange={(next) => setClients(opened.isin, next)}
+              statut={opened.statut}
+              onStatut={(s) => setStatut(opened.isin, s)}
             />
             <ProductReconstruction product={openedAug} />
           </div>
