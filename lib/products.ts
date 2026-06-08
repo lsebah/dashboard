@@ -4030,15 +4030,6 @@ const metaProducts2: Product[] = [
     badges: ['Taux', 'Bearish', 'TS à fournir'],
   }),
   metaProduct({
-    isin: 'XS3064231932', nom: 'Phoenix Bearish CMS — coupon 6 %', emetteur: 'BNP Paribas',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2025-07-11', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 6, capitalGaranti: true },
-    description: '12Y Phoenix Bearish CMS — coupon 6 % p.a. (barrière ~2 %, à confirmer TS)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
     isin: 'FRSG00016HO2', nom: 'Phoenix Bearish CMS 10Y — 2,25/3,25, coupon 5,50 %', emetteur: 'Société Générale',
     productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
     dateEmission: '2025-06-19', dureeAnnees: 12, basket: 'single',
@@ -4258,6 +4249,175 @@ const metaProducts2: Product[] = [
   }),
 ]
 
+// ─────────────────────────────────────────────────────────────────────────
+//  Décodages termsheet (juin 2026) — 2 nouveaux produits + correction CMS 2Y
+// ─────────────────────────────────────────────────────────────────────────
+
+// ── XS3064231932 — BNP Phoenix Bearish EUR CMS 2Y (TS 02/07/2025) ───────────
+// Capital garanti. Coupon 6 % p.a. si EUR CMS 2Y ≤ 2,45 % ; autocall si ≤ 1,95 %.
+// (La TS corrige la référence : CMS 2Y, et non CMS 10Y comme supposé au départ.)
+const bnpBearishCms2y: Product = {
+  ...phoenixBearish({
+    isin: 'XS3064231932',
+    nom: 'Phoenix Bearish EUR CMS 2Y (capital garanti)',
+    emetteur: 'BNP Paribas Issuance B.V.',
+    garant: 'BNP Paribas',
+    notationEmetteur: 'S&P A+ / Moody’s A1',
+    nominal: 30_000_000,
+    freq: 'annuel',
+    initial: '2025-07-02',
+    emission: '2025-07-11',
+    finale: '2037-07-09',
+    echeance: '2037-07-13',
+    tauxRef: 'EUR CMS 2Y',
+    couponPct: 6,
+    barriereCoupon: 2.45,
+    barriereRappel: 1.95,
+    rappelActif: 1,
+    obs: [
+      '2026-07-09', '2027-07-08', '2028-07-07', '2029-07-09', '2030-07-09',
+      '2031-07-09', '2032-07-08', '2033-07-07', '2034-07-07', '2035-07-09',
+      '2036-07-09', '2037-07-09',
+    ],
+    pay: [
+      '2026-07-13', '2027-07-12', '2028-07-11', '2029-07-11', '2030-07-11',
+      '2031-07-11', '2032-07-12', '2033-07-11', '2034-07-11', '2035-07-11',
+      '2036-07-11', '2037-07-13',
+    ],
+    description:
+      '12Y Phoenix Bearish EUR CMS 2Y — coupon 6 % p.a. si ≤ 2,45 %, autocall si ≤ 1,95 %, capital garanti',
+    termsheetFichier: 'XS3064231932.pdf',
+  }),
+  badges: ['Taux', 'Bearish CMS 2Y', 'Capital garanti'],
+}
+
+// ── FR0014018KY5 — BNP Athéna Novo Nordisk (TS 11/05/2026) ──────────────────
+// Single. Trimestriel après 1 an de non-call. Rappel si Novo ≥ 100 % ; prime au
+// rappel = 110,35 % + n×3,45 % (n = 1..16). À maturité : Novo ≥ 100 % ⇒ 169 %
+// (+69 %) ; ≥ 50 % ⇒ capital ; < 50 % (barrière européenne) ⇒ perte 1:1.
+const athenaNovoNordisk: Product = {
+  id: 'FR0014018KY5',
+  nom: 'Athéna Novo Nordisk',
+  isin: 'FR0014018KY5',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-05-11',
+  dateEmission: '2026-05-20',
+  dateConstatationFinale: '2031-05-12',
+  dateEcheance: '2031-05-26',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Novo Nordisk A/S', bloomberg: 'NOVOB DC', marche: 'Nasdaq Copenhagen' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false, // Athéna à prime : pas de coupon mémoire (la prime s'accumule)
+    degressif: false,
+    couponPa: 13.8, // prime indicative (+3,45 %/trim.) ; aucun coupon distribué
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 69,
+  },
+  observations: buildObservations(
+    [
+      '2027-05-11', '2027-08-11', '2027-11-11', '2028-02-11', '2028-05-11',
+      '2028-08-11', '2028-11-13', '2029-02-12', '2029-05-14', '2029-08-13',
+      '2029-11-12', '2030-02-11', '2030-05-13', '2030-08-12', '2030-11-11',
+      '2031-02-11',
+    ],
+    [
+      '2027-05-25', '2027-08-25', '2027-11-25', '2028-02-25', '2028-05-25',
+      '2028-08-25', '2028-11-27', '2029-02-26', '2029-05-28', '2029-08-27',
+      '2029-11-26', '2030-02-25', '2030-05-27', '2030-08-26', '2030-11-25',
+      '2031-02-25',
+    ],
+    {
+      niveauRappelPct: 100,
+      montantRemboursementPct: (n) => Math.round((110.35 + n * 3.45) * 100) / 100,
+      rappelActifAPartirDe: 1,
+    },
+  ),
+  rr: 'LS',
+  productType: 'Athéna',
+  description:
+    '5Y Athéna Novo Nordisk — prime au rappel 110,35 %+n×3,45 % (trim., 1 an non-call), KI 50 % européen, +69 % à maturité',
+  badges: ['Single', 'Athéna', 'Bonus +69%'],
+  termsheetFichier: 'FR0014018KY5.pdf',
+}
+
+// ── FRSG000188R4 — SG Autocall Équipondéré Bouygues + Vinci + Eiffage ────────
+// Panier équipondéré (performance MOYENNE), strike moyen (15/05 & 05/06/2026).
+// Semestriel après 1 an de non-call. Rappel si perf moy. ≥ 0 % ; prime = i×3,5 %
+// (i = 2..11). À maturité (i=12) : moy. ≥ 0 % ⇒ 142 % (+42 %) ; ≥ −40 % ⇒ capital ;
+// < −40 % (barrière européenne sur panier) ⇒ perte 1:1. Capital non protégé.
+const sgBouyguesVinciEiffage: Product = {
+  id: 'FRSG000188R4',
+  nom: 'Autocall Équipondéré Bouygues + Vinci + Eiffage',
+  isin: 'FRSG000188R4',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-05-15',
+  dateEmission: '2026-06-05',
+  dateConstatationFinale: '2032-06-07',
+  dateEcheance: '2032-06-14',
+  frequence: 'semestriel',
+  basket: 'equipondere',
+  sousJacents: [
+    { nom: 'Vinci SA', bloomberg: 'DG FP', isin: 'FR0000125486', marche: 'Euronext Paris' },
+    { nom: 'Bouygues SA', bloomberg: 'EN FP', isin: 'FR0000120503', marche: 'Euronext Paris' },
+    { nom: 'Eiffage SA', bloomberg: 'FGR FP', isin: 'FR0000130452', marche: 'Euronext Paris' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false, // prime au rappel (pas de coupon mémoire)
+    degressif: false,
+    couponPa: 7, // prime indicative (+3,5 %/sem.) ; aucun coupon distribué
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+    strikeMoyen: true,
+    bonusFinalPct: 42,
+  },
+  observations: buildObservations(
+    [
+      '2027-06-07', '2027-12-06', '2028-06-05', '2028-12-05', '2029-06-05',
+      '2029-12-05', '2030-06-05', '2030-12-05', '2031-06-05', '2031-12-05',
+    ],
+    [
+      '2027-06-14', '2027-12-13', '2028-06-12', '2028-12-12', '2029-06-12',
+      '2029-12-12', '2030-06-12', '2030-12-12', '2031-06-12', '2031-12-12',
+    ],
+    {
+      niveauRappelPct: 100,
+      montantRemboursementPct: (n) => 100 + (n + 1) * 3.5,
+      rappelActifAPartirDe: 1,
+    },
+  ),
+  rr: 'LS',
+  productType: 'Autocall',
+  description:
+    '6Y Autocall équipondéré Bouygues + Vinci + Eiffage — prime 100 %+i×3,5 % (sem., 1 an non-call), KI 60 % européen sur panier moyen, +42 % à maturité',
+  badges: ['Équipondéré', 'Autocall', 'Bonus +42%'],
+  termsheetFichier: 'FRSG000188R4.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
@@ -4278,6 +4438,7 @@ const detailed: Product[] = [
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
   bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
   bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
+  bnpBearishCms2y, athenaNovoNordisk, sgBouyguesVinciEiffage,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
