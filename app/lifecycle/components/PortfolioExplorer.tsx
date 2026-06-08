@@ -5,6 +5,7 @@ import type { Product } from '@/lib/types'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import {
   prochainEvenement,
+  prochaineObservation,
   situation,
   type Situation,
   couponPa,
@@ -32,6 +33,18 @@ function ticker(s: string): string {
 // Produit "en cours" : ni rappelé, ni vendu, ni arrivé à maturité.
 function estEnCours(p: Product): boolean {
   return p.statut !== 'rappele' && p.statut !== 'vendu' && p.statut !== 'echu'
+}
+
+// Autocall probable à la PROCHAINE observation : worst-of courant (niveaux Yahoo
+// injectés dans p.sousJacents) ≥ barrière de rappel de cette observation.
+function autocallProbable(p: Product): boolean {
+  const obs = prochaineObservation(p)
+  if (!obs || obs.autocallActif === false || typeof obs.niveauRappelPct !== 'number') return false
+  const perfs = p.sousJacents
+    .map((u) => u.perf)
+    .filter((x): x is number => typeof x === 'number')
+  if (perfs.length === 0) return false
+  return 100 + Math.min(...perfs) >= obs.niveauRappelPct
 }
 
 function lastLabel(p: Product): { text: string; cls: string } {
@@ -102,10 +115,10 @@ const COLUMNS: Col[] = [
   { label: 'Freq.', key: 'freq' },
   { label: 'Y', key: 'y' },
   { label: 'Description', key: 'desc' },
+  { label: 'Cpn p.a.', key: 'cpn' },
   { label: 'Eq/Cr', key: 'asset' },
   { label: 'Type', key: 'type' },
   { label: 'Mém.', key: 'mem', align: 'center' },
-  { label: 'Cpn p.a.', key: 'cpn' },
   { label: 'B. Autocall', key: 'bauto' },
   { label: 'B. Coupon', key: 'bcoupon' },
   { label: 'PDI', key: 'pdi' },
@@ -347,9 +360,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'isin': {
         const s = situation(p)
         const f = frozenAttrs('isin', p)
+        const prob = autocallProbable(p)
         return (
           <td key="isin" style={f.style} className={`pl-2 pr-0.5 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
-            <span className="inline-flex items-center gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1.5 ${prob ? 'font-bold text-emerald-600' : ''}`}
+              title={prob ? 'Autocall probable à la prochaine observation' : undefined}
+            >
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
               {p.isin}
             </span>
@@ -417,9 +434,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'asset':
         return <td key="asset" className={`px-2 py-1.5 font-medium ${ASSET_COLOR[p.assetClass] ?? 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
       case 'type':
-        return <td key="type" className="px-2 py-1.5 whitespace-nowrap">{p.productType ?? '—'}</td>
+        return <td key="type" className="pl-2 pr-1 py-1.5 max-w-[120px] truncate" title={p.productType ?? undefined}>{p.productType ?? '—'}</td>
       case 'mem':
-        return <td key="mem" className="px-2 py-1.5 text-center">{(t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '') ? '✓' : ''}</td>
+        return <td key="mem" className="px-1 py-1.5 text-center">{(t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '') ? '✓' : ''}</td>
       case 'cpn':
         return <td key="cpn" className="px-2 py-1.5 tabular-nums">{formatPct(couponPa(p))}</td>
       case 'bauto':
