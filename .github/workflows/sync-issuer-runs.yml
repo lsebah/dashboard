@@ -1,0 +1,40 @@
+name: Sync issuer runs (emails → Comparatif)
+
+# Toutes les 12 h : lit le dernier mail « Run Décrement / Comparatif Émetteurs »,
+# parse l'Excel joint et met à jour lib/decrement-comparatif.json (page Comparatif).
+# Nécessite les secrets Azure AD + permission Mail.Read (voir le script).
+on:
+  schedule:
+    - cron: '0 */12 * * *' # toutes les 12 heures
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save xlsx
+      - name: Mettre à jour le comparatif depuis le dernier run
+        env:
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
+          GRAPH_USER: ${{ secrets.GRAPH_USER }}
+          MAIL_QUERY: ${{ secrets.MAIL_QUERY }}
+          MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
+        run: node scripts/sync-issuer-runs.mjs
+      - name: Ouvrir une PR si le comparatif a changé
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: sync comparatif décrément (run émetteurs)'
+          title: 'Sync comparatif décrément (run émetteurs)'
+          body: 'Mise à jour automatique de lib/decrement-comparatif.json depuis le dernier mail « Run Décrement ».'
+          branch: auto/issuer-runs-sync
+          add-paths: lib/decrement-comparatif.json
