@@ -22,6 +22,7 @@ import {
   deviseByIsin,
   amountByIsin,
   allocByIsin,
+  descByIsin,
 } from './feed'
 
 // ── 1) MAREX — Inverse (Barrier) Autocall sur United States Oil Fund ─────────
@@ -4538,8 +4539,13 @@ export const products: Product[] = feedIsins.map((isin) => {
   const base = defByIsin.get(isin) ?? minimal(isin)
   const price = priceByIsin[isin]
   const allocs = allocByIsin[isin]
+  // Libellé commercial (colonne « Description » de l'Excel) : fait foi pour la
+  // description affichée. Sert aussi de titre aux produits sans vraie définition.
+  const desc = descByIsin[isin]
   const merged: Product = {
     ...base,
+    nom: base.nom && base.nom !== isin ? base.nom : desc ?? base.nom,
+    description: desc ?? base.description,
     prixMarche: price ?? base.prixMarche,
     statut: statutByIsin[isin] ?? base.statut ?? 'vivant',
     nominal: amountByIsin[isin] ?? base.nominal,

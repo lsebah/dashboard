@@ -15,6 +15,7 @@ export interface FeedPosition {
   client?: string
   devise?: string
   amount?: number
+  description?: string
 }
 
 export const positions = raw as unknown as FeedPosition[]
@@ -36,6 +37,8 @@ export const statutByIsin: Record<string, ProductStatus> = {}
 export const deviseByIsin: Record<string, string> = {}
 export const amountByIsin: Record<string, number> = {}
 export const allocByIsin: Record<string, ClientAlloc[]> = {}
+/** Libellé commercial du produit (colonne « Description » de l'Excel). */
+export const descByIsin: Record<string, string> = {}
 
 for (const p of positions) {
   if (typeof p.last === 'number' && priceByIsin[p.isin] === undefined) priceByIsin[p.isin] = p.last
@@ -43,4 +46,5 @@ for (const p of positions) {
   if (p.devise && !deviseByIsin[p.isin]) deviseByIsin[p.isin] = p.devise
   if (typeof p.amount === 'number') amountByIsin[p.isin] = (amountByIsin[p.isin] ?? 0) + p.amount
   if (p.client) (allocByIsin[p.isin] ??= []).push({ client: p.client, montant: p.amount })
+  if (p.description && !descByIsin[p.isin]) descByIsin[p.isin] = p.description
 }

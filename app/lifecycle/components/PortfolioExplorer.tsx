@@ -500,9 +500,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const openedAug = useAugmentedProduct(opened)
 
   return (
-    <div>
+    // Hauteur fixée à la fenêtre (sous l'en-tête + le titre, éléments stables) :
+    // la table occupe le reste en flex-1 ⇒ sa barre de défilement HORIZONTALE
+    // reste collée en bas de l'écran, quelle que soit la hauteur de la synthèse
+    // ou de la barre d'outils (qui peuvent s'enrouler). Plus besoin de scroller.
+    <div className="flex flex-col h-[calc(100vh_-_10rem)]">
       {/* Synthèse « Analyse de risques » (situations calculées en live) */}
-      <div className="card p-4 mb-5">
+      <div className="card p-4 mb-5 shrink-0">
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
           <div>
             <div className="text-2xl font-bold text-cmf-navy">{synthese.n}</div>
@@ -531,7 +535,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       </div>
 
       {/* Barre d'outils */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 shrink-0">
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
             <button
@@ -583,7 +587,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       </div>
 
       {view === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start flex-1 min-h-0 overflow-auto pr-1">
           {listAug.map((p) => (
             <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left block w-full">
               <ProductSynopsis product={p} compact />
@@ -595,7 +599,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // reste collée en bas de la fenêtre visible (plus besoin de descendre tout
         // en bas de la liste). Les 6 premières colonnes sont figées à gauche
         // (sticky + fond opaque), le reste défile sous elles sans transparence.
-        <div className="card overflow-auto max-h-[calc(100vh_-_14rem)]">
+        <div className="card overflow-auto flex-1 min-h-0">
           <table className="text-[12px] border-separate border-spacing-0 w-max min-w-full">
             <thead className="text-slate-500">
               <tr>{COLUMNS.map(headerCell)}</tr>
