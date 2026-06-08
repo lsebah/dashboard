@@ -19,15 +19,25 @@ export default function ClientAssign({
   onChange,
   statut,
   onStatut,
+  nom,
+  onNom,
+  tsCible,
+  tsActuel,
 }: {
   allocs: ClientAlloc[]
   devise: string
   onChange: (next: ClientAlloc[]) => void
   statut?: ProductStatus
   onStatut?: (s: ProductStatus) => void
+  nom?: string
+  onNom?: (s: string) => void
+  tsCible?: string
+  tsActuel?: string
 }) {
   const [client, setClient] = useState('')
   const [montant, setMontant] = useState('')
+  const [nomDraft, setNomDraft] = useState(nom ?? '')
+  const [copie, setCopie] = useState(false)
 
   const add = () => {
     const c = client.trim()
@@ -51,6 +61,29 @@ export default function ClientAssign({
         <h3 className="font-semibold text-cmf-navy text-sm">Allocation client</h3>
         <span className="text-[10px] text-slate-400">local — non versionné</span>
       </div>
+
+      {/* Renommage manuel du produit (nom d'affichage, local) */}
+      {onNom && (
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <label className="field-label">Nom affiché</label>
+            <input
+              className="input"
+              value={nomDraft}
+              onChange={(e) => setNomDraft(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onNom(nomDraft)}
+              placeholder="Renommer le produit…"
+            />
+          </div>
+          <button
+            onClick={() => onNom(nomDraft)}
+            className="rounded-md bg-cmf-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            title="Renommer (local)"
+          >
+            Renommer
+          </button>
+        </div>
+      )}
 
       {/* Statut : vendre / rappelé / vivant (forçage local) */}
       {onStatut && (
@@ -99,6 +132,30 @@ export default function ClientAssign({
         </ul>
       ) : (
         <p className="text-xs text-slate-400">Aucun client affecté pour l&apos;instant.</p>
+      )}
+
+      {/* Nom de fichier TS à la nomenclature (copier pour renommer sur OneDrive) */}
+      {tsCible && (
+        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px]">
+          <div className="field-label mb-0.5">Nom TS cible (nomenclature)</div>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 truncate text-slate-700" title={tsCible}>{tsCible}</code>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(tsCible).then(() => {
+                  setCopie(true)
+                  setTimeout(() => setCopie(false), 1500)
+                })
+              }}
+              className="shrink-0 rounded border border-slate-300 bg-white px-2 py-0.5 text-slate-600 hover:bg-slate-100"
+            >
+              {copie ? 'Copié ✓' : 'Copier'}
+            </button>
+          </div>
+          {tsActuel && tsActuel !== tsCible && (
+            <div className="mt-1 text-amber-600">Fichier actuel : {tsActuel} — à renommer</div>
+          )}
+        </div>
       )}
 
       <div className="flex flex-wrap items-end gap-2">

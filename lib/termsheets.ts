@@ -124,6 +124,60 @@ export function parseTermsheetName(fichier: string): TermsheetMeta {
   return { fichier, isin, dateEmission, dureeAnnees, nom, frequence, emetteur, conforme }
 }
 
+// Raison sociale émetteur → code court utilisé dans la nomenclature.
+const ISSUER_CODES: [RegExp, string][] = [
+  [/soci[ée]t[ée] g[ée]n[ée]rale|\bSG Issuer\b|\bSG\b/i, 'SOCGEN'],
+  [/BNP/i, 'BNP'],
+  [/BBVA/i, 'BBVA'],
+  [/goldman/i, 'GS'],
+  [/morgan stanley/i, 'MSCO'],
+  [/citi/i, 'CITI'],
+  [/CIBC|canadian imperial/i, 'CIBC'],
+  [/EFG/i, 'EFG'],
+  [/barclays/i, 'BARCLAYS'],
+  [/santander/i, 'SANTANDER'],
+  [/deutsche/i, 'DB'],
+  [/\bCIC\b/i, 'CIC'],
+  [/marex/i, 'MAREX'],
+  [/bank of america|bofa/i, 'BOFA'],
+  [/internationale à luxembourg|\bBIL\b/i, 'BIL'],
+  [/vinga/i, 'VINGA'],
+]
+
+/** Code émetteur court (BNP, SOCGEN…) depuis la raison sociale. */
+export function issuerCode(name?: string): string {
+  if (!name) return '—'
+  for (const [re, code] of ISSUER_CODES) if (re.test(name)) return code
+  return name.split(/\s+/)[0].toUpperCase()
+}
+
+/** Nom de fichier TS cible (nomenclature) calculé depuis un produit de l'app. */
+export function canonicalForProduct(p: {
+  isin: string
+  dateEmission: string
+  dateConstatationInitiale: string
+  dateEcheance: string
+  description?: string
+  nom: string
+  frequence: Frequency
+  emetteur: string
+}): string {
+  const a = new Date(p.dateConstatationInitiale).getTime()
+  const b = new Date(p.dateEcheance).getTime()
+  const dureeAnnees =
+    Number.isFinite(a) && Number.isFinite(b)
+      ? Math.max(1, Math.round((b - a) / (365.25 * 86_400_000)))
+      : 0
+  return canonicalTermsheetName({
+    dateEmission: p.dateEmission,
+    dureeAnnees,
+    nom: p.description ?? p.nom,
+    frequence: p.frequence,
+    isin: p.isin,
+    emetteur: issuerCode(p.emetteur),
+  })
+}
+
 /** Reconstruit le nom canonique (convention) à partir des métadonnées produit. */
 export function canonicalTermsheetName(p: {
   dateEmission: string

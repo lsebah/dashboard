@@ -13,9 +13,12 @@ export type { ClientAlloc }
 export type AllocMap = Record<string, ClientAlloc[]>
 /** isin → statut forcé localement (vendu / rappelé / vivant…). */
 export type StatutMap = Record<string, ProductStatus>
+/** isin → nom d'affichage forcé localement (renommage manuel du produit). */
+export type NomMap = Record<string, string>
 
 const KEY = 'cmf.lifecycle.allocations.v1'
 const KEY_STATUT = 'cmf.lifecycle.statut.v1'
+const KEY_NOM = 'cmf.lifecycle.noms.v1'
 
 function read(): AllocMap {
   if (typeof window === 'undefined') return {}
@@ -27,24 +30,26 @@ function read(): AllocMap {
   }
 }
 
-function readStatut(): StatutMap {
-  if (typeof window === 'undefined') return {}
+function readJson<T>(key: string): T {
+  if (typeof window === 'undefined') return {} as T
   try {
-    const raw = window.localStorage.getItem(KEY_STATUT)
-    return raw ? (JSON.parse(raw) as StatutMap) : {}
+    const raw = window.localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : ({} as T)
   } catch {
-    return {}
+    return {} as T
   }
 }
 
 export function useAllocations() {
   const [map, setMap] = useState<AllocMap>({})
   const [statut, setStatutMap] = useState<StatutMap>({})
+  const [noms, setNomsMap] = useState<NomMap>({})
 
   // Chargement initial (au montage uniquement).
   useEffect(() => {
     setMap(read())
-    setStatutMap(readStatut())
+    setStatutMap(readJson<StatutMap>(KEY_STATUT))
+    setNomsMap(readJson<NomMap>(KEY_NOM))
   }, [])
 
   const setClients = useCallback((isin: string, allocs: ClientAlloc[]) => {
@@ -76,7 +81,23 @@ export function useAllocations() {
     })
   }, [])
 
-  return { map, setClients, statut, setStatut }
+  // Renomme (ou réinitialise si vide) le nom d'affichage d'un produit, localement.
+  const setNom = useCallback((isin: string, nom: string) => {
+    setNomsMap((prev) => {
+      const next = { ...prev }
+      const v = nom.trim()
+      if (!v) delete next[isin]
+      else next[isin] = v
+      try {
+        window.localStorage.setItem(KEY_NOM, JSON.stringify(next))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }, [])
+
+  return { map, setClients, statut, setStatut, noms, setNom }
 }
 
 /** Liste triée et dédupliquée de tous les clients connus (allocations ∪ seed). */

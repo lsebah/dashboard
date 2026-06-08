@@ -13,6 +13,7 @@ import {
   formatPct,
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
+import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
 import { SITUATION_COLOR, SITUATION_LABEL, freqLabel, assetLabel } from './labels'
 import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
@@ -177,13 +178,19 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     dir: 'asc',
   })
 
-  const { map, setClients, statut: statutMap, setStatut } = useAllocations()
+  const { map, setClients, statut: statutMap, setStatut, noms, setNom } = useAllocations()
 
-  // Statut forcé localement (Vendu / Rappelé…) appliqué par-dessus le feed, avant
-  // tout calcul (en-cours, situation, libellé prix, synthèse).
+  // Surcouches locales appliquées par-dessus le feed, avant tout calcul (en-cours,
+  // situation, libellé prix, synthèse) : statut forcé (Vendu/Rappelé…) et nom
+  // d'affichage renommé manuellement.
   const productsO = useMemo(
-    () => products.map((p) => (statutMap[p.isin] ? { ...p, statut: statutMap[p.isin] } : p)),
-    [products, statutMap],
+    () =>
+      products.map((p) => {
+        const s = statutMap[p.isin]
+        const n = noms[p.isin]
+        return s || n ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom } : p
+      }),
+    [products, statutMap, noms],
   )
 
   // Allocations effectives d'un produit : localStorage, sinon seed `clients`.
@@ -732,6 +739,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               onChange={(next) => setClients(opened.isin, next)}
               statut={opened.statut}
               onStatut={(s) => setStatut(opened.isin, s)}
+              nom={opened.nom}
+              onNom={(s) => setNom(opened.isin, s)}
+              tsCible={canonicalForProduct(opened)}
+              tsActuel={termsheetFile(opened.isin)}
             />
             <ProductReconstruction product={openedAug} />
           </div>
