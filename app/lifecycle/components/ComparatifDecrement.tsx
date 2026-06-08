@@ -1,7 +1,8 @@
 'use client'
 
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import indicesRaw from '@/lib/decrement-indices.json'
+import Modal from './Modal'
 
 interface IndexInfo {
   nom?: string
@@ -120,6 +121,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     [filtered],
   )
 
+  const sel = open ? rows.find((r) => r.ticker === open) ?? null : null
+  const selInfo = sel ? ENRICH[sel.ticker] : null
+
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
     { k: 'emetteur', label: 'Émetteur' },
@@ -213,17 +217,14 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {list.map((r) => {
-              const info = ENRICH[r.ticker]
-              const isOpen = open === r.ticker
-              return (
-              <Fragment key={r.ticker}>
+            {list.map((r) => (
               <tr
-                onClick={() => setOpen(isOpen ? null : r.ticker)}
-                className={`cursor-pointer ${isOpen ? 'bg-orange-50' : 'hover:bg-orange-50'}`}
+                key={r.ticker}
+                onClick={() => setOpen(r.ticker)}
+                className="cursor-pointer hover:bg-orange-50"
               >
                 <td className="px-2 py-1.5 font-mono whitespace-nowrap">
-                  {info && <span className="text-cmf-blue mr-1">{isOpen ? '▾' : '▸'}</span>}
+                  {ENRICH[r.ticker] && <span className="text-cmf-blue mr-1" title="Fiche indice">ⓘ</span>}
                   {r.ticker}
                 </td>
                 <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
@@ -239,45 +240,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className="px-2 py-1.5 text-center text-slate-500">{r.departAutocall ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.maturiteMax ?? '—'}</td>
               </tr>
-              {isOpen && (
-                <tr key={r.ticker + '-d'} className="bg-orange-50/40">
-                  <td colSpan={11} className="px-4 py-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="font-semibold text-cmf-navy">{info?.nom ?? r.ticker}</div>
-                      <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-2.5 py-1 text-center">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
-                        <div className="font-bold text-cmf-navy tabular-nums">{r.uf ?? '—'}</div>
-                      </div>
-                    </div>
-                    {/* Description : one-pager si dispo, sinon générée depuis le run */}
-                    <p className="text-[12px] text-slate-600 mt-1 max-w-3xl">
-                      {info?.description ?? describe(r)}
-                    </p>
-                    <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-[12px]">
-                      {typeof info?.nbComposants === 'number' && (
-                        <span><span className="field-label">Composants</span> {info.nbComposants}</span>
-                      )}
-                      <span><span className="field-label">Décrément</span> {info?.decrement ?? '50 pts (std.)'}</span>
-                      <span><span className="field-label">Coupon</span> {typeof r.couponPa === 'number' ? `${r.couponPa.toFixed(2)}%` : '—'}</span>
-                      <span><span className="field-label">B. coupon</span> {r.barriereCoupon ?? '—'}</span>
-                      <span><span className="field-label">Protection</span> {r.barriereProtection ?? '—'}</span>
-                      <span><span className="field-label">Strike</span> {r.strike ?? '—'}</span>
-                      <span><span className="field-label">Seuil init. AC</span> {r.seuilInitial ?? '—'}</span>
-                      <span><span className="field-label">Fréquence obs</span> {r.frequence ?? '—'}</span>
-                      <span><span className="field-label">Dégressivité</span> {r.degressivite ?? '—'}</span>
-                      <span><span className="field-label">Run</span> {r.dateRun ?? '—'}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-2">
-                      {info?.source
-                        ? `Source : ${info.source}`
-                        : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}
-                    </p>
-                  </td>
-                </tr>
-              )}
-              </Fragment>
-              )
-            })}
+            ))}
           </tbody>
         </table>
       </div>
@@ -286,6 +249,56 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
         Source : Comparatif Émetteurs — Indices à décrément (run février 2026). Coupons indicatifs
         à la date du run, non contractuels.
       </p>
+
+      <Modal
+        open={!!sel}
+        onClose={() => setOpen(null)}
+        title={sel ? `${selInfo?.nom ?? sel.ticker} · ${sel.emetteur}` : ''}
+      >
+        {sel && (
+          <div className="card p-4 flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="font-mono text-xs text-slate-500">
+                  {sel.ticker}
+                  {sel.secteur ? ` · ${sel.secteur}` : ''}
+                </div>
+                <h3 className="font-semibold text-cmf-navy">{selInfo?.nom ?? sel.ticker}</h3>
+              </div>
+              <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-3 py-1.5 text-center">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
+                <div className="text-lg font-bold text-cmf-navy tabular-nums">{sel.uf ?? '—'}</div>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600">{selInfo?.description ?? describe(sel)}</p>
+
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+              {typeof selInfo?.nbComposants === 'number' && (
+                <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Composants</dt><dd>{selInfo.nbComposants}</dd></div>
+              )}
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Décrément</dt><dd>{selInfo?.decrement ?? '50 pts (std.)'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? `${sel.couponPa.toFixed(2)} %` : '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Effet mémoire</dt><dd>{sel.memoire ? 'Oui' : 'Non'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Barrière coupon</dt><dd>{sel.barriereCoupon ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Protection</dt><dd>{sel.barriereProtection ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Départ autocall</dt><dd>{sel.departAutocall ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Seuil init. AC</dt><dd>{sel.seuilInitial ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Fréquence obs</dt><dd>{sel.frequence ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Dégressivité</dt><dd>{sel.degressivite ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Strike</dt><dd>{sel.strike ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Maturité max</dt><dd>{sel.maturiteMax ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Run</dt><dd>{sel.dateRun ?? '—'}</dd></div>
+            </dl>
+
+            <p className="text-[11px] text-slate-400">
+              {selInfo?.source
+                ? `Source : ${selInfo.source}`
+                : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}
+            </p>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
