@@ -12,5 +12,23 @@
     "secteur": "AI / Tech / Digital",
     "description": "10 valeurs transatlantiques de l'intelligence artificielle, indice à décrément. Sous-jacent du Phoenix MS FRIP00001I09.",
     "source": "Position FRIP00001I09"
+  },
+  "MXTAS50D": {
+    "nom": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index",
+    "emetteur": "GS",
+    "nbComposants": 30,
+    "secteur": "Transatlantique",
+    "decrement": "50 points/an",
+    "description": "30 plus grandes capitalisations transatlantiques (US + Europe), indice à décrément fixe de 50 points/an. Autocall trimestriel, seuil 100 % puis −0,75 %/trim, protection 50 %, maturité 12 ans. Coupon indicatif 10,50 % p.a. (11/03/2026, niveau 850).",
+    "source": "One-pager GS « [NEW INDEX] » (MXTAS50D - 4pager.pdf)"
+  },
+  "MXTB2050": {
+    "nom": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index",
+    "emetteur": "GS",
+    "nbComposants": 20,
+    "secteur": "Banque",
+    "decrement": "50 points/an",
+    "description": "20 valeurs bancaires transatlantiques (US + Europe), indice à décrément fixe de 50 points/an. Autocall trimestriel, seuil 100 % puis −0,75 %/trim, protection 50 %, maturité 12 ans. Coupon indicatif 12,00 % p.a. (05/03/2026, niveau 850).",
+    "source": "One-pager GS « [NEW INDEX] » (MXTB2050 - 4pager.pdf)"
   }
 }
