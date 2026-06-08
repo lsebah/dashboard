@@ -456,29 +456,47 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </td>
         )
       }
-      case 'sj':
+      case 'sj': {
+        // Tri alphabétique par ticker, puis placement dans 3 colonnes de largeur
+        // fixe ⇒ les sous-jacents s'alignent verticalement d'une ligne à l'autre
+        // (1er sous-jacent dans la 1re colonne, etc.), même nombre variable.
+        const sj = [...p.sousJacents]
+          .sort((a, b) =>
+            ticker(a.bloomberg ?? a.nom).localeCompare(ticker(b.bloomberg ?? b.nom)),
+          )
+          .slice(0, 3)
         return (
           <td key="sj" className="px-2 py-1.5 whitespace-nowrap">
             <div className="flex gap-2">
-              {p.sousJacents.slice(0, 3).map((u) => (
-                <span key={u.nom} className="inline-flex items-center gap-1">
-                  <span className="text-slate-500">{ticker(u.bloomberg ?? u.nom)}</span>
-                  <span
-                    className={`tabular-nums ${
-                      typeof u.perf === 'number'
-                        ? u.perf >= 0
-                          ? 'text-emerald-600'
-                          : 'text-red-600'
-                        : 'text-slate-300'
-                    }`}
-                  >
-                    {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(0)}%` : '—'}
+              {[0, 1, 2].map((i) => {
+                const u = sj[i]
+                return (
+                  <span key={i} className="inline-flex items-center gap-1 w-[80px]">
+                    {u && (
+                      <>
+                        <span className="text-slate-500 truncate min-w-0">
+                          {ticker(u.bloomberg ?? u.nom)}
+                        </span>
+                        <span
+                          className={`ml-auto shrink-0 tabular-nums ${
+                            typeof u.perf === 'number'
+                              ? u.perf >= 0
+                                ? 'text-emerald-600'
+                                : 'text-red-600'
+                              : 'text-slate-300'
+                          }`}
+                        >
+                          {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(0)}%` : '—'}
+                        </span>
+                      </>
+                    )}
                   </span>
-                </span>
-              ))}
+                )
+              })}
             </div>
           </td>
         )
+      }
       default:
         return <td key={key} className="px-2 py-1.5" />
     }
