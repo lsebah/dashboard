@@ -4031,15 +4031,6 @@ const metaProducts2: Product[] = [
     badges: ['Taux', 'Bearish', 'TS à fournir'],
   }),
   metaProduct({
-    isin: 'FRSG00016HO2', nom: 'Phoenix Bearish CMS 10Y — 2,25/3,25, coupon 5,50 %', emetteur: 'Société Générale',
-    productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
-    dateEmission: '2025-06-19', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'EUR CMS 10Y' }],
-    terms: { kind: 'rates', type: 'phoenix_taux', sens: 'bearish', tauxReference: 'EUR CMS 10Y', couponConditionnelPa: 5.5, capitalGaranti: true },
-    description: '12Y Phoenix Bearish CMS 10Y — coupon 5,50 % p.a., barrières 2,25 % / 3,25 % (à confirmer TS)',
-    badges: ['Taux', 'Bearish', 'TS à fournir'],
-  }),
-  metaProduct({
     isin: 'FRSG00015XO1', nom: 'Phoenix Bearish CMS 10Y — 2,15/2,70, coupon 5 %', emetteur: 'Société Générale',
     productType: 'Phoenix taux', assetClass: 'rates', family: 'rates_structured',
     dateEmission: '2025-04-16', dureeAnnees: 10, basket: 'single',
@@ -4292,6 +4283,40 @@ const bnpBearishCms2y: Product = {
   badges: ['Taux', 'Bearish CMS 2Y', 'Capital garanti'],
 }
 
+// ── FRSG00016HO2 — SG Phoenix Bearish EUR CMS 10Y (TS 18/06/2025) ───────────
+// Capital garanti. Coupon 5,50 % p.a. si EUR CMS 10Y ≤ 3,25 % ; autocall si ≤ 2,25 %.
+const sgBearishCms10_325 = phoenixBearish({
+  isin: 'FRSG00016HO2',
+  nom: 'Phoenix Bearish EUR CMS 10Y (2,25 % / 3,25 %)',
+  emetteur: 'SG Issuer',
+  garant: 'Société Générale',
+  notationEmetteur: 'S&P A / Moody’s A1',
+  nominal: 1_000_000,
+  freq: 'annuel',
+  initial: '2025-06-19',
+  emission: '2025-06-19',
+  finale: '2037-06-12',
+  echeance: '2037-06-19',
+  tauxRef: 'EUR CMS 10Y',
+  couponPct: 5.5,
+  barriereCoupon: 3.25,
+  barriereRappel: 2.25,
+  rappelActif: 1,
+  obs: [
+    '2026-06-12', '2027-06-14', '2028-06-12', '2029-06-12', '2030-06-12',
+    '2031-06-12', '2032-06-14', '2033-06-13', '2034-06-12', '2035-06-12',
+    '2036-06-12', '2037-06-12',
+  ],
+  pay: [
+    '2026-06-19', '2027-06-21', '2028-06-19', '2029-06-19', '2030-06-19',
+    '2031-06-19', '2032-06-21', '2033-06-20', '2034-06-19', '2035-06-19',
+    '2036-06-19', '2037-06-19',
+  ],
+  description:
+    '12Y Phoenix Bearish EUR CMS 10Y — coupon 5,50 % p.a. si ≤ 3,25 %, autocall si ≤ 2,25 %, capital garanti',
+  termsheetFichier: 'TermSheet_fre_Phoenix Bearish_CMS.EUR.10Y_FRSG00016HO2.pdf',
+})
+
 // ── FR0014018KY5 — BNP Athéna Novo Nordisk (TS 11/05/2026) ──────────────────
 // Single. Trimestriel après 1 an de non-call. Rappel si Novo ≥ 100 % ; prime au
 // rappel = 110,35 % + n×3,45 % (n = 1..16). À maturité : Novo ≥ 100 % ⇒ 169 %
@@ -4439,7 +4464,7 @@ const detailed: Product[] = [
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
   bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
   bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
-  bnpBearishCms2y, athenaNovoNordisk, sgBouyguesVinciEiffage,
+  bnpBearishCms2y, sgBearishCms10_325, athenaNovoNordisk, sgBouyguesVinciEiffage,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
