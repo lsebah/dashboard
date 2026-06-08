@@ -28,7 +28,7 @@ export async function fetchHistory(symbol: string, period1: number): Promise<Bar
   )}?period1=${period1}&period2=${period2}&interval=1d`
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0' },
-    next: { revalidate: 3600 },
+    next: { revalidate: 900 }, // 15 min — niveaux plus frais
   })
   if (!res.ok) throw new Error(`Yahoo ${symbol} ${res.status}`)
   const data: YahooChart = await res.json()

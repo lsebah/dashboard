@@ -168,11 +168,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const [view, setView] = useState<'table' | 'cards'>('table')
   const [client, setClient] = useState<string>('')
   const [liveOnly, setLiveOnly] = useState(false)
+  const [situ, setSitu] = useState<Situation | null>(null)
+  const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({
-    key: 'issue',
-    dir: 'desc',
+    key: 'next',
+    dir: 'asc',
   })
 
   const { map, setClients } = useAllocations()
@@ -194,8 +196,21 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     let l = products
     if (client) l = l.filter((p) => allocsOf(p).some((a) => a.client === client))
     if (liveOnly) l = l.filter(estEnCours)
+    const needle = q.trim().toLowerCase()
+    if (needle)
+      l = l.filter((p) =>
+        [
+          p.isin,
+          p.nom,
+          p.description,
+          p.productType,
+          p.emetteur,
+          p.termsheetFichier,
+          ...p.sousJacents.flatMap((u) => [u.nom, u.bloomberg, u.isin]),
+        ].some((s) => (s ?? '').toLowerCase().includes(needle)),
+      )
     return l
-  }, [products, client, liveOnly, allocsOf])
+  }, [products, client, liveOnly, q, allocsOf])
 
   const nbLive = useMemo(() => products.filter(estEnCours).length, [products])
 
@@ -280,6 +295,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   }
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap])
+
+  // Filtre « situation » (bulles cliquables de la synthèse) — appliqué sur la
+  // liste augmentée car la situation dépend des niveaux courants injectés.
+  const listFinal = useMemo(
+    () => (situ ? listAug.filter((p) => situation(p) === situ) : listAug),
+    [listAug, situ],
+  )
 
   // Synthèse « Analyse de risques » calculée sur TOUS les produits en cours, avec
   // les niveaux courants injectés (sinon la situation serait « non classé » côté
@@ -553,18 +575,36 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             </div>
             <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2">
             {(Object.keys(SITUATION_LABEL) as Situation[]).map((s) => {
               const n = synthese.counts.get(s) ?? 0
               if (n === 0) return null
+              const active = situ === s
               return (
-                <div key={s} className="flex items-center gap-2">
+                <button
+                  key={s}
+                  onClick={() => setSitu(active ? null : s)}
+                  className={`flex items-center gap-2 rounded-full border px-2.5 py-1 transition-colors ${
+                    active
+                      ? 'border-cmf-blue bg-cmf-blue/10'
+                      : 'border-slate-200 hover:bg-slate-100'
+                  }`}
+                  title={active ? 'Cliquer pour retirer le filtre' : `Filtrer : ${SITUATION_LABEL[s]}`}
+                >
                   <span className={`w-2.5 h-2.5 rounded-full ${SITUATION_COLOR[s]}`} />
                   <span className="text-sm text-slate-700">{SITUATION_LABEL[s]}</span>
                   <span className="text-sm font-semibold text-slate-900">{n}</span>
-                </div>
+                </button>
               )
             })}
+            {situ && (
+              <button
+                onClick={() => setSitu(null)}
+                className="text-xs text-slate-400 hover:text-slate-600 underline"
+              >
+                tout afficher
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -606,24 +646,44 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             </button>
           </div>
         </div>
-        <select
-          value={client}
-          onChange={(e) => setClient(e.target.value)}
-          className="input max-w-[220px]"
-          title="Filtrer par client (axe d'allocation)"
-        >
-          <option value="">— Tous les clients —</option>
-          {clients.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Rechercher (ISIN, sous-jacent, TS, émetteur…)"
+              className="input w-[300px] pr-7"
+              title="Filtre texte : ISIN, nom/description, sous-jacent, fichier TS, émetteur"
+            />
+            {q && (
+              <button
+                onClick={() => setQ('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                title="Effacer"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <select
+            value={client}
+            onChange={(e) => setClient(e.target.value)}
+            className="input max-w-[220px]"
+            title="Filtrer par client (axe d'allocation)"
+          >
+            <option value="">— Tous les clients —</option>
+            {clients.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {view === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start flex-1 min-h-0 overflow-auto pr-1">
-          {listAug.map((p) => (
+          {listFinal.map((p) => (
             <button key={p.id} onClick={() => setOpenId(p.id)} className="text-left block w-full">
               <ProductSynopsis product={p} compact />
             </button>
@@ -640,7 +700,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               <tr>{COLUMNS.map(headerCell)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {listAug.map((p) => (
+              {listFinal.map((p) => (
                 <tr key={p.id} {...rowProps(p)}>
                   {COLUMNS.map((c) => bodyCell(p, c.key))}
                 </tr>
