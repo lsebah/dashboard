@@ -37,7 +37,8 @@ function estEnCours(p: Product): boolean {
 }
 
 // Autocall probable à la PROCHAINE observation : worst-of courant (niveaux Yahoo
-// injectés dans p.sousJacents) ≥ barrière de rappel de cette observation.
+// injectés dans p.sousJacents) vs barrière de rappel. Pour un autocall INVERSE
+// (reverse), le rappel se déclenche quand le sous-jacent BAISSE (worst ≤ barrière).
 function autocallProbable(p: Product): boolean {
   const obs = prochaineObservation(p)
   if (!obs || obs.autocallActif === false || typeof obs.niveauRappelPct !== 'number') return false
@@ -45,7 +46,9 @@ function autocallProbable(p: Product): boolean {
     .map((u) => u.perf)
     .filter((x): x is number => typeof x === 'number')
   if (perfs.length === 0) return false
-  return 100 + Math.min(...perfs) >= obs.niveauRappelPct
+  const worst = 100 + Math.min(...perfs)
+  const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
+  return inverse ? worst <= obs.niveauRappelPct : worst >= obs.niveauRappelPct
 }
 
 function lastLabel(p: Product): { text: string; cls: string } {

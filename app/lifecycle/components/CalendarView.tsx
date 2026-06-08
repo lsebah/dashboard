@@ -14,16 +14,21 @@ interface Ligne {
 }
 
 // Probabilité d'autocall : niveau COURANT du worst-of vs barrière de rappel.
+// Inverse / reverse : le rappel se déclenche quand le sous-jacent BAISSE
+// (worst ≤ barrière) ⇒ on inverse la comparaison.
 function proba(
   worstOf: number | null | undefined,
   barrier: number | undefined,
   actif: boolean,
+  inverse = false,
 ): { label: string; cls: string } {
   if (!actif) return { label: 'Non-call', cls: 'bg-slate-100 text-slate-400' }
   if (typeof worstOf !== 'number') return { label: '—', cls: 'text-slate-300' }
   if (typeof barrier !== 'number') return { label: '—', cls: 'text-slate-300' }
-  if (worstOf >= barrier) return { label: 'Probable', cls: 'bg-emerald-100 text-emerald-700' }
-  if (worstOf >= barrier - 5) return { label: 'Proche', cls: 'bg-amber-100 text-amber-700' }
+  const ok = inverse ? worstOf <= barrier : worstOf >= barrier
+  const proche = inverse ? worstOf <= barrier + 5 : worstOf >= barrier - 5
+  if (ok) return { label: 'Probable', cls: 'bg-emerald-100 text-emerald-700' }
+  if (proche) return { label: 'Proche', cls: 'bg-amber-100 text-amber-700' }
   return { label: 'Peu probable', cls: 'bg-slate-100 text-slate-500' }
 }
 
@@ -116,7 +121,9 @@ export default function CalendarView({ products }: { products: Product[] }) {
             {affichees.map((l, i) => {
               const actif = l.obs.autocallActif !== false
               const wo = courant[l.product.isin]
-              const pr = proba(wo, l.obs.niveauRappelPct, actif)
+              const inverse =
+                l.product.terms?.kind === 'autocall' && l.product.terms.sens === 'inverse'
+              const pr = proba(wo, l.obs.niveauRappelPct, actif, inverse)
               const px = prixCell(l.product)
               return (
                 <tr

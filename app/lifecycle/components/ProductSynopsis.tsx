@@ -136,7 +136,11 @@ export default function ProductSynopsis({
         (() => {
           const isRates = terms?.kind === 'rates'
           const ref = isRates ? terms.tauxReference ?? 'taux' : 'worst'
-          const cmp = isRates && terms.sens === 'bearish' ? '≤' : '≥'
+          // Inverse / reverse : rappel (et coupon) si le sous-jacent BAISSE.
+          const inverse =
+            (isRates && terms.sens === 'bearish') ||
+            (terms?.kind === 'autocall' && terms.sens === 'inverse')
+          const cmp = inverse ? '≤' : '≥'
           const fmt = (v: number) => `${v}%`
           return (
             <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px]">
