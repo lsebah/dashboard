@@ -215,6 +215,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                   </span>
                 </th>
               ))}
+              <th className="font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 bg-slate-50 sticky top-0 text-center">
+                Fiche
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -241,6 +244,18 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.degressivite ?? '—'}</td>
                 <td className="px-2 py-1.5 text-center text-slate-500">{r.departAutocall ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.maturiteMax ?? '—'}</td>
+                <td className="px-2 py-1.5 text-center">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpen(r.ticker)
+                    }}
+                    className="rounded border border-cmf-blue/40 bg-cmf-blue/10 px-2 py-0.5 text-cmf-blue hover:bg-cmf-blue/20"
+                    title="Ouvrir la fiche (description, upfront, détails)"
+                  >
+                    Fiche
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
