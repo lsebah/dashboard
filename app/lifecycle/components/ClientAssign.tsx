@@ -59,7 +59,7 @@ export default function ClientAssign({
     <div className="card p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-cmf-navy text-sm">Allocation client</h3>
-        <span className="text-[10px] text-slate-400">local — non versionné</span>
+        <span className="text-[11px] text-slate-400">local — non versionné</span>
       </div>
 
       {/* Renommage manuel du produit (nom d'affichage, local) */}
@@ -136,7 +136,7 @@ export default function ClientAssign({
 
       {/* Nom de fichier TS à la nomenclature (copier pour renommer sur OneDrive) */}
       {tsCible && (
-        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px]">
+        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px]">
           <div className="field-label mb-0.5">Nom TS cible (nomenclature)</div>
           <div className="flex items-center gap-2">
             <code className="flex-1 truncate text-slate-700" title={tsCible}>{tsCible}</code>

@@ -242,7 +242,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
       </div>
 
       <div className="card overflow-auto flex-1 min-h-0">
-        <table className="w-full text-[12px] border-separate border-spacing-0">
+        <table className="w-full text-[13px] border-separate border-spacing-0">
           <thead className="text-slate-500">
             <tr>
               {COLS.map((c) => (
@@ -286,7 +286,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                     {r.ticker}
                   </div>
                   {ENRICH[r.ticker]?.nom && (
-                    <div className="text-[10px] text-slate-500 max-w-[280px] truncate" title={ENRICH[r.ticker].nom}>
+                    <div className="text-[11px] text-slate-500 max-w-[280px] truncate" title={ENRICH[r.ticker].nom}>
                       {ENRICH[r.ticker].nom}
                     </div>
                   )}
@@ -302,7 +302,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                   title={r.ufFromMail ? 'Upfront du mail émetteur (brut)' : 'Upfront PDF/Excel + commission CMF 1,5 %'}
                 >
                   {ufAffiche(r.uf, r.ufFromMail) ?? '—'}
-                  {r.ufFromMail && <span className="text-[9px] text-emerald-600 ml-0.5" title="valeur email">✉</span>}
+                  {r.ufFromMail && <span className="text-[10px] text-emerald-600 ml-0.5" title="valeur email">✉</span>}
                 </td>
                 <td className="px-2 py-1.5 text-center">{r.memoire ? '✓' : ''}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereCoupon ?? '—'}</td>
@@ -342,9 +342,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <h3 className="font-semibold text-cmf-navy">{selInfo?.nom ?? sel.ticker}</h3>
               </div>
               <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-3 py-1.5 text-center">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
+                <div className="text-[11px] text-slate-500 uppercase tracking-wide">Upfront</div>
                 <div className="text-lg font-bold text-cmf-navy tabular-nums">{ufAffiche(sel.uf, sel.ufFromMail) ?? '—'}</div>
-                <div className="text-[9px] text-slate-400">
+                <div className="text-[10px] text-slate-400">
                   {sel.ufFromMail ? 'valeur mail émetteur (brut)' : 'comm. CMF +1,5 % incl.'}
                 </div>
               </div>
@@ -370,7 +370,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Run</dt><dd>{sel.dateRun ?? '—'}</dd></div>
             </dl>
 
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[12px] text-slate-400">
               {selInfo?.source
                 ? `Source : ${selInfo.source}`
                 : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}

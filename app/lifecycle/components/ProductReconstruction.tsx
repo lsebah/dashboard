@@ -32,14 +32,14 @@ function CouponSuivi({ product }: { product: Product }) {
     <div>
       <div className="field-label mb-1 flex items-center justify-between">
         <span>Suivi des coupons</span>
-        <span className="text-[11px] text-slate-500 normal-case">
+        <span className="text-[12px] text-slate-500 normal-case">
           {aConstater
             ? 'coupons encaissés : à constater (niveaux des sous-jacents requis)'
             : `coupons encaissés : ${cumul.toFixed(2)}%`}
         </span>
       </div>
       <div className="max-h-56 overflow-y-auto rounded border border-slate-100">
-        <table className="w-full text-[11px]">
+        <table className="w-full text-[12px]">
           <thead className="bg-slate-50 text-slate-500 sticky top-0">
             <tr>
               <th className="text-left font-medium px-2 py-1">#</th>
@@ -90,8 +90,8 @@ function ScenarioList({ scenarios }: { scenarios: Scenario[] }) {
               <span className={`w-1.5 h-1.5 rounded-full ${TON_DOT[s.ton]}`} />
               {s.titre}
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Si {s.condition}</div>
-            <div className="text-[11px] text-slate-700">→ {s.resultat}</div>
+            <div className="text-[12px] text-slate-500 mt-0.5">Si {s.condition}</div>
+            <div className="text-[12px] text-slate-700">→ {s.resultat}</div>
           </li>
         ))}
       </ul>
@@ -175,7 +175,7 @@ export default function ProductReconstruction({ product }: { product: Product })
     <div className="card p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
-        <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+        <span className="text-[11px] text-slate-400">dérivé, non saisi</span>
       </div>
 
       {/* Paramètres décodés */}
@@ -202,7 +202,7 @@ export default function ProductReconstruction({ product }: { product: Product })
       <div>
         <div className="field-label mb-1">Échéancier reconstruit</div>
         <div className="max-h-56 overflow-y-auto rounded border border-slate-100">
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[12px]">
             <thead className="bg-slate-50 text-slate-500 sticky top-0">
               <tr>
                 <th className="text-left font-medium px-2 py-1">#</th>
@@ -218,7 +218,7 @@ export default function ProductReconstruction({ product }: { product: Product })
                   <td className="px-2 py-1 whitespace-nowrap">
                     {formatDateFr(l.date)}
                     {!l.actif && (
-                      <span className="ml-1 text-[9px] text-slate-400">non-call</span>
+                      <span className="ml-1 text-[10px] text-slate-400">non-call</span>
                     )}
                   </td>
                   <td className="px-2 py-1 text-right tabular-nums">
@@ -249,8 +249,8 @@ export default function ProductReconstruction({ product }: { product: Product })
                 <span className={`w-1.5 h-1.5 rounded-full ${TON_DOT[s.ton]}`} />
                 {s.titre}
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Si {s.condition}</div>
-              <div className="text-[11px] text-slate-700">→ {s.resultat}</div>
+              <div className="text-[12px] text-slate-500 mt-0.5">Si {s.condition}</div>
+              <div className="text-[12px] text-slate-700">→ {s.resultat}</div>
             </li>
           ))}
         </ul>
@@ -281,7 +281,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
       <div className="card p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
-          <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+          <span className="text-[11px] text-slate-400">dérivé, non saisi</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {tarnChips.map((c) => (
@@ -290,7 +290,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
             </span>
           ))}
         </div>
-        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px] text-slate-600">
+        <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px] text-slate-600">
           TARN (Target Redemption Note) sur la pente de courbe : coupon ={' '}
           <span className="font-medium text-slate-800">
             {t.multiplicateur ? `${(t.multiplicateur * 100).toFixed(0)}%` : ''} × ({t.tauxReference} −{' '}
@@ -319,7 +319,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
     <div className="card p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
-        <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+        <span className="text-[11px] text-slate-400">dérivé, non saisi</span>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -330,7 +330,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
         ))}
       </div>
 
-      <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px] text-slate-600">
+      <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px] text-slate-600">
         Coupon conditionnel {t.couponConditionnelPct ? `${t.couponConditionnelPct}%/période` : ''}
         {t.couponConditionnelPa ? ` (≈ ${t.couponConditionnelPa}% p.a.)` : ''} versé si{' '}
         <span className="font-medium text-slate-800">{taux} {cmp} barrière de coupon</span>
@@ -342,7 +342,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
       <div>
         <div className="field-label mb-1">Échéancier reconstruit (barrières en taux)</div>
         <div className="max-h-56 overflow-y-auto rounded border border-slate-100">
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[12px]">
             <thead className="bg-slate-50 text-slate-500 sticky top-0">
               <tr>
                 <th className="text-left font-medium px-2 py-1">#</th>
@@ -361,7 +361,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
                     <td className="px-2 py-1 whitespace-nowrap">
                       {formatDateFr(l.date)}
                       {!l.actif && (
-                        <span className="ml-1 text-[9px] text-slate-400">non-call</span>
+                        <span className="ml-1 text-[10px] text-slate-400">non-call</span>
                       )}
                     </td>
                     <td className="px-2 py-1 text-right tabular-nums">
@@ -391,8 +391,8 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
                 <span className={`w-1.5 h-1.5 rounded-full ${TON_DOT[s.ton]}`} />
                 {s.titre}
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Si {s.condition}</div>
-              <div className="text-[11px] text-slate-700">→ {s.resultat}</div>
+              <div className="text-[12px] text-slate-500 mt-0.5">Si {s.condition}</div>
+              <div className="text-[12px] text-slate-700">→ {s.resultat}</div>
             </li>
           ))}
         </ul>
@@ -441,7 +441,7 @@ function CreditReconstruction({ product, t }: { product: Product; t: CreditTerms
     <div className="card p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-cmf-navy text-sm">Reconstruction (termsheet)</h3>
-        <span className="text-[10px] text-slate-400">dérivé, non saisi</span>
+        <span className="text-[11px] text-slate-400">dérivé, non saisi</span>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -461,7 +461,7 @@ function CreditReconstruction({ product, t }: { product: Product; t: CreditTerms
         ))}
       </dl>
 
-      <div className="rounded-md bg-orange-50 border border-orange-200 p-2 text-[11px] text-orange-700">
+      <div className="rounded-md bg-orange-50 border border-orange-200 p-2 text-[12px] text-orange-700">
         Produit de crédit : le capital est réduit par les défauts qui franchissent le
         point d’attachement de la tranche{t.zeroRecovery ? ' (zero recovery : 100% de perte par nom)' : ''}.
       </div>

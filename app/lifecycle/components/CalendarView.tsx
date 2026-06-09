@@ -171,12 +171,12 @@ export default function CalendarView({ products }: { products: Product[] }) {
         title={`${e.product.nom} · ${a.titre}`}
       >
         <div className="flex items-center justify-between gap-1">
-          <span className="text-[11px] font-semibold text-slate-700 truncate">
+          <span className="text-[12px] font-semibold text-slate-700 truncate">
             {formatMontant(e.product.nominal, e.product.devise)}
           </span>
-          <span className="text-[10px]" title={a.titre}>{a.icone}</span>
+          <span className="text-[11px]" title={a.titre}>{a.icone}</span>
         </div>
-        <div className="text-[10px] text-slate-500 truncate">
+        <div className="text-[11px] text-slate-500 truncate">
           {shortU(e.product)}
           {typeof wo === 'number' && <span className="tabular-nums"> ({wo.toFixed(2)}%)</span>}
         </div>
@@ -260,7 +260,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
                   <span className={filtre === f.k ? 'text-cmf-blue' : 'text-slate-400'}>{f.icone}</span>
                   <span className="text-2xl font-bold text-cmf-navy tabular-nums">{compte(f.k)}</span>
                 </div>
-                <div className="text-[10px] uppercase tracking-wide text-slate-500 mt-0.5 leading-tight">{f.label}</div>
+                <div className="text-[11px] uppercase tracking-wide text-slate-500 mt-0.5 leading-tight">{f.label}</div>
               </button>
             ))}
           </aside>
@@ -276,7 +276,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
                     <div key={J(d)} className="flex flex-col min-w-0">
                       <div className={`flex items-center justify-between rounded-t-md px-2 py-1.5 text-xs font-medium ${estAuj ? 'bg-cmf-blue text-white' : 'bg-slate-700 text-white'}`}>
                         <span>{labelJour(d)}</span>
-                        <span className="rounded bg-white/20 px-1.5 text-[10px]">{evs.length}</span>
+                        <span className="rounded bg-white/20 px-1.5 text-[11px]">{evs.length}</span>
                       </div>
                       <div className="flex-1 rounded-b-md bg-slate-50/60 p-1.5 flex flex-col gap-1.5 overflow-y-auto min-h-[120px]">
                         {evs.map((e, i) => <Carte key={`${e.product.id}-${e.obs.n}-${i}`} e={e} />)}
@@ -287,7 +287,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
               </div>
             ) : (
               <div className="flex flex-col gap-1">
-                <div className="grid grid-cols-7 gap-1 text-[10px] uppercase tracking-wide text-slate-400 px-1">
+                <div className="grid grid-cols-7 gap-1 text-[11px] uppercase tracking-wide text-slate-400 px-1">
                   {JOURS.map((j) => <div key={j} className="text-center">{j}</div>)}
                 </div>
                 {semainesMois.map((sem, wi) => (
@@ -298,18 +298,18 @@ export default function CalendarView({ products }: { products: Product[] }) {
                       const estAuj = J(d) === today
                       return (
                         <div key={J(d)} className={`rounded border min-h-[78px] p-1 ${horsMois ? 'bg-slate-50/40 border-slate-100' : 'bg-white border-slate-200'}`}>
-                          <div className={`text-[10px] mb-0.5 ${estAuj ? 'font-bold text-cmf-blue' : horsMois ? 'text-slate-300' : 'text-slate-500'}`}>{d.getDate()}</div>
+                          <div className={`text-[11px] mb-0.5 ${estAuj ? 'font-bold text-cmf-blue' : horsMois ? 'text-slate-300' : 'text-slate-500'}`}>{d.getDate()}</div>
                           <div className="flex flex-col gap-0.5">
                             {evs.slice(0, 3).map((e, i) => {
                               const a = aspect(e)
                               return (
                                 <button key={i} onClick={() => setSelId(e.product.id)} title={`${e.product.nom} · ${a.titre}`}
-                                  className={`truncate rounded px-1 text-[9px] border ${a.cls} ${selId === e.product.id ? 'ring-1 ring-cmf-blue' : ''}`}>
+                                  className={`truncate rounded px-1 text-[10px] border ${a.cls} ${selId === e.product.id ? 'ring-1 ring-cmf-blue' : ''}`}>
                                   {a.icone} {shortU(e.product)}
                                 </button>
                               )
                             })}
-                            {evs.length > 3 && <span className="text-[9px] text-slate-400 px-1">+{evs.length - 3}</span>}
+                            {evs.length > 3 && <span className="text-[10px] text-slate-400 px-1">+{evs.length - 3}</span>}
                           </div>
                         </div>
                       )

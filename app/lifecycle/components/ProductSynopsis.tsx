@@ -91,7 +91,7 @@ export default function ProductSynopsis({
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold text-cmf-navy">{product.nom}</h3>
         {product.productType && (
-          <span className="text-[11px] text-slate-500">· {product.productType}</span>
+          <span className="text-[12px] text-slate-500">· {product.productType}</span>
         )}
         {product.badges?.map((b) => (
           <span key={b} className="badge">
@@ -120,14 +120,14 @@ export default function ProductSynopsis({
 
       {/* Timeline */}
       <div>
-        <div className="flex justify-between text-[11px] text-slate-500">
+        <div className="flex justify-between text-[12px] text-slate-500">
           <span>{formatDateFr(product.dateConstatationInitiale)}</span>
           <span>{formatDateFr(product.dateEcheance)}</span>
         </div>
         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden my-1">
           <div className="h-full bg-cmf-blue/70" style={{ width: `${progress}%` }} />
         </div>
-        <div className="flex justify-between text-[11px]">
+        <div className="flex justify-between text-[12px]">
           <span className="text-slate-600">
             {next
               ? `Prochain événement le ${formatDateFr(next)}`
@@ -152,7 +152,7 @@ export default function ProductSynopsis({
           const cmp = inverse ? '≤' : '≥'
           const fmt = (v: number) => `${v}%`
           return (
-            <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[11px]">
+            <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px]">
               <div className="field-label mb-0.5">
                 Prochaine observation — {formatDateFr(nextObs.dateObservation)}
               </div>
@@ -257,7 +257,7 @@ export default function ProductSynopsis({
           <div className="text-lg font-bold text-cmf-navy tabular-nums">
             {formatPct(product.prixMarche)}
           </div>
-          <div className="text-[11px] text-slate-500">Prix (mark-to-market)</div>
+          <div className="text-[12px] text-slate-500">Prix (mark-to-market)</div>
           {(() => {
             const coupons = couponsEncaissesPct(product)
             const pnl = pnlAvecCoupons(product) ?? product.pnlPct
@@ -265,13 +265,13 @@ export default function ProductSynopsis({
             return (
               <>
                 <div
-                  className={`text-[11px] tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                  className={`text-[12px] tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
                 >
                   P&amp;L {pnl >= 0 ? '+' : ''}
                   {pnl.toFixed(2)}%
                 </div>
                 {typeof coupons === 'number' && coupons > 0 && (
-                  <div className="text-[10px] text-slate-400 tabular-nums">
+                  <div className="text-[11px] text-slate-400 tabular-nums">
                     dont coupons encaissés +{coupons.toFixed(2)}%
                   </div>
                 )}

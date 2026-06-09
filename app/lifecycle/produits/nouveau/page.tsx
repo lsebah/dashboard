@@ -359,7 +359,7 @@ export default function NouveauProduit() {
         <div className="lg:col-span-1">
           <div className="card p-4 sticky top-4">
             <div className="text-sm font-semibold text-cmf-navy mb-2">Aperçu (objet produit)</div>
-            <pre className="text-[11px] leading-relaxed bg-slate-50 rounded-md p-3 overflow-auto max-h-[70vh] text-slate-700">
+            <pre className="text-[12px] leading-relaxed bg-slate-50 rounded-md p-3 overflow-auto max-h-[70vh] text-slate-700">
               {json}
             </pre>
           </div>

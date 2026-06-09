@@ -472,7 +472,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             } ${f.cls}`}
           >
             {typeof pnl === 'number' ? `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%` : '—'}
-            {hasCoupons && <span className="text-[9px] text-slate-400 ml-0.5" title="coupons inclus">¢</span>}
+            {hasCoupons && <span className="text-[10px] text-slate-400 ml-0.5" title="coupons inclus">¢</span>}
           </td>
         )
       }
@@ -732,7 +732,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // en bas de la liste). Les 6 premières colonnes sont figées à gauche
         // (sticky + fond opaque), le reste défile sous elles sans transparence.
         <div className="card overflow-auto flex-1 min-h-0">
-          <table className="text-[12px] border-separate border-spacing-0 w-max min-w-full">
+          <table className="text-[13px] border-separate border-spacing-0 w-max min-w-full">
             <thead className="text-slate-500">
               <tr>{COLUMNS.map(headerCell)}</tr>
             </thead>
