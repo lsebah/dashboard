@@ -20,7 +20,8 @@
   "nbComposants": 10,
   "decrement": "50 points/an",
   "description": "MerQube All Weather Commodities Equities 10 50 Point Decrement (EUR). Secteur : Matières premières (panier fixe). 10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 14.3% p.a. (run BNP 01/06/2026).",
-  "source": "Run BNP Paribas (01/06/2026)"
+  "source": "Run BNP Paribas (01/06/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FIndice%20MerQube%20All%20Weather%20Commodities%20Equities%2010%2050%20Point%20Decrement%20(EUR)%20%20%20(1).pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "AWDEUAD1": {
   "nom": "FTSE Developed Europe Aerospace and Defense 50 Pt Decrement Index",
@@ -114,7 +115,8 @@
   "nbComposants": 10,
   "decrement": "50 points/an",
   "description": "Euronext European Defense Fixed Basket Decrement 50 Points. Secteur : Défense européenne (panier fixe). 10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 12.5% p.a. (run BNP 01/06/2026).",
-  "source": "Run BNP Paribas (01/06/2026)"
+  "source": "Run BNP Paribas (01/06/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FIndice%20Euronext%20European%20Defense%20Fixed%20Basket%20Decrement%2050%20Points.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "EEFA50D": {
   "nom": "Euronext Europe Fallen Angels Fixed Basket Decrement 50 Points",
@@ -146,7 +148,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "Euronext Electrification & AI Enablers 20 D50P. Secteur : Transatlantique (Électrification & IA). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 23.03% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMarch2026%20ENEAID50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "ENERED5P": {
   "nom": "Euronext Energy Europe Capped GR Decrement 50 Points",
@@ -168,7 +171,8 @@
   "nbComposants": 10,
   "decrement": "50 points/an",
   "description": "Euronext Semiconductors & AI 10 Decrement 50 Points. Secteur : Transatlantique (Semis & IA). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 23.83% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMarch2026%20ENSEAI50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "ESOVED50": {
   "nom": "Euronext European Sovereignty D 50 P",
@@ -384,7 +388,8 @@
   "nbComposants": 10,
   "decrement": "50 points/an",
   "description": "Solactive North America Gold Miners Top 20 Index 50 Decrement. Secteur : Gold Miners US. 10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 20.8% p.a. (run BNP 01/06/2026).",
-  "source": "Run BNP Paribas (01/06/2026)"
+  "source": "Run BNP Paribas (01/06/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FIndice%20Solactive%20North%20America%20Gold%20Miners%20Top%2020%20Index%2050%20Decrement.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "HYPE10": {
   "nom": "MerQube Global HyperScalers Select 50 Point Decrement Index (EUR)",
@@ -798,7 +803,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "Morningstar Transatlantic Multi-Sector Select 20 Decrement 50 Point GR EUR. Secteur : Transatlantique diversifié. 20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 9.3% p.a. (run BNP 01/06/2026).",
-  "source": "Run BNP Paribas (01/06/2026)"
+  "source": "Run BNP Paribas (01/06/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMorningstar%20Transatlantic%20Multi-Sector%20Select%2020%20Decrement%2050%20Point%20GR%20EUR.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MTECH20": {
   "nom": "Morningstar Tech & Communications Transatlantic 20 Decrement 50 Points (Citi)",
@@ -891,7 +897,8 @@
   "decrement": "50 points/an",
   "description": "MSCI Europe Defense Fixed Basket Select 10 50 Point Decrement Index. Secteur : Defense / Aerospace. ~10 composants. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : Goldman Sachs.",
   "source": "Run Goldman Sachs « Indices Optimisés » (08/06/2026)",
-  "nbComposants": 10
+  "nbComposants": 10,
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-pager%20-%20MXEDFB50.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEE50DE": {
   "nom": "MSCI Europe IMI Energy 10% Issuer Capped 50 Points Decrement Index",
@@ -906,7 +913,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "MSCI Emerging Markets Multisector Top 20 Select 50 Points Decrement Index. Secteur : Marchés émergents. 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 11.50% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-Pager%20-%20MXEM2050.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEM250D": {
   "nom": "MSCI EMU Multi Sector Top 25 Select 50 Points Decrement Index",
@@ -914,14 +922,16 @@
   "nbComposants": 25,
   "decrement": "50 points/an",
   "description": "MSCI EMU Multi Sector Top 25 Select 50 Points Decrement Index. Secteur : Eurozone (multi-secteurs). 25 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.50% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-Pager%20-%20MXEM250D.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEMBS50": {
   "nom": "MSCI EM + DM Banks Select Fixed Basket 50 Points Decrement EUR Index",
   "secteur": "Marchés émergents (Banques)",
   "decrement": "50 points/an",
   "description": "MSCI EM + DM Banks Select Fixed Basket 50 Points Decrement EUR Index. Secteur : Marchés émergents (Banques). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 20.16% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FFebruary2026%20MXEMBS50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEMF50D": {
   "nom": "MSCI EMU Multisector Select 40 Fixed Basket 50 Points Decrement EUR Index",
@@ -936,7 +946,8 @@
   "secteur": "Marchés émergents (multi-secteurs)",
   "decrement": "50 points/an",
   "description": "MSCI EM Expanded Multi-Sector Select Fixed Basket 50 Points Decrement EUR Index. Secteur : Marchés émergents (multi-secteurs). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 21.52% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMarch2026%20MXEMMS50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEMS50D": {
   "nom": "MSCI EMU Multisector Top 40 Select 50 Point Decrement Index",
@@ -960,7 +971,8 @@
   "nbComposants": 30,
   "decrement": "50 points/an",
   "description": "MSCI EMU Top 30 Select 50 Points Decrement Index. Secteur : Eurozone (EMU). 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.50% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMXEMT50D%20-%204%20-%20pager.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEMUB50": {
   "nom": "MSCI EMU Banks 50 Points Decrement EUR Index",
@@ -975,7 +987,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "MSCI Europe, USA and Japan 20 Select Fixed Basket 50 Points Decrement Index. Secteur : Global (Europe/US/Japon). 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.00% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-pager%20-%20MXEUA250%20.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEUAD50": {
   "nom": "MSCI Europe Aerospace & Defense Capped 50 Points Decrement EUR Index",
@@ -998,7 +1011,8 @@
   "decrement": "50 points/an",
   "description": "MSCI Europe Champions Fixed Basket Select 12 Decrement 50 Point Index. Secteur : Transatlantique. ~12 composants. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : Goldman Sachs.",
   "source": "Run Goldman Sachs « Indices Optimisés » (08/06/2026)",
-  "nbComposants": 12
+  "nbComposants": 12,
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-Pager%20-%20MXEUC50D%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXEUDS50": {
   "nom": "MSCI EMU ESG Diversified Sector Select 50 Points Decrement EUR Index",
@@ -1037,7 +1051,8 @@
   "nbComposants": 10,
   "decrement": "50 points/an",
   "description": "MSCI Eurozone Aerospace & Defense Top 10 Equal Weighted Sel 50 Pts DIV EUR Index. Secteur : Eurozone (Aéro & Défense). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 21.40% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMarch2026%20MXEZAD50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXLFB50D": {
   "nom": "MSCI ACWI Luxury Select 10 Fixed Basket 50 Point Decrement EUR Index",
@@ -1052,7 +1067,8 @@
   "secteur": "Monde (Nucléaire)",
   "decrement": "50 points/an",
   "description": "MSCI Global Nuclear Energy Value Chain Select Fixed Basket 50 Point Decrement Index. Secteur : Monde (Nucléaire). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 13.10% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-pager%20-%20MXNU2050%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXPHA50D": {
   "nom": "MSCI Pharma Fixed Basket Top 16 Select Equal Weighted 50 Points Decrement Index",
@@ -1076,7 +1092,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "MSCI Transatlantic Gold Miners Top 20 Equal Weighed Select 50 Pts DIV EUR Index. Secteur : Transatlantique (Gold Miners). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 25.03% p.a. (run MS 02/04/2026).",
-  "source": "Run Morgan Stanley (02/04/2026)"
+  "source": "Run Morgan Stanley (02/04/2026)",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMarch2026%20MXTAGM50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXTAS50D": {
   "nom": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index",
@@ -1084,7 +1101,8 @@
   "nbComposants": 30,
   "decrement": "50 points/an",
   "description": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index. Secteur : Transatlantique. 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.50% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMXTAS50D%20-%204pager.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXTB2050": {
   "nom": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index",
@@ -1092,7 +1110,8 @@
   "nbComposants": 20,
   "decrement": "50 points/an",
   "description": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index. Secteur : Transatlantique (Banques). 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.00% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2FMXTB2050%20-%204pager.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXTDSB50": {
   "nom": "MSCI Transatlantic DSB Select 20 Decrement 50 points EUR Index",
@@ -1139,7 +1158,8 @@
   "nbComposants": 30,
   "decrement": "50 points/an",
   "description": "MSCI USA, Europe and Asia 30 Select Equal Weight Fixed Basket 50 Pts Decrement EUR Index. Secteur : Global (US/Europe/Asie, EW). 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.00% p.a. (one-pager GS).",
-  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »",
+  "ficheUrl": "https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements%2F4-pager%20-%20MXUEAE50%20Index.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FFiches%20D%C3%A9crements"
  },
  "MXUSIT50": {
   "nom": "MSCI USA Infotech Top 100 Select 50 Pts Decrement Gross Return EUR Index",

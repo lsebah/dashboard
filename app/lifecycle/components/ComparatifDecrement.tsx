@@ -91,7 +91,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
-  const [fiche, setFiche] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: keyof Row; dir: 'asc' | 'desc' }>({
     key: 'couponPa',
     dir: 'desc',
@@ -161,10 +160,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const sel = open ? rows.find((r) => r.ticker === open) ?? null : null
   const selInfo = sel ? ENRICH[sel.ticker] : null
 
-  const selFiche = fiche ? rows.find((r) => r.ticker === fiche) ?? null : null
-  const selFicheInfo = selFiche ? ENRICH[selFiche.ticker] : null
-  const fichePdf = selFicheInfo?.fichePdf ?? null
-  const ficheUrl = selFicheInfo?.ficheUrl ?? null
 
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
@@ -271,17 +266,17 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className="px-2 py-1.5">
                   <div className="font-mono whitespace-nowrap flex items-center gap-1">
                     {(ENRICH[r.ticker]?.fichePdf || ENRICH[r.ticker]?.ficheUrl) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setFiche(r.ticker)
-                        }}
-                        className="text-cmf-blue hover:text-cmf-navy text-sm leading-none"
-                        title="Télécharger la fiche émetteur (one-pager PDF)"
-                        aria-label="Télécharger la fiche émetteur"
+                      <a
+                        href={ENRICH[r.ticker].fichePdf ?? ENRICH[r.ticker].ficheUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-cmf-blue hover:text-cmf-navy text-sm leading-none no-underline"
+                        title="Ouvrir la fiche émetteur (one-pager)"
+                        aria-label="Ouvrir la fiche émetteur"
                       >
                         ⓘ
-                      </button>
+                      </a>
                     )}
                     {r.ticker}
                   </div>
@@ -375,59 +370,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 ? `Source : ${selInfo.source}`
                 : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}
             </p>
-          </div>
-        )}
-      </Modal>
-
-      {/* Fiche = le PDF émetteur (one-pager) — PAS le descriptif. */}
-      <Modal
-        open={!!selFiche}
-        onClose={() => setFiche(null)}
-        wide
-        title={selFiche ? `Fiche ${selFicheInfo?.nom ?? selFiche.ticker} · ${selFiche.emetteur}` : ''}
-      >
-        {selFiche && (
-          <div className="flex flex-col gap-3">
-            {fichePdf ? (
-              <object data={fichePdf} type="application/pdf" className="w-full h-[70vh] rounded border border-slate-200">
-                <p className="p-4 text-sm text-slate-600">
-                  Votre navigateur ne peut pas afficher le PDF intégré.{' '}
-                  <a href={fichePdf} target="_blank" rel="noreferrer" className="text-cmf-blue underline">
-                    Ouvrir la fiche dans un nouvel onglet
-                  </a>
-                  .
-                </p>
-              </object>
-            ) : ficheUrl ? (
-              <object data={ficheUrl} type="application/pdf" className="w-full h-[70vh] rounded border border-slate-200">
-                <p className="p-4 text-sm text-slate-600">
-                  <a href={ficheUrl} target="_blank" rel="noreferrer" className="text-cmf-blue underline">
-                    Ouvrir la fiche émetteur
-                  </a>
-                </p>
-              </object>
-            ) : (
-              <div className="card p-6 text-center">
-                <div className="text-3xl mb-2">📄</div>
-                <h3 className="font-semibold text-cmf-navy">Fiche émetteur non encore disponible</h3>
-                <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
-                  Le one-pager PDF de <span className="font-mono">{selFiche.ticker}</span> ({selFiche.emetteur})
-                  n&apos;a pas encore été récupéré dans la boîte <span className="font-mono">l.sebah@cmf.finance</span>.
-                  Le cron quotidien (<span className="font-mono">sync-fiches</span>) le téléchargera dès qu&apos;il
-                  trouvera la pièce jointe, ou tu peux déposer le PDF dans{' '}
-                  <span className="font-mono">public/fiches/{selFiche.ticker}.pdf</span>.
-                </p>
-                <button
-                  onClick={() => {
-                    setFiche(null)
-                    setOpen(selFiche.ticker)
-                  }}
-                  className="mt-4 rounded border border-cmf-blue/40 bg-cmf-blue/10 px-3 py-1 text-sm text-cmf-blue hover:bg-cmf-blue/20"
-                >
-                  Voir le descriptif en attendant
-                </button>
-              </div>
-            )}
           </div>
         )}
       </Modal>
