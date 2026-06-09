@@ -33,6 +33,9 @@ interface Row {
   maturiteMax: string | null
   secteur: string | null
   dateRun: string | null
+  /** true = upfront issu d'un mail émetteur (affiché brut) ; absent/false =
+   *  issu du PDF/Excel de départ (commission broker retirée → +1,5 % réintégrés). */
+  ufFromMail?: boolean
 }
 
 const ISSUER_COLOR: Record<string, string> = {
@@ -45,16 +48,16 @@ const ISSUER_COLOR: Record<string, string> = {
   BBVA: 'text-indigo-600',
 }
 
-// Commission CMF ajoutée à l'affichage de TOUS les upfronts (+1,5 %).
-// On majore au rendu : le JSON conserve l'upfront brut banque (resynchronisé
-// quotidiennement depuis la boîte mail), la commission est ré-appliquée à chaque
-// affichage sans être écrasée par le sync.
+// Commission CMF réintégrée à l'affichage UNIQUEMENT pour les upfronts issus
+// du PDF/Excel de départ (dans lesquels la commission broker avait été retirée).
+// Les upfronts venant d'un mail émetteur (ufFromMail) sont affichés tels quels.
 const COMMISSION_CMF = 1.5
-function ufAffiche(uf: string | null): string | null {
+function ufAffiche(uf: string | null, fromMail?: boolean): string | null {
   if (uf == null) return null
   const m = String(uf).match(/-?\d+(?:[.,]\d+)?/)
   if (!m) return uf
-  const v = parseFloat(m[0].replace(',', '.')) + COMMISSION_CMF
+  const base = parseFloat(m[0].replace(',', '.'))
+  const v = fromMail ? base : base + COMMISSION_CMF
   return `${v.toFixed(2)}%`
 }
 
@@ -78,7 +81,7 @@ function describe(r: Row): string {
   if (r.frequence) p.push(`obs. ${r.frequence.toLowerCase()}`)
   if (r.degressivite) p.push(`dégressivité ${r.degressivite}`)
   if (r.maturiteMax) p.push(`maturité max ${r.maturiteMax}`)
-  if (typeof r.uf === 'string') p.push(`upfront ${ufAffiche(r.uf)}`)
+  if (typeof r.uf === 'string') p.push(`upfront ${ufAffiche(r.uf, r.ufFromMail)}`)
   if (p.length) s += ' — ' + p.join(', ')
   return s + `. Émetteur ${r.emetteur}.`
 }
@@ -292,7 +295,13 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className={`px-2 py-1.5 text-right tabular-nums ${coupCls(r.couponPa)}`}>
                   {typeof r.couponPa === 'number' ? `${r.couponPa.toFixed(2)}%` : '—'}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-cmf-navy font-medium">{ufAffiche(r.uf) ?? '—'}</td>
+                <td
+                  className="px-2 py-1.5 text-right tabular-nums text-cmf-navy font-medium"
+                  title={r.ufFromMail ? 'Upfront du mail émetteur (brut)' : 'Upfront PDF/Excel + commission CMF 1,5 %'}
+                >
+                  {ufAffiche(r.uf, r.ufFromMail) ?? '—'}
+                  {r.ufFromMail && <span className="text-[9px] text-emerald-600 ml-0.5" title="valeur email">✉</span>}
+                </td>
                 <td className="px-2 py-1.5 text-center">{r.memoire ? '✓' : ''}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereCoupon ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereProtection ?? '—'}</td>
@@ -308,8 +317,10 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
       <p className="text-xs text-slate-400 mt-2 shrink-0">
         Source : Comparatif Émetteurs — Indices à décrément. Coupons indicatifs à la date du run
-        (colonne <span className="font-medium">Refresh</span>), non contractuels. Upfronts affichés{' '}
-        <span className="font-medium">commission CMF +1,5 % incluse</span>. Clique sur ⓘ pour la fiche émetteur (PDF).
+        (colonne <span className="font-medium">Refresh</span>), non contractuels. Upfronts issus du
+        PDF/Excel de départ : <span className="font-medium">commission CMF +1,5 % réintégrée</span> ;
+        upfronts <span className="text-emerald-600">✉</span> issus des mails émetteurs : affichés bruts
+        (reoffer converti : upfront = 100 − reoffer). Clique sur ⓘ pour la fiche émetteur (PDF).
       </p>
 
       <Modal
@@ -329,8 +340,10 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               </div>
               <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-3 py-1.5 text-center">
                 <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
-                <div className="text-lg font-bold text-cmf-navy tabular-nums">{ufAffiche(sel.uf) ?? '—'}</div>
-                <div className="text-[9px] text-slate-400">comm. CMF +1,5 % incl.</div>
+                <div className="text-lg font-bold text-cmf-navy tabular-nums">{ufAffiche(sel.uf, sel.ufFromMail) ?? '—'}</div>
+                <div className="text-[9px] text-slate-400">
+                  {sel.ufFromMail ? 'valeur mail émetteur (brut)' : 'comm. CMF +1,5 % incl.'}
+                </div>
               </div>
             </div>
 

@@ -110,7 +110,8 @@ function parse(buf) {
     emetteur: col(h, 'emetteur', 'émetteur'),
     type: col(h, 'type'),
     strike: col(h, 'strike'),
-    uf: col(h, 'uf'),
+    uf: col(h, 'uf', 'upfront'),
+    reoffer: col(h, 'reoffer', 're-offer', 'prix reoffer'),
     coupon: col(h, 'coupon'),
     memoire: col(h, 'memoire', 'mémoire'),
     barriereCoupon: col(h, 'barriere coupon', 'barrière coupon'),
@@ -124,6 +125,14 @@ function parse(buf) {
     dateRun: col(h, 'date'),
   }
   const at = (r, i) => (i >= 0 ? r[i] : null)
+  // Upfront depuis le mail : si la colonne « reoffer » existe, upfront = 100 − reoffer
+  // (ex. reoffer 95 → upfront 5). Sinon on prend la colonne upfront telle quelle.
+  // Ces upfronts viennent du mail → affichés bruts (ufFromMail), sans commission CMF.
+  const ufDepuisMail = (r) => {
+    const ro = num(at(r, ix.reoffer))
+    if (typeof ro === 'number') return `${(100 - ro).toFixed(2)}%`
+    return clean(at(r, ix.uf))
+  }
   return rows
     .slice(1)
     .filter((r) => clean(at(r, ix.ticker)))
@@ -132,7 +141,8 @@ function parse(buf) {
       emetteur: clean(at(r, ix.emetteur)),
       type: clean(at(r, ix.type)),
       strike: clean(at(r, ix.strike)),
-      uf: clean(at(r, ix.uf)),
+      uf: ufDepuisMail(r),
+      ufFromMail: true,
       couponPa: num(at(r, ix.coupon)),
       memoire: /oui/i.test(String(at(r, ix.memoire) ?? '')),
       barriereCoupon: clean(at(r, ix.barriereCoupon)),
