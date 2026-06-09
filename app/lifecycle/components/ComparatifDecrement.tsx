@@ -75,6 +75,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
+  const [fiche, setFiche] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: keyof Row; dir: 'asc' | 'desc' }>({
     key: 'couponPa',
     dir: 'desc',
@@ -125,6 +126,11 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
   const sel = open ? rows.find((r) => r.ticker === open) ?? null : null
   const selInfo = sel ? ENRICH[sel.ticker] : null
+
+  const selFiche = fiche ? rows.find((r) => r.ticker === fiche) ?? null : null
+  const selFicheInfo = selFiche ? ENRICH[selFiche.ticker] : null
+  const fichePdf = selFicheInfo?.fichePdf ?? null
+  const ficheUrl = selFicheInfo?.ficheUrl ?? null
 
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
@@ -257,10 +263,10 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      setOpen(r.ticker)
+                      setFiche(r.ticker)
                     }}
                     className="rounded border border-cmf-blue/40 bg-cmf-blue/10 px-2 py-0.5 text-cmf-blue hover:bg-cmf-blue/20"
-                    title="Ouvrir la fiche (description, upfront, détails)"
+                    title="Ouvrir la fiche émetteur (PDF de la banque)"
                   >
                     Fiche
                   </button>
@@ -299,32 +305,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
             <p className="text-sm text-slate-600">{selInfo?.description ?? describe(sel)}</p>
 
-            {/* Fiche émetteur (PDF) : embarquée si téléchargée par le cron, sinon lien externe */}
-            {selInfo?.fichePdf ? (
-              <div>
-                <a
-                  href={selInfo.fichePdf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cmf-blue hover:underline text-sm inline-flex items-center gap-1"
-                >
-                  📄 Ouvrir la fiche émetteur (PDF) ↗
-                </a>
-                <object data={selInfo.fichePdf} type="application/pdf" className="w-full h-[55vh] mt-2 rounded border border-slate-200">
-                  <p className="text-xs text-slate-400 p-2">Aperçu PDF indisponible — utilise le lien ci-dessus.</p>
-                </object>
-              </div>
-            ) : selInfo?.ficheUrl ? (
-              <a
-                href={selInfo.ficheUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cmf-blue hover:underline text-sm inline-flex items-center gap-1 w-fit"
-              >
-                📄 Ouvrir la fiche émetteur ↗
-              </a>
-            ) : null}
-
             <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
               {typeof selInfo?.nbComposants === 'number' && (
                 <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Composants</dt><dd>{selInfo.nbComposants}</dd></div>
@@ -348,6 +328,59 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 ? `Source : ${selInfo.source}`
                 : 'Description générée depuis le run — fiche one-pager à intégrer pour la compo détaillée.'}
             </p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Fiche = le PDF émetteur (one-pager) — PAS le descriptif. */}
+      <Modal
+        open={!!selFiche}
+        onClose={() => setFiche(null)}
+        wide
+        title={selFiche ? `Fiche ${selFicheInfo?.nom ?? selFiche.ticker} · ${selFiche.emetteur}` : ''}
+      >
+        {selFiche && (
+          <div className="flex flex-col gap-3">
+            {fichePdf ? (
+              <object data={fichePdf} type="application/pdf" className="w-full h-[70vh] rounded border border-slate-200">
+                <p className="p-4 text-sm text-slate-600">
+                  Votre navigateur ne peut pas afficher le PDF intégré.{' '}
+                  <a href={fichePdf} target="_blank" rel="noreferrer" className="text-cmf-blue underline">
+                    Ouvrir la fiche dans un nouvel onglet
+                  </a>
+                  .
+                </p>
+              </object>
+            ) : ficheUrl ? (
+              <object data={ficheUrl} type="application/pdf" className="w-full h-[70vh] rounded border border-slate-200">
+                <p className="p-4 text-sm text-slate-600">
+                  <a href={ficheUrl} target="_blank" rel="noreferrer" className="text-cmf-blue underline">
+                    Ouvrir la fiche émetteur
+                  </a>
+                </p>
+              </object>
+            ) : (
+              <div className="card p-6 text-center">
+                <div className="text-3xl mb-2">📄</div>
+                <h3 className="font-semibold text-cmf-navy">Fiche émetteur non encore disponible</h3>
+                <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+                  Le one-pager PDF de <span className="font-mono">{selFiche.ticker}</span> ({selFiche.emetteur})
+                  n&apos;a pas encore été récupéré dans la boîte <span className="font-mono">l.sebah@cmf.finance</span>.
+                  Le cron quotidien (<span className="font-mono">sync-fiches</span>) le téléchargera dès qu&apos;il
+                  trouvera la pièce jointe, ou tu peux déposer le PDF dans{' '}
+                  <span className="font-mono">public/fiches/{selFiche.ticker}.pdf</span>.
+                </p>
+                <button
+                  onClick={() => {
+                    setFiche(null)
+                    setOpen(selFiche.ticker)
+                  }}
+                  className="mt-4 rounded border border-cmf-blue/40 bg-cmf-blue/10 px-3 py-1 text-sm text-cmf-blue hover:bg-cmf-blue/20"
+                >
+                  Voir le descriptif en attendant
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Modal>

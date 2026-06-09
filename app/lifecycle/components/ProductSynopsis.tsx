@@ -14,6 +14,10 @@ import {
 } from '@/lib/lifecycle'
 import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
 import { rateNow } from '@/lib/rates-levels'
+import tsPdfs from '@/lib/ts-pdfs.json'
+
+// PDF banque déposé dans public/ts/<ISIN>.pdf (indexé par scripts/index-ts-pdfs.mjs).
+const TS_PDFS = tsPdfs as Record<string, string>
 
 /** Carte « Synopsis produit » — reproduit la fiche de vizibility.
  *  `compact` : masque de taille UNIVERSELLE (hauteur fixe) pour la grille de
@@ -96,18 +100,23 @@ export default function ProductSynopsis({
         ))}
       </div>
 
-      {/* Termsheet */}
-      {product.termsheetUrl && (
-        <a
-          href={product.termsheetUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-cmf-blue hover:underline inline-flex items-center gap-1 w-fit"
-          title={product.termsheetFichier}
-        >
-          📄 Termsheet ↗
-        </a>
-      )}
+      {/* Termsheet — privilégie le PDF banque déposé dans public/ts/<ISIN>.pdf */}
+      {(() => {
+        const bankPdf = TS_PDFS[product.isin]
+        const href = bankPdf ?? product.termsheetUrl
+        if (!href) return null
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-cmf-blue hover:underline inline-flex items-center gap-1 w-fit"
+            title={product.termsheetFichier}
+          >
+            📄 {bankPdf ? 'Termsheet (document banque)' : 'Termsheet'} ↗
+          </a>
+        )
+      })()}
 
       {/* Timeline */}
       <div>

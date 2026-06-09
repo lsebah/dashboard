@@ -8,11 +8,14 @@ export default function Modal({
   onClose,
   title,
   children,
+  wide,
 }: {
   open: boolean
   onClose: () => void
   title?: React.ReactNode
   children: React.ReactNode
+  /** Élargit la modale (ex. visionneuse PDF). */
+  wide?: boolean
 }) {
   useEffect(() => {
     if (!open) return
@@ -35,7 +38,7 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl my-4"
+        className={`relative w-full my-4 ${wide ? 'max-w-5xl' : 'max-w-2xl'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-2">
