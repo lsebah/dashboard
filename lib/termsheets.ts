@@ -19,6 +19,13 @@ const ISIN_RE = /[A-Z]{2}[A-Z0-9]{9}[0-9]/
 /** Noms de fichiers du dossier sans ISIN identifiable (non rattachables). */
 export const TERMSHEET_ORPHELINS: string[] = []
 
+// Fichiers du dossier dont le NOM ne contient pas l'ISIN (réf interne banque,
+// « Serie XXXX », « Quartz NN »…). Rattachement manuel ISIN → nom de fichier,
+// l'ISIN ayant été lu dans le TEXTE de la TS. Complété au fil des lectures.
+const TERMSHEET_FILES_OVERRIDE: Record<string, string> = {
+  XS2759139525: 'EI9052EAG - 5Y Athena Airbag on Kering in EUR - Finalized TS[1].pdf',
+}
+
 /** ISIN → nom de fichier de la termsheet (premier match conservé). */
 export const TERMSHEET_FILES: Record<string, string> = {}
 for (const f of index as string[]) {
@@ -29,6 +36,8 @@ for (const f of index as string[]) {
   }
   if (!TERMSHEET_FILES[m[0]]) TERMSHEET_FILES[m[0]] = f
 }
+// Les rattachements manuels priment (orphelins sans ISIN dans le nom).
+Object.assign(TERMSHEET_FILES, TERMSHEET_FILES_OVERRIDE)
 
 /** ISIN couverts par une termsheet du dossier. */
 export const TERMSHEET_ISINS: string[] = Object.keys(TERMSHEET_FILES)
