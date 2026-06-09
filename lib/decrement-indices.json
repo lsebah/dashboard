@@ -450,5 +450,61 @@
   "decrement": "50 points/an",
   "description": "MSCI Europe, USA and Japan 20 Select Fixed Basket 50 Points Decrement Index. Secteur : Global (Europe/US/Japon). 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.00% p.a. (one-pager GS).",
   "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "EURHGPT": {
+  "nom": "Bloomberg Europe Health Care Select Multi Factor Decrement 50 Points GR Index",
+  "secteur": "Europe (Santé / Pharma)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Europe Health Care Select Multi Factor Decrement 50 Points GR Index. Secteur : Europe (Santé / Pharma). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.81% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EURBMGPT": {
+  "nom": "Bloomberg Euro Banks Select Multi Factor Decrement 50 Points Index (Series G)",
+  "secteur": "Eurozone (Banques)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Euro Banks Select Multi Factor Decrement 50 Points Index (Series G). Secteur : Eurozone (Banques). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 11.09% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EUBCGPT": {
+  "nom": "Bloomberg Europe Basic Resources Select Multi Factor Capped Decrement 50 Pts GR Index",
+  "secteur": "Europe (Basic Resources, cappé)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Europe Basic Resources Select Multi Factor Capped Decrement 50 Pts GR Index. Secteur : Europe (Basic Resources, cappé). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.58% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EURAGPT": {
+  "nom": "Bloomberg Europe Automotive Select Multi Factor Decrement 50 Points GR Index",
+  "secteur": "Europe (Automobile)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Europe Automotive Select Multi Factor Decrement 50 Points GR Index. Secteur : Europe (Automobile). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.51% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "SOLEML50": {
+  "nom": "Solactive Europe Diversified Market Leaders TR Index 50 AR",
+  "secteur": "Transatlantique (Diversifié)",
+  "decrement": "50 points/an",
+  "description": "Solactive Europe Diversified Market Leaders TR Index 50 AR. Secteur : Transatlantique (Diversifié). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 9.20% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EURBCGPT": {
+  "nom": "Bloomberg Euro Banks Select Multi Factor Capped Decrement 50 Pts GR Index",
+  "secteur": "Eurozone (Banques, cappé)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Euro Banks Select Multi Factor Capped Decrement 50 Pts GR Index. Secteur : Eurozone (Banques, cappé). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 14.03% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EUEBCFPT": {
+  "nom": "Bloomberg Euro Energy Select Balanced Multi Factor Capped Decrement 50 Pts GR Index",
+  "secteur": "Eurozone (Énergie, cappé)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Euro Energy Select Balanced Multi Factor Capped Decrement 50 Pts GR Index. Secteur : Eurozone (Énergie, cappé). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 13.57% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
+ },
+ "EUHCCFPT": {
+  "nom": "Bloomberg Euro Health Care Select Multi Factor Capped Decrement 50 Pts GR Index",
+  "secteur": "Eurozone (Santé, cappé)",
+  "decrement": "50 points/an",
+  "description": "Bloomberg Euro Health Care Select Multi Factor Capped Decrement 50 Pts GR Index. Secteur : Eurozone (Santé, cappé). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.54% p.a. en Athéna dégressif (run BBVA 02/06/2026).",
+  "source": "Run BBVA (02/06/2026)"
  }
 }
