@@ -53,6 +53,12 @@ const categories = [
           </svg>
         ),
         color: '#38bdf8',
+        sub: [
+          { name: 'Portefeuille', url: '/lifecycle' },
+          { name: 'Calendrier', url: '/lifecycle/calendrier' },
+          { name: 'Comparatif', url: '/lifecycle/comparatif' },
+          { name: '+ Produit', url: '/lifecycle/produits/nouveau' },
+        ],
       },
       {
         name: 'Internship Monitor',
@@ -399,39 +405,59 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {category.links.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  className="glass-card p-2.5 flex items-center gap-2.5 group cursor-pointer no-underline"
-                >
-                  <div
-                    className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
-                    style={{
-                      backgroundColor: `${link.color}15`,
-                      color: link.color,
-                    }}
+              {category.links.map((link) => {
+                const subs = 'sub' in link ? (link.sub as { name: string; url: string }[]) : undefined
+                const head = (
+                  <a
+                    href={link.url}
+                    className="flex items-center gap-2.5 group cursor-pointer no-underline"
                   >
-                    {link.icon}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm text-white group-hover:text-indigo-300 transition-colors">
-                      {link.name}
+                    <div
+                      className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
+                      style={{ backgroundColor: `${link.color}15`, color: link.color }}
+                    >
+                      {link.icon}
                     </div>
-                    <div className="text-xs text-slate-500">
-                      {link.description}
+                    <div>
+                      <div className="font-semibold text-sm text-white group-hover:text-indigo-300 transition-colors">
+                        {link.name}
+                      </div>
+                      <div className="text-xs text-slate-500">{link.description}</div>
+                    </div>
+                    <svg
+                      className="w-4 h-4 ml-auto text-slate-600 group-hover:text-indigo-400 transition-all group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                  </a>
+                )
+                if (!subs) {
+                  return (
+                    <div key={link.name} className="glass-card p-2.5">
+                      {head}
+                    </div>
+                  )
+                }
+                return (
+                  <div key={link.name} className="glass-card p-2.5 flex flex-col gap-2">
+                    {head}
+                    <div className="flex flex-wrap gap-1.5 pl-1">
+                      {subs.map((s) => (
+                        <a
+                          key={s.url + s.name}
+                          href={s.url}
+                          className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-slate-300 no-underline hover:border-indigo-400/40 hover:text-indigo-300 transition-colors"
+                        >
+                          {s.name}
+                        </a>
+                      ))}
                     </div>
                   </div>
-                  <svg
-                    className="w-4 h-4 ml-auto text-slate-600 group-hover:text-indigo-400 transition-all group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                  </svg>
-                </a>
-              ))}
+                )
+              })}
             </div>
           </section>
         ))}
