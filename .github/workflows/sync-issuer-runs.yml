@@ -30,12 +30,15 @@ jobs:
           MAIL_QUERY: ${{ secrets.MAIL_QUERY }}
           MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
         run: node scripts/sync-issuer-runs.mjs
-      - name: Télécharger les fiches émetteurs (PDF)
+      - name: Télécharger les fiches émetteurs (PDF) depuis OneDrive « Fiches Décrements »
         env:
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
           GRAPH_USER: ${{ secrets.GRAPH_USER }}
+          # Dossier OneDrive des one-pagers (défaut « Fiches Décrements » si vide).
+          # Nécessite la permission application Microsoft Graph « Files.Read.All ».
+          FICHES_FOLDER: ${{ vars.FICHES_FOLDER }}
         run: node scripts/sync-fiches.mjs
       - name: Ouvrir une PR si le comparatif a changé
         uses: peter-evans/create-pull-request@v6
