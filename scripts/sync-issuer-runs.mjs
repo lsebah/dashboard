@@ -24,7 +24,7 @@ const {
   GRAPH_TENANT_ID,
   GRAPH_CLIENT_ID,
   GRAPH_CLIENT_SECRET,
-  GRAPH_USER,
+  GRAPH_USER = 'l.sebah@cmf.finance',
   MAIL_QUERY = 'Décrement OR Comparatif',
   MAIL_SENDER,
 } = process.env

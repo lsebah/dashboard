@@ -5,7 +5,7 @@ name: Sync issuer runs (emails → Comparatif)
 # Nécessite les secrets Azure AD + permission Mail.Read (voir le script).
 on:
   schedule:
-    - cron: '0 */12 * * *' # toutes les 12 heures
+    - cron: '0 6 * * *' # une fois par jour (06:00 UTC) — rafraîchit les prix/upfronts
   workflow_dispatch:
 
 permissions:
