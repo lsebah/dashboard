@@ -4096,23 +4096,6 @@ const metaProducts2: Product[] = [
     description: '3Y Athena Wof — Microsoft + Alphabet', badges: ['Worst-of', 'TS à fournir'],
   }),
   metaProduct({
-    isin: 'XS2941097813', nom: 'Athena Airbag Wof Santander + BNP + TotalEnergies', emetteur: 'BBVA',
-    productType: 'Athena Airbag', dateEmission: '2025-02-14', dureeAnnees: 5, basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Banco Santander', bloomberg: 'SAN SM', marche: 'BME' },
-      { nom: 'BNP Paribas', bloomberg: 'BNP FP', marche: 'Euronext Paris' },
-      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Athena Airbag Wof — Santander + BNP + TotalEnergies', badges: ['Worst-of', 'Airbag', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FR1459AB6586', nom: 'Phoenix Rendement Orange (décrément 0,74)', emetteur: 'Goldman Sachs International',
-    productType: 'Phoenix', dateEmission: '2025-03-15', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'Orange SA (décrément 0,74)', bloomberg: 'ORA FP', marche: 'Euronext Paris' }],
-    description: '12Y Phoenix « Rendement Orange » — sous-jacent Orange à décrément 0,74 (TS retrouvée, décodage à venir)',
-    badges: ['Single', 'Décrément', 'TS à fournir'],
-  }),
-  metaProduct({
     isin: 'XS2922143750', nom: 'Athena Bearish Nasdaq-100', emetteur: 'Banco Santander',
     productType: 'Athena (bearish)', dateEmission: '2024-11-06', dureeAnnees: 5, basket: 'single',
     sousJacents: [{ nom: 'Nasdaq-100', bloomberg: 'NDX Index' }],
@@ -4147,22 +4130,6 @@ const metaProducts2: Product[] = [
       { nom: 'Volkswagen AG', bloomberg: 'VOW3 GY', marche: 'XETRA' },
     ],
     description: '5Y Phoenix Mémoire Wof — Porsche + Volkswagen', badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2938576522', nom: 'Athena Dégressif Équipondéré TotalEnergies + Eni + Shell', emetteur: 'Bank of America',
-    productType: 'Athena', dateEmission: '2025-03-26', dureeAnnees: 5, basket: 'equipondere',
-    sousJacents: [
-      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', marche: 'Euronext Paris' },
-      { nom: 'Eni SpA', bloomberg: 'ENI IM', marche: 'Borsa Italiana' },
-      { nom: 'Shell PLC', bloomberg: 'SHEL LN', marche: 'London Stock Exchange' },
-    ],
-    description: '5Y Athena dégressif équipondéré — TotalEnergies + Eni + Shell', badges: ['Équipondéré', 'Dégressif', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2759139525', nom: 'Athena Airbag Kering', emetteur: 'BNP Paribas',
-    productType: 'Athena Airbag', dateEmission: '2024-05-10', dureeAnnees: 5, basket: 'single',
-    sousJacents: [{ nom: 'Kering SA', bloomberg: 'KER FP', marche: 'Euronext Paris' }],
-    description: '5Y Athena Airbag — Kering', badges: ['Single', 'Airbag', 'TS à fournir'],
   }),
   // — Actions : autocall sur indice à décrément (« Quartz ») —
   metaProduct({
@@ -4619,6 +4586,152 @@ const sgBouyguesVinciEiffage: Product = {
   termsheetFichier: 'FRSG000188R4.pdf',
 }
 
+// ── XS2759139525 — BNP Athéna Airbag Kering (TS 26/04/2024) ─────────────────
+const kgObs = [
+  '2025-04-28', '2025-07-28', '2025-10-27', '2026-01-26', '2026-04-27', '2026-07-27',
+  '2026-10-26', '2027-01-26', '2027-04-26', '2027-07-26', '2027-10-26', '2028-01-26',
+  '2028-04-26', '2028-07-26', '2028-10-26', '2029-01-26',
+]
+const kgPay = [
+  '2025-05-12', '2025-08-11', '2025-11-10', '2026-02-09', '2026-05-11', '2026-08-10',
+  '2026-11-09', '2027-02-09', '2027-05-10', '2027-08-09', '2027-11-09', '2028-02-09',
+  '2028-05-10', '2028-08-09', '2028-11-09', '2029-02-09',
+]
+const athenaKering: Product = {
+  id: 'XS2759139525', nom: 'Athéna Airbag Kering', isin: 'XS2759139525',
+  emetteur: 'BNP Paribas Issuance B.V.', garant: 'BNP Paribas', notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity', family: 'autocall', devise: 'EUR', nominal: 750_000, valeurNominale: 1000, prixEmission: 100,
+  dateConstatationInitiale: '2024-04-26', dateEmission: '2024-05-10', dateConstatationFinale: '2029-04-26', dateEcheance: '2029-05-10',
+  frequence: 'trimestriel', basket: 'single',
+  sousJacents: [{ nom: 'Kering SA', bloomberg: 'KER FP', isin: 'FR0000121485', marche: 'Euronext Paris', niveauInitial: 337.95 }],
+  terms: { kind: 'autocall', sens: 'standard', effetMemoire: false, degressif: false, couponPa: 11.75, barriereRappelPct: 100, protectionPct: 70, protectionStyle: 'europeenne', airbag: true, bonusFinalPct: 55.81 },
+  observations: buildObservations(kgObs, kgPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => Math.round((108.8125 + n * 2.9375) * 10000) / 10000,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS', productType: 'Athéna Airbag',
+  description: '5Y Athéna Airbag Kering — prime au rappel 108,8125 %+n×2,9375 % (trim., 1 an non-call), KI 70 % européen + airbag, +55,8 % à maturité',
+  badges: ['Single', 'Athéna', 'Airbag'],
+  termsheetFichier: 'EI9052EAG - 5Y Athena Airbag on Kering in EUR - Finalized TS[1].pdf',
+}
+
+// ── XS2941097813 — BBVA Athéna Airbag Wof BNP + Sanofi + TotalEnergies ──────
+// (le reporting disait « Santander » : la TS confirme SANOFI, corrigé.) Mensuel,
+// barrière de rappel dégressive 100 %→60 % (−1 %/mois, plancher 60 %), low strike.
+const sbtObs = [
+  '2026-03-09', '2026-04-07', '2026-05-07', '2026-06-08', '2026-07-07', '2026-08-07',
+  '2026-09-07', '2026-10-07', '2026-11-09', '2026-12-07', '2027-01-07', '2027-02-08',
+  '2027-03-08', '2027-04-07', '2027-05-07', '2027-06-07', '2027-07-07', '2027-08-09',
+  '2027-09-07', '2027-10-07', '2027-11-08', '2027-12-07', '2028-01-07', '2028-02-07',
+  '2028-03-07', '2028-04-07', '2028-05-08', '2028-06-07', '2028-07-07', '2028-08-07',
+  '2028-09-07', '2028-10-09', '2028-11-07', '2028-12-07', '2029-01-08', '2029-02-07',
+  '2029-03-07', '2029-04-09', '2029-05-07', '2029-06-07', '2029-07-09', '2029-08-07',
+  '2029-09-07', '2029-10-08', '2029-11-07', '2029-12-07', '2030-01-07', '2030-02-07',
+]
+const sbtPay = [
+  '2026-03-16', '2026-04-14', '2026-05-14', '2026-06-15', '2026-07-14', '2026-08-14',
+  '2026-09-14', '2026-10-14', '2026-11-16', '2026-12-14', '2027-01-14', '2027-02-15',
+  '2027-03-15', '2027-04-14', '2027-05-14', '2027-06-14', '2027-07-14', '2027-08-16',
+  '2027-09-14', '2027-10-14', '2027-11-15', '2027-12-14', '2028-01-14', '2028-02-14',
+  '2028-03-14', '2028-04-18', '2028-05-15', '2028-06-14', '2028-07-14', '2028-08-14',
+  '2028-09-14', '2028-10-16', '2028-11-14', '2028-12-14', '2029-01-15', '2029-02-14',
+  '2029-03-14', '2029-04-16', '2029-05-14', '2029-06-14', '2029-07-16', '2029-08-14',
+  '2029-09-14', '2029-10-15', '2029-11-14', '2029-12-14', '2030-01-14', '2030-02-14',
+]
+const bbvaSanofiBnpTte: Product = {
+  id: 'XS2941097813', nom: 'Athéna Airbag Wof BNP + Sanofi + TotalEnergies', isin: 'XS2941097813',
+  emetteur: 'BBVA Global Markets B.V.', garant: 'BBVA', notationEmetteur: 'S&P A',
+  assetClass: 'equity', family: 'autocall', devise: 'EUR', nominal: 300_000, valeurNominale: 1000, prixEmission: 100,
+  dateConstatationInitiale: '2025-02-07', dateEmission: '2025-02-14', dateConstatationFinale: '2030-03-07', dateEcheance: '2030-03-14',
+  frequence: 'mensuel', basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+    { nom: 'Sanofi', bloomberg: 'SAN FP', isin: 'FR0000120578', marche: 'Euronext Paris' },
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+  ],
+  terms: { kind: 'autocall', sens: 'standard', effetMemoire: false, degressif: true, couponPa: 10.05, barriereRappelPct: 100, protectionPct: 60, protectionStyle: 'europeenne', airbag: true, strikeMoyen: true, bonusFinalPct: 50.25 },
+  observations: buildObservations(sbtObs, sbtPay, {
+    niveauRappelPct: (n) => Math.max(60, 101 - n),
+    montantRemboursementPct: (n) => Math.round((110.05 + (n - 1) * 0.8375) * 10000) / 10000,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS', productType: 'Athéna Airbag',
+  description: '5Y Athéna Airbag Wof BNP + Sanofi + TotalEnergies — prime 110,05 %+(n−1)×0,8375 % (mensuel), rappel dégressif 100→60 %, low strike, KI 60 % européen, +50,25 % à maturité',
+  badges: ['Worst-of', 'Athéna', 'Airbag', 'Dégressif'],
+  termsheetFichier: 'XS2941097813.pdf',
+}
+
+// ── XS2938576522 — Merrill Lynch (BofA) Athéna dégressif équipondéré TTE + Shell + Eni ─
+const tseObs = ['2026-03-19', '2027-03-19', '2028-03-20', '2029-03-19']
+const tsePay = ['2026-03-26', '2027-03-30', '2028-03-27', '2029-03-26']
+const bofaTteShellEni: Product = {
+  id: 'XS2938576522', nom: 'Athéna Dégressif Équipondéré TotalEnergies + Shell + Eni', isin: 'XS2938576522',
+  emetteur: 'Merrill Lynch B.V.', garant: 'Bank of America Corporation', notationEmetteur: 'S&P A- / Moody’s A1',
+  assetClass: 'equity', family: 'autocall', devise: 'EUR', nominal: 800_000, valeurNominale: 1000, prixEmission: 100,
+  dateConstatationInitiale: '2025-03-19', dateEmission: '2025-03-26', dateConstatationFinale: '2030-03-19', dateEcheance: '2030-03-26',
+  frequence: 'annuel', basket: 'equipondere',
+  sousJacents: [
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
+    { nom: 'Shell PLC', bloomberg: 'SHELL NA', isin: 'GB00BP6MXD84', marche: 'Euronext Amsterdam' },
+    { nom: 'Eni SpA', bloomberg: 'ENI IM', isin: 'IT0003132476', marche: 'Borsa Italiana' },
+  ],
+  terms: { kind: 'autocall', sens: 'standard', effetMemoire: false, degressif: true, couponPa: 7.5, barriereRappelPct: 100, protectionPct: 60, protectionStyle: 'europeenne', bonusFinalPct: 37.5 },
+  observations: buildObservations(tseObs, tsePay, {
+    niveauRappelPct: (n) => [100, 97.5, 95, 92.5][n - 1],
+    montantRemboursementPct: (n) => 100 + n * 7.5,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS', productType: 'Athéna',
+  description: '5Y Athéna dégressif équipondéré TTE + Shell + Eni — prime 100 %+n×7,5 % (annuel), rappel dégressif 100/97,5/95/92,5 %, +37,5 % à maturité si panier ≥ 90 %, KI 60 % européen',
+  badges: ['Équipondéré', 'Athéna', 'Dégressif'],
+  termsheetFichier: 'XS2938576522_Athena Dégressif sur panier EW TotalEnergies + Eni + Shell_0800101.pdf',
+}
+
+// ── FR1459AB6586 — GS Phoenix Mémoire Orange (indice décrément 0,74) ────────
+// Phoenix : coupon 2,025 %/trim. si Orange ≥ 50 % (pas de mémoire), autocall 100 %
+// à partir de mars 2026 (4 trimestres coupon-only au départ). Sous-jacent décrément.
+const oraObs = [
+  '2025-06-16', '2025-09-15', '2025-12-15', '2026-03-16', '2026-06-15', '2026-09-14',
+  '2026-12-14', '2027-03-15', '2027-06-14', '2027-09-14', '2027-12-14', '2028-03-14',
+  '2028-06-14', '2028-09-14', '2028-12-14', '2029-03-14', '2029-06-14', '2029-09-14',
+  '2029-12-14', '2030-03-14', '2030-06-14', '2030-09-16', '2030-12-16', '2031-03-14',
+  '2031-06-16', '2031-09-15', '2031-12-15', '2032-03-15', '2032-06-14', '2032-09-14',
+  '2032-12-14', '2033-03-14', '2033-06-14', '2033-09-14', '2033-12-14', '2034-03-14',
+  '2034-06-14', '2034-09-14', '2034-12-14', '2035-03-14', '2035-06-14', '2035-09-14',
+  '2035-12-14', '2036-03-14', '2036-06-16', '2036-09-15', '2036-12-15', '2037-03-16',
+]
+const oraPay = [
+  '2025-06-30', '2025-09-29', '2025-12-31', '2026-03-30', '2026-06-29', '2026-09-28',
+  '2026-12-29', '2027-03-31', '2027-06-28', '2027-09-28', '2027-12-28', '2028-03-28',
+  '2028-06-28', '2028-09-28', '2029-01-02', '2029-03-28', '2029-06-28', '2029-09-28',
+  '2030-01-02', '2030-03-28', '2030-06-28', '2030-09-30', '2031-01-02', '2031-03-28',
+  '2031-06-30', '2031-09-29', '2031-12-31', '2032-03-31', '2032-06-28', '2032-09-28',
+  '2032-12-28', '2033-03-28', '2033-06-28', '2033-09-28', '2033-12-29', '2034-03-28',
+  '2034-06-28', '2034-09-28', '2035-01-02', '2035-03-30', '2035-06-28', '2035-09-28',
+  '2036-01-02', '2036-03-28', '2036-06-30', '2036-09-29', '2036-12-31', '2037-03-30',
+]
+const gsOrangeDecrement: Product = {
+  id: 'FR1459AB6586', nom: 'Phoenix Mémoire Orange (décrément 0,74)', isin: 'FR1459AB6586',
+  emetteur: 'Goldman Sachs Finance Corp International', garant: 'The Goldman Sachs Group, Inc.', notationEmetteur: 'Moody’s A2 / S&P BBB+ / Fitch A',
+  assetClass: 'equity', family: 'autocall', devise: 'EUR', nominal: 30_000_000, valeurNominale: 1000, prixEmission: 100,
+  dateConstatationInitiale: '2025-01-22', dateEmission: '2025-02-05', dateConstatationFinale: '2037-03-16', dateEcheance: '2037-03-30',
+  frequence: 'trimestriel', basket: 'single',
+  sousJacents: [{ nom: 'Orange SA (décrément 0,74)', bloomberg: 'SGOD074 Index', marche: 'Euronext Paris' }],
+  terms: { kind: 'autocall', sens: 'standard', effetMemoire: false, couponPa: 8.1, barriereCouponPct: 50, barriereRappelPct: 100, protectionPct: 50, protectionStyle: 'europeenne', decrement: '0,74 pt/an' },
+  observations: buildObservations(oraObs, oraPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: 100,
+    couponPct: 2.025,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS', productType: 'Phoenix',
+  description: '12Y Phoenix Orange (décrément 0,74) — coupon 2,025 %/trim. si Orange ≥ 50 %, autocall 100 % dès mars 2026, KI 50 % européen',
+  badges: ['Single', 'Phoenix', 'Décrément'],
+  termsheetFichier: 'FR1459AB6586_Phoenix Memory Orange Fix Div 0.74 - 12Y_0800101.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
@@ -4642,6 +4755,7 @@ const detailed: Product[] = [
   bnpBearishCms2y, sgBearishCms10_325, athenaNovoNordisk, sgBouyguesVinciEiffage,
   sgBearishCms10_270, bnpBearishCms10_280, sgBearishInFineCms10_300,
   dbBearishCms10_315, bnpBearishCms10_315, cicBearishTec10,
+  athenaKering, bbvaSanofiBnpTte, bofaTteShellEni, gsOrangeDecrement,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
