@@ -45,6 +45,19 @@ const ISSUER_COLOR: Record<string, string> = {
   BBVA: 'text-indigo-600',
 }
 
+// Commission CMF ajoutée à l'affichage de TOUS les upfronts (+1,5 %).
+// On majore au rendu : le JSON conserve l'upfront brut banque (resynchronisé
+// quotidiennement depuis la boîte mail), la commission est ré-appliquée à chaque
+// affichage sans être écrasée par le sync.
+const COMMISSION_CMF = 1.5
+function ufAffiche(uf: string | null): string | null {
+  if (uf == null) return null
+  const m = String(uf).match(/-?\d+(?:[.,]\d+)?/)
+  if (!m) return uf
+  const v = parseFloat(m[0].replace(',', '.')) + COMMISSION_CMF
+  return `${v.toFixed(2)}%`
+}
+
 function coupCls(v: number | null): string {
   if (typeof v !== 'number') return 'text-slate-400'
   if (v >= 12) return 'text-emerald-700 font-bold'
@@ -65,7 +78,7 @@ function describe(r: Row): string {
   if (r.frequence) p.push(`obs. ${r.frequence.toLowerCase()}`)
   if (r.degressivite) p.push(`dégressivité ${r.degressivite}`)
   if (r.maturiteMax) p.push(`maturité max ${r.maturiteMax}`)
-  if (typeof r.uf === 'string') p.push(`upfront ${r.uf}`)
+  if (typeof r.uf === 'string') p.push(`upfront ${ufAffiche(r.uf)}`)
   if (p.length) s += ' — ' + p.join(', ')
   return s + `. Émetteur ${r.emetteur}.`
 }
@@ -124,6 +137,24 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     [filtered],
   )
 
+  // Dernier refresh = date de run la plus récente (dateRun au format JJ/MM/AAAA).
+  const dernierRefresh = useMemo(() => {
+    const parse = (s: string | null) => {
+      const m = (s ?? '').match(/(\d{2})\/(\d{2})\/(\d{4})/)
+      return m ? new Date(+m[3], +m[2] - 1, +m[1]).getTime() : 0
+    }
+    let best = 0
+    let label = '—'
+    for (const r of rows) {
+      const t = parse(r.dateRun)
+      if (t > best) {
+        best = t
+        label = r.dateRun as string
+      }
+    }
+    return label
+  }, [rows])
+
   const sel = open ? rows.find((r) => r.ticker === open) ?? null : null
   const selInfo = sel ? ENRICH[sel.ticker] : null
 
@@ -145,6 +176,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     { k: 'degressivite', label: 'Dégressivité' },
     { k: 'departAutocall', label: 'Départ AC', align: 'center' },
     { k: 'maturiteMax', label: 'Maturité' },
+    { k: 'dateRun', label: 'Refresh', align: 'center' },
   ]
 
   return (
@@ -156,7 +188,8 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
             <p className="text-sm text-slate-500 mt-1">
               {filtered.length} indices · {emetteurs.length} émetteurs · meilleur coupon{' '}
               <span className="font-semibold text-emerald-700">{meilleur.toFixed(2)}% p.a.</span> ·
-              autocall T4, obs. trimestrielle, protection 50 %.
+              autocall T4, obs. trimestrielle, protection 50 % · dernier refresh{' '}
+              <span className="font-medium text-slate-600">{dernierRefresh}</span>.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -223,9 +256,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                   </span>
                 </th>
               ))}
-              <th className="font-medium px-2 py-1.5 whitespace-nowrap border-b border-slate-200 bg-slate-50 sticky top-0 text-center">
-                Fiche
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -236,8 +266,18 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 className="cursor-pointer hover:bg-orange-50"
               >
                 <td className="px-2 py-1.5">
-                  <div className="font-mono whitespace-nowrap">
-                    {ENRICH[r.ticker] && <span className="text-cmf-blue mr-1" title="Fiche indice disponible">ⓘ</span>}
+                  <div className="font-mono whitespace-nowrap flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setFiche(r.ticker)
+                      }}
+                      className="text-cmf-blue hover:text-cmf-navy text-sm leading-none"
+                      title="Ouvrir la fiche émetteur (PDF de la banque)"
+                      aria-label="Ouvrir la fiche émetteur"
+                    >
+                      ⓘ
+                    </button>
                     {r.ticker}
                   </div>
                   {ENRICH[r.ticker]?.nom && (
@@ -252,25 +292,14 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <td className={`px-2 py-1.5 text-right tabular-nums ${coupCls(r.couponPa)}`}>
                   {typeof r.couponPa === 'number' ? `${r.couponPa.toFixed(2)}%` : '—'}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-cmf-navy font-medium">{r.uf ?? '—'}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums text-cmf-navy font-medium">{ufAffiche(r.uf) ?? '—'}</td>
                 <td className="px-2 py-1.5 text-center">{r.memoire ? '✓' : ''}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereCoupon ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{r.barriereProtection ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.degressivite ?? '—'}</td>
                 <td className="px-2 py-1.5 text-center text-slate-500">{r.departAutocall ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.maturiteMax ?? '—'}</td>
-                <td className="px-2 py-1.5 text-center">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setFiche(r.ticker)
-                    }}
-                    className="rounded border border-cmf-blue/40 bg-cmf-blue/10 px-2 py-0.5 text-cmf-blue hover:bg-cmf-blue/20"
-                    title="Ouvrir la fiche émetteur (PDF de la banque)"
-                  >
-                    Fiche
-                  </button>
-                </td>
+                <td className="px-2 py-1.5 text-center whitespace-nowrap text-slate-500 tabular-nums">{r.dateRun ?? '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -278,8 +307,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
       </div>
 
       <p className="text-xs text-slate-400 mt-2 shrink-0">
-        Source : Comparatif Émetteurs — Indices à décrément (run février 2026). Coupons indicatifs
-        à la date du run, non contractuels.
+        Source : Comparatif Émetteurs — Indices à décrément. Coupons indicatifs à la date du run
+        (colonne <span className="font-medium">Refresh</span>), non contractuels. Upfronts affichés{' '}
+        <span className="font-medium">commission CMF +1,5 % incluse</span>. Clique sur ⓘ pour la fiche émetteur (PDF).
       </p>
 
       <Modal
@@ -299,7 +329,8 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               </div>
               <div className="shrink-0 rounded-md bg-cmf-blue/10 border border-cmf-blue/30 px-3 py-1.5 text-center">
                 <div className="text-[10px] text-slate-500 uppercase tracking-wide">Upfront</div>
-                <div className="text-lg font-bold text-cmf-navy tabular-nums">{sel.uf ?? '—'}</div>
+                <div className="text-lg font-bold text-cmf-navy tabular-nums">{ufAffiche(sel.uf) ?? '—'}</div>
+                <div className="text-[9px] text-slate-400">comm. CMF +1,5 % incl.</div>
               </div>
             </div>
 
