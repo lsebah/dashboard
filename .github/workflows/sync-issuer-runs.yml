@@ -30,11 +30,21 @@ jobs:
           MAIL_QUERY: ${{ secrets.MAIL_QUERY }}
           MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
         run: node scripts/sync-issuer-runs.mjs
+      - name: Télécharger les fiches émetteurs (PDF)
+        env:
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
+          GRAPH_USER: ${{ secrets.GRAPH_USER }}
+        run: node scripts/sync-fiches.mjs
       - name: Ouvrir une PR si le comparatif a changé
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: 'chore: sync comparatif décrément (run émetteurs)'
-          title: 'Sync comparatif décrément (run émetteurs)'
-          body: 'Mise à jour automatique de lib/decrement-comparatif.json depuis le dernier mail « Run Décrement ».'
+          commit-message: 'chore: sync comparatif décrément + fiches (run émetteurs)'
+          title: 'Sync comparatif décrément + fiches (run émetteurs)'
+          body: 'Mise à jour automatique du comparatif et des fiches PDF depuis les mails émetteurs.'
           branch: auto/issuer-runs-sync
-          add-paths: lib/decrement-comparatif.json
+          add-paths: |
+            lib/decrement-comparatif.json
+            lib/decrement-indices.json
+            public/fiches

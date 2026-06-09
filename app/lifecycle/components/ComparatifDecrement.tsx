@@ -11,6 +11,8 @@ interface IndexInfo {
   secteur?: string
   decrement?: string
   source?: string
+  fichePdf?: string // chemin local du PDF (téléchargé par le cron) → embarqué
+  ficheUrl?: string // lien externe (banque) si la fiche est hébergée
 }
 const ENRICH = indicesRaw as Record<string, IndexInfo>
 
@@ -296,6 +298,32 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
             </div>
 
             <p className="text-sm text-slate-600">{selInfo?.description ?? describe(sel)}</p>
+
+            {/* Fiche émetteur (PDF) : embarquée si téléchargée par le cron, sinon lien externe */}
+            {selInfo?.fichePdf ? (
+              <div>
+                <a
+                  href={selInfo.fichePdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cmf-blue hover:underline text-sm inline-flex items-center gap-1"
+                >
+                  📄 Ouvrir la fiche émetteur (PDF) ↗
+                </a>
+                <object data={selInfo.fichePdf} type="application/pdf" className="w-full h-[55vh] mt-2 rounded border border-slate-200">
+                  <p className="text-xs text-slate-400 p-2">Aperçu PDF indisponible — utilise le lien ci-dessus.</p>
+                </object>
+              </div>
+            ) : selInfo?.ficheUrl ? (
+              <a
+                href={selInfo.ficheUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cmf-blue hover:underline text-sm inline-flex items-center gap-1 w-fit"
+              >
+                📄 Ouvrir la fiche émetteur ↗
+              </a>
+            ) : null}
 
             <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
               {typeof selInfo?.nbComposants === 'number' && (
