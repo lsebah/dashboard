@@ -270,17 +270,19 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               >
                 <td className="px-2 py-1.5">
                   <div className="font-mono whitespace-nowrap flex items-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setFiche(r.ticker)
-                      }}
-                      className="text-cmf-blue hover:text-cmf-navy text-sm leading-none"
-                      title="Ouvrir la fiche émetteur (PDF de la banque)"
-                      aria-label="Ouvrir la fiche émetteur"
-                    >
-                      ⓘ
-                    </button>
+                    {(ENRICH[r.ticker]?.fichePdf || ENRICH[r.ticker]?.ficheUrl) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFiche(r.ticker)
+                        }}
+                        className="text-cmf-blue hover:text-cmf-navy text-sm leading-none"
+                        title="Télécharger la fiche émetteur (one-pager PDF)"
+                        aria-label="Télécharger la fiche émetteur"
+                      >
+                        ⓘ
+                      </button>
+                    )}
                     {r.ticker}
                   </div>
                   {ENRICH[r.ticker]?.nom && (
@@ -320,7 +322,8 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
         (colonne <span className="font-medium">Refresh</span>), non contractuels. Upfronts issus du
         PDF/Excel de départ : <span className="font-medium">commission CMF +1,5 % réintégrée</span> ;
         upfronts <span className="text-emerald-600">✉</span> issus des mails émetteurs : affichés bruts
-        (reoffer converti : upfront = 100 − reoffer). Clique sur ⓘ pour la fiche émetteur (PDF).
+        (reoffer converti : upfront = 100 − reoffer). Le <span className="text-cmf-blue">ⓘ</span> n&apos;apparaît
+        que lorsque le one-pager PDF de l&apos;indice est téléchargeable.
       </p>
 
       <Modal
