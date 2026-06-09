@@ -197,7 +197,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
           <div>
             <h1 className="text-2xl font-bold text-cmf-navy">Comparatif indices décrément</h1>
             <p className="text-sm text-slate-500 mt-1">
-              {filtered.length} indices · {emetteurs.length} émetteurs · meilleur coupon{' '}
+              {filtered.length} lignes (indice × structure) · {emetteurs.length} émetteurs · meilleur coupon{' '}
               <span className="font-semibold text-emerald-700">{meilleur.toFixed(2)}% p.a.</span> ·
               autocall T4, obs. trimestrielle, protection 50 % · dernier refresh{' '}
               <span className="font-medium text-slate-600">{dernierRefresh}</span>.
@@ -272,7 +272,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
           <tbody className="divide-y divide-slate-100">
             {list.map((r) => (
               <tr
-                key={r.ticker}
+                key={`${r.ticker}|${r.type}`}
                 onClick={() => setOpen(r.ticker)}
                 className="cursor-pointer hover:bg-orange-50"
               >
