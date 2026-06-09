@@ -1,34 +1,454 @@
 {
-  "MXEADT50": {
-    "nom": "MSCI Europe Aerospace & Defense (décrément 50 pts)",
-    "secteur": "Defense / Aerospace",
-    "decrement": "50 points/an",
-    "description": "Panier d'actions européennes de la défense et de l'aérospatiale, à décrément fixe de 50 points par an. Sous-jacent de l'Autocall MS FRIP00001NZ9.",
-    "source": "Position FRIP00001NZ9"
-  },
-  "IETAI10": {
-    "nom": "iEdge Transatlantic Artificial Intelligence 10",
-    "nbComposants": 10,
-    "secteur": "AI / Tech / Digital",
-    "description": "10 valeurs transatlantiques de l'intelligence artificielle, indice à décrément. Sous-jacent du Phoenix MS FRIP00001I09.",
-    "source": "Position FRIP00001I09"
-  },
-  "MXTAS50D": {
-    "nom": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index",
-    "emetteur": "GS",
-    "nbComposants": 30,
-    "secteur": "Transatlantique",
-    "decrement": "50 points/an",
-    "description": "30 plus grandes capitalisations transatlantiques (US + Europe), indice à décrément fixe de 50 points/an. Autocall trimestriel, seuil 100 % puis −0,75 %/trim, protection 50 %, maturité 12 ans. Coupon indicatif 10,50 % p.a. (11/03/2026, niveau 850).",
-    "source": "One-pager GS « [NEW INDEX] » (MXTAS50D - 4pager.pdf)"
-  },
-  "MXTB2050": {
-    "nom": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index",
-    "emetteur": "GS",
-    "nbComposants": 20,
-    "secteur": "Banque",
-    "decrement": "50 points/an",
-    "description": "20 valeurs bancaires transatlantiques (US + Europe), indice à décrément fixe de 50 points/an. Autocall trimestriel, seuil 100 % puis −0,75 %/trim, protection 50 %, maturité 12 ans. Coupon indicatif 12,00 % p.a. (05/03/2026, niveau 850).",
-    "source": "One-pager GS « [NEW INDEX] » (MXTB2050 - 4pager.pdf)"
-  }
+ "ESOVED50": {
+  "nom": "Euronext European Sovereignty D 50 P",
+  "secteur": "Souveraineté (EU)",
+  "decrement": "50 points/an",
+  "description": "Euronext European Sovereignty D 50 P. Secteur : Souveraineté (EU). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 17.50% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXDBLS50": {
+  "nom": "MSCI Transatlantic Defence Banks Lux Semis Select 30 Decrement 50 Pts EUR Index",
+  "secteur": "Transatlantique (Défense, Banques, Luxe, Semis)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "MSCI Transatlantic Defence Banks Lux Semis Select 30 Decrement 50 Pts EUR Index. Secteur : Transatlantique (Défense, Banques, Luxe, Semis). ~30 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 18.23% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDQSR50": {
+  "nom": "MerQube EuroZone QuadSector 20 50 Point Decrement Index (EUR)",
+  "secteur": "Eurozone QuadSector",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MerQube EuroZone QuadSector 20 50 Point Decrement Index (EUR). Secteur : Eurozone QuadSector. ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.78% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "GIC30D50": {
+  "nom": "Euronext Global Industry Champions 30 Decrement 50 Points",
+  "secteur": "Transatlantique (Industrie)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "Euronext Global Industry Champions 30 Decrement 50 Points. Secteur : Transatlantique (Industrie). ~30 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 16.56% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "TPABC50": {
+  "nom": "Euronext Transatlantic PAB 40 Capped Decrement 50P",
+  "secteur": "Transatlantique (PAB)",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "Euronext Transatlantic PAB 40 Capped Decrement 50P. Secteur : Transatlantique (PAB). ~40 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 14.69% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEUDS50": {
+  "nom": "MSCI EMU ESG Diversified Sector Select 50 Points Decrement EUR Index",
+  "secteur": "Eurozone (ESG diversifié)",
+  "decrement": "50 points/an",
+  "description": "MSCI EMU ESG Diversified Sector Select 50 Points Decrement EUR Index. Secteur : Eurozone (ESG diversifié). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 16.64% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "EZPAB50P": {
+  "nom": "Euronext Eurozone PAB 50 Decrement 50 Points",
+  "secteur": "Eurozone (PAB)",
+  "decrement": "50 points/an",
+  "description": "Euronext Eurozone PAB 50 Decrement 50 Points. Secteur : Eurozone (PAB). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 14.75% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "JUMBO40": {
+  "nom": "iEdge Transatlantic Jumbo 40 Decrement 50 Points GTR Index",
+  "secteur": "Transatlantique",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "iEdge Transatlantic Jumbo 40 Decrement 50 Points GTR Index. Secteur : Transatlantique. ~40 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 10.78% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQCOCO20": {
+  "nom": "MerQube Core Europe Core Sector 50 Point Decrement EUR Index",
+  "secteur": "Eurozone (secteurs cœur)",
+  "decrement": "50 points/an",
+  "description": "MerQube Core Europe Core Sector 50 Point Decrement EUR Index. Secteur : Eurozone (secteurs cœur). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.68% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "EUSOVT20": {
+  "nom": "Euronext Sovereignty Europe 20 Decrement 50 Points",
+  "secteur": "Eurozone (Souveraineté)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "Euronext Sovereignty Europe 20 Decrement 50 Points. Secteur : Eurozone (Souveraineté). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 14.87% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "PBT40D50": {
+  "nom": "Euronext PAB Transatlantic 40 Decrement 50 Points",
+  "secteur": "Transatlantique (PAB)",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "Euronext PAB Transatlantic 40 Decrement 50 Points. Secteur : Transatlantique (PAB). ~40 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 12.45% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IEFRA12D": {
+  "nom": "iEdge France 12 Core Sector Index Decrement 50 Points GTR Index",
+  "secteur": "France (cappé)",
+  "nbComposants": 12,
+  "decrement": "50 points/an",
+  "description": "iEdge France 12 Core Sector Index Decrement 50 Points GTR Index. Secteur : France (cappé). ~12 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.19% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "PABTA50": {
+  "nom": "Euronext PAB Transatlantic 60 D50",
+  "secteur": "Transatlantique (PAB)",
+  "nbComposants": 60,
+  "decrement": "50 points/an",
+  "description": "Euronext PAB Transatlantic 60 D50. Secteur : Transatlantique (PAB). ~60 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 13.06% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "B230BCED": {
+  "nom": "Bloomberg Eurozone DM Top 30 Autos, Materials & Tech Decrement 50 Points Index",
+  "secteur": "Eurozone (Auto, Matériaux, Tech)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "Bloomberg Eurozone DM Top 30 Autos, Materials & Tech Decrement 50 Points Index. Secteur : Eurozone (Auto, Matériaux, Tech). ~30 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 19.15% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEMSB50": {
+  "nom": "MSCI Eurozone MSB Select 15 Decrement 50 Points EUR Index",
+  "secteur": "Eurozone (Métaux, Semis, Banques)",
+  "nbComposants": 15,
+  "decrement": "50 points/an",
+  "description": "MSCI Eurozone MSB Select 15 Decrement 50 Points EUR Index. Secteur : Eurozone (Métaux, Semis, Banques). ~15 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 17.33% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXTDSB50": {
+  "nom": "MSCI Transatlantic DSB Select 20 Decrement 50 points EUR Index",
+  "secteur": "Transatlantique (Industrie, Finance, Tech)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Transatlantic DSB Select 20 Decrement 50 points EUR Index. Secteur : Transatlantique (Industrie, Finance, Tech). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.91% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEBSALD": {
+  "nom": "MSCI EMU Banks Semiconductors Autos Luxury Sel 50 Point Decrement EUR Index",
+  "secteur": "Eurozone (Banques, Semis, Auto, Luxe)",
+  "decrement": "50 points/an",
+  "description": "MSCI EMU Banks Semiconductors Autos Luxury Sel 50 Point Decrement EUR Index. Secteur : Eurozone (Banques, Semis, Auto, Luxe). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.67% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "BE30BCED": {
+  "nom": "Bloomberg Eurozone DM Top 30 Banking, Cons Discr and Energy Decr 50 Pts Idx EUR",
+  "secteur": "Eurozone (Banques, Conso disc, Énergie)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "Bloomberg Eurozone DM Top 30 Banking, Cons Discr and Energy Decr 50 Pts Idx EUR. Secteur : Eurozone (Banques, Conso disc, Énergie). ~30 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 9.98% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDZC50P": {
+  "nom": "MerQube Eurozone Consumer Products & Services10 50 Point Decrement Index",
+  "secteur": "Eurozone (Conso & Luxe)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Eurozone Consumer Products & Services10 50 Point Decrement Index. Secteur : Eurozone (Conso & Luxe). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 27.85% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "BEU40CDD": {
+  "nom": "Bloomberg Eurozone Top 40 Consumer Discretionary Decrement 50 Points Index EUR",
+  "secteur": "Eurozone (Conso discrétionnaire)",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "Bloomberg Eurozone Top 40 Consumer Discretionary Decrement 50 Points Index EUR. Secteur : Eurozone (Conso discrétionnaire). ~40 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 25.21% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "CBEU40CD": {
+  "nom": "Bloomberg Eurozone Top 40 Consumer Discretionary Capped Decrement 50 Pts Index",
+  "secteur": "Eurozone (Conso disc cappé)",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "Bloomberg Eurozone Top 40 Consumer Discretionary Capped Decrement 50 Pts Index. Secteur : Eurozone (Conso disc cappé). ~40 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 22.50% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQLUXA50": {
+  "nom": "MerQube Europe Luxury 15 50 Point Decrement (EUR) Index",
+  "secteur": "Europe (Luxe)",
+  "nbComposants": 15,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Luxury 15 50 Point Decrement (EUR) Index. Secteur : Europe (Luxe). ~15 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 19.40% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQLUXX50": {
+  "nom": "MerQube Europe Luxury ex Auto 15 50 Point Decrement (EUR) Index",
+  "secteur": "Europe (Luxe ex Auto)",
+  "nbComposants": 15,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Luxury ex Auto 15 50 Point Decrement (EUR) Index. Secteur : Europe (Luxe ex Auto). ~15 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 18.91% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEUBR50": {
+  "nom": "MSCI Europe Basic Resources Select 20 Decrement 50 Points EUR Index",
+  "secteur": "Europe (Basic Resources / Énergie)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Europe Basic Resources Select 20 Decrement 50 Points EUR Index. Secteur : Europe (Basic Resources / Énergie). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 22.51% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXTAGM50": {
+  "nom": "MSCI Transatlantic Gold Miners Top 20 Equal Weighed Select 50 Pts DIV EUR Index",
+  "secteur": "Transatlantique (Gold Miners)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Transatlantic Gold Miners Top 20 Equal Weighed Select 50 Pts DIV EUR Index. Secteur : Transatlantique (Gold Miners). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 25.03% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "SOLOIL50": {
+  "nom": "Solactive Transatlantic Energy EUR Index 50 AR",
+  "secteur": "Transatlantique (Énergie)",
+  "decrement": "50 points/an",
+  "description": "Solactive Transatlantic Energy EUR Index 50 AR. Secteur : Transatlantique (Énergie). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 13.49% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IEEL20TD": {
+  "nom": "iEdge Europe Energy Leaders 20 Decrement 50 Points GTR Index",
+  "secteur": "Europe (Énergie)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "iEdge Europe Energy Leaders 20 Decrement 50 Points GTR Index. Secteur : Europe (Énergie). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 10.65% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IEEL15TD": {
+  "nom": "iEdge Europe Energy Leaders 15 Decrement 50 Points GTR Index",
+  "secteur": "Europe (Énergie cappé)",
+  "nbComposants": 15,
+  "decrement": "50 points/an",
+  "description": "iEdge Europe Energy Leaders 15 Decrement 50 Points GTR Index. Secteur : Europe (Énergie cappé). ~15 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans.",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IEEN15TD": {
+  "nom": "iEdge Europe Energy 15 Capped Decrement 50 Points GTR Index",
+  "secteur": "Europe (Énergie cappé)",
+  "nbComposants": 15,
+  "decrement": "50 points/an",
+  "description": "iEdge Europe Energy 15 Capped Decrement 50 Points GTR Index. Secteur : Europe (Énergie cappé). ~15 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 8.52% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IEEN20TD": {
+  "nom": "iEdge Europe Energy 20 Decrement 50 Points GTR Index",
+  "secteur": "Europe (Énergie)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "iEdge Europe Energy 20 Decrement 50 Points GTR Index. Secteur : Europe (Énergie). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 8.36% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDER50P": {
+  "nom": "MerQube Europe Large Cap Basic Resources 20-50 Point Decrement Index",
+  "secteur": "Europe (Basic Resources)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Large Cap Basic Resources 20-50 Point Decrement Index. Secteur : Europe (Basic Resources). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.44% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "ENSEAI50": {
+  "nom": "Euronext Semiconductors & AI 10 Decrement 50 Points",
+  "secteur": "Transatlantique (Semis & IA)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "Euronext Semiconductors & AI 10 Decrement 50 Points. Secteur : Transatlantique (Semis & IA). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 23.83% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "ENEAID50": {
+  "nom": "Euronext Electrification & AI Enablers 20 D50P",
+  "secteur": "Transatlantique (Électrification & IA)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "Euronext Electrification & AI Enablers 20 D50P. Secteur : Transatlantique (Électrification & IA). ~20 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 23.03% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "SOLDEA50": {
+  "nom": "Solactive Developed Markets Digital Economy Index 50 AR",
+  "secteur": "Global (Économie digitale)",
+  "decrement": "50 points/an",
+  "description": "Solactive Developed Markets Digital Economy Index 50 AR. Secteur : Global (Économie digitale). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 18.61% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "SOROBO50": {
+  "nom": "Solactive Transatlantic Robotics Index 50 AR",
+  "secteur": "Transatlantique (Robotique)",
+  "decrement": "50 points/an",
+  "description": "Solactive Transatlantic Robotics Index 50 AR. Secteur : Transatlantique (Robotique). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 15.94% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "IETAI10": {
+  "nom": "iEdge Transatlantic Artificial Intelligence 10 Decrement 50 Points GTR Index",
+  "secteur": "Transatlantique (IA)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "iEdge Transatlantic Artificial Intelligence 10 Decrement 50 Points GTR Index. Secteur : Transatlantique (IA). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 16.20% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQELEC50": {
+  "nom": "MerQube Transatlantic Electrification 10 - 50 Point Decrement Index",
+  "secteur": "Transatlantique (Électrification)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Transatlantic Electrification 10 - 50 Point Decrement Index. Secteur : Transatlantique (Électrification). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 18.14% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDWOSEM": {
+  "nom": "MerQube World 25 Semiconductor 50 Points Decrement Index (EUR)",
+  "secteur": "Monde (Semiconducteurs)",
+  "nbComposants": 25,
+  "decrement": "50 points/an",
+  "description": "MerQube World 25 Semiconductor 50 Points Decrement Index (EUR). Secteur : Monde (Semiconducteurs). ~25 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 10.60% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEMBS50": {
+  "nom": "MSCI EM + DM Banks Select Fixed Basket 50 Points Decrement EUR Index",
+  "secteur": "Marchés émergents (Banques)",
+  "decrement": "50 points/an",
+  "description": "MSCI EM + DM Banks Select Fixed Basket 50 Points Decrement EUR Index. Secteur : Marchés émergents (Banques). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 20.16% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEMMS50": {
+  "nom": "MSCI EM Expanded Multi-Sector Select Fixed Basket 50 Points Decrement EUR Index",
+  "secteur": "Marchés émergents (multi-secteurs)",
+  "decrement": "50 points/an",
+  "description": "MSCI EM Expanded Multi-Sector Select Fixed Basket 50 Points Decrement EUR Index. Secteur : Marchés émergents (multi-secteurs). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 21.52% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEZAD50": {
+  "nom": "MSCI Eurozone Aerospace & Defense Top 10 Equal Weighted Sel 50 Pts DIV EUR Index",
+  "secteur": "Eurozone (Aéro & Défense)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MSCI Eurozone Aerospace & Defense Top 10 Equal Weighted Sel 50 Pts DIV EUR Index. Secteur : Eurozone (Aéro & Défense). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 21.40% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXEADT50": {
+  "nom": "MSCI Europe Aerospace & Defense Top 10 Select 50 Points Decrement EUR Index",
+  "secteur": "Europe (Défense / Aéro)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MSCI Europe Aerospace & Defense Top 10 Select 50 Points Decrement EUR Index. Secteur : Europe (Défense / Aéro). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 16.56% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDHC10P": {
+  "nom": "MerQube Healthcare 10 Basket 50 Points Decrement (EUR) Index",
+  "secteur": "Transatlantique (Healthcare)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Healthcare 10 Basket 50 Points Decrement (EUR) Index. Secteur : Transatlantique (Healthcare). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 18.59% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDWS10P": {
+  "nom": "MerQube World Sports 10 Basket 50 Point Decrement (EUR) Index",
+  "secteur": "Monde (Sport)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube World Sports 10 Basket 50 Point Decrement (EUR) Index. Secteur : Monde (Sport). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 16.66% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "SOLPES50": {
+  "nom": "Solactive Global Private Equity Select AR 50 Index",
+  "secteur": "Monde (Private Equity)",
+  "decrement": "50 points/an",
+  "description": "Solactive Global Private Equity Select AR 50 Index. Secteur : Monde (Private Equity). Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 26.31% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQEUTE50": {
+  "nom": "MerQube Europe Telecoms 10 Basket 50 Point Decrement Index (EUR)",
+  "secteur": "Europe (Télécoms)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Telecoms 10 Basket 50 Point Decrement Index (EUR). Secteur : Europe (Télécoms). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 8.29% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDRE10P": {
+  "nom": "MerQube Europe Real Estate 10 Basket 50 Point Decrement Index (EUR)",
+  "secteur": "Europe (Immobilier)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Real Estate 10 Basket 50 Point Decrement Index (EUR). Secteur : Europe (Immobilier). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 17.47% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MQDEA50P": {
+  "nom": "MerQube Europe Large Cap Automobile Products 10 50 Point Decrement Index",
+  "secteur": "Europe (Automobile)",
+  "nbComposants": 10,
+  "decrement": "50 points/an",
+  "description": "MerQube Europe Large Cap Automobile Products 10 50 Point Decrement Index. Secteur : Europe (Automobile). ~10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 12 ans. Coupon indicatif 21.61% p.a. (run MS 02/04/2026).",
+  "source": "Run Morgan Stanley (02/04/2026)"
+ },
+ "MXTAS50D": {
+  "nom": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index",
+  "secteur": "Transatlantique",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "MSCI Transatlantic Top 30 Select 50 Points Decrement Index. Secteur : Transatlantique. 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXTB2050": {
+  "nom": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index",
+  "secteur": "Transatlantique (Banques)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Transatlantic Banks 20 Select 50 Points Decrement Index. Secteur : Transatlantique (Banques). 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.00% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXEMT50D": {
+  "nom": "MSCI EMU Top 30 Select 50 Points Decrement Index",
+  "secteur": "Eurozone (EMU)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "MSCI EMU Top 30 Select 50 Points Decrement Index. Secteur : Eurozone (EMU). 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXEM250D": {
+  "nom": "MSCI EMU Multi Sector Top 25 Select 50 Points Decrement Index",
+  "secteur": "Eurozone (multi-secteurs)",
+  "nbComposants": 25,
+  "decrement": "50 points/an",
+  "description": "MSCI EMU Multi Sector Top 25 Select 50 Points Decrement Index. Secteur : Eurozone (multi-secteurs). 25 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXEMS50D": {
+  "nom": "MSCI EMU Multisector Top 40 Select 50 Point Decrement Index",
+  "secteur": "Eurozone (multi-secteurs)",
+  "nbComposants": 40,
+  "decrement": "50 points/an",
+  "description": "MSCI EMU Multisector Top 40 Select 50 Point Decrement Index. Secteur : Eurozone (multi-secteurs). 40 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXNU2050": {
+  "nom": "MSCI Global Nuclear Energy Value Chain Select Fixed Basket 50 Point Decrement Index",
+  "secteur": "Monde (Nucléaire)",
+  "decrement": "50 points/an",
+  "description": "MSCI Global Nuclear Energy Value Chain Select Fixed Basket 50 Point Decrement Index. Secteur : Monde (Nucléaire). Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 13.10% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXEM2050": {
+  "nom": "MSCI Emerging Markets Multisector Top 20 Select 50 Points Decrement Index",
+  "secteur": "Marchés émergents",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Emerging Markets Multisector Top 20 Select 50 Points Decrement Index. Secteur : Marchés émergents. 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 11.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXUEA50D": {
+  "nom": "MSCI USA, Europe and Asia 30 Select Fixed Basket 50 Points Decrement Index",
+  "secteur": "Global (US/Europe/Asie, MCAP)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "MSCI USA, Europe and Asia 30 Select Fixed Basket 50 Points Decrement Index. Secteur : Global (US/Europe/Asie, MCAP). 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 13.50% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXUEAE50": {
+  "nom": "MSCI USA, Europe and Asia 30 Select Equal Weight Fixed Basket 50 Pts Decrement EUR Index",
+  "secteur": "Global (US/Europe/Asie, EW)",
+  "nbComposants": 30,
+  "decrement": "50 points/an",
+  "description": "MSCI USA, Europe and Asia 30 Select Equal Weight Fixed Basket 50 Pts Decrement EUR Index. Secteur : Global (US/Europe/Asie, EW). 30 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 10.00% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ },
+ "MXEUA250": {
+  "nom": "MSCI Europe, USA and Japan 20 Select Fixed Basket 50 Points Decrement Index",
+  "secteur": "Global (Europe/US/Japon)",
+  "nbComposants": 20,
+  "decrement": "50 points/an",
+  "description": "MSCI Europe, USA and Japan 20 Select Fixed Basket 50 Points Decrement Index. Secteur : Global (Europe/US/Japon). 20 composants. Décrément 50 points/an, autocall trimestriel, protection 50 %, maturité 12 ans. Coupon indicatif 12.00% p.a. (one-pager GS).",
+  "source": "One-pager Goldman Sachs « [NEW INDEX] »"
+ }
 }

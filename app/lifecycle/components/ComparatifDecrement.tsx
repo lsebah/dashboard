@@ -227,9 +227,16 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 onClick={() => setOpen(r.ticker)}
                 className="cursor-pointer hover:bg-orange-50"
               >
-                <td className="px-2 py-1.5 font-mono whitespace-nowrap">
-                  {ENRICH[r.ticker] && <span className="text-cmf-blue mr-1" title="Fiche indice">ⓘ</span>}
-                  {r.ticker}
+                <td className="px-2 py-1.5">
+                  <div className="font-mono whitespace-nowrap">
+                    {ENRICH[r.ticker] && <span className="text-cmf-blue mr-1" title="Fiche indice disponible">ⓘ</span>}
+                    {r.ticker}
+                  </div>
+                  {ENRICH[r.ticker]?.nom && (
+                    <div className="text-[10px] text-slate-500 max-w-[280px] truncate" title={ENRICH[r.ticker].nom}>
+                      {ENRICH[r.ticker].nom}
+                    </div>
+                  )}
                 </td>
                 <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">{r.type}</td>
