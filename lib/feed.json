@@ -1,180 +1,1415 @@
 [
-{"isin": "FR0014018KY5", "last": 95.72, "client": "SPG - 05774", "amount": 656000.0, "description": "Athéna Mémoire sur Novo Nordisk"},
-{"isin": "XS3292036624", "last": 98.3195, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 130000.0, "description": "Phoenix Mémoire - Utilities Françaises"},
-{"isin": "FRSG000188R4", "last": 100.0, "client": "SPG - 05774", "devise": "EUR", "amount": 700000.0, "description": "Athena sur Vinci SA, BOUYGUES SA et Eiffage SA"},
-{"isin": "XS3362988902", "last": 102.55, "client": "ABACUS - 05268", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory on GE, LMT, RTX"},
-{"isin": "XS3362988811", "last": 102.28, "client": "ABACUS - 05268", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory Worst-of : Leonardo | Rheinmetall | Safran"},
-{"isin": "XS3292034843", "last": 94.2626, "client": "APPN - 05277", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memoire Heidelberg materials + Holcim + Legrand"},
-{"isin": "XS3292034843", "last": 94.2626, "client": "SAMY - 01674", "devise": "EUR", "amount": 100000.0, "description": "Phoenix Memoire Heidelberg materials + Holcim + Legrand"},
-{"isin": "XS3317172743", "last": 94.82, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Worst of Essilorluxottica | Saint gobain | Pernod Ricard"},
-{"isin": "XS3287495306", "last": 95.96, "client": "CURNILLON - 01223", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag BNP"},
-{"isin": "XS3317870197", "last": 100.48, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Worst of Accor | Carnival corp  | United Airlines"},
-{"isin": "XS3304996484", "last": 101.32, "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Wof Engie | Veolia | BNP"},
-{"isin": "XS3309979311", "last": 93.54, "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Software Wof CRM + MSFT + SAP"},
-{"isin": "XS3262087797", "last": 101.04, "client": "PRESTINVEST - 05773", "devise": "EUR", "amount": 500000.0, "description": "Inverse Reverse Autocall USO - PDI 150%"},
-{"isin": "XS3250077966", "last": 96.5, "client": "CURNILLON - 01223", "devise": "USD", "amount": 500000.0, "description": "Athena Airbag LVMH/Total"},
-{"isin": "XS3262011201", "last": 100.85, "client": "NATAF - 05627", "devise": "EUR", "amount": 50000.0, "description": "Inverse Reverse Autocall USO - PDI 175%"},
-{"isin": "FEI", "last": 100.0, "client": "MACIF", "devise": "EUR", "amount": 866571.428571429, "description": "FEI"},
-{"isin": "XS3283137407", "last": 104.47, "client": "APPN - 05277", "amount": 300000.0, "description": "Phoenix Mémoire Wof  Alphabet  / Amazon  / CrowdStrike"},
-{"isin": "XS3256693576", "last": 99.14, "client": "CURNILLON - 01223", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag Sanofi D 3,76"},
-{"isin": "XS3291617812", "last": 100.39, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Athena Airbag SX5E 8x Repo"},
-{"isin": "XS3266363806", "last": 82.24, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Athena Airbag Mensuel sur Thales Safran et Rheinmetall"},
-{"isin": "XS3266613416", "last": 82.57, "client": "SAMY - 01674", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Rearmement Europe"},
-{"isin": "XS3266613333", "last": 73.2, "client": "SAMY - 01674", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memoire Ferroviaires + Infra"},
-{"isin": "XS3250102665", "last": 72.93, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memoire Réarmement Europe"},
-{"isin": "XS3251223155", "last": 89.85, "client": "APPN - 05277", "devise": "EUR", "amount": 200000.0, "description": "Callable 90% KG sur CSI 500"},
-{"isin": "FRIP000020P5", "last": 71.83, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Mémoire Ferrovaires"},
-{"isin": "FR1459ABB977", "last": 99.6, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 1000.0, "description": "Quartz 53 CA Decrement 1.1"},
-{"isin": "XS3204634086", "last": 89.12, "client": "GRICOURT - 05474", "devise": "EUR", "amount": 1926000.0, "description": "Autocall + Bonus Europe Healthcare"},
-{"isin": "XS3231246805", "last": 104.7535, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memoire MRVL + MU"},
-{"isin": "XS3214893623", "last": 97.05, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Callable 90% KG on CSI 500"},
-{"isin": "XS3231258727", "last": 92.5526, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memoire Bancaires Francaises"},
-{"isin": "XS3191958233", "last": 104.37, "client": "VIA - 08001", "devise": "EUR", "amount": 330000.0, "description": "Athena Booster Wof SPX + SX5E + NKY"},
-{"isin": "FR001400U1I0", "client": "GRICOURT - 05474", "devise": "EUR", "amount": 400000.0, "description": "Generali Phoenix Bearish CMS10 (Phoenix In Fine)"},
-{"isin": "FRIP00001UV3", "last": 99.54, "client": "CAPITALL - 01227", "amount": 1000.0, "description": "Quartz 51 BNP Decrement 4.2"},
-{"isin": "XS3148555405", "last": 94.66, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 250000.0, "description": "Phoenix Memory Wof BNP + Credit Agricole + Intesa"},
-{"isin": "XS3148625976", "last": 74.69, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Degressif Wof RACE + ACA + NOVOB"},
-{"isin": "FEI", "last": 100.0, "client": "MACIF", "devise": "EUR", "amount": 3019142.85714286, "description": "FEI"},
-{"isin": "XS3153607810", "last": 105.82, "client": "VIA - 08001", "amount": 510000.0, "description": "Athena Booster Wof SPX + SX5E + NKY"},
-{"isin": "FR0014013N00", "last": 100.16, "client": "SPG - 05774", "devise": "EUR", "amount": 650000.0, "description": "Autocall Equipondéré Schneider + Siemens Energy + Bouygues"},
-{"isin": "XS3149199807", "last": 97.5361, "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag Dégressif BNP + Intesa + Crédit Agricole"},
-{"isin": "XS3149213053", "last": 96.3215, "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag Dégressif ASML + Saint-Gobain + TotalEnergies"},
-{"isin": "XS3109495153", "last": 74.9599, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof Intel + Rheinmetall + Renault"},
-{"isin": "XS3149224761", "last": 93.4653, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 560000.0, "description": "Phoenix Memoire Mensuel MRVL + MSFT + NVDA 11.4%"},
-{"isin": "FRIP00001NZ9", "last": 98.79, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 400000.0, "description": "Autocallable Note on MXEADT50"},
-{"isin": "FRIP00001NZ9", "last": 98.79, "client": "VIA - 08001", "devise": "EUR", "amount": 225000.0, "description": "Autocallable Note on MXEADT50"},
-{"isin": "XS3073984430", "last": 85.92, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 410000.0, "description": "Phoenix Bearish CMS10 Trimestriel 2.5/2.9 - 8%"},
-{"isin": "XS3062217446", "last": 102.21, "client": "APPN - 05277", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory Copper Miners (Wof : BHP.US + FCX.US + AAL.LN)"},
-{"isin": "XS3103610385", "last": 103.7774, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof Suez + Siemens Energy TotalEnergies"},
-{"isin": "XS2925309275", "last": 113.08, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Autocall Airbag Wof MONC + MC + VSCO"},
-{"isin": "XS2925309945", "last": 36.91, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Autocall Airbag MSTR"},
-{"isin": "XS3064231932", "last": 80.9, "client": "VIA - 08001", "devise": "EUR", "amount": 290000.0, "description": "Phoenix Bearish CMS 2 - 6%"},
-{"isin": "XS3045914713", "last": 101.7, "client": "B CAPITAL - 05232", "devise": "EUR", "amount": 250000.0, "description": "Phoenix Memory Wof Silver Miners - 11%"},
-{"isin": "FRSG00016HO2", "last": 88.12, "client": "VIA - 08001", "devise": "EUR", "amount": 520000.0, "description": "Phoenix Bearish CMS10 - 2.25/3.25 - 5.50%"},
-{"isin": "XS2769472221", "last": 101.73, "client": "SPG - 05774", "devise": "EUR", "amount": 828000.0, "description": "Autocall Equipondéré Veolia + Eramet + LVMH"},
-{"isin": "XS3045607119", "client": "CAPITALL - 01227", "devise": "EUR", "amount": 1000.0, "description": "NexAutocall Quotidien BNP Paribas Aout 2025"},
-{"isin": "CH1278887422", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 300000.0, "description": "Mini Futures Dassault Systemes"},
-{"isin": "FRIP00001IZ9", "last": 106.59, "client": "GRICOURT - 05474", "devise": "EUR", "amount": 2000000.0, "description": "Athena TotalEnergies Septembre 2025"},
-{"isin": "FRIP00001I09", "last": 101.44, "client": "SAMY - 01674", "devise": "EUR", "amount": 400000.0, "description": "Phoenix Memoire iEdge Transatlantic Artificial Intelligence"},
-{"isin": "XS3049563219", "client": "SAMY - 01674", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memoire BNP + Société Générale + Crédit Agricole"},
-{"isin": "XS3049573440", "last": 79.7688, "client": "SAMY - 01674", "devise": "EUR", "amount": 400000.0, "description": "Phoenix Memoire Wof Hermes + Kering + LVMH"},
-{"isin": "XS2621505341", "last": 88.36, "client": "PRESTINVEST - 05773", "devise": "EUR", "amount": 500000.0, "description": "TRY Denominated NC3 Callable In Fine Note with EUR Settlement"},
-{"isin": "XS3010088303", "client": "APPN - 05277", "devise": "TRY", "amount": 200000.0, "description": "Phoenix Memory Wof CF Industries + Albermarle"},
-{"isin": "FRIP00001G19", "last": 117.36, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 1000.0, "description": "Quartz 45 ENI Decrement 0.96 pts"},
-{"isin": "FRSG00015XO1", "last": 78.78, "client": "SPG - 05774", "devise": "EUR", "amount": 661000.0, "description": "Phoenix Bearish CMS10 - 2.15/2.70 - 5%"},
-{"isin": "FEI", "last": 100.0, "client": "MACIF", "devise": "EUR", "amount": 6114285.71428571, "description": "FEI"},
-{"isin": "XS3006405594", "statut": "rappele", "client": "ALVES - 06001", "amount": 300000.0, "description": "Athena Airbag Alstom"},
-{"isin": "FRSG00015Y19", "last": 85.5, "client": "MY WAY - 05692", "devise": "EUR", "amount": 1150000.0, "description": "Phoenix Bearish CMS10 - 6.35%"},
-{"isin": "XS2955900761", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory Wof Mines d'Or  (NEM US + GOLD US + GFI US)"},
-{"isin": "XS2938576522", "last": 106.7, "client": "VIA - 08001", "devise": "EUR", "amount": 800000.0, "description": "Athena Dégressif Equipondéré TotalEnergies + Eni + Shell"},
-{"isin": "FRSG00015XB8", "statut": "rappele", "client": "SPG - 05774", "devise": "EUR", "amount": 600000.0, "description": "Autocall Equipondéré TotalEnergies + ENI + Shell"},
-{"isin": "XS2979390502", "last": 92.03, "client": "SCALA - 05722", "devise": "EUR", "amount": 1950000.0, "description": "Phoenix Bearish TEC10 3/3.80 - 10.30%"},
-{"isin": "XS2975786000", "last": 49.53, "client": "SAMY - 01674", "devise": "EUR", "amount": 1465000.0, "description": "ZC CLN Tranche Crossover"},
-{"isin": "FR001400XNG1", "last": 79.67, "client": "GRICOURT - 05474", "devise": "EUR", "amount": 2000000.0, "description": "ODDO CMS 10Y Phoenix In Fine"},
-{"isin": "FRSG00015VL1", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Athena Oxygen sur Safran + Thales + Rheinmetall"},
-{"isin": "FRSG00015VL1", "statut": "rappele", "client": "VIA - 08001", "devise": "EUR", "amount": 200000.0, "description": "Athena Oxygen sur Safran + Thales + Rheinmetall"},
-{"isin": "XS2653885744", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Réarmement Europe"},
-{"isin": "XS2953818841", "last": 108.6501, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Athena Wof MSFT + GOOGL"},
-{"isin": "XS2941097813", "last": 98.26, "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag SAN + BNP + TTE"},
-{"isin": "XS2941080330", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Athena Airbag ASML + BNP"},
-{"isin": "FR1459AB6586", "client": "VIA - 08001", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory Orange Fix Div 0.74"},
-{"isin": "FR001400WR56", "last": 79.98, "client": "JLH PATRIM - 05754", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Bearish Mars 25 Trimestriel 2.30/2.80 - 6%"},
-{"isin": "XS2931046382", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof Bouygues + Orange + Engie"},
-{"isin": "FRSG00015O52", "last": 74.16, "client": "GRICOURT - 05474", "devise": "EUR", "amount": 2000000.0, "description": "Autocall LVMH"},
-{"isin": "FRIP000014P8", "last": 57.25, "client": "GRICOURT - 05474", "devise": "EUR", "amount": 1200000.0, "description": "Autocall Bonus Luxe"},
-{"isin": "XS2919373816", "last": 105.56, "client": "SCALA - 05722", "devise": "EUR", "amount": 990000.0, "description": "CLN Tranche iTraxx Zero Recov 4/7"},
-{"isin": "XS2863761933", "last": 107.07, "client": "VIA - 08001", "devise": "EUR", "amount": 1000000.0, "description": "Bond + Call Spread on Gold in USD"},
-{"isin": "XS2913745654", "statut": "rappele", "client": "VIA - 08001", "devise": "USD", "amount": 400000.0, "description": "Athena Airbag Wof ASML + TSM"},
-{"isin": "XS2863761859", "statut": "rappele", "client": "VIA - 08001", "devise": "EUR", "amount": 500000.0, "description": "Athena Booster Wof SPX + SX5E + NKY"},
-{"isin": "XS2642227883", "last": 97.17, "client": "VIA - 08001", "devise": "EUR", "amount": 500000.0, "description": "CLN Tranche iTraxx Zero Recov 4/7 - 5Y"},
-{"isin": "FR001400T985", "last": 84.47, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 1000.0, "description": "SPHINX 15"},
-{"isin": "FR001400TVX7", "statut": "rappele", "client": "GRICOURT - 05474", "devise": "EUR", "amount": 2000000.0, "description": "ODDO TS Athena ASML Janvier 2025"},
-{"isin": "XS2886439467", "client": "B CAPITAL - 05232", "devise": "EUR", "amount": 100000.0, "description": "Phoenix Memory Wof TotalEnergies + Eni + Schlumberger"},
-{"isin": "XS2769371209", "statut": "rappele", "client": "GRICOURT - 05474", "devise": "EUR", "amount": 980000.0, "description": "Autocall Airbag ASML"},
-{"isin": "XS2866922060", "statut": "rappele", "client": "VIA - 08001", "devise": "EUR", "amount": 535000.0, "description": "Athena Booster Wof SPX + SX5E + NKY"},
-{"isin": "XS2922143750", "last": 60.3461, "client": "WEALTHOF - 06005", "devise": "EUR", "amount": 270000.0, "description": "Athéna Bearish NDX100"},
-{"isin": "XS2902296008", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 500000.0, "description": "Phoenix Memory MRNA"},
-{"isin": "FR001400SDV1", "last": 71.501, "client": "VIA - 08001", "devise": "EUR", "amount": 400000.0, "description": "Phoenix Bearish TEC10"},
-{"isin": "FR001400SDV1", "last": 71.501, "client": "CASHBEE - 06003", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Bearish TEC10"},
-{"isin": "XS2863767542", "last": 101.65, "client": "VIA - 08001", "devise": "EUR", "amount": 360000.0, "description": "CLN Tranche Zero Recov (3/6)"},
-{"isin": "FR001400T357", "last": 85.84, "client": "MANTU - 05626", "devise": "EUR", "amount": 500000.0, "description": "Bear Athena SOFR CMS10"},
-{"isin": "XS2862503435", "last": 91.4, "client": "APPN - 05277", "devise": "USD", "amount": 200000.0, "description": "Phoenix Memory Wof ASML + Saint-Gobin + TotalEnergies"},
-{"isin": "XS2897403098", "statut": "rappele", "client": "EQUINOXE", "devise": "EUR", "amount": 990000.0, "description": "Phoenix Mémoire Schlumberger"},
-{"isin": "XS2884074795", "statut": "rappele", "client": "PRESTINVEST - 05773", "devise": "USD", "amount": 500000.0, "description": "Call Spread Low Strike 75/135 - ASML"},
-{"isin": "FRSG00015778", "statut": "rappele", "client": "CAPITALL - 01227", "devise": "USD", "amount": 120000.0, "description": "Phoenix Memory Wof Pfizer + Sanofi + Novartis"},
-{"isin": "XS2872777334", "statut": "vendu", "client": "ARCHE - 05272", "devise": "EUR", "amount": 3030000.0, "description": "Participation note SPX no gearing - KG 18.8%"},
-{"isin": "XS2792970241", "statut": "rappele", "client": "CAPITALL - 01227", "devise": "USD", "amount": 375000.0, "description": "Athena on EURO STOXX Banks in EUR"},
-{"isin": "XS2792970324", "statut": "rappele", "client": "CAPITALL - 01227", "devise": "EUR", "amount": 375000.0, "description": "Athena Bloomberg Eurozone Titans Select Decrement 5%"},
-{"isin": "XS2815466193", "last": 96.98, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 375000.0, "description": "Phoenix Bearish CMS10 - Barrière 3.25%-2.50%"},
-{"isin": "FR001400R9L2", "statut": "rappele", "client": "GRICOURT - 05474", "devise": "EUR", "amount": 350000.0, "description": "QUARTZ 40 ENGIE DECREMENT 1.1 POINTS"},
-{"isin": "XS2769351359", "last": 87.75, "client": "CAPITALL - 01227", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory Kering 7%"},
-{"isin": "XS2804857568", "last": 90.37, "client": "VIA - 08001", "devise": "EUR", "amount": 1800000.0, "description": "Phoenix Bearish CMS10"},
-{"isin": "FR001400OZR1", "client": "CAPITALL - 01227", "devise": "EUR", "amount": 50000.0, "description": "Phoenix Memory sur Taux en Juin 2024 - 2.30%/3.20%"},
-{"isin": "XS2792968187", "statut": "rappele", "client": "APPN - 05277", "amount": 250000.0, "description": "Phoenix Memory Wof Micron + Marvell"},
-{"isin": "XS2759260602", "statut": "rappele", "client": "B CAPITAL - 05232", "devise": "EUR", "amount": 130000.0, "description": "Phoenix Memory Wof Pfizer + Roche + Sanofi - 18M"},
-{"isin": "XS0461632811", "last": 95.69, "client": "VIA - 08001", "devise": "EUR", "amount": 1250000.0, "description": "Phoenix Bearish CMS10 - (2.50-3.15)"},
-{"isin": "XS2772970781", "last": 95.4, "client": "VIA - 08001", "devise": "EUR", "amount": 1330000.0, "description": "Autocall Bearish CMS10"},
-{"isin": "FRIP00000HS8", "last": 82.02, "client": "EFG - 01334", "devise": "EUR", "amount": 100000.0, "description": "Phoenix Memory on KER + URW"},
-{"isin": "FR001400PQQ9", "statut": "rappele", "client": "CAPITALL - 01227", "devise": "EUR", "amount": 495000.0, "description": "Autocall Airbag 70 - PDI 50 - Intelligence Artificielle"},
-{"isin": "XS2759139525", "last": 90.72, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Athena Airbag on Kering"},
-{"isin": "FRSG00014VA7", "last": 87.18, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Bearish CMS10 Barrières 3.20%-2.40%"},
-{"isin": "FR001400PLW8", "statut": "rappele", "client": "MANTU - 05626", "devise": "EUR", "amount": 1500000.0, "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.00%-2.50%"},
-{"isin": "XS2759191286", "last": 27.68, "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof Stellantis + Renault"},
-{"isin": "FRSG00014U55", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 240000.0, "description": "Phoenix Mémoire SX7E"},
-{"isin": "CH1322036596", "last": 62.49, "client": "ALVES - 06001", "devise": "EUR", "amount": 250000.0, "description": "Phoenix Memory Porsche"},
-{"isin": "XS0461619396", "last": 96.45, "client": "MANTU - 05626", "devise": "EUR", "amount": 5000000.0, "description": "Phoenix Bearish CMS10 - Barrière 3.50%-2.50%"},
-{"isin": "XS2803802532", "client": "PRESTINVEST - 05773", "devise": "EUR", "amount": 1000000.0, "description": "Participation SPXFP 2Y (CERTI+) Low Strike 75"},
-{"isin": "FR001400PCU1", "last": 98.41, "client": "CARMF - 05227", "devise": "USD", "amount": 5000000.0, "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.50%-2.50%"},
-{"isin": "XS2720239487", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Autocall TotalEnergies"},
-{"isin": "FR001400P397", "last": 90.73, "client": "SCALA - 05722", "devise": "EUR", "amount": 2000000.0, "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.00%-2.50%"},
-{"isin": "XS2653912068", "last": 101.04, "client": "SAMY - 01674", "devise": "EUR", "amount": 1400000.0, "description": "Autocall Airbag Wof PFE + ROG.SE + SAN.FP"},
-{"isin": "CH0587314615", "last": 4.32, "client": "SAMY - 01674", "devise": "EUR", "amount": 130000.0, "description": "Warrant Senior Loan"},
-{"isin": "XS2719844560", "statut": "vendu", "client": "RISE FO", "devise": "EUR", "amount": 42874000.0, "description": "Phoenix Snowball Wof on Intel + Micron and NVIDIA in JPY Quanto"},
-{"isin": "XS2719844727", "statut": "vendu", "client": "RISE FO", "devise": "JPY", "amount": 42874000.0, "description": "Phoenix Snowball Wof on Richemont + Estee Lauder and LVMH in JPY Quanto"},
-{"isin": "XS2110091449", "last": 101.866, "client": "SCALA - 05722", "devise": "JPY", "amount": 1000000.0, "description": "Callable FRN 5,35% p.a. NC2"},
-{"isin": "XS2696236590", "statut": "rappele", "client": "CANINO - 05226", "devise": "EUR", "amount": 500000.0, "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"},
-{"isin": "FR001400NSY4", "statut": "rappele", "client": "CANINO - 05226", "devise": "EUR", "amount": 500000.0, "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"},
-{"isin": "XS2110106908", "last": 100.992, "client": "SCALA - 05722", "devise": "GBP", "amount": 630000.0, "description": "GBP Linear ZC Note - 12YNC4+1"},
-{"isin": "XS2757009324", "statut": "rappele", "client": "SCALA - 05722", "devise": "GBP", "amount": 630000.0, "description": "CLN iTraxx Main 100% KG"},
-{"isin": "XS2641318121", "last": 90.3, "client": "SAMY - 01674", "devise": "GBP", "amount": 1000000.0, "description": "Tranched CLN Zero Recovery Credit Linked Notes due 2031"},
-{"isin": "CH1316655518", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix/Athena Airbag AMD + Intel + NVDA"},
-{"isin": "CH1322027827", "last": 63.23, "client": "ALVES - 06001", "devise": "EUR", "amount": 200000.0, "description": "Phoenix Memory MRNA + PFE + Sanofi"},
-{"isin": "CH1305186087", "statut": "rappele", "client": "SCALA - 05722", "devise": "EUR", "amount": 500000.0, "description": "Athena 10.52% p.a.sur Indice Bloomberg Luxury Series 1 Decrement 50 Points"},
-{"isin": "XS2663305378", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"},
-{"isin": "DE000UL72J39", "statut": "rappele", "client": "CAPITALL - 01227", "devise": "EUR", "amount": 100000.0, "description": "Phoenix Memory Renault Dégressif"},
-{"isin": "XS2662792303", "statut": "rappele", "client": "ALVES - 06001", "devise": "EUR", "amount": 300000.0, "description": "Phoenix Memory Wof ACA + BNP"},
-{"isin": "XS2662781447", "statut": "rappele", "client": "PRESTINVEST - 05773", "devise": "EUR", "amount": 1000000.0, "description": "Autocall Athena Low Strike 80% Pfizer / Sanofi / Roche 18 mois"},
-{"isin": "CH1271361060", "last": 100.0, "client": "SOCIPAR - 05762", "devise": "EUR", "amount": 250000.0, "description": "Dette Privée - SIP Chabanais"},
-{"isin": "XS2647395511", "statut": "rappele", "client": "B CAPITAL - 05232", "amount": 250000.0, "description": "TARN (30-5) - 10%+1%"},
-{"isin": "XS2649866485", "statut": "rappele", "client": "B CAPITAL - 05232", "devise": "EUR", "amount": 250000.0, "description": "Phoenix Snowball BNP Paribas"},
-{"isin": "XS2647444822", "statut": "rappele", "client": "FINOFFICE - 05346", "devise": "EUR", "amount": 300000.0, "description": "TARN (30-5) - 2x7.5%+1%"},
-{"isin": "FR001400LGG0", "statut": "vendu", "client": "CARMF - 05227", "devise": "EUR", "amount": 5000000.0, "description": "CLN iTraxx Main Tranche (3-6) Balloon 100% KG - 7Y + 160% in fine"},
-{"isin": "SE0020849388", "statut": "rappele", "client": "APPN - 05277", "devise": "EUR", "amount": 300000.0, "description": "Dette Privée - Regenergy Frövi"},
-{"isin": "SE0020849388", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 500000.0, "description": "Dette Privée - Regenergy Frövi"},
-{"isin": "XS2576621366", "last": 135.15, "client": "SCALA - 05722", "devise": "EUR", "amount": 500000.0, "description": "CLN iTraxx Main Balloon"},
-{"isin": "XS2482711673", "last": 103.46, "client": "SCALA - 05722", "devise": "EUR", "amount": 5000000.0, "description": "CLN sur Société Générale Subordonnée"},
-{"isin": "FR001400GV92", "last": 42.83, "client": "ALVES - 06001", "devise": "EUR", "amount": 600000.0, "description": "Phoenix Mémoire Wof Porsche + Volkswagen"},
-{"isin": "XS2464629414", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 1000000.0, "description": "TARN Steepener 2s30s"},
-{"isin": "XS2465015720", "last": 98.2, "client": "VIA - 08001", "devise": "EUR", "amount": 5500000.0, "description": "TARN (30-2) 5.75% x 2"},
-{"isin": "XS2569852416", "last": 100.086, "client": "SCALA - 05722", "devise": "EUR", "amount": 1350000.0, "description": "Callable FRN 3.61%"},
-{"isin": "XS2444096874", "last": 98.2, "client": "VIA - 08001", "devise": "EUR", "amount": 1750000.0, "description": "TARN (30-2) 4.2% x 2"},
-{"isin": "XS2442403130", "last": 97.7, "client": "SAMY - 01674", "devise": "EUR", "amount": 1500000.0, "description": "TARN CMS 30Y - CMS 2Y"},
-{"isin": "XS2440513757", "statut": "vendu", "client": "SAMY - 01674", "devise": "EUR", "amount": 1700000.0, "description": "TARN CMS 30Y - CMS 2Y"},
-{"isin": "FR001400BTX9", "statut": "rappele", "client": "SEMEPA", "devise": "EUR", "amount": 500000.0, "description": "TARN (30-2) linked SG Sub"},
-{"isin": "XS2367945719", "statut": "vendu", "client": "CANINO - 05226", "devise": "USD", "amount": 2000000.0, "description": "TARN (30-2) - 2x6.50%+1%"},
-{"isin": "XS2105893841", "statut": "rappele", "client": "MASFIP", "devise": "EUR", "amount": 1000000.0, "description": "Phoenix Mémoire Bancaire Indice"},
-{"isin": "CH1163990570", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 700000.0, "description": "Autocall Classic on ORP"},
-{"isin": "CH0593640243", "last": 63.46, "client": "SAMY - 01674", "devise": "EUR", "amount": 1600000.0, "description": "Autocall Airbag on FORECEC + BGCHA2E + IGCAIAD"},
-{"isin": "FRSG00010W99", "statut": "vendu", "client": "SAMY - 01674", "devise": "EUR", "amount": 360000.0, "description": "Autocall Classic on URW"},
-{"isin": "XS2059726096", "client": "SAMY - 01674", "devise": "EUR", "amount": 500000.0, "description": "CLN Main Tranche 4-8 - 4.10% p.a"},
-{"isin": "CH0514676219", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 200000.0, "description": "Autocall Classic on URW"},
-{"isin": "CH0514676201", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 200000.0, "description": "Autocall Airbag on RNO"},
-{"isin": "CH0514676193", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 10000000.0, "description": "Autocall Bouygues"},
-{"isin": "CH0502683763", "statut": "vendu", "client": "SAMY - 01674", "devise": "EUR", "amount": 100000.0, "description": "Autocall Classic on URW"},
-{"isin": "CH0502683789", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 100000.0, "description": "Autocall Airbag on EN"},
-{"isin": "FR0013446333", "client": "GRICOURT - 05474", "devise": "EUR", "amount": 5000000.0, "description": "ODDO Unibail Rodamco"},
-{"isin": "CH0470308765", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 100000.0, "description": "Autocall Recovery Note on TTE + GLE + RNO"},
-{"isin": "CH0446939719", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 300000.0, "description": "Autocall Recovery Note on Bouygues + Iliad + Orange"},
-{"isin": "CH0446939677", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 100000.0, "description": "Autocall Recovery Note on BNP + ACA + GLE"},
-{"isin": "CH0434911688", "statut": "rappele", "client": "SAMY - 01674", "devise": "EUR", "amount": 110000.0, "description": "Autocall Classic on BNP + ACA + GLE"}
+ {
+  "isin": "FR0014018KY5",
+  "last": 95.72,
+  "client": "SPG - 05774",
+  "amount": 656000,
+  "description": "Athéna Mémoire sur Novo Nordisk"
+ },
+ {
+  "isin": "XS3292036624",
+  "last": 98.3195,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 130000,
+  "description": "Phoenix Mémoire - Utilities Françaises"
+ },
+ {
+  "isin": "FRSG000188R4",
+  "last": 100,
+  "client": "SPG - 05774",
+  "devise": "EUR",
+  "amount": 700000,
+  "description": "Athena sur Vinci SA, BOUYGUES SA et Eiffage SA"
+ },
+ {
+  "isin": "XS3362988902",
+  "last": 102.55,
+  "client": "ABACUS - 05268",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory on GE, LMT, RTX"
+ },
+ {
+  "isin": "XS3362988811",
+  "last": 102.28,
+  "client": "ABACUS - 05268",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory Worst-of : Leonardo | Rheinmetall | Safran"
+ },
+ {
+  "isin": "XS3292034843",
+  "last": 94.2626,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memoire Heidelberg materials + Holcim + Legrand"
+ },
+ {
+  "isin": "XS3292034843",
+  "last": 94.2626,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Phoenix Memoire Heidelberg materials + Holcim + Legrand"
+ },
+ {
+  "isin": "XS3317172743",
+  "last": 94.82,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Worst of Essilorluxottica | Saint gobain | Pernod Ricard"
+ },
+ {
+  "isin": "XS3287495306",
+  "last": 95.96,
+  "client": "CURNILLON - 01223",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag BNP"
+ },
+ {
+  "isin": "XS3317870197",
+  "last": 100.48,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Worst of Accor | Carnival corp  | United Airlines"
+ },
+ {
+  "isin": "XS3304996484",
+  "last": 101.32,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Wof Engie | Veolia | BNP"
+ },
+ {
+  "isin": "XS3309979311",
+  "last": 93.54,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Software Wof CRM + MSFT + SAP"
+ },
+ {
+  "isin": "XS3262087797",
+  "last": 101.04,
+  "client": "PRESTINVEST - 05773",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Inverse Reverse Autocall USO - PDI 150%"
+ },
+ {
+  "isin": "XS3250077966",
+  "last": 96.5,
+  "client": "CURNILLON - 01223",
+  "devise": "USD",
+  "amount": 500000,
+  "description": "Athena Airbag LVMH/Total"
+ },
+ {
+  "isin": "XS3262011201",
+  "last": 100.85,
+  "client": "NATAF - 05627",
+  "devise": "EUR",
+  "amount": 50000,
+  "description": "Inverse Reverse Autocall USO - PDI 175%"
+ },
+ {
+  "isin": "FEI",
+  "last": 100,
+  "client": "MACIF",
+  "devise": "EUR",
+  "amount": 866571.428571429,
+  "description": "FEI"
+ },
+ {
+  "isin": "XS3283137407",
+  "last": 104.47,
+  "client": "APPN - 05277",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Wof  Alphabet  / Amazon  / CrowdStrike"
+ },
+ {
+  "isin": "XS3256693576",
+  "last": 99.14,
+  "client": "CURNILLON - 01223",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag Sanofi D 3,76"
+ },
+ {
+  "isin": "XS3291617812",
+  "last": 100.39,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Athena Airbag SX5E 8x Repo"
+ },
+ {
+  "isin": "XS3266363806",
+  "last": 82.24,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Athena Airbag Mensuel sur Thales Safran et Rheinmetall"
+ },
+ {
+  "isin": "XS3266613416",
+  "last": 82.57,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Rearmement Europe"
+ },
+ {
+  "isin": "XS3266613333",
+  "last": 73.2,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memoire Ferroviaires + Infra"
+ },
+ {
+  "isin": "XS3250102665",
+  "last": 72.93,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memoire Réarmement Europe"
+ },
+ {
+  "isin": "XS3251223155",
+  "last": 89.85,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Callable 90% KG sur CSI 500"
+ },
+ {
+  "isin": "FRIP000020P5",
+  "last": 71.83,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Mémoire Ferrovaires"
+ },
+ {
+  "isin": "FR1459ABB977",
+  "last": 99.6,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 1000,
+  "description": "Quartz 53 CA Decrement 1.1"
+ },
+ {
+  "isin": "XS3204634086",
+  "last": 89.12,
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 1926000,
+  "description": "Autocall + Bonus Europe Healthcare"
+ },
+ {
+  "isin": "XS3231246805",
+  "last": 104.7535,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memoire MRVL + MU"
+ },
+ {
+  "isin": "XS3214893623",
+  "last": 97.05,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Callable 90% KG on CSI 500"
+ },
+ {
+  "isin": "XS3231258727",
+  "last": 92.5526,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memoire Bancaires Francaises"
+ },
+ {
+  "isin": "XS3191958233",
+  "last": 104.37,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 330000,
+  "description": "Athena Booster Wof SPX + SX5E + NKY"
+ },
+ {
+  "isin": "FR001400U1I0",
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Generali Phoenix Bearish CMS10 (Phoenix In Fine)"
+ },
+ {
+  "isin": "FRIP00001UV3",
+  "last": 99.54,
+  "client": "CAPITALL - 01227",
+  "amount": 1000,
+  "description": "Quartz 51 BNP Decrement 4.2"
+ },
+ {
+  "isin": "XS3148555405",
+  "last": 94.66,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 250000,
+  "description": "Phoenix Memory Wof BNP + Credit Agricole + Intesa"
+ },
+ {
+  "isin": "XS3148625976",
+  "last": 74.69,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Degressif Wof RACE + ACA + NOVOB"
+ },
+ {
+  "isin": "FEI",
+  "last": 100,
+  "client": "MACIF",
+  "devise": "EUR",
+  "amount": 3019142.85714286,
+  "description": "FEI"
+ },
+ {
+  "isin": "XS3153607810",
+  "last": 105.82,
+  "client": "VIA - 08001",
+  "amount": 510000,
+  "description": "Athena Booster Wof SPX + SX5E + NKY"
+ },
+ {
+  "isin": "FR0014013N00",
+  "last": 100.16,
+  "client": "SPG - 05774",
+  "devise": "EUR",
+  "amount": 650000,
+  "description": "Autocall Equipondéré Schneider + Siemens Energy + Bouygues"
+ },
+ {
+  "isin": "XS3149199807",
+  "last": 97.5361,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag Dégressif BNP + Intesa + Crédit Agricole"
+ },
+ {
+  "isin": "XS3149213053",
+  "last": 96.3215,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag Dégressif ASML + Saint-Gobain + TotalEnergies"
+ },
+ {
+  "isin": "XS3109495153",
+  "last": 74.9599,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof Intel + Rheinmetall + Renault"
+ },
+ {
+  "isin": "XS3149224761",
+  "last": 93.4653,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 560000,
+  "description": "Phoenix Memoire Mensuel MRVL + MSFT + NVDA 11.4%"
+ },
+ {
+  "isin": "FRIP00001NZ9",
+  "last": 98.79,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Autocallable Note on MXEADT50"
+ },
+ {
+  "isin": "FRIP00001NZ9",
+  "last": 98.79,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 225000,
+  "description": "Autocallable Note on MXEADT50"
+ },
+ {
+  "isin": "XS3073984430",
+  "last": 85.92,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 410000,
+  "description": "Phoenix Bearish CMS10 Trimestriel 2.5/2.9 - 8%"
+ },
+ {
+  "isin": "XS3062217446",
+  "last": 102.21,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory Copper Miners (Wof : BHP.US + FCX.US + AAL.LN)"
+ },
+ {
+  "isin": "XS3103610385",
+  "last": 103.7774,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof Suez + Siemens Energy TotalEnergies"
+ },
+ {
+  "isin": "XS2925309275",
+  "last": 113.08,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Autocall Airbag Wof MONC + MC + VSCO"
+ },
+ {
+  "isin": "XS2925309945",
+  "last": 36.91,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Autocall Airbag MSTR"
+ },
+ {
+  "isin": "XS3064231932",
+  "last": 80.9,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 290000,
+  "description": "Phoenix Bearish CMS 2 - 6%"
+ },
+ {
+  "isin": "XS3045914713",
+  "last": 101.7,
+  "client": "B CAPITAL - 05232",
+  "devise": "EUR",
+  "amount": 250000,
+  "description": "Phoenix Memory Wof Silver Miners - 11%"
+ },
+ {
+  "isin": "FRSG00016HO2",
+  "last": 88.12,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 520000,
+  "description": "Phoenix Bearish CMS10 - 2.25/3.25 - 5.50%"
+ },
+ {
+  "isin": "XS2769472221",
+  "last": 101.73,
+  "client": "SPG - 05774",
+  "devise": "EUR",
+  "amount": 828000,
+  "description": "Autocall Equipondéré Veolia + Eramet + LVMH"
+ },
+ {
+  "isin": "XS3045607119",
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 1000,
+  "description": "NexAutocall Quotidien BNP Paribas Aout 2025"
+ },
+ {
+  "isin": "CH1278887422",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Mini Futures Dassault Systemes"
+ },
+ {
+  "isin": "FRIP00001IZ9",
+  "last": 106.59,
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 2000000,
+  "description": "Athena TotalEnergies Septembre 2025"
+ },
+ {
+  "isin": "FRIP00001I09",
+  "last": 101.44,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Phoenix Memoire iEdge Transatlantic Artificial Intelligence"
+ },
+ {
+  "isin": "XS3049563219",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memoire BNP + Société Générale + Crédit Agricole"
+ },
+ {
+  "isin": "XS3049573440",
+  "last": 79.7688,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Phoenix Memoire Wof Hermes + Kering + LVMH"
+ },
+ {
+  "isin": "XS2621505341",
+  "last": 88.36,
+  "client": "PRESTINVEST - 05773",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "TRY Denominated NC3 Callable In Fine Note with EUR Settlement"
+ },
+ {
+  "isin": "XS3010088303",
+  "client": "APPN - 05277",
+  "devise": "TRY",
+  "amount": 200000,
+  "description": "Phoenix Memory Wof CF Industries + Albermarle"
+ },
+ {
+  "isin": "FRIP00001G19",
+  "last": 117.36,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 1000,
+  "description": "Quartz 45 ENI Decrement 0.96 pts"
+ },
+ {
+  "isin": "FRSG00015XO1",
+  "last": 78.78,
+  "client": "SPG - 05774",
+  "devise": "EUR",
+  "amount": 661000,
+  "description": "Phoenix Bearish CMS10 - 2.15/2.70 - 5%"
+ },
+ {
+  "isin": "FEI",
+  "last": 100,
+  "client": "MACIF",
+  "devise": "EUR",
+  "amount": 6114285.71428571,
+  "description": "FEI"
+ },
+ {
+  "isin": "XS3006405594",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "amount": 300000,
+  "description": "Athena Airbag Alstom"
+ },
+ {
+  "isin": "FRSG00015Y19",
+  "last": 85.5,
+  "client": "MY WAY - 05692",
+  "devise": "EUR",
+  "amount": 1150000,
+  "description": "Phoenix Bearish CMS10 - 6.35%"
+ },
+ {
+  "isin": "XS2955900761",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory Wof Mines d'Or  (NEM US + GOLD US + GFI US)"
+ },
+ {
+  "isin": "XS2938576522",
+  "last": 106.7,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 800000,
+  "description": "Athena Dégressif Equipondéré TotalEnergies + Eni + Shell"
+ },
+ {
+  "isin": "FRSG00015XB8",
+  "statut": "rappele",
+  "client": "SPG - 05774",
+  "devise": "EUR",
+  "amount": 600000,
+  "description": "Autocall Equipondéré TotalEnergies + ENI + Shell"
+ },
+ {
+  "isin": "XS2979390502",
+  "last": 92.03,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 1950000,
+  "description": "Phoenix Bearish TEC10 3/3.80 - 10.30%"
+ },
+ {
+  "isin": "XS2975786000",
+  "last": 49.53,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1465000,
+  "description": "ZC CLN Tranche Crossover"
+ },
+ {
+  "isin": "FR001400XNG1",
+  "last": 79.67,
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 2000000,
+  "description": "ODDO CMS 10Y Phoenix In Fine"
+ },
+ {
+  "isin": "FRSG00015VL1",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Oxygen sur Safran + Thales + Rheinmetall"
+ },
+ {
+  "isin": "FRSG00015VL1",
+  "statut": "rappele",
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Athena Oxygen sur Safran + Thales + Rheinmetall"
+ },
+ {
+  "isin": "XS2653885744",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Réarmement Europe"
+ },
+ {
+  "isin": "XS2953818841",
+  "last": 108.6501,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Athena Wof MSFT + GOOGL"
+ },
+ {
+  "isin": "XS2941097813",
+  "last": 98.26,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag SAN + BNP + TTE"
+ },
+ {
+  "isin": "XS2941080330",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Athena Airbag ASML + BNP"
+ },
+ {
+  "isin": "FR1459AB6586",
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory Orange Fix Div 0.74"
+ },
+ {
+  "isin": "FR001400WR56",
+  "last": 79.98,
+  "client": "JLH PATRIM - 05754",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Bearish Mars 25 Trimestriel 2.30/2.80 - 6%"
+ },
+ {
+  "isin": "XS2931046382",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof Bouygues + Orange + Engie"
+ },
+ {
+  "isin": "FRSG00015O52",
+  "last": 74.16,
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 2000000,
+  "description": "Autocall LVMH"
+ },
+ {
+  "isin": "FRIP000014P8",
+  "last": 57.25,
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 1200000,
+  "description": "Autocall Bonus Luxe"
+ },
+ {
+  "isin": "XS2919373816",
+  "last": 105.56,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 990000,
+  "description": "CLN Tranche iTraxx Zero Recov 4/7"
+ },
+ {
+  "isin": "XS2863761933",
+  "last": 107.07,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 1000000,
+  "description": "Bond + Call Spread on Gold in USD"
+ },
+ {
+  "isin": "XS2913745654",
+  "statut": "rappele",
+  "client": "VIA - 08001",
+  "devise": "USD",
+  "amount": 400000,
+  "description": "Athena Airbag Wof ASML + TSM"
+ },
+ {
+  "isin": "XS2863761859",
+  "statut": "rappele",
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Athena Booster Wof SPX + SX5E + NKY"
+ },
+ {
+  "isin": "XS2642227883",
+  "last": 97.17,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "CLN Tranche iTraxx Zero Recov 4/7 - 5Y"
+ },
+ {
+  "isin": "FR001400T985",
+  "last": 84.47,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 1000,
+  "description": "SPHINX 15"
+ },
+ {
+  "isin": "FR001400TVX7",
+  "statut": "rappele",
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 2000000,
+  "description": "ODDO TS Athena ASML Janvier 2025"
+ },
+ {
+  "isin": "XS2886439467",
+  "client": "B CAPITAL - 05232",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Phoenix Memory Wof TotalEnergies + Eni + Schlumberger"
+ },
+ {
+  "isin": "XS2769371209",
+  "statut": "rappele",
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 980000,
+  "description": "Autocall Airbag ASML"
+ },
+ {
+  "isin": "XS2866922060",
+  "statut": "rappele",
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 535000,
+  "description": "Athena Booster Wof SPX + SX5E + NKY"
+ },
+ {
+  "isin": "XS2922143750",
+  "last": 60.3461,
+  "client": "WEALTHOF - 06005",
+  "devise": "EUR",
+  "amount": 270000,
+  "description": "Athéna Bearish NDX100"
+ },
+ {
+  "isin": "XS2902296008",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Phoenix Memory MRNA"
+ },
+ {
+  "isin": "FR001400SDV1",
+  "last": 71.501,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Phoenix Bearish TEC10"
+ },
+ {
+  "isin": "FR001400SDV1",
+  "last": 71.501,
+  "client": "CASHBEE - 06003",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Bearish TEC10"
+ },
+ {
+  "isin": "XS2863767542",
+  "last": 101.65,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 360000,
+  "description": "CLN Tranche Zero Recov (3/6)"
+ },
+ {
+  "isin": "FR001400T357",
+  "last": 85.84,
+  "client": "MANTU - 05626",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Bear Athena SOFR CMS10"
+ },
+ {
+  "isin": "XS2862503435",
+  "last": 91.4,
+  "client": "APPN - 05277",
+  "devise": "USD",
+  "amount": 200000,
+  "description": "Phoenix Memory Wof ASML + Saint-Gobin + TotalEnergies"
+ },
+ {
+  "isin": "XS2897403098",
+  "statut": "rappele",
+  "client": "EQUINOXE",
+  "devise": "EUR",
+  "amount": 990000,
+  "description": "Phoenix Mémoire Schlumberger"
+ },
+ {
+  "isin": "XS2884074795",
+  "statut": "rappele",
+  "client": "PRESTINVEST - 05773",
+  "devise": "USD",
+  "amount": 500000,
+  "description": "Call Spread Low Strike 75/135 - ASML"
+ },
+ {
+  "isin": "FRSG00015778",
+  "statut": "rappele",
+  "client": "CAPITALL - 01227",
+  "devise": "USD",
+  "amount": 120000,
+  "description": "Phoenix Memory Wof Pfizer + Sanofi + Novartis"
+ },
+ {
+  "isin": "XS2872777334",
+  "statut": "vendu",
+  "client": "ARCHE - 05272",
+  "devise": "EUR",
+  "amount": 3030000,
+  "description": "Participation note SPX no gearing - KG 18.8%"
+ },
+ {
+  "isin": "XS2792970241",
+  "statut": "rappele",
+  "client": "CAPITALL - 01227",
+  "devise": "USD",
+  "amount": 375000,
+  "description": "Athena on EURO STOXX Banks in EUR"
+ },
+ {
+  "isin": "XS2792970324",
+  "statut": "rappele",
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 375000,
+  "description": "Athena Bloomberg Eurozone Titans Select Decrement 5%"
+ },
+ {
+  "isin": "XS2815466193",
+  "last": 96.98,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 375000,
+  "description": "Phoenix Bearish CMS10 - Barrière 3.25%-2.50%"
+ },
+ {
+  "isin": "FR001400R9L2",
+  "statut": "rappele",
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 350000,
+  "description": "QUARTZ 40 ENGIE DECREMENT 1.1 POINTS"
+ },
+ {
+  "isin": "XS2769351359",
+  "last": 87.75,
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory Kering 7%"
+ },
+ {
+  "isin": "XS2804857568",
+  "last": 90.37,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 1800000,
+  "description": "Phoenix Bearish CMS10"
+ },
+ {
+  "isin": "FR001400OZR1",
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 50000,
+  "description": "Phoenix Memory sur Taux en Juin 2024 - 2.30%/3.20%"
+ },
+ {
+  "isin": "XS2792968187",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "amount": 250000,
+  "description": "Phoenix Memory Wof Micron + Marvell"
+ },
+ {
+  "isin": "XS2759260602",
+  "statut": "rappele",
+  "client": "B CAPITAL - 05232",
+  "devise": "EUR",
+  "amount": 130000,
+  "description": "Phoenix Memory Wof Pfizer + Roche + Sanofi - 18M"
+ },
+ {
+  "isin": "XS0461632811",
+  "last": 95.69,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 1250000,
+  "description": "Phoenix Bearish CMS10 - (2.50-3.15)"
+ },
+ {
+  "isin": "XS2772970781",
+  "last": 95.4,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 1330000,
+  "description": "Autocall Bearish CMS10"
+ },
+ {
+  "isin": "FRIP00000HS8",
+  "last": 82.02,
+  "client": "EFG - 01334",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Phoenix Memory on KER + URW"
+ },
+ {
+  "isin": "FR001400PQQ9",
+  "statut": "rappele",
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 495000,
+  "description": "Autocall Airbag 70 - PDI 50 - Intelligence Artificielle"
+ },
+ {
+  "isin": "XS2759139525",
+  "last": 90.72,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Athena Airbag on Kering"
+ },
+ {
+  "isin": "FRSG00014VA7",
+  "last": 87.18,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Bearish CMS10 Barrières 3.20%-2.40%"
+ },
+ {
+  "isin": "FR001400PLW8",
+  "statut": "rappele",
+  "client": "MANTU - 05626",
+  "devise": "EUR",
+  "amount": 1500000,
+  "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.00%-2.50%"
+ },
+ {
+  "isin": "XS2759191286",
+  "last": 27.68,
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof Stellantis + Renault"
+ },
+ {
+  "isin": "FRSG00014U55",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 240000,
+  "description": "Phoenix Mémoire SX7E"
+ },
+ {
+  "isin": "CH1322036596",
+  "last": 62.49,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 250000,
+  "description": "Phoenix Memory Porsche"
+ },
+ {
+  "isin": "XS0461619396",
+  "last": 96.45,
+  "client": "MANTU - 05626",
+  "devise": "EUR",
+  "amount": 5000000,
+  "description": "Phoenix Bearish CMS10 - Barrière 3.50%-2.50%"
+ },
+ {
+  "isin": "XS2803802532",
+  "client": "PRESTINVEST - 05773",
+  "devise": "EUR",
+  "amount": 1000000,
+  "description": "Participation SPXFP 2Y (CERTI+) Low Strike 75"
+ },
+ {
+  "isin": "FR001400PCU1",
+  "last": 98.41,
+  "client": "CARMF - 05227",
+  "devise": "USD",
+  "amount": 5000000,
+  "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.50%-2.50%"
+ },
+ {
+  "isin": "XS2720239487",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Autocall TotalEnergies"
+ },
+ {
+  "isin": "FR001400P397",
+  "last": 90.73,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 2000000,
+  "description": "Phoenix Bearish In Fine CMS10 - Barrière 3.00%-2.50%"
+ },
+ {
+  "isin": "XS2653912068",
+  "last": 101.04,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1400000,
+  "description": "Autocall Airbag Wof PFE + ROG.SE + SAN.FP"
+ },
+ {
+  "isin": "CH0587314615",
+  "last": 4.32,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 130000,
+  "description": "Warrant Senior Loan"
+ },
+ {
+  "isin": "XS2719844560",
+  "statut": "vendu",
+  "client": "RISE FO",
+  "devise": "EUR",
+  "amount": 42874000,
+  "description": "Phoenix Snowball Wof on Intel + Micron and NVIDIA in JPY Quanto"
+ },
+ {
+  "isin": "XS2719844727",
+  "statut": "vendu",
+  "client": "RISE FO",
+  "devise": "JPY",
+  "amount": 42874000,
+  "description": "Phoenix Snowball Wof on Richemont + Estee Lauder and LVMH in JPY Quanto"
+ },
+ {
+  "isin": "XS2110091449",
+  "last": 101.866,
+  "client": "SCALA - 05722",
+  "devise": "JPY",
+  "amount": 1000000,
+  "description": "Callable FRN 5,35% p.a. NC2"
+ },
+ {
+  "isin": "XS2696236590",
+  "statut": "rappele",
+  "client": "CANINO - 05226",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"
+ },
+ {
+  "isin": "FR001400NSY4",
+  "statut": "rappele",
+  "client": "CANINO - 05226",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"
+ },
+ {
+  "isin": "XS2110106908",
+  "last": 100.992,
+  "client": "SCALA - 05722",
+  "devise": "GBP",
+  "amount": 630000,
+  "description": "GBP Linear ZC Note - 12YNC4+1"
+ },
+ {
+  "isin": "XS2757009324",
+  "statut": "rappele",
+  "client": "SCALA - 05722",
+  "devise": "GBP",
+  "amount": 630000,
+  "description": "CLN iTraxx Main 100% KG"
+ },
+ {
+  "isin": "XS2641318121",
+  "last": 90.3,
+  "client": "SAMY - 01674",
+  "devise": "GBP",
+  "amount": 1000000,
+  "description": "Tranched CLN Zero Recovery Credit Linked Notes due 2031"
+ },
+ {
+  "isin": "CH1316655518",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix/Athena Airbag AMD + Intel + NVDA"
+ },
+ {
+  "isin": "CH1322027827",
+  "last": 63.23,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Memory MRNA + PFE + Sanofi"
+ },
+ {
+  "isin": "CH1305186087",
+  "statut": "rappele",
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Athena 10.52% p.a.sur Indice Bloomberg Luxury Series 1 Decrement 50 Points"
+ },
+ {
+  "isin": "XS2663305378",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof BNP Paribas + Credit Agricole"
+ },
+ {
+  "isin": "DE000UL72J39",
+  "statut": "rappele",
+  "client": "CAPITALL - 01227",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Phoenix Memory Renault Dégressif"
+ },
+ {
+  "isin": "XS2662792303",
+  "statut": "rappele",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Phoenix Memory Wof ACA + BNP"
+ },
+ {
+  "isin": "XS2662781447",
+  "statut": "rappele",
+  "client": "PRESTINVEST - 05773",
+  "devise": "EUR",
+  "amount": 1000000,
+  "description": "Autocall Athena Low Strike 80% Pfizer / Sanofi / Roche 18 mois"
+ },
+ {
+  "isin": "CH1271361060",
+  "last": 100,
+  "client": "SOCIPAR - 05762",
+  "devise": "EUR",
+  "amount": 250000,
+  "description": "Dette Privée - SIP Chabanais"
+ },
+ {
+  "isin": "XS2647395511",
+  "statut": "rappele",
+  "client": "B CAPITAL - 05232",
+  "amount": 250000,
+  "description": "TARN (30-5) - 10%+1%"
+ },
+ {
+  "isin": "XS2649866485",
+  "statut": "rappele",
+  "client": "B CAPITAL - 05232",
+  "devise": "EUR",
+  "amount": 250000,
+  "description": "Phoenix Snowball BNP Paribas"
+ },
+ {
+  "isin": "XS2647444822",
+  "statut": "rappele",
+  "client": "FINOFFICE - 05346",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "TARN (30-5) - 2x7.5%+1%"
+ },
+ {
+  "isin": "FR001400LGG0",
+  "statut": "vendu",
+  "client": "CARMF - 05227",
+  "devise": "EUR",
+  "amount": 5000000,
+  "description": "CLN iTraxx Main Tranche (3-6) Balloon 100% KG - 7Y + 160% in fine"
+ },
+ {
+  "isin": "SE0020849388",
+  "statut": "rappele",
+  "client": "APPN - 05277",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Dette Privée - Regenergy Frövi"
+ },
+ {
+  "isin": "SE0020849388",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "Dette Privée - Regenergy Frövi"
+ },
+ {
+  "isin": "XS2576621366",
+  "last": 135.15,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "CLN iTraxx Main Balloon"
+ },
+ {
+  "isin": "XS2482711673",
+  "last": 103.46,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 5000000,
+  "description": "CLN sur Société Générale Subordonnée"
+ },
+ {
+  "isin": "FR001400GV92",
+  "last": 42.83,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 600000,
+  "description": "Phoenix Mémoire Wof Porsche + Volkswagen"
+ },
+ {
+  "isin": "XS2464629414",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1000000,
+  "description": "TARN Steepener 2s30s"
+ },
+ {
+  "isin": "XS2465015720",
+  "last": 98.2,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 5500000,
+  "description": "TARN (30-2) 5.75% x 2"
+ },
+ {
+  "isin": "XS2569852416",
+  "last": 100.086,
+  "client": "SCALA - 05722",
+  "devise": "EUR",
+  "amount": 1350000,
+  "description": "Callable FRN 3.61%"
+ },
+ {
+  "isin": "XS2444096874",
+  "last": 98.2,
+  "client": "VIA - 08001",
+  "devise": "EUR",
+  "amount": 1750000,
+  "description": "TARN (30-2) 4.2% x 2"
+ },
+ {
+  "isin": "XS2442403130",
+  "last": 97.7,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1500000,
+  "description": "TARN CMS 30Y - CMS 2Y"
+ },
+ {
+  "isin": "XS2440513757",
+  "statut": "vendu",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1700000,
+  "description": "TARN CMS 30Y - CMS 2Y"
+ },
+ {
+  "isin": "FR001400BTX9",
+  "statut": "rappele",
+  "client": "SEMEPA",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "TARN (30-2) linked SG Sub"
+ },
+ {
+  "isin": "XS2367945719",
+  "statut": "vendu",
+  "client": "CANINO - 05226",
+  "devise": "USD",
+  "amount": 2000000,
+  "description": "TARN (30-2) - 2x6.50%+1%"
+ },
+ {
+  "isin": "XS2105893841",
+  "statut": "rappele",
+  "client": "MASFIP",
+  "devise": "EUR",
+  "amount": 1000000,
+  "description": "Phoenix Mémoire Bancaire Indice"
+ },
+ {
+  "isin": "CH1163990570",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 700000,
+  "description": "Autocall Classic on ORP"
+ },
+ {
+  "isin": "CH0593640243",
+  "last": 63.46,
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 1600000,
+  "description": "Autocall Airbag on FORECEC + BGCHA2E + IGCAIAD"
+ },
+ {
+  "isin": "FRSG00010W99",
+  "statut": "vendu",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 360000,
+  "description": "Autocall Classic on URW"
+ },
+ {
+  "isin": "XS2059726096",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 500000,
+  "description": "CLN Main Tranche 4-8 - 4.10% p.a"
+ },
+ {
+  "isin": "CH0514676219",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Autocall Classic on URW"
+ },
+ {
+  "isin": "CH0514676201",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Autocall Airbag on RNO"
+ },
+ {
+  "isin": "CH0514676193",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 10000000,
+  "description": "Autocall Bouygues"
+ },
+ {
+  "isin": "CH0502683763",
+  "statut": "vendu",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Autocall Classic on URW"
+ },
+ {
+  "isin": "CH0502683789",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Autocall Airbag on EN"
+ },
+ {
+  "isin": "FR0013446333",
+  "client": "GRICOURT - 05474",
+  "devise": "EUR",
+  "amount": 5000000,
+  "description": "ODDO Unibail Rodamco"
+ },
+ {
+  "isin": "CH0470308765",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Autocall Recovery Note on TTE + GLE + RNO"
+ },
+ {
+  "isin": "CH0446939719",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 300000,
+  "description": "Autocall Recovery Note on Bouygues + Iliad + Orange"
+ },
+ {
+  "isin": "CH0446939677",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 100000,
+  "description": "Autocall Recovery Note on BNP + ACA + GLE"
+ },
+ {
+  "isin": "CH0434911688",
+  "statut": "rappele",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 110000,
+  "description": "Autocall Classic on BNP + ACA + GLE"
+ },
+ {
+  "isin": "FRC764201477",
+  "client": "CAPITALL",
+  "devise": "EUR",
+  "description": "Quartz 54 Sanofi Décrément 3.92 Pts"
+ }
 ]

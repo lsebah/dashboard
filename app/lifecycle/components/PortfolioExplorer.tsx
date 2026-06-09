@@ -16,6 +16,10 @@ import {
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
+import tsPdfs from '@/lib/ts-pdfs.json'
+
+// PDF de la TS déposé dans public/ts/<ISIN>.pdf (cf. scripts/index-ts-pdfs.mjs).
+const TS_PDFS = tsPdfs as Record<string, string>
 import { SITUATION_COLOR, SITUATION_LABEL, freqLabel, assetLabel } from './labels'
 import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
@@ -416,16 +420,20 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       }
       case 'ts': {
         const f = frozenAttrs('ts', p)
+        // PDF local prioritaire (ouverture directe, plus de détour par le cloud) ;
+        // repli sur le lien OneDrive si le PDF n'est pas encore déposé.
+        const local = TS_PDFS[p.isin]
+        const href = local ?? p.termsheetUrl
         return (
           <td key="ts" style={f.style} className={`px-0.5 py-1.5 text-center ${f.cls}`}>
-            {p.termsheetUrl ? (
+            {href ? (
               <a
-                href={p.termsheetUrl}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="text-cmf-blue hover:underline font-medium"
-                title="Ouvrir la termsheet (OneDrive)"
+                title={local ? 'Ouvrir la termsheet (PDF)' : 'Ouvrir la termsheet (OneDrive)'}
               >
                 TS
               </a>

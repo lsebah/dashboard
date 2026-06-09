@@ -4732,6 +4732,36 @@ const gsOrangeDecrement: Product = {
   termsheetFichier: 'FR1459AB6586_Phoenix Memory Orange Fix Div 0.74 - 12Y_0800101.pdf',
 }
 
+// ── Citi (CGMFL) — Quartz 54 : Phoenix Mémoire sur MerQube Sanofi 3,92 décrément ─
+// Obs. trimestrielles ; autocall dégressif 100 %→60 % (−5 %/an, plancher 2035) ;
+// coupon mémoire cumulatif 10 %→117,5 % (2,5 %/trim. après un 1er coupon de 10 %).
+const quartz54Obs = ['2027-05-31','2027-08-30','2027-11-29','2028-02-29','2028-05-29','2028-08-29','2028-11-29','2029-02-28','2029-05-29','2029-08-29','2029-11-29','2030-02-28','2030-05-29','2030-08-29','2030-11-29','2031-02-28','2031-05-29','2031-08-29','2031-12-01','2032-03-01','2032-05-31','2032-08-30','2032-11-29','2033-02-28','2033-05-30','2033-08-29','2033-11-29','2034-02-28','2034-05-29','2034-08-29','2034-11-29','2035-02-28','2035-05-29','2035-08-29','2035-11-29','2036-02-29','2036-05-29','2036-08-29','2036-12-01','2037-03-02','2037-05-29','2037-08-31','2037-11-30','2038-03-01']
+const quartz54Pay = ['2027-06-14','2027-09-14','2027-12-13','2028-03-14','2028-06-12','2028-09-13','2028-12-13','2029-03-14','2029-06-12','2029-09-13','2029-12-13','2030-03-14','2030-06-12','2030-09-13','2030-12-13','2031-03-14','2031-06-12','2031-09-15','2031-12-15','2032-03-15','2032-06-14','2032-09-14','2032-12-13','2033-03-14','2033-06-13','2033-09-13','2033-12-13','2034-03-14','2034-06-12','2034-09-13','2034-12-13','2035-03-14','2035-06-12','2035-09-13','2035-12-13','2036-03-14','2036-06-12','2036-09-15','2036-12-15','2037-03-16','2037-06-12','2037-09-15','2037-12-14','2038-03-15']
+const quartz54Barr = [100,100,100,100,95,95,95,95,90,90,90,90,85,85,85,85,80,80,80,80,75,75,75,75,70,70,70,70,65,65,65,65,60,60,60,60,60,60,60,60,60,60,60,60]
+const quartz54Sanofi: Product = {
+  id: 'FRC764201477', nom: 'Quartz 54 — Phoenix Mémoire Sanofi (décrément 3,92)', isin: 'FRC764201477',
+  valor: '153161533',
+  emetteur: 'Citigroup Global Markets Funding Luxembourg S.C.A.', garant: 'Citigroup Global Markets Limited',
+  notationEmetteur: 'S&P A+/A-1 · Moody’s A1/P-1 · Fitch A+/F1',
+  assetClass: 'equity', family: 'autocall', devise: 'EUR', nominal: 0, valeurNominale: 1000, prixEmission: 100,
+  dateConstatationInitiale: '2026-03-05', dateEmission: '2026-03-26', dateConstatationFinale: '2038-05-31', dateEcheance: '2038-06-14',
+  frequence: 'trimestriel', basket: 'single',
+  sousJacents: [{ nom: 'MerQube Sanofi SA 3.92 Point Decrement (EUR) Index', bloomberg: 'MQDSA39P Index', marche: 'Euronext Paris', niveauInitial: 74.76 }],
+  terms: { kind: 'autocall', sens: 'standard', effetMemoire: true, couponPa: 10, barriereCouponPct: 40, degressif: true, barriereRappelPct: 100, protectionPct: 60, protectionStyle: 'europeenne', decrement: '3,92 pts/an' },
+  observations: buildObservations(quartz54Obs, quartz54Pay, {
+    niveauRappelPct: (n) => quartz54Barr[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: (n) => (n === 1 ? 10 : 2.5),
+    niveauCouponPct: 40,
+    rappelActifAPartirDe: 1,
+  }),
+  statut: 'vivant', rr: 'LS', productType: 'Phoenix',
+  description: '12Y Phoenix Mémoire Sanofi (décrément 3,92) — coupon mémoire 2,5 %/trim. (10 % p.a.) si l’indice ≥ 40 %, autocall dégressif 100 %→60 % (−5 %/an), protection 60 % européenne',
+  clients: ['CAPITALL'],
+  badges: ['Single', 'Phoenix', 'Décrément', 'Effet mémoire', 'Dégressif'],
+  termsheetFichier: 'TS_Quartz_54_Sanofi_Decrement_3.92_Pts.pdf',
+}
+
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 const detailed: Product[] = [
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
@@ -4756,6 +4786,7 @@ const detailed: Product[] = [
   sgBearishCms10_270, bnpBearishCms10_280, sgBearishInFineCms10_300,
   dbBearishCms10_315, bnpBearishCms10_315, cicBearishTec10,
   athenaKering, bbvaSanofiBnpTte, bofaTteShellEni, gsOrangeDecrement,
+  quartz54Sanofi,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
