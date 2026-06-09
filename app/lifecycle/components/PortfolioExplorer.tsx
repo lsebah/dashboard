@@ -9,6 +9,8 @@ import {
   situation,
   type Situation,
   couponPa,
+  couponsEncaissesPct,
+  pnlAvecCoupons,
   formatDateFr,
   formatPct,
 } from '@/lib/lifecycle'
@@ -237,7 +239,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       issue: (p) => p.dateEmission,
       isin: (p) => p.isin,
       last: (p) => p.prixMarche,
-      pnl: (p) => p.pnlPct,
+      pnl: (p) => pnlAvecCoupons(p) ?? p.pnlPct,
       next: (p) => prochainEvenement(p),
       cy: (p) => p.devise,
       amount: (p) => p.nominal,
@@ -440,19 +442,29 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       }
       case 'pnl': {
         const f = frozenAttrs('pnl', p)
+        // P&L du portefeuille = prix + coupons encaissés − 100 (cumule les coupons versés).
+        const pnl = pnlAvecCoupons(p) ?? p.pnlPct
+        const coupons = couponsEncaissesPct(p)
+        const hasCoupons = typeof coupons === 'number' && coupons > 0
         return (
           <td
             key="pnl"
             style={f.style}
+            title={
+              hasCoupons && typeof pnl === 'number'
+                ? `Prix ${p.prixMarche?.toFixed(2)} + coupons ${coupons.toFixed(2)} − 100`
+                : undefined
+            }
             className={`px-2 py-1.5 tabular-nums ${
-              typeof p.pnlPct === 'number'
-                ? p.pnlPct >= 0
+              typeof pnl === 'number'
+                ? pnl >= 0
                   ? 'text-emerald-600'
                   : 'text-red-600'
                 : 'text-slate-400'
             } ${f.cls}`}
           >
-            {typeof p.pnlPct === 'number' ? `${p.pnlPct >= 0 ? '+' : ''}${p.pnlPct.toFixed(2)}%` : '—'}
+            {typeof pnl === 'number' ? `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%` : '—'}
+            {hasCoupons && <span className="text-[9px] text-slate-400 ml-0.5" title="coupons inclus">¢</span>}
           </td>
         )
       }
