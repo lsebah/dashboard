@@ -1,18 +1,11 @@
 import type { Metadata } from 'next'
+import LifecycleNav from './components/LifecycleNav'
 
 export const metadata: Metadata = {
   title: 'Lifecycle CMF — Suivi des produits structurés',
   description:
     'Suivi du cycle de vie des produits structurés (prix, calendrier des observations, allocation client) — Capital Management France',
 }
-
-const tabs = [
-  { name: 'Portefeuille', href: '/lifecycle' },
-  { name: 'Calendrier', href: '/lifecycle/calendrier' },
-  { name: 'Comparatif', href: '/lifecycle/comparatif' },
-  { name: 'Bloomberg', href: '/lifecycle/bloomberg' },
-  { name: 'Nouveau produit', href: '/lifecycle/produits/nouveau' },
-]
 
 // Layout imbriqué : pas de <html>/<body> (fournis par le layout racine).
 // Un conteneur en thème clair recouvre le fond sombre du Dashboard.
@@ -34,17 +27,7 @@ export default function LifecycleLayout({
               Lifecycle
             </span>
           </div>
-          <nav className="flex items-center gap-6 text-sm">
-            {tabs.map((t) => (
-              <a
-                key={t.href}
-                href={t.href}
-                className="text-slate-200 hover:text-white transition-colors"
-              >
-                {t.name}
-              </a>
-            ))}
-          </nav>
+          <LifecycleNav />
         </div>
       </header>
       <main className="mx-auto max-w-[1800px] px-4 py-6">{children}</main>
