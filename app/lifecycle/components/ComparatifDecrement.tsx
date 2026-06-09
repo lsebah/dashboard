@@ -120,7 +120,20 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
   const list = useMemo(() => {
     const m = sort.dir === 'asc' ? 1 : -1
+    // Clé chronologique d'une date JJ/MM/AAAA → "AAAAMMJJ" (tri par année, mois, jour).
+    const triDate = (v: unknown) => {
+      const mm = String(v ?? '').match(/(\d{2})\/(\d{2})\/(\d{4})/)
+      return mm ? `${mm[3]}${mm[2]}${mm[1]}` : ''
+    }
     return [...filtered].sort((a, b) => {
+      if (sort.key === 'dateRun') {
+        const ka = triDate(a.dateRun)
+        const kb = triDate(b.dateRun)
+        if (!ka && !kb) return 0
+        if (!ka) return 1
+        if (!kb) return -1
+        return ka.localeCompare(kb) * m
+      }
       const va = a[sort.key]
       const vb = b[sort.key]
       if (va == null && vb == null) return 0
