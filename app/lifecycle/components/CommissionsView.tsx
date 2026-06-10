@@ -180,10 +180,10 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       {/* Cartes récap par année (chiffres officiels du classeur) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card p-4">
-          <div className="field-label">Net Lolo · YTD {ANNEE_COURANTE}</div>
+          <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE}</div>
           <div className="text-2xl font-bold text-emerald-600">{EUR(netLoloYtd)}</div>
           <div className="text-[11px] text-slate-400">
-            {data.dealsParAnnee[ANNEE_COURANTE]} deals émis · classeur {EUR(ytdClasseur)}
+            vrai net (émis + encaissé) · classeur {EUR(ytdClasseur)}
           </div>
         </div>
         {['2025', '2024', '2023'].map((y) => (
