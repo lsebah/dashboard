@@ -87,6 +87,18 @@ export default function ProductSynopsis({
         />
       </div>
 
+      {/* Client(s) affecté(s) */}
+      {(() => {
+        const clients = product.clients ?? product.allocations?.map((a) => a.client) ?? []
+        if (clients.length === 0) return null
+        return (
+          <div className="text-[12px] text-slate-500">
+            Client{clients.length > 1 ? 's' : ''} :{' '}
+            <span className="font-medium text-slate-700">{clients.join(', ')}</span>
+          </div>
+        )
+      })()}
+
       {/* Titre + badges */}
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold text-cmf-navy">{product.nom}</h3>
