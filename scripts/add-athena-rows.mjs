@@ -30,6 +30,13 @@ const ATH = {
   EURHGPT: [10.81, '02/06/2026', 'Athéna Dégressif'], EURBMGPT: [11.09, '02/06/2026', 'Athéna Dégressif'],
   EUBCGPT: [12.58, '02/06/2026', 'Athéna Dégressif'], SOLEML50: [9.2, '02/06/2026', 'Athéna Dégressif'],
   EURAGPT: [12.51, '02/06/2026', 'Athéna Dégressif'],
+  // ── UBS — Structure 1 « Athéna Dégressif » (run 08/06) ──
+  MQDXES50: [9.2, '08/06/2026', 'Athéna Dégressif'], MQDZHC50: [16.2, '08/06/2026', 'Athéna Dégressif'],
+  MQDZHE50: [15.55, '08/06/2026', 'Athéna Dégressif'], MQDLUX50: [14.8, '08/06/2026', 'Athéna Dégressif'],
+  EU30MPT: [10.05, '08/06/2026', 'Athéna Dégressif'], MQDEDT50: [11.6, '08/06/2026', 'Athéna Dégressif'],
+  MQDXSD50: [12.1, '08/06/2026', 'Athéna Dégressif'], AWDEUAD1: [12.15, '08/06/2026', 'Athéna Dégressif'],
+  EU20CPT: [15.25, '08/06/2026', 'Athéna Dégressif'], MQD30G50: [19.0, '08/06/2026', 'Athéna Dégressif'],
+  MQDINF50: [9.65, '08/06/2026', 'Athéna Dégressif'], EZ6PAB50: [9.35, '08/06/2026', 'Athéna Dégressif'],
 }
 
 let added = 0
