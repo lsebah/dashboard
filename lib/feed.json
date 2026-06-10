@@ -1,14 +1,28 @@
 [
  {
   "isin": "FR0014018KY5",
-  "last": 95.72,
+  "last": 93.13,
   "client": "SPG - 05774",
   "amount": 656000,
   "description": "Athéna Mémoire sur Novo Nordisk"
  },
  {
+  "isin": "XS3379794913",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Phoenix Autocall Mémoire worst-of MITTAL + ESSILOR"
+ },
+ {
+  "isin": "XS3391940502",
+  "client": "SAMY - 01674",
+  "devise": "EUR",
+  "amount": 400000,
+  "description": "Phoenix Mémoire worst-of Engie / Nexans / Schneider Electric"
+ },
+ {
   "isin": "XS3292036624",
-  "last": 98.3195,
+  "last": 97.8075,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 130000,
@@ -16,7 +30,7 @@
  },
  {
   "isin": "FRSG000188R4",
-  "last": 100,
+  "last": 97.33,
   "client": "SPG - 05774",
   "devise": "EUR",
   "amount": 700000,
@@ -24,7 +38,7 @@
  },
  {
   "isin": "XS3362988902",
-  "last": 102.55,
+  "last": 102.09,
   "client": "ABACUS - 05268",
   "devise": "EUR",
   "amount": 200000,
@@ -32,7 +46,7 @@
  },
  {
   "isin": "XS3362988811",
-  "last": 102.28,
+  "last": 102.36,
   "client": "ABACUS - 05268",
   "devise": "EUR",
   "amount": 200000,
@@ -40,7 +54,7 @@
  },
  {
   "isin": "XS3292034843",
-  "last": 94.2626,
+  "last": 91.2708,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 200000,
@@ -48,7 +62,7 @@
  },
  {
   "isin": "XS3292034843",
-  "last": 94.2626,
+  "last": 91.2708,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 100000,
@@ -56,7 +70,7 @@
  },
  {
   "isin": "XS3317172743",
-  "last": 94.82,
+  "last": 95.62,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -64,7 +78,7 @@
  },
  {
   "isin": "XS3287495306",
-  "last": 95.96,
+  "last": 95.71,
   "client": "CURNILLON - 01223",
   "devise": "EUR",
   "amount": 300000,
@@ -72,7 +86,7 @@
  },
  {
   "isin": "XS3317870197",
-  "last": 100.48,
+  "last": 101.41,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -80,7 +94,7 @@
  },
  {
   "isin": "XS3304996484",
-  "last": 101.32,
+  "last": 101.11,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -88,7 +102,7 @@
  },
  {
   "isin": "XS3309979311",
-  "last": 93.54,
+  "last": 90.93,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -96,7 +110,7 @@
  },
  {
   "isin": "XS3262087797",
-  "last": 101.04,
+  "last": 101.66,
   "client": "PRESTINVEST - 05773",
   "devise": "EUR",
   "amount": 500000,
@@ -104,7 +118,7 @@
  },
  {
   "isin": "XS3250077966",
-  "last": 96.5,
+  "last": 97.02,
   "client": "CURNILLON - 01223",
   "devise": "USD",
   "amount": 500000,
@@ -112,7 +126,7 @@
  },
  {
   "isin": "XS3262011201",
-  "last": 100.85,
+  "last": 101.83,
   "client": "NATAF - 05627",
   "devise": "EUR",
   "amount": 50000,
@@ -123,19 +137,19 @@
   "last": 100,
   "client": "MACIF",
   "devise": "EUR",
-  "amount": 866571.428571429,
+  "amount": 866571.4285714285,
   "description": "FEI"
  },
  {
   "isin": "XS3283137407",
-  "last": 104.47,
+  "last": 103.88,
   "client": "APPN - 05277",
   "amount": 300000,
   "description": "Phoenix Mémoire Wof  Alphabet  / Amazon  / CrowdStrike"
  },
  {
   "isin": "XS3256693576",
-  "last": 99.14,
+  "last": 97.96,
   "client": "CURNILLON - 01223",
   "devise": "EUR",
   "amount": 300000,
@@ -143,7 +157,7 @@
  },
  {
   "isin": "XS3291617812",
-  "last": 100.39,
+  "last": 100.11,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -151,7 +165,7 @@
  },
  {
   "isin": "XS3266363806",
-  "last": 82.24,
+  "last": 83.08,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -159,7 +173,7 @@
  },
  {
   "isin": "XS3266613416",
-  "last": 82.57,
+  "last": 83.26,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 300000,
@@ -167,7 +181,7 @@
  },
  {
   "isin": "XS3266613333",
-  "last": 73.2,
+  "last": 70.79,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 300000,
@@ -175,7 +189,7 @@
  },
  {
   "isin": "XS3250102665",
-  "last": 72.93,
+  "last": 73.74,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -183,7 +197,7 @@
  },
  {
   "isin": "XS3251223155",
-  "last": 89.85,
+  "last": 89.6,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 200000,
@@ -191,7 +205,7 @@
  },
  {
   "isin": "FRIP000020P5",
-  "last": 71.83,
+  "last": 69.73,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -199,7 +213,7 @@
  },
  {
   "isin": "FR1459ABB977",
-  "last": 99.6,
+  "last": 98.39,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 1000,
@@ -207,7 +221,7 @@
  },
  {
   "isin": "XS3204634086",
-  "last": 89.12,
+  "last": 87.31,
   "client": "GRICOURT - 05474",
   "devise": "EUR",
   "amount": 1926000,
@@ -215,7 +229,7 @@
  },
  {
   "isin": "XS3231246805",
-  "last": 104.7535,
+  "last": 104.8249,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -223,7 +237,7 @@
  },
  {
   "isin": "XS3214893623",
-  "last": 97.05,
+  "last": 96.7,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -231,7 +245,7 @@
  },
  {
   "isin": "XS3231258727",
-  "last": 92.5526,
+  "last": 92.0864,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -239,7 +253,7 @@
  },
  {
   "isin": "XS3191958233",
-  "last": 104.37,
+  "last": 103.77,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 330000,
@@ -254,14 +268,14 @@
  },
  {
   "isin": "FRIP00001UV3",
-  "last": 99.54,
+  "last": 99.35,
   "client": "CAPITALL - 01227",
   "amount": 1000,
   "description": "Quartz 51 BNP Decrement 4.2"
  },
  {
   "isin": "XS3148555405",
-  "last": 94.66,
+  "last": 95.11,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 250000,
@@ -269,7 +283,7 @@
  },
  {
   "isin": "XS3148625976",
-  "last": 74.69,
+  "last": 73.64,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -280,19 +294,19 @@
   "last": 100,
   "client": "MACIF",
   "devise": "EUR",
-  "amount": 3019142.85714286,
+  "amount": 3019142.8571428573,
   "description": "FEI"
  },
  {
   "isin": "XS3153607810",
-  "last": 105.82,
+  "last": 105.42,
   "client": "VIA - 08001",
   "amount": 510000,
   "description": "Athena Booster Wof SPX + SX5E + NKY"
  },
  {
   "isin": "FR0014013N00",
-  "last": 100.16,
+  "last": 99.15,
   "client": "SPG - 05774",
   "devise": "EUR",
   "amount": 650000,
@@ -300,7 +314,7 @@
  },
  {
   "isin": "XS3149199807",
-  "last": 97.5361,
+  "last": 97.1382,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -308,7 +322,7 @@
  },
  {
   "isin": "XS3149213053",
-  "last": 96.3215,
+  "last": 96.9222,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -316,7 +330,7 @@
  },
  {
   "isin": "XS3109495153",
-  "last": 74.9599,
+  "last": 75.2769,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -324,7 +338,7 @@
  },
  {
   "isin": "XS3149224761",
-  "last": 93.4653,
+  "last": 92.3375,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 560000,
@@ -332,7 +346,7 @@
  },
  {
   "isin": "FRIP00001NZ9",
-  "last": 98.79,
+  "last": 98.98,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 400000,
@@ -340,7 +354,7 @@
  },
  {
   "isin": "FRIP00001NZ9",
-  "last": 98.79,
+  "last": 98.98,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 225000,
@@ -348,7 +362,7 @@
  },
  {
   "isin": "XS3073984430",
-  "last": 85.92,
+  "last": 85.42,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 410000,
@@ -356,7 +370,7 @@
  },
  {
   "isin": "XS3062217446",
-  "last": 102.21,
+  "last": 102.14,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 200000,
@@ -364,7 +378,7 @@
  },
  {
   "isin": "XS3103610385",
-  "last": 103.7774,
+  "last": 103.8128,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -372,7 +386,7 @@
  },
  {
   "isin": "XS2925309275",
-  "last": 113.08,
+  "last": 113.66,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -380,7 +394,7 @@
  },
  {
   "isin": "XS2925309945",
-  "last": 36.91,
+  "last": 36.37,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -388,7 +402,7 @@
  },
  {
   "isin": "XS3064231932",
-  "last": 80.9,
+  "last": 80.66,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 290000,
@@ -396,7 +410,7 @@
  },
  {
   "isin": "XS3045914713",
-  "last": 101.7,
+  "last": 101.56,
   "client": "B CAPITAL - 05232",
   "devise": "EUR",
   "amount": 250000,
@@ -404,7 +418,7 @@
  },
  {
   "isin": "FRSG00016HO2",
-  "last": 88.12,
+  "last": 87.99,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 520000,
@@ -412,7 +426,7 @@
  },
  {
   "isin": "XS2769472221",
-  "last": 101.73,
+  "last": 101.76,
   "client": "SPG - 05774",
   "devise": "EUR",
   "amount": 828000,
@@ -435,7 +449,7 @@
  },
  {
   "isin": "FRIP00001IZ9",
-  "last": 106.59,
+  "last": 106.81,
   "client": "GRICOURT - 05474",
   "devise": "EUR",
   "amount": 2000000,
@@ -458,7 +472,7 @@
  },
  {
   "isin": "XS3049573440",
-  "last": 79.7688,
+  "last": 81.9269,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 400000,
@@ -466,7 +480,7 @@
  },
  {
   "isin": "XS2621505341",
-  "last": 88.36,
+  "last": 87,
   "client": "PRESTINVEST - 05773",
   "devise": "EUR",
   "amount": 500000,
@@ -481,7 +495,7 @@
  },
  {
   "isin": "FRIP00001G19",
-  "last": 117.36,
+  "last": 117.48,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 1000,
@@ -489,7 +503,7 @@
  },
  {
   "isin": "FRSG00015XO1",
-  "last": 78.78,
+  "last": 78.63,
   "client": "SPG - 05774",
   "devise": "EUR",
   "amount": 661000,
@@ -500,7 +514,7 @@
   "last": 100,
   "client": "MACIF",
   "devise": "EUR",
-  "amount": 6114285.71428571,
+  "amount": 6114285.714285715,
   "description": "FEI"
  },
  {
@@ -512,7 +526,7 @@
  },
  {
   "isin": "FRSG00015Y19",
-  "last": 85.5,
+  "last": 85.27,
   "client": "MY WAY - 05692",
   "devise": "EUR",
   "amount": 1150000,
@@ -544,7 +558,7 @@
  },
  {
   "isin": "XS2979390502",
-  "last": 92.03,
+  "last": 91.56,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 1950000,
@@ -552,7 +566,7 @@
  },
  {
   "isin": "XS2975786000",
-  "last": 49.53,
+  "last": 49.27,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 1465000,
@@ -560,7 +574,7 @@
  },
  {
   "isin": "FR001400XNG1",
-  "last": 79.67,
+  "last": 79.25,
   "client": "GRICOURT - 05474",
   "devise": "EUR",
   "amount": 2000000,
@@ -592,7 +606,7 @@
  },
  {
   "isin": "XS2953818841",
-  "last": 108.6501,
+  "last": 106.3163,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -600,7 +614,7 @@
  },
  {
   "isin": "XS2941097813",
-  "last": 98.26,
+  "last": 96.53,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -623,7 +637,7 @@
  },
  {
   "isin": "FR001400WR56",
-  "last": 79.98,
+  "last": 79.57,
   "client": "JLH PATRIM - 05754",
   "devise": "EUR",
   "amount": 200000,
@@ -639,7 +653,7 @@
  },
  {
   "isin": "FRSG00015O52",
-  "last": 74.16,
+  "last": 77.47,
   "client": "GRICOURT - 05474",
   "devise": "EUR",
   "amount": 2000000,
@@ -647,7 +661,7 @@
  },
  {
   "isin": "FRIP000014P8",
-  "last": 57.25,
+  "last": 61.75,
   "client": "GRICOURT - 05474",
   "devise": "EUR",
   "amount": 1200000,
@@ -655,7 +669,7 @@
  },
  {
   "isin": "XS2919373816",
-  "last": 105.56,
+  "last": 105.59,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 990000,
@@ -663,7 +677,7 @@
  },
  {
   "isin": "XS2863761933",
-  "last": 107.07,
+  "last": 106.84,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 1000000,
@@ -687,7 +701,7 @@
  },
  {
   "isin": "XS2642227883",
-  "last": 97.17,
+  "last": 97.15,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 500000,
@@ -695,7 +709,7 @@
  },
  {
   "isin": "FR001400T985",
-  "last": 84.47,
+  "last": 84.77,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 1000,
@@ -734,7 +748,7 @@
  },
  {
   "isin": "XS2922143750",
-  "last": 60.3461,
+  "last": 60.0454,
   "client": "WEALTHOF - 06005",
   "devise": "EUR",
   "amount": 270000,
@@ -750,7 +764,7 @@
  },
  {
   "isin": "FR001400SDV1",
-  "last": 71.501,
+  "last": 71.022,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 400000,
@@ -758,7 +772,7 @@
  },
  {
   "isin": "FR001400SDV1",
-  "last": 71.501,
+  "last": 71.022,
   "client": "CASHBEE - 06003",
   "devise": "EUR",
   "amount": 200000,
@@ -766,7 +780,7 @@
  },
  {
   "isin": "XS2863767542",
-  "last": 101.65,
+  "last": 101.67,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 360000,
@@ -774,7 +788,7 @@
  },
  {
   "isin": "FR001400T357",
-  "last": 85.84,
+  "last": 85.91,
   "client": "MANTU - 05626",
   "devise": "EUR",
   "amount": 500000,
@@ -782,7 +796,7 @@
  },
  {
   "isin": "XS2862503435",
-  "last": 91.4,
+  "last": 91.33,
   "client": "APPN - 05277",
   "devise": "USD",
   "amount": 200000,
@@ -838,7 +852,7 @@
  },
  {
   "isin": "XS2815466193",
-  "last": 96.98,
+  "last": 96.86,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 375000,
@@ -854,7 +868,7 @@
  },
  {
   "isin": "XS2769351359",
-  "last": 87.75,
+  "last": 89.55,
   "client": "CAPITALL - 01227",
   "devise": "EUR",
   "amount": 200000,
@@ -862,7 +876,7 @@
  },
  {
   "isin": "XS2804857568",
-  "last": 90.37,
+  "last": 90.14,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 1800000,
@@ -892,7 +906,7 @@
  },
  {
   "isin": "XS0461632811",
-  "last": 95.69,
+  "last": 95.71,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 1250000,
@@ -900,7 +914,7 @@
  },
  {
   "isin": "XS2772970781",
-  "last": 95.4,
+  "last": 95.45,
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 1330000,
@@ -908,7 +922,7 @@
  },
  {
   "isin": "FRIP00000HS8",
-  "last": 82.02,
+  "last": 82.95,
   "client": "EFG - 01334",
   "devise": "EUR",
   "amount": 100000,
@@ -924,7 +938,7 @@
  },
  {
   "isin": "XS2759139525",
-  "last": 90.72,
+  "last": 92.55,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -932,7 +946,7 @@
  },
  {
   "isin": "FRSG00014VA7",
-  "last": 87.18,
+  "last": 87,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -948,7 +962,7 @@
  },
  {
   "isin": "XS2759191286",
-  "last": 27.68,
+  "last": 26.91,
   "client": "APPN - 05277",
   "devise": "EUR",
   "amount": 300000,
@@ -964,7 +978,7 @@
  },
  {
   "isin": "CH1322036596",
-  "last": 62.49,
+  "last": 65.17,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 250000,
@@ -972,7 +986,7 @@
  },
  {
   "isin": "XS0461619396",
-  "last": 96.45,
+  "last": 96.39,
   "client": "MANTU - 05626",
   "devise": "EUR",
   "amount": 5000000,
@@ -980,6 +994,7 @@
  },
  {
   "isin": "XS2803802532",
+  "statut": "echu",
   "client": "PRESTINVEST - 05773",
   "devise": "EUR",
   "amount": 1000000,
@@ -987,7 +1002,7 @@
  },
  {
   "isin": "FR001400PCU1",
-  "last": 98.41,
+  "last": 98.23,
   "client": "CARMF - 05227",
   "devise": "USD",
   "amount": 5000000,
@@ -1003,7 +1018,7 @@
  },
  {
   "isin": "FR001400P397",
-  "last": 90.73,
+  "last": 90.5,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 2000000,
@@ -1011,7 +1026,7 @@
  },
  {
   "isin": "XS2653912068",
-  "last": 101.04,
+  "last": 98.45,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 1400000,
@@ -1019,7 +1034,7 @@
  },
  {
   "isin": "CH0587314615",
-  "last": 4.32,
+  "last": 4.29,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 130000,
@@ -1043,7 +1058,7 @@
  },
  {
   "isin": "XS2110091449",
-  "last": 101.866,
+  "last": 101.416,
   "client": "SCALA - 05722",
   "devise": "JPY",
   "amount": 1000000,
@@ -1067,7 +1082,7 @@
  },
  {
   "isin": "XS2110106908",
-  "last": 100.992,
+  "last": 100.782,
   "client": "SCALA - 05722",
   "devise": "GBP",
   "amount": 630000,
@@ -1083,7 +1098,7 @@
  },
  {
   "isin": "XS2641318121",
-  "last": 90.3,
+  "last": 90.34,
   "client": "SAMY - 01674",
   "devise": "GBP",
   "amount": 1000000,
@@ -1091,7 +1106,6 @@
  },
  {
   "isin": "CH1316655518",
-  "statut": "rappele",
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
@@ -1099,7 +1113,7 @@
  },
  {
   "isin": "CH1322027827",
-  "last": 63.23,
+  "last": 63.09,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 200000,
@@ -1202,7 +1216,7 @@
  },
  {
   "isin": "XS2576621366",
-  "last": 135.15,
+  "last": 135.12,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 500000,
@@ -1210,7 +1224,7 @@
  },
  {
   "isin": "XS2482711673",
-  "last": 103.46,
+  "last": 103.5,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 5000000,
@@ -1218,7 +1232,7 @@
  },
  {
   "isin": "FR001400GV92",
-  "last": 42.83,
+  "last": 44.63,
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 600000,
@@ -1242,7 +1256,7 @@
  },
  {
   "isin": "XS2569852416",
-  "last": 100.086,
+  "last": 100.176,
   "client": "SCALA - 05722",
   "devise": "EUR",
   "amount": 1350000,
@@ -1306,7 +1320,7 @@
  },
  {
   "isin": "CH0593640243",
-  "last": 63.46,
+  "last": 63.72,
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 1600000,
