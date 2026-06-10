@@ -115,7 +115,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const [debut, fin, titrePeriode] = useMemo<[Date, Date, string]>(() => {
     if (mode === 'hebdo') {
       const d = lundi(ancre)
-      const f = addJours(d, 6)
+      const f = addJours(d, 13) // 2 semaines affichées (semaine courante + suivante)
       const t = `${d.getDate()} ${MOIS[d.getMonth()]} – ${f.getDate()} ${MOIS[f.getMonth()]}`
       return [d, f, t]
     }
@@ -161,31 +161,36 @@ export default function CalendarView({ products }: { products: Product[] }) {
 
   function Carte({ e }: { e: Ev }) {
     const a = aspect(e)
-    const wo = courant[e.product.isin]
+    const p = e.product
+    const emet = (p.emetteur ?? '').split(' ')[0]
+    const clients = p.clients?.join(', ') ?? p.allocations?.map((x) => x.client).join(', ') ?? ''
     return (
       <button
-        onClick={() => setSelId(e.product.id)}
+        onClick={() => setSelId(p.id)}
         className={`w-full text-left rounded-md border px-2 py-1.5 hover:ring-1 hover:ring-cmf-blue/40 ${a.cls} ${
-          selId === e.product.id ? 'ring-1 ring-cmf-blue' : ''
+          selId === p.id ? 'ring-1 ring-cmf-blue' : ''
         }`}
-        title={`${e.product.nom} · ${a.titre}`}
+        title={`${p.nom} · ${a.titre}`}
       >
+        {/* 3 lignes : montant · ISIN + émetteur · client(s) */}
         <div className="flex items-center justify-between gap-1">
           <span className="text-[12px] font-semibold text-slate-700 truncate">
-            {formatMontant(e.product.nominal, e.product.devise)}
+            {formatMontant(p.nominal, p.devise)}
           </span>
           <span className="text-[11px]" title={a.titre}>{a.icone}</span>
         </div>
         <div className="text-[11px] text-slate-500 truncate">
-          {shortU(e.product)}
-          {typeof wo === 'number' && <span className="tabular-nums"> ({wo.toFixed(2)}%)</span>}
+          <span className="font-mono">{p.isin}</span>
+          {emet && <span> · {emet}</span>}
         </div>
+        <div className="text-[11px] text-slate-400 truncate">{clients || '—'}</div>
       </button>
     )
   }
 
-  // Colonnes (hebdo = lun→ven ; mensuel = grille de semaines).
+  // Colonnes (hebdo = 2 semaines lun→ven ; mensuel = grille de semaines).
   const joursHebdo = Array.from({ length: 5 }, (_, i) => addJours(debut, i))
+  const joursHebdo2 = Array.from({ length: 5 }, (_, i) => addJours(debut, 7 + i))
   const parDate = useMemo(() => {
     const m = new Map<string, Ev[]>()
     for (const e of affiches) {
@@ -268,39 +273,46 @@ export default function CalendarView({ products }: { products: Product[] }) {
           {/* Jours */}
           <div className="flex-1 min-w-0 overflow-auto p-2">
             {mode === 'hebdo' ? (
-              <div className="grid grid-cols-5 gap-2 h-full">
-                {joursHebdo.map((d) => {
-                  const evs = parDate.get(J(d)) ?? []
-                  const estAuj = J(d) === today
-                  return (
-                    <div key={J(d)} className="flex flex-col min-w-0">
-                      <div className={`flex items-center justify-between rounded-t-md px-2 py-1.5 text-xs font-medium ${estAuj ? 'bg-cmf-blue text-white' : 'bg-slate-700 text-white'}`}>
-                        <span>{labelJour(d)}</span>
-                        <span className="rounded bg-white/20 px-1.5 text-[11px]">{evs.length}</span>
-                      </div>
-                      <div className="flex-1 rounded-b-md bg-slate-50/60 p-1.5 flex flex-col gap-1.5 overflow-y-auto min-h-[120px]">
-                        {evs.map((e, i) => <Carte key={`${e.product.id}-${e.obs.n}-${i}`} e={e} />)}
-                      </div>
-                    </div>
-                  )
-                })}
+              <div className="flex flex-col gap-3 h-full">
+                {[joursHebdo, joursHebdo2].map((sem, wi) => (
+                  <div key={wi} className="grid grid-cols-5 gap-2 flex-1 min-h-[150px]">
+                    {sem.map((d) => {
+                      const evs = parDate.get(J(d)) ?? []
+                      const estAuj = J(d) === today
+                      return (
+                        <div key={J(d)} className="flex flex-col min-w-0">
+                          <div className={`flex items-center justify-between rounded-t-md px-2 py-1.5 text-xs font-medium ${estAuj ? 'bg-cmf-blue text-white' : 'bg-slate-700 text-white'}`}>
+                            <span>{labelJour(d)}</span>
+                            <span className="rounded bg-white/20 px-1.5 text-[11px]">{evs.length}</span>
+                          </div>
+                          <div className="flex-1 rounded-b-md bg-slate-50/60 p-1.5 flex flex-col gap-1.5 overflow-y-auto min-h-[120px]">
+                            {evs.map((e, i) => <Carte key={`${e.product.id}-${e.obs.n}-${i}`} e={e} />)}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-1">
-                <div className="grid grid-cols-7 gap-1 text-[11px] uppercase tracking-wide text-slate-400 px-1">
+              // Vue mensuelle : occupe toute la hauteur (semaines en lignes égales,
+              // cellules étirées) pour maximiser la fenêtre.
+              <div className="flex flex-col gap-1 h-full">
+                <div className="grid grid-cols-7 gap-1 text-[11px] uppercase tracking-wide text-slate-400 px-1 shrink-0">
                   {JOURS.map((j) => <div key={j} className="text-center">{j}</div>)}
                 </div>
                 {semainesMois.map((sem, wi) => (
-                  <div key={wi} className="grid grid-cols-7 gap-1">
+                  <div key={wi} className="grid grid-cols-7 gap-1 flex-1 min-h-[90px]">
                     {sem.map((d) => {
                       const evs = (parDate.get(J(d)) ?? [])
                       const horsMois = d.getMonth() !== debut.getMonth()
                       const estAuj = J(d) === today
+                      const max = 6
                       return (
-                        <div key={J(d)} className={`rounded border min-h-[78px] p-1 ${horsMois ? 'bg-slate-50/40 border-slate-100' : 'bg-white border-slate-200'}`}>
-                          <div className={`text-[11px] mb-0.5 ${estAuj ? 'font-bold text-cmf-blue' : horsMois ? 'text-slate-300' : 'text-slate-500'}`}>{d.getDate()}</div>
-                          <div className="flex flex-col gap-0.5">
-                            {evs.slice(0, 3).map((e, i) => {
+                        <div key={J(d)} className={`rounded border p-1 flex flex-col overflow-hidden ${horsMois ? 'bg-slate-50/40 border-slate-100' : 'bg-white border-slate-200'}`}>
+                          <div className={`text-[11px] mb-0.5 shrink-0 ${estAuj ? 'font-bold text-cmf-blue' : horsMois ? 'text-slate-300' : 'text-slate-500'}`}>{d.getDate()}</div>
+                          <div className="flex flex-col gap-0.5 overflow-y-auto">
+                            {evs.slice(0, max).map((e, i) => {
                               const a = aspect(e)
                               return (
                                 <button key={i} onClick={() => setSelId(e.product.id)} title={`${e.product.nom} · ${a.titre}`}
@@ -309,7 +321,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
                                 </button>
                               )
                             })}
-                            {evs.length > 3 && <span className="text-[10px] text-slate-400 px-1">+{evs.length - 3}</span>}
+                            {evs.length > max && <span className="text-[10px] text-slate-400 px-1">+{evs.length - max}</span>}
                           </div>
                         </div>
                       )
