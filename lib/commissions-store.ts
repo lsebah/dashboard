@@ -46,5 +46,14 @@ export function useCommissionsStore() {
     persist(next)
   }
 
-  return { ov, patch }
+  const reset = () => {
+    setOv({})
+    try {
+      localStorage.removeItem(KEY)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return { ov, patch, reset }
 }

@@ -36,7 +36,9 @@ const rowKey = (l: CommissionLigne) => `${l.isin}|${l.client ?? ''}|${l.issue ??
 type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
 export default function CommissionsView({ data }: { data: CommissionsData }) {
-  const { ov, patch } = useCommissionsStore()
+  const { ov, patch, reset } = useCommissionsStore()
+  const nbSaisies = Object.keys(ov).length
+  const [editFac, setEditFac] = useState<string | null>(null) // ligne dont le n° facture est en édition
   const [an, setAn] = useState<string>(ANNEE_COURANTE)
   const [statut, setStatut] = useState<StatutFacture>('toutes')
   const [q, setQ] = useState('')
@@ -61,7 +63,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       ovTaux && typeof comTotal === 'number' && typeof comClient === 'number' ? comTotal - comClient : l.comCmf
     const net = ovTaux && typeof comCmf === 'number' && typeof l.split === 'number' ? comCmf * l.split : l.net
     const credited = (editable ? o.credited : undefined) ?? l.credited
-    const facture = l.facture ?? (editable ? o.facture : undefined) ?? null
+    // Override prioritaire en année courante (permet de modifier un n° du classeur).
+    const facture = (editable ? o.facture : undefined) ?? l.facture ?? null
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
     return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, comCmf, net, credited, facture, factureClasseur: l.facture, fait, editable }
   }
@@ -237,6 +240,15 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           ))}
         </div>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher (ISIN, client, émetteur, facture…)" className="input w-[280px]" />
+        {nbSaisies > 0 && (
+          <button
+            onClick={() => reset()}
+            className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-700 hover:bg-amber-100"
+            title="Efface toutes les saisies locales (UF/Rétro/n° facture/date de paiement)"
+          >
+            Réinitialiser mes saisies ({nbSaisies})
+          </button>
+        )}
       </div>
 
       {/* Totaux du jeu filtré */}
@@ -301,26 +313,28 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-orange-600">{l.comClient ? EUR(l.comClient) : <span className="text-slate-300">—</span>}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.comTotal)}</td>
-                {/* Facture : n° du classeur (statique) ; sinon bouton ✉ + saisie
-                    manuelle du n° de facture (année courante). */}
+                {/* Facture : clic sur le n° pour l'ajouter/modifier (année courante).
+                    Années clôturées = statique. */}
                 <td className="px-2 py-1 whitespace-nowrap">
-                  {l.factureClasseur ? (
-                    l.factureClasseur
-                  ) : l.editable ? (
+                  {!l.editable ? (
+                    l.facture ?? <span className="text-slate-300">—</span>
+                  ) : editFac === rowKey(l) ? (
+                    <input
+                      autoFocus
+                      type="text"
+                      defaultValue={l.facture ?? ''}
+                      placeholder="n° facture"
+                      className="w-24 rounded border border-cmf-blue bg-white px-1 py-0.5 text-[11px] focus:outline-none"
+                      onBlur={(e) => { patch(rowKey(l), { facture: e.target.value.trim() || undefined }); setEditFac(null) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditFac(null) }}
+                    />
+                  ) : l.facture ? (
+                    <button onClick={() => setEditFac(rowKey(l))} className="hover:underline decoration-dotted" title="Cliquer pour modifier le n°">{l.facture}</button>
+                  ) : (
                     <span className="inline-flex items-center gap-1.5">
                       <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture (Gabrielle) — tu procèdes à l’envoi">✉ Facturer</a>
-                      <input
-                        type="text"
-                        defaultValue={ov[rowKey(l)]?.facture ?? ''}
-                        placeholder="n° facture"
-                        className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-[11px] hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none"
-                        title="Saisir le n° de facture (marque facturé)"
-                        onBlur={(e) => patch(rowKey(l), { facture: e.target.value.trim() || undefined })}
-                        onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                      />
+                      <button onClick={() => setEditFac(rowKey(l))} className="text-[11px] text-cmf-blue hover:underline" title="Saisir le n° de facture">+ n°</button>
                     </span>
-                  ) : (
-                    <span className="text-slate-300">—</span>
                   )}
                 </td>
                 {/* Payée : date éditable (année courante), sinon statique */}
