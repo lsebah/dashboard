@@ -338,6 +338,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     return a.length > 0 && ms.length === a.length ? ms.reduce((s, m) => s + m, 0) : p.nominal
   }
 
+  // Ajuste (localement) le montant investi du compte d'index `idx` d'un produit.
+  const commitMontant = (p: Product, idx: number, raw: string) => {
+    const m = Number(raw.replace(/[^\d.,]/g, '').replace(',', '.'))
+    const next = allocsOf(p).map((a, j) =>
+      j === idx ? { ...a, montant: Number.isFinite(m) && m > 0 ? m : undefined } : a,
+    )
+    setClients(p.isin, next)
+  }
+
   // Lignes affichées : éclatées par compte (une ligne par allocation) si
   // `parCompte`, sinon une ligne par produit (montant agrégé).
   const rowsFinal = useMemo<{ p: Product; alloc?: ClientAlloc; i: number }[]>(() => {
@@ -416,7 +425,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   // Cellule de corps pour une colonne donnée. `alloc` = allocation de la ligne
   // (mode « par compte ») : la cellule Amount/Client affiche alors le compte.
-  const bodyCell = (p: Product, key?: string, alloc?: ClientAlloc) => {
+  const bodyCell = (p: Product, key?: string, alloc?: ClientAlloc, i = 0) => {
     const t = p.terms
     switch (key) {
       case 'rr': {
@@ -506,11 +515,30 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'cy':
         return <td key="cy" className="px-2 py-1.5 text-slate-500">{p.devise}</td>
       case 'amount': {
-        // Par compte : montant du compte (— si non renseigné) ; sinon total agrégé.
-        const montant = alloc ? alloc.montant : montantTotal(p)
+        // Par compte : montant du compte ÉDITABLE en place (clic → saisie, commit
+        // à la sortie / Entrée). Sinon (agrégé) : total en lecture seule.
+        if (alloc) {
+          return (
+            <td key="amount" className="px-1 py-1 tabular-nums whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <input
+                key={`${p.isin}|${i}|${alloc.montant ?? ''}`}
+                defaultValue={typeof alloc.montant === 'number' ? alloc.montant : ''}
+                inputMode="numeric"
+                placeholder="—"
+                title="Ajuster le montant investi (local)"
+                className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none"
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => commitMontant(p, i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
+              />
+            </td>
+          )
+        }
         return (
           <td key="amount" className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-            {typeof montant === 'number' ? montant.toLocaleString('fr-FR') : <span className="text-slate-300">—</span>}
+            {montantTotal(p).toLocaleString('fr-FR')}
           </td>
         )
       }
@@ -789,7 +817,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             <tbody className="divide-y divide-slate-100">
               {rowsFinal.map(({ p, alloc, i }) => (
                 <tr key={`${p.id}|${alloc?.client ?? '∅'}|${i}`} {...rowProps(p)}>
-                  {COLUMNS.map((c) => bodyCell(p, c.key, alloc))}
+                  {COLUMNS.map((c) => bodyCell(p, c.key, alloc, i))}
                 </tr>
               ))}
             </tbody>

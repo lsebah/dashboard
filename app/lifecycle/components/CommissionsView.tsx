@@ -7,16 +7,21 @@ const EUR = (n: number | null | undefined, devise = 'EUR') =>
   typeof n === 'number'
     ? n.toLocaleString('fr-FR', { style: 'currency', currency: devise, maximumFractionDigits: 0 })
     : '—'
+// Pourcentage avec 2 décimales MAX (zéros superflus retirés) : 0.06 → « 6 % »,
+// 0.0392 → « 3.92 % », 0.039999 → « 4 % ».
 const PCT = (n: number | null | undefined) =>
-  typeof n === 'number' ? `${(n * 100).toFixed(2).replace(/\.00$/, '')} %` : '—'
+  typeof n === 'number' ? `${parseFloat((n * 100).toFixed(2))} %` : '—'
 const dateFr = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('fr-FR') : null
 const annee = (l: CommissionLigne) => (l.issue ? l.issue.slice(0, 4) : '—')
 
-// Destinataire de la facture (Gabrielle Salmon, qui l'édite pour l'émetteur).
-// À renseigner depuis le « skill facture » ; laissé vide ⇒ l'utilisateur complète
-// le destinataire dans son client mail.
-const GABRIELLE_EMAIL = ''
+// Email « Nouvelle Facture » à Gabrielle Salmon (skill cmf-facture-gabrielle).
+// Destinataire = office@cmf.finance ; CC systématique Pierre Doize + Thomas Ballot
+// (emails déduits de la convention CMF prenom-initiale.nom@cmf.finance).
+const GABRIELLE_EMAIL = 'office@cmf.finance'
+const FACTURE_CC = 'p.doize@cmf.finance,t.ballot@cmf.finance'
+const num = (n: number | null | undefined) =>
+  typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''
 
 type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
@@ -84,29 +89,29 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // facture » (à brancher) ; ce corps est un brouillon reprenant les éléments du
   // deal en attendant.
   const factureMailto = (l: CommissionLigne): string => {
-    const sujet = `Facture à éditer — ${l.emetteur ?? ''} — ${l.isin}`
-    const corps = [
-      'Bonjour Gabrielle,',
+    const d = dateFr(l.issue) ?? ''
+    // Montant facturé à l'émetteur = Invoice % (UF total) × Nominal = COM TOTAL.
+    const lignes = [
+      'Hello Gabrielle,',
       '',
-      "Peux-tu éditer la facture pour l'émetteur sur le deal suivant :",
+      'Peux-tu éditer la facture suivante',
       '',
-      `• Produit : ${l.description ?? ''}`,
-      `• ISIN : ${l.isin}`,
-      `• Émetteur : ${l.emetteur ?? ''}`,
-      `• Date d'émission : ${dateFr(l.issue) ?? ''}`,
-      `• Client / CGP : ${l.client ?? ''}`,
-      `• Nominal : ${EUR(l.nominal, l.devise ?? 'EUR')}`,
-      `• Upfront : ${PCT(l.ufPct)}`,
-      `• Commission totale : ${EUR(l.comTotal)}`,
-      `• Dont rétrocession CGP : ${EUR(l.comClient)}`,
-      `• Commission CMF : ${EUR(l.comCmf)}`,
-      '',
-      'Merci,',
-      'Laurent',
-    ].join('\n')
+      `Émetteur\t${l.emetteur ?? ''}`,
+      `ISIN\t\t${l.isin}`,
+      `Trade Date\t${d}`,
+      `Issue Date\t${d}`,
+      `Payoff\t\t${l.description ?? ''}`,
+      `Nominal\t\tEUR ${num(l.nominal)}`,
+      `Upfront\t\t${PCT(l.ufPct)}  —  EUR ${num(l.comTotal)}`,
+    ]
+    // Reversement éventuel au cabinet partenaire (rétrocession connue dans la base).
+    if (typeof l.comClient === 'number' && l.comClient > 0 && l.client)
+      lignes.push('', `Dès règlement reçu, merci de reverser EUR ${num(l.comClient)} à ${l.client}.`)
+    lignes.push('', 'Merci')
     const p = new URLSearchParams()
-    p.set('subject', sujet)
-    p.set('body', corps)
+    p.set('cc', FACTURE_CC)
+    p.set('subject', `Nouvelle Facture ${l.emetteur ?? ''}`.trim())
+    p.set('body', lignes.join('\n'))
     return `mailto:${GABRIELLE_EMAIL}?${p.toString()}`
   }
 
