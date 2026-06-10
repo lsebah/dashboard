@@ -12,7 +12,7 @@ import type {
   BasketType,
   Underlying,
 } from './types'
-import { buildObservations, pnlAvecCoupons } from './lifecycle'
+import { buildObservations, pnlAvecCoupons, rappelConstate } from './lifecycle'
 import { portfolioImport } from './portfolio-import'
 import { termsheetUrl, termsheetFile, termsheetMeta } from './termsheets'
 import {
@@ -4927,12 +4927,16 @@ export const products: Product[] = feedIsins.map((isin) => {
   // Libellé commercial (colonne « Description » de l'Excel) : fait foi pour la
   // description affichée. Sert aussi de titre aux produits sans vraie définition.
   const desc = descByIsin[isin]
+  // Rappel automatique : si un niveau worst-of constaté a franchi la barrière
+  // d'autocall à une observation passée, le produit est dérivé « rappelé ».
+  // Priorité : statut explicite (feed) > rappel dérivé > statut de la définition.
+  const rappelAuto = rappelConstate(base) ? 'rappele' : undefined
   const merged: Product = {
     ...base,
     nom: base.nom && base.nom !== isin ? base.nom : desc ?? base.nom,
     description: desc ?? base.description,
     prixMarche: price ?? base.prixMarche,
-    statut: statutByIsin[isin] ?? base.statut ?? 'vivant',
+    statut: statutByIsin[isin] ?? rappelAuto ?? base.statut ?? 'vivant',
     nominal: amountByIsin[isin] ?? base.nominal,
     // La devise vient de la DÉFINITION (termsheet/catalogue, fiable) ; le feed ne
     // sert de repli que pour les produits sans définition (minimal). Évite qu'une

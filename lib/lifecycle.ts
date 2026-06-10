@@ -359,6 +359,31 @@ export function echeancier(product: Product, now: Date = new Date()): EcheanceLi
   }))
 }
 
+/**
+ * Rappel constaté (autocall déclenché) : à une date d'observation PASSÉE et
+ * AUTOCALL-ACTIVE (hors période non-call), si le niveau du worst-of constaté
+ * (`niveauConstatePct`) est ≥ à la barrière d'autocall (`niveauRappelPct`), le
+ * produit a été remboursé par anticipation. Renvoie la PREMIÈRE observation
+ * déclencheuse (dans le temps), sinon undefined. Sert à dériver le statut
+ * « rappelé » sans saisie manuelle. N'opère que si le niveau worst-of a été
+ * renseigné pour la date (sinon « à constater » ⇒ pas de rappel auto).
+ */
+export function rappelConstate(
+  product: Product,
+  now: Date = new Date(),
+): { n: number; date: string; niveauPct: number; barrierePct: number } | undefined {
+  const today = now.toISOString().slice(0, 10)
+  for (const o of product.observations ?? []) {
+    if (o.autocallActif === false) continue // période non-call (lock-out)
+    if (o.dateObservation > today) continue // observation future
+    const barriere = o.niveauRappelPct
+    const niveau = o.niveauConstatePct
+    if (typeof barriere === 'number' && typeof niveau === 'number' && niveau >= barriere)
+      return { n: o.n, date: o.dateObservation, niveauPct: niveau, barrierePct: barriere }
+  }
+  return undefined
+}
+
 /** Amplitude de dégressivité de la barrière de rappel (départ → fin), si step-down. */
 export function degressivite(
   product: Product,

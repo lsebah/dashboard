@@ -11,6 +11,7 @@ import {
   couponPa,
   couponsEncaissesPct,
   pnlAvecCoupons,
+  rappelConstate,
   formatDateFr,
   formatPct,
 } from '@/lib/lifecycle'
@@ -755,6 +756,28 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       >
         {opened && openedAug && (
           <div className="flex flex-col gap-3">
+            {/* Rappel détecté : à une observation passée (active), le worst-of
+                constaté (niveaux Yahoo) a franchi la barrière d'autocall → on
+                propose de marquer le produit « rappelé » (statut local). */}
+            {(() => {
+              const r = opened.statut !== 'rappele' ? rappelConstate(openedAug) : undefined
+              if (!r) return null
+              return (
+                <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
+                  <span>
+                    ↑ <strong>Rappel probable</strong> : worst-of {r.niveauPct}% ≥ barrière
+                    d&apos;autocall {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
+                    {formatDateFr(r.date)}.
+                  </span>
+                  <button
+                    onClick={() => setStatut(opened.isin, 'rappele')}
+                    className="shrink-0 rounded bg-violet-600 px-2 py-1 font-medium text-white hover:bg-violet-700"
+                  >
+                    Marquer rappelé
+                  </button>
+                </div>
+              )
+            })()}
             <ProductSynopsis product={openedAug} />
             <ClientAssign
               allocs={allocsOf(opened)}

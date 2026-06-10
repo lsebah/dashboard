@@ -46,7 +46,7 @@ function CouponSuivi({ product }: { product: Product }) {
               <th className="text-left font-medium px-2 py-1">Observation</th>
               <th className="text-right font-medium px-2 py-1">Coupon</th>
               <th className="text-right font-medium px-2 py-1">Barrière</th>
-              <th className="text-right font-medium px-2 py-1">Niveau</th>
+              <th className="text-right font-medium px-2 py-1">Niveau Wof</th>
               <th className="text-left font-medium px-2 py-1">Statut</th>
             </tr>
           </thead>
