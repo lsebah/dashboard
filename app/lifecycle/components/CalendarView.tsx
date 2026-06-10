@@ -194,17 +194,16 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const parDate = useMemo(() => {
     const m = new Map<string, Ev[]>()
     for (const e of affiches) {
-      // week-end → rattaché au vendredi en vue hebdo
+      // Les observations ne tombent jamais le week-end : un événement daté
+      // samedi/dimanche est rattaché au vendredi précédent (jour ouvré).
       let key = e.date
-      if (mode === 'hebdo') {
-        const dd = new Date(e.date)
-        const j = (dd.getDay() + 6) % 7
-        if (j > 4) key = J(addJours(dd, -(j - 4)))
-      }
+      const dd = new Date(e.date)
+      const j = (dd.getDay() + 6) % 7
+      if (j > 4) key = J(addJours(dd, -(j - 4)))
       ;(m.get(key) ?? m.set(key, []).get(key)!).push(e)
     }
     return m
-  }, [affiches, mode])
+  }, [affiches])
 
   // Grille mensuelle : semaines (lignes) × lun→dim.
   const semainesMois = useMemo(() => {
@@ -213,7 +212,8 @@ export default function CalendarView({ products }: { products: Product[] }) {
     let cur = lundi(debut)
     const stop = addJours(fin, 7)
     while (cur < stop) {
-      out.push(Array.from({ length: 7 }, (_, i) => addJours(cur, i)))
+      // Semaine ouvrée seulement : lundi → vendredi (pas de samedi/dimanche).
+      out.push(Array.from({ length: 5 }, (_, i) => addJours(cur, i)))
       cur = addJours(cur, 7)
     }
     return out
@@ -298,11 +298,11 @@ export default function CalendarView({ products }: { products: Product[] }) {
               // Vue mensuelle : occupe toute la hauteur (semaines en lignes égales,
               // cellules étirées) pour maximiser la fenêtre.
               <div className="flex flex-col gap-1 h-full">
-                <div className="grid grid-cols-7 gap-1 text-[11px] uppercase tracking-wide text-slate-400 px-1 shrink-0">
-                  {JOURS.map((j) => <div key={j} className="text-center">{j}</div>)}
+                <div className="grid grid-cols-5 gap-1 text-[11px] uppercase tracking-wide text-slate-400 px-1 shrink-0">
+                  {JOURS.slice(0, 5).map((j) => <div key={j} className="text-center">{j}</div>)}
                 </div>
                 {semainesMois.map((sem, wi) => (
-                  <div key={wi} className="grid grid-cols-7 gap-1 flex-1 min-h-[90px]">
+                  <div key={wi} className="grid grid-cols-5 gap-1 flex-1 min-h-[90px]">
                     {sem.map((d) => {
                       const evs = (parDate.get(J(d)) ?? [])
                       const horsMois = d.getMonth() !== debut.getMonth()

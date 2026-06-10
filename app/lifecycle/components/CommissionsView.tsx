@@ -20,6 +20,15 @@ const dateFr = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString('fr-FR') : null
 const annee = (l: CommissionLigne) => (l.issue ? l.issue.slice(0, 4) : '—')
 const trimestre = (iso: string) => `Q${Math.floor(new Date(iso).getMonth() / 3) + 1}`
+// Date du jour (ISO) — pour signaler les émissions à venir.
+const TODAY = new Date().toISOString().slice(0, 10)
+// Année d'attribution : normalement l'année d'émission ; un deal émis une année
+// antérieure mais ENCAISSÉ l'année courante (report ponctuel — ex. APPN/Santander,
+// erreur de facturation) est rattaché à l'année courante.
+const anneeAttr = (l: CommissionLigne) =>
+  annee(l) !== ANNEE_COURANTE && (l.credited ?? '').startsWith(ANNEE_COURANTE)
+    ? ANNEE_COURANTE
+    : annee(l)
 
 // Email « Nouvelle Facture » à Gabrielle Salmon (skill cmf-facture-gabrielle).
 const GABRIELLE_EMAIL = 'office@cmf.finance'
@@ -54,29 +63,39 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const uf = editable ? o.uf ?? l.ufPct : l.ufPct
     const retro = editable ? o.retro ?? l.retroPct : l.retroPct
     const n = l.nominal
+    const split = typeof l.split === 'number' ? l.split : 1
     // On ne RECALCULE que si UF/Rétro ont été saisis ; sinon on garde les montants
     // exacts du classeur (vérifiables ligne à ligne, sans erreur d'arrondi).
     const ovTaux = editable && (o.uf !== undefined || o.retro !== undefined)
-    const comTotal = ovTaux && typeof n === 'number' && typeof uf === 'number' ? n * uf : l.comTotal
-    const comClient = ovTaux && typeof n === 'number' && typeof retro === 'number' ? n * retro : l.comClient
-    const comCmf =
-      ovTaux && typeof comTotal === 'number' && typeof comClient === 'number' ? comTotal - comClient : l.comCmf
-    const net = ovTaux && typeof comCmf === 'number' && typeof l.split === 'number' ? comCmf * l.split : l.net
+    // Reversé CGP = nominal × Rétro.
+    const comClient = ovTaux
+      ? typeof n === 'number' && typeof retro === 'number'
+        ? n * retro
+        : 0
+      : l.comClient ?? 0
+    // Net Lolo = vrai net (après split). En saisie : (nominal·UF − Reversé CGP) × split.
+    const net = ovTaux
+      ? ((typeof n === 'number' && typeof uf === 'number' ? n * uf : 0) - comClient) * split
+      : l.net ?? 0
+    // Com. totale = Net Lolo + Reversé CGP (invariant garanti à l'affichage). Sur les
+    // années clôturées on conserve la « com. totale » brute du classeur (qui peut
+    // inclure une quote-part co-distributeur quand split < 100 %).
+    const comTotal = editable ? net + comClient : l.comTotal ?? net + comClient
     const credited = (editable ? o.credited : undefined) ?? l.credited
     // Override prioritaire en année courante (permet de modifier un n° du classeur).
     const facture = (editable ? o.facture : undefined) ?? l.facture ?? null
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
-    return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, comCmf, net, credited, facture, factureClasseur: l.facture, fait, editable }
+    return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split }
   }
 
   const annees = useMemo(() => {
-    const s = new Set(data.lignes.map(annee).filter((a) => a !== '—'))
+    const s = new Set(data.lignes.map(anneeAttr).filter((a) => a !== '—'))
     return Array.from(s).sort((a, b) => b.localeCompare(a))
   }, [data.lignes])
 
   const filtered = useMemo(() => {
     let l = data.lignes.map(calc)
-    if (an !== 'tous') l = l.filter((x) => annee(x) === an)
+    if (an !== 'tous') l = l.filter((x) => anneeAttr(x) === an)
     if (statut === 'a_facturer') l = l.filter((x) => !x.fait)
     if (statut === 'envoyee') l = l.filter((x) => x.fait && !x.credited)
     if (statut === 'payee') l = l.filter((x) => x.credited)
@@ -102,9 +121,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   }, [data.lignes, ov, an, statut, q, sort])
 
   const tot = useMemo(() => {
-    const sum = (k: 'comCmf' | 'comClient' | 'comTotal' | 'net' | 'nominal') =>
+    const sum = (k: 'comClient' | 'comTotal' | 'net' | 'nominal') =>
       filtered.reduce((s, l) => s + (typeof l[k] === 'number' ? (l[k] as number) : 0), 0)
-    return { perçue: sum('comCmf'), retro: sum('comClient'), total: sum('comTotal'), net: sum('net'), nominal: sum('nominal') }
+    return { net: sum('net'), retro: sum('comClient'), total: sum('comTotal'), nominal: sum('nominal') }
   }, [filtered])
 
   // Visuel trimestriel de l'année courante : une commission n'est « encaissée »
@@ -187,7 +206,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE}</div>
           <div className="text-2xl font-bold text-emerald-600">{EUR(netLoloYtd)}</div>
           <div className="text-[11px] text-slate-400">
-            vrai net (après split) · classeur {EUR(ytdClasseur)}
+            = somme des « Net Lolo » du tableau · classeur {EUR(ytdClasseur)}
           </div>
         </div>
         {['2025', '2024', '2023'].map((y) => (
@@ -252,12 +271,11 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       </div>
 
       {/* Totaux du jeu filtré */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
         {[
-          ['Net Lolo', EUR(tot.perçue), ''],
+          ['Net Lolo — lignes listées', EUR(tot.net), 'text-emerald-600'],
           ['Reversé CGP', EUR(tot.retro), 'text-orange-600'],
           ['Com. totale', EUR(tot.total), ''],
-          ['P&L — lignes listées', EUR(tot.net), 'text-emerald-600'],
           ['Nominal placé', EUR(tot.nominal), ''],
         ].map(([lab, val, cls]) => (
           <div key={lab} className="rounded-md bg-slate-50 border border-slate-200 p-2">
@@ -279,20 +297,27 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
               <TH k="description" label="Description" />
               <TH k="nominal" label="Nominal" num />
               <TH k="ufPct" label="UF" num />
-              <TH k="comCmf" label="Net Lolo" num />
+              <TH k="net" label="Net Lolo" num />
               <TH k="retroPct" label="Rétro" num />
               <TH k="comClient" label="Reversé CGP" num />
               <TH k="comTotal" label="Com. totale" num />
               <TH k="facture" label="Facture" />
               <TH k="credited" label="Payée" />
               <TH k="split" label="Split" num />
-              <TH k="net" label="P&L" num />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map((l, i) => (
               <tr key={`${rowKey(l)}|${i}`} className="hover:bg-orange-50">
-                <td className="px-2 py-1.5 whitespace-nowrap">{dateFr(l.issue) ?? '—'}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap">
+                  {dateFr(l.issue) ?? '—'}
+                  {l.issue && l.issue > TODAY && (
+                    <span className="ml-1.5 rounded bg-violet-100 px-1 py-0.5 text-[10px] font-medium text-violet-700" title="Émission à venir">à venir</span>
+                  )}
+                  {anneeAttr(l) !== annee(l) && (
+                    <span className="ml-1.5 rounded bg-amber-100 px-1 py-0.5 text-[10px] font-medium text-amber-700" title={`Émis en ${annee(l)}, encaissé en ${ANNEE_COURANTE} — report ponctuel`}>report {anneeAttr(l)}</span>
+                  )}
+                </td>
                 <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.isin}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{l.client ?? '—'}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{l.emetteur ?? '—'}</td>
@@ -304,7 +329,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                     <input key={`uf|${rowKey(l)}|${l.ufPct ?? ''}`} defaultValue={typeof l.ufPct === 'number' ? (l.ufPct * 100).toFixed(2) : ''} inputMode="decimal" placeholder="—" className={inputPct} title="Saisir l'UF total (%)" onBlur={(e) => patch(rowKey(l), { uf: parsePct(e.target.value) })} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
                   ) : PCT2(l.ufPct)}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.comCmf)}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold text-emerald-700">{EUR(l.net)}</td>
                 {/* Rétro — éditable (année courante). 0 ou absent → « — ». */}
                 <td className="px-1 py-1 text-right tabular-nums whitespace-nowrap">
                   {l.editable ? (
@@ -348,20 +373,20 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                   )}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{typeof l.split === 'number' ? `${(l.split * 100).toFixed(0)} %` : '—'}</td>
-                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold">{EUR(l.net)}</td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={15} className="px-2 py-6 text-center text-slate-400">Aucune commission pour ce filtre.</td></tr>
+              <tr><td colSpan={14} className="px-2 py-6 text-center text-slate-400">Aucune commission pour ce filtre.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       <p className="text-[11px] text-slate-400">
-        Édition réservée à l&apos;année courante ({ANNEE_COURANTE}) : UF et Rétro saisis → Perçue
-        (CMF), Reversé CGP et P&amp;L recalculés depuis le nominal du ticket. Les années précédentes
-        sont clôturées (lecture seule). Saisies locales (navigateur), non versionnées.
+        Édition réservée à l&apos;année courante ({ANNEE_COURANTE}) : UF et Rétro saisis → Net Lolo
+        (vrai net, base 250&nbsp;360), Reversé CGP et Com. totale recalculés depuis le nominal du
+        ticket (Com. totale = Net Lolo + Reversé CGP). Les années précédentes sont clôturées
+        (lecture seule). Saisies locales (navigateur), non versionnées.
       </p>
     </div>
   )
