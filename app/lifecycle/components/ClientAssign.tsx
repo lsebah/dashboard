@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { ClientAlloc } from '@/lib/allocations'
 import type { ProductStatus } from '@/lib/types'
-import { formatMontant } from '@/lib/lifecycle'
 import { parseTermsheetName } from '@/lib/termsheets'
 
 const STATUTS: { value: ProductStatus; label: string; cls: string }[] = [
@@ -54,6 +53,16 @@ export default function ClientAssign({
   }
 
   const remove = (c: string) => onChange(allocs.filter((a) => a.client !== c))
+
+  // Ajuste le montant investi d'un compte existant (saisie locale).
+  const adjust = (c: string, raw: string) => {
+    const m = Number(raw.replace(/[^\d.,]/g, '').replace(',', '.'))
+    onChange(
+      allocs.map((a) =>
+        a.client === c ? { ...a, montant: Number.isFinite(m) && m > 0 ? m : undefined } : a,
+      ),
+    )
+  }
   const cur = statut ?? 'vivant'
 
   return (
@@ -108,18 +117,30 @@ export default function ClientAssign({
       )}
 
       {allocs.length > 0 ? (
-        <ul className="flex flex-wrap gap-1.5">
+        <ul className="flex flex-col gap-1">
           {allocs.map((a) => (
             <li
               key={a.client}
-              className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 border border-slate-200 px-2 py-1 text-xs"
+              className="flex items-center gap-2 rounded-md bg-slate-50 border border-slate-200 px-2 py-1 text-xs"
             >
-              <span className="font-medium text-slate-700">{a.client}</span>
-              {typeof a.montant === 'number' && (
-                <span className="text-slate-500 tabular-nums">
-                  {formatMontant(a.montant, devise)}
-                </span>
-              )}
+              <span className="font-medium text-slate-700 flex-1 truncate" title={a.client}>
+                {a.client}
+              </span>
+              {/* Montant éditable par compte (commit à la sortie / Entrée). Le key
+                  inclut le montant ⇒ l'input se réinitialise si la valeur change ailleurs. */}
+              <input
+                key={`${a.client}:${a.montant ?? ''}`}
+                defaultValue={typeof a.montant === 'number' ? a.montant : ''}
+                inputMode="numeric"
+                placeholder="montant"
+                className="input w-28 py-0.5 text-right tabular-nums"
+                title={`Montant investi (${devise})`}
+                onBlur={(e) => adjust(a.client, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
+              />
+              <span className="text-slate-400">{devise}</span>
               <button
                 onClick={() => remove(a.client)}
                 className="text-slate-400 hover:text-red-600"

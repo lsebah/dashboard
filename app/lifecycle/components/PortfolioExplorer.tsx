@@ -183,6 +183,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [hoverId, setHoverId] = useState<string | null>(null)
+  // « Par compte » : une ligne par (produit × compte) avec le montant du compte ;
+  // sinon une ligne par produit avec le montant agrégé.
+  const [parCompte, setParCompte] = useState(true)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({
     key: 'next',
     dir: 'asc',
@@ -327,6 +330,26 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     [listAug, situ],
   )
 
+  // Montant total d'un produit = somme des allocations (reflète les ajustements
+  // locaux), sinon le nominal du feed.
+  const montantTotal = (p: Product): number => {
+    const a = allocsOf(p)
+    const ms = a.map((x) => x.montant).filter((m): m is number => typeof m === 'number')
+    return a.length > 0 && ms.length === a.length ? ms.reduce((s, m) => s + m, 0) : p.nominal
+  }
+
+  // Lignes affichées : éclatées par compte (une ligne par allocation) si
+  // `parCompte`, sinon une ligne par produit (montant agrégé).
+  const rowsFinal = useMemo<{ p: Product; alloc?: ClientAlloc; i: number }[]>(() => {
+    if (!parCompte) return listFinal.map((p) => ({ p, i: 0 }))
+    return listFinal.flatMap((p) => {
+      const allocs = allocsOf(p)
+      return allocs.length > 0
+        ? allocs.map((alloc, i) => ({ p, alloc, i }))
+        : [{ p, i: 0 }]
+    })
+  }, [listFinal, parCompte, allocsOf])
+
   // Synthèse « Analyse de risques » calculée sur TOUS les produits en cours, avec
   // les niveaux courants injectés (sinon la situation serait « non classé » côté
   // serveur, faute de perf). Indépendante des filtres de la table.
@@ -391,8 +414,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }`,
   })
 
-  // Cellule de corps pour une colonne donnée.
-  const bodyCell = (p: Product, key?: string) => {
+  // Cellule de corps pour une colonne donnée. `alloc` = allocation de la ligne
+  // (mode « par compte ») : la cellule Amount/Client affiche alors le compte.
+  const bodyCell = (p: Product, key?: string, alloc?: ClientAlloc) => {
     const t = p.terms
     switch (key) {
       case 'rr': {
@@ -481,8 +505,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
       case 'cy':
         return <td key="cy" className="px-2 py-1.5 text-slate-500">{p.devise}</td>
-      case 'amount':
-        return <td key="amount" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{p.nominal.toLocaleString('fr-FR')}</td>
+      case 'amount': {
+        // Par compte : montant du compte (— si non renseigné) ; sinon total agrégé.
+        const montant = alloc ? alloc.montant : montantTotal(p)
+        return (
+          <td key="amount" className="px-2 py-1.5 tabular-nums whitespace-nowrap">
+            {typeof montant === 'number' ? montant.toLocaleString('fr-FR') : <span className="text-slate-300">—</span>}
+          </td>
+        )
+      }
       case 'issuer':
         return <td key="issuer" className="px-2 py-1.5 whitespace-nowrap">{p.emetteur.split(' ')[0]}</td>
       case 'freq':
@@ -526,6 +557,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         return <td key="pdi" className="px-2 py-1.5 tabular-nums whitespace-nowrap">{typeof v === 'number' ? `${v}%` : '—'}</td>
       }
       case 'client': {
+        // Par compte : le compte de la ligne ; sinon tous les comptes (agrégé).
+        if (alloc) return <td key="client" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{alloc.client}</td>
         const allocs = allocsOf(p)
         return (
           <td key="client" className="px-2 py-1.5 whitespace-nowrap text-slate-600">
@@ -683,6 +716,22 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               LIVE <span className="opacity-70">{nbLive}</span>
             </button>
           </div>
+          <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
+            <button
+              onClick={() => setParCompte(true)}
+              className={`px-3 py-1.5 ${parCompte ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+              title="Une ligne par compte (montant par compte)"
+            >
+              Par compte
+            </button>
+            <button
+              onClick={() => setParCompte(false)}
+              className={`px-3 py-1.5 ${!parCompte ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
+              title="Une ligne par produit (montant agrégé)"
+            >
+              Agrégé
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -738,9 +787,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               <tr>{COLUMNS.map(headerCell)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {listFinal.map((p) => (
-                <tr key={p.id} {...rowProps(p)}>
-                  {COLUMNS.map((c) => bodyCell(p, c.key))}
+              {rowsFinal.map(({ p, alloc, i }) => (
+                <tr key={`${p.id}|${alloc?.client ?? '∅'}|${i}`} {...rowProps(p)}>
+                  {COLUMNS.map((c) => bodyCell(p, c.key, alloc))}
                 </tr>
               ))}
             </tbody>
