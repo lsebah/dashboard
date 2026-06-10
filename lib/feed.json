@@ -8,14 +8,14 @@
  },
  {
   "isin": "XS3379794913",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 400000,
   "description": "Phoenix Autocall Mémoire worst-of MITTAL + ESSILOR"
  },
  {
   "isin": "XS3391940502",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 400000,
   "description": "Phoenix Mémoire worst-of Engie / Nexans / Schneider Electric"
@@ -63,7 +63,7 @@
  {
   "isin": "XS3292034843",
   "last": 91.2708,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 100000,
   "description": "Phoenix Memoire Heidelberg materials + Holcim + Legrand"
@@ -174,7 +174,7 @@
  {
   "isin": "XS3266613416",
   "last": 83.26,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 300000,
   "description": "Phoenix Mémoire Rearmement Europe"
@@ -182,7 +182,7 @@
  {
   "isin": "XS3266613333",
   "last": 70.79,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 300000,
   "description": "Phoenix Memoire Ferroviaires + Infra"
@@ -442,7 +442,7 @@
  {
   "isin": "CH1278887422",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 300000,
   "description": "Mini Futures Dassault Systemes"
@@ -458,14 +458,14 @@
  {
   "isin": "FRIP00001I09",
   "last": 101.44,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 400000,
   "description": "Phoenix Memoire iEdge Transatlantic Artificial Intelligence"
  },
  {
   "isin": "XS3049563219",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 200000,
   "description": "Phoenix Memoire BNP + Société Générale + Crédit Agricole"
@@ -473,7 +473,7 @@
  {
   "isin": "XS3049573440",
   "last": 81.9269,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 400000,
   "description": "Phoenix Memoire Wof Hermes + Kering + LVMH"
@@ -568,7 +568,7 @@
  {
   "isin": "XS2975786000",
   "last": 49.27,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1465000,
   "description": "ZC CLN Tranche Crossover"
@@ -760,7 +760,7 @@
  {
   "isin": "XS2902296008",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 500000,
   "description": "Phoenix Memory MRNA"
@@ -974,7 +974,7 @@
  {
   "isin": "FRSG00014U55",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 240000,
   "description": "Phoenix Mémoire SX7E"
@@ -1030,7 +1030,7 @@
  {
   "isin": "XS2653912068",
   "last": 98.45,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1400000,
   "description": "Autocall Airbag Wof PFE + ROG.SE + SAN.FP"
@@ -1038,7 +1038,7 @@
  {
   "isin": "CH0587314615",
   "last": 4.29,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 130000,
   "description": "Warrant Senior Loan"
@@ -1102,7 +1102,7 @@
  {
   "isin": "XS2641318121",
   "last": 90.34,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "GBP",
   "amount": 1000000,
   "description": "Tranched CLN Zero Recovery Credit Linked Notes due 2031"
@@ -1213,7 +1213,7 @@
  {
   "isin": "SE0020849388",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 500000,
   "description": "Dette Privée - Regenergy Frövi"
@@ -1245,7 +1245,7 @@
  {
   "isin": "XS2464629414",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1000000,
   "description": "TARN Steepener 2s30s"
@@ -1277,7 +1277,7 @@
  {
   "isin": "XS2442403130",
   "last": 97.7,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1500000,
   "description": "TARN CMS 30Y - CMS 2Y"
@@ -1285,7 +1285,7 @@
  {
   "isin": "XS2440513757",
   "statut": "vendu",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1700000,
   "description": "TARN CMS 30Y - CMS 2Y"
@@ -1317,7 +1317,7 @@
  {
   "isin": "CH1163990570",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 700000,
   "description": "Autocall Classic on ORP"
@@ -1325,7 +1325,7 @@
  {
   "isin": "CH0593640243",
   "last": 63.72,
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 1600000,
   "description": "Autocall Airbag on FORECEC + BGCHA2E + IGCAIAD"
@@ -1333,14 +1333,14 @@
  {
   "isin": "FRSG00010W99",
   "statut": "vendu",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 360000,
   "description": "Autocall Classic on URW"
  },
  {
   "isin": "XS2059726096",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 500000,
   "description": "CLN Main Tranche 4-8 - 4.10% p.a"
@@ -1348,7 +1348,7 @@
  {
   "isin": "CH0514676219",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 200000,
   "description": "Autocall Classic on URW"
@@ -1356,7 +1356,7 @@
  {
   "isin": "CH0514676201",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 200000,
   "description": "Autocall Airbag on RNO"
@@ -1364,7 +1364,7 @@
  {
   "isin": "CH0514676193",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 10000000,
   "description": "Autocall Bouygues"
@@ -1372,7 +1372,7 @@
  {
   "isin": "CH0502683763",
   "statut": "vendu",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 100000,
   "description": "Autocall Classic on URW"
@@ -1380,7 +1380,7 @@
  {
   "isin": "CH0502683789",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 100000,
   "description": "Autocall Airbag on EN"
@@ -1395,7 +1395,7 @@
  {
   "isin": "CH0470308765",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 100000,
   "description": "Autocall Recovery Note on TTE + GLE + RNO"
@@ -1403,7 +1403,7 @@
  {
   "isin": "CH0446939719",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 300000,
   "description": "Autocall Recovery Note on Bouygues + Iliad + Orange"
@@ -1411,7 +1411,7 @@
  {
   "isin": "CH0446939677",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 100000,
   "description": "Autocall Recovery Note on BNP + ACA + GLE"
@@ -1419,7 +1419,7 @@
  {
   "isin": "CH0434911688",
   "statut": "rappele",
-  "client": "SAMY - 01674",
+  "client": "OPTIMAL - 01674",
   "devise": "EUR",
   "amount": 110000,
   "description": "Autocall Classic on BNP + ACA + GLE"

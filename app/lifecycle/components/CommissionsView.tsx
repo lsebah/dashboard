@@ -52,11 +52,14 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const uf = editable ? o.uf ?? l.ufPct : l.ufPct
     const retro = editable ? o.retro ?? l.retroPct : l.retroPct
     const n = l.nominal
-    const comTotal = typeof n === 'number' && typeof uf === 'number' ? n * uf : l.comTotal
-    const comClient = typeof n === 'number' && typeof retro === 'number' ? n * retro : l.comClient
+    // On ne RECALCULE que si UF/Rétro ont été saisis ; sinon on garde les montants
+    // exacts du classeur (vérifiables ligne à ligne, sans erreur d'arrondi).
+    const ovTaux = editable && (o.uf !== undefined || o.retro !== undefined)
+    const comTotal = ovTaux && typeof n === 'number' && typeof uf === 'number' ? n * uf : l.comTotal
+    const comClient = ovTaux && typeof n === 'number' && typeof retro === 'number' ? n * retro : l.comClient
     const comCmf =
-      typeof comTotal === 'number' && typeof comClient === 'number' ? comTotal - comClient : l.comCmf
-    const net = typeof comCmf === 'number' && typeof l.split === 'number' ? comCmf * l.split : l.net
+      ovTaux && typeof comTotal === 'number' && typeof comClient === 'number' ? comTotal - comClient : l.comCmf
+    const net = ovTaux && typeof comCmf === 'number' && typeof l.split === 'number' ? comCmf * l.split : l.net
     const credited = (editable ? o.credited : undefined) ?? l.credited
     const fait = (editable ? o.fait : false) || !!l.facture || !!credited
     return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, comCmf, net, credited, fait, editable }
@@ -148,7 +151,18 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     return `mailto:${GABRIELLE_EMAIL}?${p.toString()}`
   }
 
-  const ytd = data.commissionsNettesParAnnee[ANNEE_COURANTE] ?? 0
+  // Hero = somme réelle des « Net Lolo » (Perçue CMF) de l'année courante, vivante
+  // (réagit aux saisies). Le chiffre officiel du classeur est rappelé à côté.
+  const netLoloYtd = useMemo(
+    () =>
+      data.lignes
+        .map(calc)
+        .filter((l) => annee(l) === ANNEE_COURANTE)
+        .reduce((s, l) => s + (typeof l.comCmf === 'number' ? l.comCmf : 0), 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data.lignes, ov],
+  )
+  const ytdClasseur = data.commissionsNettesParAnnee[ANNEE_COURANTE] ?? 0
   const inputPct = 'w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none'
 
   const TH = ({ k, label, num: n }: { k: string; label: string; num?: boolean }) => (
@@ -167,9 +181,11 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       {/* Cartes récap par année (chiffres officiels du classeur) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card p-4">
-          <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE}</div>
-          <div className="text-2xl font-bold text-emerald-600">{EUR(ytd)}</div>
-          <div className="text-[11px] text-slate-400">{data.dealsParAnnee[ANNEE_COURANTE]} deals · base émission</div>
+          <div className="field-label">Net Lolo · YTD {ANNEE_COURANTE}</div>
+          <div className="text-2xl font-bold text-emerald-600">{EUR(netLoloYtd)}</div>
+          <div className="text-[11px] text-slate-400">
+            {data.dealsParAnnee[ANNEE_COURANTE]} deals émis · classeur {EUR(ytdClasseur)}
+          </div>
         </div>
         {['2025', '2024', '2023'].map((y) => (
           <div key={y} className="card p-4">
@@ -227,7 +243,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       {/* Totaux du jeu filtré */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
         {[
-          ['Perçue (CMF)', EUR(tot.perçue), ''],
+          ['Net Lolo', EUR(tot.perçue), ''],
           ['Reversé CGP', EUR(tot.retro), 'text-orange-600'],
           ['Com. totale', EUR(tot.total), ''],
           ['P&L — lignes listées', EUR(tot.net), 'text-emerald-600'],
@@ -252,7 +268,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
               <TH k="description" label="Description" />
               <TH k="nominal" label="Nominal" num />
               <TH k="ufPct" label="UF" num />
-              <TH k="comCmf" label="Perçue (CMF)" num />
+              <TH k="comCmf" label="Net Lolo" num />
               <TH k="retroPct" label="Rétro" num />
               <TH k="comClient" label="Reversé CGP" num />
               <TH k="comTotal" label="Com. totale" num />
