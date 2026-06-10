@@ -20,23 +20,10 @@ const ISIN_RE = /[A-Z]{2}[A-Z0-9]{9}[0-9]/
 export const TERMSHEET_ORPHELINS: string[] = []
 
 // Fichiers du dossier dont le NOM ne contient pas l'ISIN (réf interne banque,
-// « Serie XXXX », « Quartz NN »…). Rattachement manuel ISIN → nom de fichier,
-// l'ISIN ayant été lu dans le TEXTE de la TS. Complété au fil des lectures.
-const TERMSHEET_FILES_OVERRIDE: Record<string, string> = {
-  XS2759139525: 'EI9052EAG - 5Y Athena Airbag on Kering in EUR - Finalized TS[1].pdf',
-  FR001400Q320: '240715_Quartz 39 Indice Engie decrement 1.1 point -TS.pdf',
-  FRIP00001G19: '54337-TSE-FR-Quartz 45 ENI Decrement 0.96 pts 20350810-20250814.pdf..pdf',
-  FR001400T985: 'Annexe_20Oradea_20Sphinx_2015.pdf',
-  XS2642227883: 'CE29916EAG - 5Y CLN Tranche on Main in EUR - Indicative TS.pdf',
-  XS3149199807: 'Serie 4354.pdf',
-  XS3149213053: 'Serie 4355.pdf',
-  XS2919373816: 'TERMSHEET-CE30686EAG-ENGLISH.pdf',
-  XS2863761933: 'TERMSHEET-EI12674EAG-ENGLISH (2).pdf',
-  XS2979390502: 'TERMSHEET-EI15221EAG-ENGLISH.pdf',
-  FR0014013N00: 'TERMSHEET-EI2565MDY-FRENCH.pdf',
-  FRIP00001UV3: 'TS Quartz 51 BNP Decrement 4.2 pts.pdf..pdf',
-  FR1459ABB977: 'TS Quartz 53 CA Decrement 1.1 pts.pdf..pdf',
-}
+// « Serie XXXX », « Quartz NN »…). Rattachement manuel ISIN → nom de fichier.
+// Depuis le renommage du dossier à la nomenclature (l'ISIN figure désormais
+// dans CHAQUE nom), cette table est vide : le rattachement est 100 % automatique.
+const TERMSHEET_FILES_OVERRIDE: Record<string, string> = {}
 
 /** ISIN → nom de fichier de la termsheet (premier match conservé). */
 export const TERMSHEET_FILES: Record<string, string> = {}

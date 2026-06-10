@@ -633,7 +633,8 @@
   "client": "VIA - 08001",
   "devise": "EUR",
   "amount": 200000,
-  "description": "Phoenix Memory Orange Fix Div 0.74"
+  "description": "Phoenix Memory Orange Fix Div 0.74",
+  "statut": "rappele"
  },
  {
   "isin": "FR001400WR56",
@@ -1109,7 +1110,8 @@
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 300000,
-  "description": "Phoenix/Athena Airbag AMD + Intel + NVDA"
+  "description": "Phoenix/Athena Airbag AMD + Intel + NVDA",
+  "statut": "rappele"
  },
  {
   "isin": "CH1322027827",

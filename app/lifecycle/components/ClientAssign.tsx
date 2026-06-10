@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { ClientAlloc } from '@/lib/allocations'
 import type { ProductStatus } from '@/lib/types'
 import { formatMontant } from '@/lib/lifecycle'
+import { parseTermsheetName } from '@/lib/termsheets'
 
 const STATUTS: { value: ProductStatus; label: string; cls: string }[] = [
   { value: 'vivant', label: 'Vivant', cls: 'bg-emerald-600' },
@@ -134,8 +135,11 @@ export default function ClientAssign({
         <p className="text-xs text-slate-400">Aucun client affecté pour l&apos;instant.</p>
       )}
 
-      {/* Nom de fichier TS à la nomenclature (copier pour renommer sur OneDrive) */}
-      {tsCible && (
+      {/* Nom de fichier TS à la nomenclature (copier pour renommer sur OneDrive).
+          Masqué dès que le fichier réel respecte déjà la convention : un fichier
+          conforme ne doit plus proposer de renommage, même si le nom canonique
+          régénéré diffère d'un libellé près. */}
+      {tsCible && !(tsActuel && parseTermsheetName(tsActuel).conforme) && (
         <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px]">
           <div className="field-label mb-0.5">Nom TS cible (nomenclature)</div>
           <div className="flex items-center gap-2">
@@ -152,7 +156,7 @@ export default function ClientAssign({
               {copie ? 'Copié ✓' : 'Copier'}
             </button>
           </div>
-          {tsActuel && tsActuel !== tsCible && (
+          {tsActuel && (
             <div className="mt-1 text-amber-600">Fichier actuel : {tsActuel} — à renommer</div>
           )}
         </div>
