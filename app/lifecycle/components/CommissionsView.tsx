@@ -61,8 +61,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       ovTaux && typeof comTotal === 'number' && typeof comClient === 'number' ? comTotal - comClient : l.comCmf
     const net = ovTaux && typeof comCmf === 'number' && typeof l.split === 'number' ? comCmf * l.split : l.net
     const credited = (editable ? o.credited : undefined) ?? l.credited
-    const fait = (editable ? o.fait : false) || !!l.facture || !!credited
-    return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, comCmf, net, credited, fait, editable }
+    const facture = l.facture ?? (editable ? o.facture : undefined) ?? null
+    const fait = !!facture || (editable ? !!o.fait : false) || !!credited
+    return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, comCmf, net, credited, facture, factureClasseur: l.facture, fait, editable }
   }
 
   const annees = useMemo(() => {
@@ -107,10 +108,10 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // au trimestre QUE si elle a été payée (date d'encaissement) dans ce trimestre.
   const trim = useMemo(() => {
     const out = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }
+    // Vrai net. Deals de l'année → trimestre d'ÉMISSION (payés ou non) ; facture
+    // d'année antérieure encaissée dans l'année → trimestre de PAIEMENT.
     for (const l of data.lignes.map(calc)) {
-      const v = typeof l.comCmf === 'number' ? l.comCmf : 0
-      // Deals de l'année → trimestre d'ÉMISSION ; facture d'année antérieure
-      // encaissée dans l'année → trimestre de PAIEMENT (ex. Santander 2025→26).
+      const v = typeof l.net === 'number' ? l.net : 0
       if (annee(l) === ANNEE_COURANTE && l.issue) out[trimestre(l.issue) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += v
       else if ((l.credited ?? '').startsWith(ANNEE_COURANTE) && l.credited)
         out[trimestre(l.credited) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += v
@@ -157,7 +158,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       data.lignes
         .map(calc)
         .filter((l) => annee(l) === ANNEE_COURANTE || (l.credited ?? '').startsWith(ANNEE_COURANTE))
-        .reduce((s, l) => s + (typeof l.comCmf === 'number' ? l.comCmf : 0), 0),
+        .reduce((s, l) => s + (typeof l.net === 'number' ? l.net : 0), 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data.lignes, ov],
   )
@@ -183,7 +184,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE}</div>
           <div className="text-2xl font-bold text-emerald-600">{EUR(netLoloYtd)}</div>
           <div className="text-[11px] text-slate-400">
-            vrai net (émis + encaissé) · classeur {EUR(ytdClasseur)}
+            vrai net (après split) · classeur {EUR(ytdClasseur)}
           </div>
         </div>
         {['2025', '2024', '2023'].map((y) => (
@@ -292,25 +293,31 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                   ) : PCT2(l.ufPct)}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.comCmf)}</td>
-                {/* Rétro — éditable (année courante) */}
+                {/* Rétro — éditable (année courante). 0 ou absent → « — ». */}
                 <td className="px-1 py-1 text-right tabular-nums whitespace-nowrap">
                   {l.editable ? (
-                    <input key={`re|${rowKey(l)}|${l.retroPct ?? ''}`} defaultValue={typeof l.retroPct === 'number' ? (l.retroPct * 100).toFixed(2) : ''} inputMode="decimal" placeholder="—" className={inputPct} title="Saisir la rétrocession (%)" onBlur={(e) => patch(rowKey(l), { retro: parsePct(e.target.value) })} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
-                  ) : PCT2(l.retroPct)}
+                    <input key={`re|${rowKey(l)}|${l.retroPct ?? ''}`} defaultValue={l.retroPct ? (l.retroPct * 100).toFixed(2) : ''} inputMode="decimal" placeholder="—" className={inputPct} title="Saisir la rétrocession (%)" onBlur={(e) => patch(rowKey(l), { retro: parsePct(e.target.value) })} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
+                  ) : l.retroPct ? PCT2(l.retroPct) : <span className="text-slate-300">—</span>}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-orange-600">{EUR(l.comClient)}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-orange-600">{l.comClient ? EUR(l.comClient) : <span className="text-slate-300">—</span>}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.comTotal)}</td>
-                {/* Facture : n° si connu, sinon bouton ✉ + case « fait » (année courante) */}
-                <td className="px-2 py-1.5 whitespace-nowrap">
-                  {l.facture ? (
-                    l.facture
+                {/* Facture : n° du classeur (statique) ; sinon bouton ✉ + saisie
+                    manuelle du n° de facture (année courante). */}
+                <td className="px-2 py-1 whitespace-nowrap">
+                  {l.factureClasseur ? (
+                    l.factureClasseur
                   ) : l.editable ? (
                     <span className="inline-flex items-center gap-1.5">
                       <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture (Gabrielle) — tu procèdes à l’envoi">✉ Facturer</a>
-                      <label className="inline-flex items-center gap-1 text-[11px] text-slate-500" title="Marquer facturé (envoyé par un autre canal)">
-                        <input type="checkbox" checked={!!ov[rowKey(l)]?.fait} onChange={(e) => patch(rowKey(l), { fait: e.target.checked || undefined })} />
-                        fait
-                      </label>
+                      <input
+                        type="text"
+                        defaultValue={ov[rowKey(l)]?.facture ?? ''}
+                        placeholder="n° facture"
+                        className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-[11px] hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none"
+                        title="Saisir le n° de facture (marque facturé)"
+                        onBlur={(e) => patch(rowKey(l), { facture: e.target.value.trim() || undefined })}
+                        onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                      />
                     </span>
                   ) : (
                     <span className="text-slate-300">—</span>

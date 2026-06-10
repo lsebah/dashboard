@@ -9,6 +9,7 @@ export interface CommissionOverride {
   uf?: number // upfront total (décimal, 0.06 = 6 %)
   retro?: number // rétrocession (décimal)
   fait?: boolean // facturé/envoyé manuellement (autre canal)
+  facture?: string // n° de facture saisi à la main
   credited?: string // date d'encaissement (ISO) saisie à la main
 }
 
