@@ -332,7 +332,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                     <button onClick={() => setEditFac(rowKey(l))} className="hover:underline decoration-dotted" title="Cliquer pour modifier le n°">{l.facture}</button>
                   ) : (
                     <span className="inline-flex items-center gap-1.5">
-                      <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture (Gabrielle) — tu procèdes à l’envoi">✉ Facturer</a>
+                      <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance) — tu procèdes à l’envoi">✉ Facturer Gabrielle</a>
                       <button onClick={() => setEditFac(rowKey(l))} className="text-[11px] text-cmf-blue hover:underline" title="Saisir le n° de facture">+ n°</button>
                     </span>
                   )}
