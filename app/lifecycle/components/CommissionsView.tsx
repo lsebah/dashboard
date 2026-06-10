@@ -106,22 +106,20 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Visuel trimestriel de l'année courante : une commission n'est « encaissée »
   // au trimestre QUE si elle a été payée (date d'encaissement) dans ce trimestre.
   const trim = useMemo(() => {
-    const out = { Q1: 0, Q2: 0, Q3: 0, Q4: 0, attente: 0 }
+    const out = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }
     for (const l of data.lignes.map(calc)) {
-      const net = typeof l.net === 'number' ? l.net : 0
-      if (l.credited && l.credited.startsWith(ANNEE_COURANTE)) {
-        // encaissée dans l'année courante (même si émise avant) → trimestre de paiement
-        out[trimestre(l.credited) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += net
-      } else if (annee(l) === ANNEE_COURANTE && !l.credited) {
-        // émise en année courante, pas encore encaissée
-        out.attente += net
-      }
+      const v = typeof l.comCmf === 'number' ? l.comCmf : 0
+      // Deals de l'année → trimestre d'ÉMISSION ; facture d'année antérieure
+      // encaissée dans l'année → trimestre de PAIEMENT (ex. Santander 2025→26).
+      if (annee(l) === ANNEE_COURANTE && l.issue) out[trimestre(l.issue) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += v
+      else if ((l.credited ?? '').startsWith(ANNEE_COURANTE) && l.credited)
+        out[trimestre(l.credited) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += v
     }
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.lignes, ov])
   const trimMax = Math.max(trim.Q1, trim.Q2, trim.Q3, trim.Q4, 1)
-  const encaisse = trim.Q1 + trim.Q2 + trim.Q3 + trim.Q4
+  const trimTotal = trim.Q1 + trim.Q2 + trim.Q3 + trim.Q4
 
   const toggleSort = (key: string) =>
     setSort((s) => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' }))
@@ -151,13 +149,14 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     return `mailto:${GABRIELLE_EMAIL}?${p.toString()}`
   }
 
-  // Hero = somme réelle des « Net Lolo » (Perçue CMF) de l'année courante, vivante
-  // (réagit aux saisies). Le chiffre officiel du classeur est rappelé à côté.
+  // Commissions Nettes (vrai net) de l'année courante = toutes les commissions
+  // ATTRIBUÉES à l'année : émises dans l'année OU émises avant mais ENCAISSÉES
+  // dans l'année (ex. Santander émis 2025 payé 2026). Vivant (réagit aux saisies).
   const netLoloYtd = useMemo(
     () =>
       data.lignes
         .map(calc)
-        .filter((l) => annee(l) === ANNEE_COURANTE)
+        .filter((l) => annee(l) === ANNEE_COURANTE || (l.credited ?? '').startsWith(ANNEE_COURANTE))
         .reduce((s, l) => s + (typeof l.comCmf === 'number' ? l.comCmf : 0), 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data.lignes, ov],
@@ -199,10 +198,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       {/* Visuel trimestriel — encaissé (date de paiement) sur l'année courante */}
       <div className="card p-4">
         <div className="field-label mb-2 flex items-center justify-between">
-          <span>Commissions encaissées par trimestre · {ANNEE_COURANTE}</span>
-          <span className="text-[12px] normal-case text-slate-500">
-            encaissé {EUR(encaisse)} · en attente {EUR(trim.attente)}
-          </span>
+          <span>Commissions Nettes par trimestre · {ANNEE_COURANTE}</span>
+          <span className="text-[12px] normal-case text-slate-500">total {EUR(trimTotal)}</span>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((Q) => (
@@ -218,8 +215,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           ))}
         </div>
         <p className="mt-2 text-[11px] text-slate-400">
-          Une commission compte au trimestre où elle est <strong>encaissée</strong> (date de
-          paiement) — une facture émise en 2025 mais payée en 2026 compte en 2026.
+          Attribuée au <strong>trimestre d&apos;émission</strong> ; une facture d&apos;année
+          antérieure <strong>encaissée</strong> dans l&apos;année courante compte à son trimestre de
+          paiement (ex. Santander émis 2025, payé 2026).
         </p>
       </div>
 
