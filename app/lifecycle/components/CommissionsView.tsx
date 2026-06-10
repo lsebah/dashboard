@@ -147,7 +147,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     { key: 'sent', label: 'Envoyée', render: (l) => dateFr(l.sent) ?? <span className="text-slate-300">—</span> },
     { key: 'credited', label: 'Payée', render: (l) => (l.credited ? <span className="text-emerald-600">{dateFr(l.credited)}</span> : <span className="text-amber-600">en attente</span>) },
     { key: 'split', label: 'Split', num: true, render: (l) => (typeof l.split === 'number' ? `${(l.split * 100).toFixed(0)} %` : '—') },
-    { key: 'net', label: 'Net (LS)', num: true, render: (l) => <span className="font-semibold">{EUR(l.net)}</span> },
+    { key: 'net', label: 'P&L', num: true, render: (l) => <span className="font-semibold">{EUR(l.net)}</span> },
   ]
 
   return (
@@ -225,7 +225,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           <div className="font-semibold tabular-nums">{EUR(tot.total)}</div>
         </div>
         <div className="rounded-md bg-slate-50 border border-slate-200 p-2">
-          <div className="field-label">Net (LS) — lignes listées</div>
+          <div className="field-label">P&L — lignes listées</div>
           <div className="font-semibold tabular-nums text-emerald-600">{EUR(tot.net)}</div>
         </div>
         <div className="rounded-md bg-slate-50 border border-slate-200 p-2">
@@ -281,7 +281,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
 
       <p className="text-[11px] text-slate-400">
         Le hero « Commissions Nettes » reprend les totaux annuels officiels du classeur (onglet
-        Backlog / Revenue Par Année). Le total « Net (LS) » ci-dessus est la somme des lignes
+        Backlog / Revenue Par Année). Le total « P&L » ci-dessus est la somme des lignes
         listées (positions encore présentes dans l&apos;onglet Lifecycle) ; il peut être
         légèrement inférieur au total annuel, qui inclut aussi des deals déjà clôturés sortis de
         la liste.
