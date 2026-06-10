@@ -3876,6 +3876,9 @@ function metaProduct(p: {
   terms?: Product['terms']
   pdiPct?: number
   pdiText?: string
+  couponPaPct?: number
+  barriereAutocall?: string
+  barriereCoupon?: string
   description?: string
   badges?: string[]
 }): Product {
@@ -3898,6 +3901,9 @@ function metaProduct(p: {
     terms: p.terms,
     pdiPct: p.pdiPct,
     pdiText: p.pdiText,
+    couponPaPct: p.couponPaPct,
+    barriereAutocall: p.barriereAutocall,
+    barriereCoupon: p.barriereCoupon,
     rr: 'LS',
     productType: p.productType,
     description: p.description ?? p.nom,
@@ -3906,6 +3912,8 @@ function metaProduct(p: {
 }
 
 const metaProducts: Product[] = [
+  // Lus sur termsheet (run 02/26) : coupon mémoire trimestriel, autocall dégressif
+  // (−1,5 %/T, observable à partir de T+1Y), barrière finale (PDI) européenne 50 %.
   metaProduct({
     isin: 'XS3266613416',
     nom: 'Phoenix Mémoire Réarmement Europe',
@@ -3915,8 +3923,17 @@ const metaProducts: Product[] = [
     dureeAnnees: 5,
     frequence: 'trimestriel',
     basket: 'worst_of',
-    description: '5Y Phoenix Mémoire Wof — Réarmement Europe (défense)',
-    badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+    sousJacents: [
+      { nom: 'Leonardo SpA', bloomberg: 'LDO IM' },
+      { nom: 'Rheinmetall AG', bloomberg: 'RHM GY' },
+      { nom: 'Safran SA', bloomberg: 'SAF FP' },
+    ],
+    couponPaPct: 9.8,
+    barriereAutocall: '89 % dégr. −1,5 %/T',
+    barriereCoupon: '65 %',
+    pdiPct: 50,
+    description: '5Y Phoenix Mémoire Wof — Réarmement Europe (Leonardo / Rheinmetall / Safran)',
+    badges: ['Worst-of', 'Effet mémoire'],
   }),
   metaProduct({
     isin: 'XS3266613333',
@@ -3927,8 +3944,17 @@ const metaProducts: Product[] = [
     dureeAnnees: 5,
     frequence: 'trimestriel',
     basket: 'worst_of',
-    description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infrastructures',
-    badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
+    sousJacents: [
+      { nom: 'Alstom SA', bloomberg: 'ALO FP' },
+      { nom: 'Siemens AG', bloomberg: 'SIE GY' },
+      { nom: 'Thales SA', bloomberg: 'HO FP' },
+    ],
+    couponPaPct: 10.2,
+    barriereAutocall: '94 % dégr. −1,5 %/T',
+    barriereCoupon: '70 %',
+    pdiPct: 50,
+    description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infra (Alstom / Siemens / Thales)',
+    badges: ['Worst-of', 'Effet mémoire'],
   }),
   metaProduct({
     isin: 'XS3251223155',
@@ -4101,10 +4127,22 @@ const metaProducts2: Product[] = [
     sousJacents: [{ nom: 'Nasdaq-100', bloomberg: 'NDX Index' }],
     description: '5Y Athena Bearish (inverse) sur Nasdaq-100', badges: ['Single', 'Bearish', 'TS à fournir'],
   }),
+  // Lu sur termsheet : produit de TAUX à capital garanti (pas un autocall actions).
+  // Coupon 8 %/an années 1-3, puis 5 × (pente CMS 30Y−5Y) plancher 0 % ; call
+  // émetteur semestriel à 100 % (du 30/09/2026 au 30/09/2036) ; capital 100 % garanti.
   metaProduct({
     isin: 'FR001400T985', nom: 'SPHINX 15', emetteur: 'BNP Paribas',
-    productType: 'Structuré (à préciser)', dateEmission: '2024-12-02', dureeAnnees: 12, basket: 'single',
-    description: 'SPHINX 15 — type et sous-jacent à confirmer (TS à fournir)', badges: ['TS à fournir'],
+    productType: 'CMS Steepener (capital garanti)', assetClass: 'rates', family: 'rates_structured',
+    dateEmission: '2024-12-02', dureeAnnees: 12, frequence: 'semestriel', basket: 'single',
+    sousJacents: [
+      { nom: 'EUR CMS 30Y' },
+      { nom: 'EUR CMS 5Y' },
+    ],
+    couponPaPct: 8,
+    barriereAutocall: 'Call émetteur 100 %',
+    pdiText: '100 % (capital garanti)',
+    description: 'SPHINX 15 — pente CMS 30Y−5Y · coupon 8 % (an 1-3) puis 5× pente · capital garanti',
+    badges: ['Taux', 'Capital garanti', 'Call émetteur'],
   }),
   metaProduct({
     isin: 'CH1322036596', nom: 'Phoenix Mémoire Porsche', emetteur: 'Banque Internationale à Luxembourg',

@@ -491,7 +491,8 @@
   "client": "APPN - 05277",
   "devise": "TRY",
   "amount": 200000,
-  "description": "Phoenix Memory Wof CF Industries + Albermarle"
+  "description": "Phoenix Memory Wof CF Industries + Albermarle",
+  "statut": "rappele"
  },
  {
   "isin": "FRIP00001G19",
@@ -729,7 +730,8 @@
   "client": "B CAPITAL - 05232",
   "devise": "EUR",
   "amount": 100000,
-  "description": "Phoenix Memory Wof TotalEnergies + Eni + Schlumberger"
+  "description": "Phoenix Memory Wof TotalEnergies + Eni + Schlumberger",
+  "statut": "rappele"
  },
  {
   "isin": "XS2769371209",
