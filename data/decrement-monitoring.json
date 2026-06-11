@@ -1,9 +1,17 @@
 {
   "frequence": "quotidien à 19h00",
-  "dossier": null,
-  "lastCheck": null,
-  "statut": "à configurer",
+  "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
+  "lastCheck": "2026-06-11T13:25:00",
+  "statut": "ok",
   "nouveaux": 0,
-  "majs": 0,
-  "historique": []
+  "majs": 6,
+  "historique": [
+    {
+      "date": "2026-06-11T13:25:00",
+      "nouveaux": 0,
+      "majs": 6,
+      "statut": "ok",
+      "details": "Scan initial (7 j) : BBVA 10/06, BBVA 09/06, UBS 08/06, BofA 08/06, GS Indices Optimisés 08/06, GS Actions Decrement 08/06. Aucune nouvelle TS/indice ces 7 jours (dernier NEW INDEX GS : 03/06)."
+    }
+  ]
 }
