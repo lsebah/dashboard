@@ -72,23 +72,24 @@ body {
   }
 }
 
-/* ── LIFECYCLE 2 — terminal premium (espace CMF, thème sombre) ─────────────── */
+/* ── LIFECYCLE 2 — terminal premium (blanc cassé · accent orange Bloomberg) ── */
 .lc2-root {
   background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(99, 102, 241, 0.1), transparent 60%),
-    radial-gradient(900px 500px at -10% 5%, rgba(34, 211, 238, 0.06), transparent 55%),
-    #0a0a0f;
+    radial-gradient(1100px 520px at 100% -12%, rgba(255, 106, 0, 0.06), transparent 60%),
+    radial-gradient(800px 420px at -8% 4%, rgba(255, 176, 0, 0.05), transparent 55%),
+    #f5f3ee;
+  color: #1e293b;
 }
 
 @layer components {
   .lc2-panel {
-    @apply rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-sm;
+    @apply rounded-xl border border-[#e7e2d8] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
   }
   .lc2-kpi {
-    @apply rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.015];
+    @apply rounded-xl border border-[#e7e2d8] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
   }
   .lc2-label {
-    @apply text-[11px] font-medium uppercase tracking-wider text-slate-400;
+    @apply text-[11px] font-semibold uppercase tracking-wider text-slate-500;
   }
 }
 

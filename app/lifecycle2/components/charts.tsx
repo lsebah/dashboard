@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────
 //  Primitives graphiques « terminal » (Lifecycle 2) — SVG / CSS pur, sans
-//  dépendance. Thème sombre premium. Composants purs (props only).
+//  dépendance. Thème blanc cassé, accent orange Bloomberg. Composants purs.
 // ─────────────────────────────────────────────────────────────────────────
 import type { ReactNode, CSSProperties } from 'react'
 
+export const BB_ORANGE = '#ff6a00'
 export const PALETTE = [
-  '#6366f1', '#22d3ee', '#34d399', '#f59e0b', '#f472b6',
-  '#a78bfa', '#60a5fa', '#fbbf24', '#4ade80', '#fb7185',
-  '#2dd4bf', '#c084fc',
+  '#ff6a00', '#0ea5e9', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444',
+  '#14b8a6', '#6366f1', '#ec4899', '#84cc16', '#0891b2', '#a855f7',
 ]
 export const colorAt = (i: number) => PALETTE[i % PALETTE.length]
 
@@ -32,8 +32,8 @@ export function Panel({
       {(title || right) && (
         <header className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            {title && <h3 className="text-sm font-semibold text-white">{title}</h3>}
-            {sub && <p className="lc2-label mt-0.5 normal-case tracking-normal text-slate-500">{sub}</p>}
+            {title && <h3 className="text-sm font-semibold text-slate-900">{title}</h3>}
+            {sub && <p className="mt-0.5 text-[11px] text-slate-500">{sub}</p>}
           </div>
           {right && <div className="shrink-0">{right}</div>}
         </header>
@@ -50,7 +50,7 @@ export function StatCard({
   sub,
   delta,
   deltaLabel,
-  accent = '#6366f1',
+  accent = BB_ORANGE,
   spark,
   style,
 }: {
@@ -65,23 +65,18 @@ export function StatCard({
 }) {
   return (
     <div className="lc2-kpi lc2-rise relative overflow-hidden p-4" style={style}>
-      <span
-        className="absolute inset-x-0 top-0 h-[2px] opacity-70"
-        style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }}
-      />
+      <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
       <div className="flex items-center justify-between">
         <span className="lc2-label">{label}</span>
         {delta !== undefined && (
-          <span
-            className={`tabular-nums text-[11px] font-semibold ${delta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
-          >
+          <span className={`tabular-nums text-[11px] font-semibold ${delta >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
             {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(2)} %
-            {deltaLabel && <span className="ml-1 font-normal text-slate-500">{deltaLabel}</span>}
+            {deltaLabel && <span className="ml-1 font-normal text-slate-400">{deltaLabel}</span>}
           </span>
         )}
       </div>
-      <div className="mt-1 text-2xl font-bold tracking-tight text-white tabular-nums">{value}</div>
-      {sub && <div className="mt-0.5 text-[11px] text-slate-400">{sub}</div>}
+      <div className="mt-1 text-2xl font-bold tracking-tight text-slate-900 tabular-nums">{value}</div>
+      {sub && <div className="mt-0.5 text-[11px] text-slate-500">{sub}</div>}
       {spark && <div className="mt-2">{spark}</div>}
     </div>
   )
@@ -110,7 +105,7 @@ export function Donut({
   let acc = 0
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={thickness} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(15,23,42,0.06)" strokeWidth={thickness} />
       <g transform={`rotate(-90 ${cx} ${cy})`}>
         {data.map((d, i) => {
           const len = (Math.max(0, d.value) / total) * c
@@ -134,12 +129,12 @@ export function Donut({
         })}
       </g>
       {centerTop && (
-        <text x={cx} y={cy} textAnchor="middle" className="fill-white" style={{ fontSize: size * 0.16, fontWeight: 700 }}>
+        <text x={cx} y={cy} textAnchor="middle" className="fill-slate-900" style={{ fontSize: size * 0.16, fontWeight: 700 }}>
           {centerTop}
         </text>
       )}
       {centerSub && (
-        <text x={cx} y={cy + size * 0.13} textAnchor="middle" className="fill-slate-400" style={{ fontSize: size * 0.082 }}>
+        <text x={cx} y={cy + size * 0.13} textAnchor="middle" className="fill-slate-500" style={{ fontSize: size * 0.082 }}>
           {centerSub}
         </text>
       )}
@@ -160,10 +155,10 @@ export function Legend({
       {items.map((d, i) => (
         <li key={i} className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: d.color }} />
-          <span className="truncate text-slate-300">{d.label}</span>
-          <span className="ml-auto shrink-0 tabular-nums text-slate-400">
+          <span className="truncate text-slate-700">{d.label}</span>
+          <span className="ml-auto shrink-0 tabular-nums text-slate-500">
             {format(d.value)}
-            {d.pct != null && <span className="text-slate-600"> · {d.pct.toFixed(1)} %</span>}
+            {d.pct != null && <span className="text-slate-400"> · {d.pct.toFixed(1)} %</span>}
           </span>
         </li>
       ))}
@@ -175,7 +170,7 @@ export function Legend({
 export function BarList({
   items,
   format,
-  accent = '#6366f1',
+  accent = BB_ORANGE,
 }: {
   items: { label: string; value: number; pct?: number; color?: string; sub?: string }[]
   format: (n: number) => string
@@ -187,20 +182,17 @@ export function BarList({
       {items.map((it, i) => (
         <li key={i}>
           <div className="mb-1 flex items-baseline justify-between gap-2 text-[13px]">
-            <span className="truncate text-slate-300">
+            <span className="truncate text-slate-700">
               {it.label}
-              {it.sub && <span className="text-slate-500"> · {it.sub}</span>}
+              {it.sub && <span className="text-slate-400"> · {it.sub}</span>}
             </span>
-            <span className="shrink-0 tabular-nums text-slate-400">
+            <span className="shrink-0 tabular-nums text-slate-500">
               {format(it.value)}
-              {it.pct != null && <span className="text-slate-600"> · {it.pct.toFixed(1)} %</span>}
+              {it.pct != null && <span className="text-slate-400"> · {it.pct.toFixed(1)} %</span>}
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: `${(it.value / max) * 100}%`, background: it.color ?? accent }}
-            />
+          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full transition-all" style={{ width: `${(it.value / max) * 100}%`, background: it.color ?? accent }} />
           </div>
         </li>
       ))}
@@ -224,17 +216,17 @@ export function DivergingBars({
         const pos = it.value >= 0
         return (
           <li key={i} className="flex items-center gap-2 text-[13px]">
-            <span className="w-28 shrink-0 truncate text-slate-300" title={it.sub}>
+            <span className="w-28 shrink-0 truncate text-slate-700" title={it.sub}>
               {it.label}
             </span>
             <div className="relative h-4 flex-1">
-              <div className="absolute left-1/2 top-0 h-full w-px bg-white/15" />
+              <div className="absolute left-1/2 top-0 h-full w-px bg-slate-300" />
               <div
                 className="absolute top-0.5 h-3 rounded-sm"
-                style={{ [pos ? 'left' : 'right']: '50%', width: `${w}%`, background: pos ? '#34d399' : '#fb7185' } as CSSProperties}
+                style={{ [pos ? 'left' : 'right']: '50%', width: `${w}%`, background: pos ? '#10b981' : '#ef4444' } as CSSProperties}
               />
             </div>
-            <span className={`w-24 shrink-0 text-right tabular-nums ${pos ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <span className={`w-24 shrink-0 text-right tabular-nums ${pos ? 'text-emerald-600' : 'text-rose-600'}`}>
               {format(it.value)}
             </span>
           </li>
@@ -248,7 +240,7 @@ export function DivergingBars({
 export function AreaChart({
   points,
   height = 150,
-  color = '#6366f1',
+  color = BB_ORANGE,
   format,
 }: {
   points: { label: string; value: number }[]
@@ -256,7 +248,7 @@ export function AreaChart({
   color?: string
   format: (n: number) => string
 }) {
-  if (points.length < 2) return <div className="text-sm text-slate-500">Données insuffisantes.</div>
+  if (points.length < 2) return <div className="text-sm text-slate-400">Données insuffisantes.</div>
   const H = 100
   const n = points.length
   const max = Math.max(...points.map((p) => p.value))
@@ -274,7 +266,7 @@ export function AreaChart({
         <svg width="100%" height={height} viewBox={`0 0 100 ${H}`} preserveAspectRatio="none" className="block">
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+              <stop offset="0%" stopColor={color} stopOpacity="0.28" />
               <stop offset="100%" stopColor={color} stopOpacity="0" />
             </linearGradient>
           </defs>
@@ -282,19 +274,19 @@ export function AreaChart({
           <path d={line} fill="none" stroke={color} strokeWidth={1.75} vectorEffect="non-scaling-stroke" />
         </svg>
         <span
-          className="absolute -translate-y-1/2 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] tabular-nums text-white"
+          className="absolute -translate-y-1/2 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] tabular-nums text-slate-600"
           style={{ left: 0, top: `${(y(max) / H) * 100}%` }}
         >
           {format(max)}
         </span>
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+      <div className="mt-1 flex justify-between text-[10px] text-slate-400">
         {ticks.map((t) => (
           <span key={t}>{points[t].label}</span>
         ))}
       </div>
-      <div className="mt-0.5 text-right text-[11px] text-slate-400">
-        dernier point : <span className="tabular-nums text-slate-200">{format(last.value)}</span>
+      <div className="mt-0.5 text-right text-[11px] text-slate-500">
+        dernier point : <span className="tabular-nums text-slate-700">{format(last.value)}</span>
       </div>
     </div>
   )
@@ -314,8 +306,8 @@ export function HeatGrid({
         <div
           key={c.key}
           title={c.title}
-          className="flex aspect-square items-center justify-center overflow-hidden rounded-[3px] text-[8px] font-semibold leading-none transition-transform hover:scale-110 hover:ring-1 hover:ring-white/40"
-          style={{ background: c.bg, color: c.fg ?? '#0a0a0f' }}
+          className="flex aspect-square items-center justify-center overflow-hidden rounded-[3px] text-[8px] font-semibold leading-none transition-transform hover:scale-110 hover:ring-1 hover:ring-slate-400"
+          style={{ background: c.bg, color: c.fg ?? '#ffffff' }}
         >
           {c.label}
         </div>
@@ -329,7 +321,7 @@ export function RadialStat({
   value,
   centerTop,
   centerSub,
-  color = '#6366f1',
+  color = BB_ORANGE,
   size = 132,
   thickness = 12,
 }: {
@@ -346,24 +338,15 @@ export function RadialStat({
   const cx = size / 2
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={thickness} />
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(15,23,42,0.08)" strokeWidth={thickness} />
       <g transform={`rotate(-90 ${cx} ${cx})`}>
-        <circle
-          cx={cx}
-          cy={cx}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth={thickness}
-          strokeLinecap="round"
-          strokeDasharray={`${v * c} ${c}`}
-        />
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth={thickness} strokeLinecap="round" strokeDasharray={`${v * c} ${c}`} />
       </g>
-      <text x={cx} y={cx} textAnchor="middle" className="fill-white" style={{ fontSize: size * 0.2, fontWeight: 700 }}>
+      <text x={cx} y={cx} textAnchor="middle" className="fill-slate-900" style={{ fontSize: size * 0.2, fontWeight: 700 }}>
         {centerTop}
       </text>
       {centerSub && (
-        <text x={cx} y={cx + size * 0.15} textAnchor="middle" className="fill-slate-400" style={{ fontSize: size * 0.09 }}>
+        <text x={cx} y={cx + size * 0.15} textAnchor="middle" className="fill-slate-500" style={{ fontSize: size * 0.09 }}>
           {centerSub}
         </text>
       )}
@@ -372,7 +355,7 @@ export function RadialStat({
 }
 
 // ── Sparkline ────────────────────────────────────────────────────────────────
-export function Sparkline({ data, color = '#6366f1', height = 28 }: { data: number[]; color?: string; height?: number }) {
+export function Sparkline({ data, color = BB_ORANGE, height = 28 }: { data: number[]; color?: string; height?: number }) {
   if (data.length < 2) return null
   const max = Math.max(...data)
   const min = Math.min(...data)
