@@ -24,6 +24,9 @@ export const ISSUERS: IssuerInfo[] = [
   { name: 'BBVA', alias: ['Banco Bilbao'], moody: 'A3', sp: 'A', fitch: 'A-' },
   { name: 'CIBC', alias: ['Canadian Imperial'], moody: 'Aa2', sp: 'A+', fitch: 'AA-' },
   { name: 'Nomura', alias: ['Nomura Holdings', 'Nomura International', 'NOMURA'], moody: 'Baa1', sp: 'BBB+', fitch: 'A-' },
+  { name: 'DB', alias: ['Deutsche Bank', 'DB Structured', 'DB-Structured', 'db.com'], moody: 'A1', sp: 'A', fitch: 'A' },
+  { name: 'BofA', alias: ['Bank of America', 'BofA', 'BAML', 'Merrill', 'distributionfrance'], moody: 'A1', sp: 'A-', fitch: 'AA-' },
+  { name: 'Mediobanca', alias: ['Mediobanca'], moody: 'Baa1', sp: 'BBB', fitch: 'BBB+' },
   { name: 'Marex', alias: ['Marex Financial'], moody: 'Baa1', sp: 'BBB', fitch: 'BBB+' },
 ]
 

@@ -29,5 +29,15 @@
   { "id": "Nomura-USD-NC-5", "issuer": "Nomura", "currency": "USD", "callType": "NC", "maturityYears": 5, "coupon": 4.64, "uf": 0.34, "sensitivity": 4.5, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
   { "id": "SG-EUR-NC-12", "issuer": "SG", "currency": "EUR", "callType": "NC", "maturityYears": 12, "coupon": 3.58, "uf": 0.50, "sensitivity": 9.6, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
   { "id": "CACIB-EUR-NC-12", "issuer": "CACIB", "currency": "EUR", "callType": "NC", "maturityYears": 12, "coupon": 3.52, "uf": 0.52, "sensitivity": 9.55, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
-  { "id": "Citi-USD-NC-12", "issuer": "Citi", "currency": "USD", "callType": "NC", "maturityYears": 12, "coupon": 4.92, "uf": 0.55, "sensitivity": 9.4, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" }
+  { "id": "Citi-USD-NC-12", "issuer": "Citi", "currency": "USD", "callType": "NC", "maturityYears": 12, "coupon": 4.92, "uf": 0.55, "sensitivity": 9.4, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "CIBC-EUR-NC-5", "issuer": "CIBC", "currency": "EUR", "callType": "NC", "maturityYears": 5, "coupon": 3.14, "uf": 0.30, "sensitivity": 4.6, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "CIBC-EUR-NC-10", "issuer": "CIBC", "currency": "EUR", "callType": "NC", "maturityYears": 10, "coupon": 3.55, "uf": 0.44, "sensitivity": 8.4, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "CIBC-USD-NC-5", "issuer": "CIBC", "currency": "USD", "callType": "NC", "maturityYears": 5, "coupon": 4.68, "uf": 0.34, "sensitivity": 4.5, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "DB-EUR-NC-5", "issuer": "DB", "currency": "EUR", "callType": "NC", "maturityYears": 5, "coupon": 3.05, "uf": 0.28, "sensitivity": 4.58, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "DB-EUR-NC-10", "issuer": "DB", "currency": "EUR", "callType": "NC", "maturityYears": 10, "coupon": 3.46, "uf": 0.42, "sensitivity": 8.35, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "DB-USD-NC-5", "issuer": "DB", "currency": "USD", "callType": "NC", "maturityYears": 5, "coupon": 4.60, "uf": 0.32, "sensitivity": 4.5, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "BofA-EUR-CALLABLE-5", "issuer": "BofA", "currency": "EUR", "callType": "CALLABLE", "callDetail": "NC1", "maturityYears": 5, "coupon": 3.40, "uf": 0.30, "sensitivity": 4.55, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "BofA-EUR-CALLABLE-10", "issuer": "BofA", "currency": "EUR", "callType": "CALLABLE", "callDetail": "NC1", "maturityYears": 10, "coupon": 3.96, "uf": 0.45, "sensitivity": 8.2, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "Mediobanca-EUR-NC-5", "issuer": "Mediobanca", "currency": "EUR", "callType": "NC", "maturityYears": 5, "coupon": 3.22, "uf": 0.35, "sensitivity": 4.55, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" },
+  { "id": "Mediobanca-USD-NC-5", "issuer": "Mediobanca", "currency": "USD", "callType": "NC", "maturityYears": 5, "coupon": 4.76, "uf": 0.38, "sensitivity": 4.48, "baseReoffer": 100, "runDate": "2026-06-11", "source": "seed" }
 ]
