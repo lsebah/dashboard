@@ -1,7 +1,7 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-06-11T13:25:00",
+  "lastCheck": "2026-06-11T14:05:00",
   "statut": "ok",
   "nouveaux": 0,
   "majs": 6,
@@ -12,6 +12,13 @@
       "majs": 6,
       "statut": "ok",
       "details": "Scan initial (7 j) : BBVA 10/06, BBVA 09/06, UBS 08/06, BofA 08/06, GS Indices Optimisés 08/06, GS Actions Decrement 08/06. Aucune nouvelle TS/indice ces 7 jours (dernier NEW INDEX GS : 03/06)."
+    },
+    {
+      "date": "2026-06-11T14:05:00",
+      "nouveaux": 0,
+      "majs": 6,
+      "statut": "ok",
+      "details": "Refresh manuel : +1 mail depuis 13:25 — GS « Make Europe Great Again » (idée, non comptée). Aucun nouveau run ni indice. Fenêtre 7 j inchangée : 6 runs (BBVA, UBS, BofA, GS x2)."
     }
   ]
 }
