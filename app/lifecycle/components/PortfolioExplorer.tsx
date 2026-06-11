@@ -16,6 +16,7 @@ import {
   formatPct,
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
+import { useLocalProducts } from '@/lib/local-products'
 import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
@@ -193,17 +194,25 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const { map, setClients, statut: statutMap, setStatut, noms, setNom } = useAllocations()
 
+  // Produits créés/importés localement (masque « Nouveau produit ») → fusionnés
+  // au feed pour une mise à jour instantanée du portefeuille.
+  const localProducts = useLocalProducts()
+  const productsAll = useMemo(() => {
+    const seen = new Set(products.map((p) => p.isin))
+    return [...products, ...localProducts.filter((p) => !seen.has(p.isin))]
+  }, [products, localProducts])
+
   // Surcouches locales appliquées par-dessus le feed, avant tout calcul (en-cours,
   // situation, libellé prix, synthèse) : statut forcé (Vendu/Rappelé…) et nom
   // d'affichage renommé manuellement.
   const productsO = useMemo(
     () =>
-      products.map((p) => {
+      productsAll.map((p) => {
         const s = statutMap[p.isin]
         const n = noms[p.isin]
         return s || n ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom } : p
       }),
-    [products, statutMap, noms],
+    [productsAll, statutMap, noms],
   )
 
   // Allocations effectives d'un produit : localStorage, sinon seed `clients`.
@@ -731,7 +740,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               className={`px-3 py-1.5 ${!liveOnly ? 'bg-cmf-navy text-white' : 'bg-white text-slate-600'}`}
               title="Tout le portefeuille"
             >
-              Tous <span className="opacity-60">{products.length}</span>
+              Tous <span className="opacity-60">{productsAll.length}</span>
             </button>
             <button
               onClick={() => setLiveOnly(true)}
