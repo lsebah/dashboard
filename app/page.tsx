@@ -56,7 +56,7 @@ const categories = [
         sub: [
           { name: 'Portefeuille', url: '/lifecycle' },
           { name: 'Calendrier', url: '/lifecycle/calendrier' },
-          { name: 'Comparatif', url: '/lifecycle/comparatif' },
+          { name: 'Décrément', url: '/lifecycle/comparatif' },
           { name: '+ Produit', url: '/lifecycle/produits/nouveau' },
         ],
       },

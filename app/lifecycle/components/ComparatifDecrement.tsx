@@ -195,7 +195,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
       <div className="mb-3 shrink-0">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-cmf-navy">Comparatif indices décrément</h1>
+            <h1 className="text-2xl font-bold text-cmf-navy">Décrément — indices à décrément</h1>
             <p className="text-sm text-slate-500 mt-1">
               {filtered.length} lignes (indice × structure) · {emetteurs.length} émetteurs · meilleur coupon{' '}
               <span className="font-semibold text-emerald-700">{meilleur.toFixed(2)}% p.a.</span> ·
@@ -326,7 +326,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
       </div>
 
       <p className="text-xs text-slate-400 mt-2 shrink-0">
-        Source : Comparatif Émetteurs — Indices à décrément. Coupons indicatifs à la date du run
+        Source : Décrément Émetteurs — Indices à décrément. Coupons indicatifs à la date du run
         (colonne <span className="font-medium">Refresh</span>), non contractuels. Upfronts issus du
         PDF/Excel de départ : <span className="font-medium">commission CMF +1,5 % réintégrée</span> ;
         upfronts <span className="text-emerald-600">✉</span> issus des mails émetteurs : affichés bruts

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
+import { useLocalCommissions } from '@/lib/local-commissions'
 
 // Année en cours : seule éditable. Les précédentes sont clôturées (statiques).
 const ANNEE_COURANTE = '2026'
@@ -46,6 +47,9 @@ type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
 export default function CommissionsView({ data }: { data: CommissionsData }) {
   const { ov, patch, reset } = useCommissionsStore()
+  // Commissions créées localement (depuis « Nouveau produit ») → fusionnées.
+  const { list: localCommissions } = useLocalCommissions()
+  const lignesAll = useMemo(() => [...data.lignes, ...localCommissions], [data, localCommissions])
   const nbSaisies = Object.keys(ov).length
   const [editFac, setEditFac] = useState<string | null>(null) // ligne dont le n° facture est en édition
   const [an, setAn] = useState<string>(ANNEE_COURANTE)
@@ -89,12 +93,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   }
 
   const annees = useMemo(() => {
-    const s = new Set(data.lignes.map(anneeAttr).filter((a) => a !== '—'))
+    const s = new Set(lignesAll.map(anneeAttr).filter((a) => a !== '—'))
     return Array.from(s).sort((a, b) => b.localeCompare(a))
-  }, [data.lignes])
+  }, [lignesAll])
 
   const filtered = useMemo(() => {
-    let l = data.lignes.map(calc)
+    let l = lignesAll.map(calc)
     if (an !== 'tous') l = l.filter((x) => anneeAttr(x) === an)
     if (statut === 'a_facturer') l = l.filter((x) => !x.fait)
     if (statut === 'envoyee') l = l.filter((x) => x.fait && !x.credited)
@@ -118,7 +122,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       return String(va).localeCompare(String(vb), 'fr') * m
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.lignes, ov, an, statut, q, sort])
+  }, [lignesAll, ov, an, statut, q, sort])
 
   const tot = useMemo(() => {
     const sum = (k: 'comClient' | 'comTotal' | 'net' | 'nominal') =>
@@ -132,7 +136,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const out = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }
     // Vrai net. Deals de l'année → trimestre d'ÉMISSION (payés ou non) ; facture
     // d'année antérieure encaissée dans l'année → trimestre de PAIEMENT.
-    for (const l of data.lignes.map(calc)) {
+    for (const l of lignesAll.map(calc)) {
       const v = typeof l.net === 'number' ? l.net : 0
       if (annee(l) === ANNEE_COURANTE && l.issue) out[trimestre(l.issue) as 'Q1' | 'Q2' | 'Q3' | 'Q4'] += v
       else if ((l.credited ?? '').startsWith(ANNEE_COURANTE) && l.credited)
@@ -140,7 +144,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     }
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.lignes, ov])
+  }, [lignesAll, ov])
   const trimMax = Math.max(trim.Q1, trim.Q2, trim.Q3, trim.Q4, 1)
   const trimTotal = trim.Q1 + trim.Q2 + trim.Q3 + trim.Q4
 
@@ -177,12 +181,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // dans l'année (ex. Santander émis 2025 payé 2026). Vivant (réagit aux saisies).
   const netLoloYtd = useMemo(
     () =>
-      data.lignes
+      lignesAll
         .map(calc)
         .filter((l) => annee(l) === ANNEE_COURANTE || (l.credited ?? '').startsWith(ANNEE_COURANTE))
         .reduce((s, l) => s + (typeof l.net === 'number' ? l.net : 0), 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data.lignes, ov],
+    [lignesAll, ov],
   )
   const ytdClasseur = data.commissionsNettesParAnnee[ANNEE_COURANTE] ?? 0
   const inputPct = 'w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none'

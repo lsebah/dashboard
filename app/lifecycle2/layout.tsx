@@ -4,7 +4,7 @@ import Lifecycle2Nav from './components/Lifecycle2Nav'
 export const metadata: Metadata = {
   title: 'LIFECYCLE 2 — Terminal CMF',
   description:
-    'Plateforme de gestion et de suivi des produits structurés — Capital Management France. Terminal financier premium (synthèse, portefeuille, calendrier, comparatif, commissions, Bloomberg).',
+    'Plateforme de gestion et de suivi des produits structurés — Capital Management France. Terminal financier premium (synthèse, portefeuille, calendrier, décrément, commissions, Bloomberg).',
 }
 
 export default function Lifecycle2Layout({ children }: { children: React.ReactNode }) {

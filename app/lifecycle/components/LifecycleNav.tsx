@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 const tabs = [
   { name: 'Portefeuille', href: '/lifecycle' },
   { name: 'Calendrier', href: '/lifecycle/calendrier' },
-  { name: 'Comparatif', href: '/lifecycle/comparatif' },
+  { name: 'Décrément', href: '/lifecycle/comparatif' },
   { name: 'Commissions', href: '/lifecycle/commissions' },
   { name: 'Bloomberg', href: '/lifecycle/bloomberg' },
   { name: 'Nouveau produit', href: '/lifecycle/produits/nouveau' },

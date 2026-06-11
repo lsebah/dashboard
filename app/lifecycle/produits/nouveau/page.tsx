@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react'
 import { useAllocations, tousLesClients } from '@/lib/allocations'
 import roster from '@/lib/clients-roster.json'
+import { factureMailto } from '@/lib/facture'
+import { useLocalCommissions, STATUT_LABEL, type FactureStatut, type LocalCommission } from '@/lib/local-commissions'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Masque de saisie d'un produit (v1).
@@ -105,9 +107,79 @@ export default function NouveauProduit() {
   const [savedIsin, setSavedIsin] = useState<string | null>(null)
   const { map, setClients } = useAllocations()
   const clientsDispo = useMemo(() => tousLesClients(map, roster as string[]), [map])
-  const [sel, setSel] = useState<string[]>([])
-  const [nouveauClient, setNouveauClient] = useState('')
-  const [affecte, setAffecte] = useState(false)
+  // Commission & facturation (module #6) — préremplie depuis la TS / le produit.
+  const { upsert: upsertCom } = useLocalCommissions()
+  const USER = 'lsebah@mac.com'
+  const [comClient, setComClient] = useState('')
+  const [comUf, setComUf] = useState('')
+  const [comRetro, setComRetro] = useState('')
+  const [comDatePaiement, setComDatePaiement] = useState('')
+  const [comStatut, setComStatut] = useState<FactureStatut>('en_attente')
+  const [comError, setComError] = useState<string | null>(null)
+  const [comLigne, setComLigne] = useState<LocalCommission | null>(null)
+
+  // Calculs automatiques (mise à jour instantanée à chaque saisie).
+  const nominalNum = parseFloat(String(f.nominal).replace(',', '.')) || 0
+  const ufNum = (parseFloat(comUf.replace(',', '.')) || 0) / 100
+  const retroNum = (parseFloat(comRetro.replace(',', '.')) || 0) / 100
+  const montantUf = nominalNum * ufNum
+  const montantRetro = nominalNum * retroNum
+  const comTotale = montantUf
+  const comNette = montantUf - montantRetro
+  const nowStamp = () => new Date().toLocaleString('fr-FR')
+
+  const validerCommission = () => {
+    if (!comClient) {
+      setComError("Aucun client n'est affecté à ce produit. Veuillez sélectionner un client avant validation.")
+      return
+    }
+    setComError(null)
+    const isin = f.isin || savedIsin || ''
+    setClients(isin, [{ client: comClient, montant: nominalNum || undefined }])
+    const ligne: LocalCommission = {
+      isin,
+      issue: f.dateEmission || null,
+      client: comClient,
+      emetteur: f.emetteur || null,
+      description: f.nom || null,
+      devise: f.devise || 'EUR',
+      nominal: nominalNum,
+      ufPct: ufNum,
+      comCmf: comNette,
+      retroPct: retroNum,
+      comClient: montantRetro,
+      comTotal: comTotale,
+      facture: null,
+      sent: null,
+      credited: comStatut === 'payee' ? comDatePaiement || new Date().toISOString().slice(0, 10) : null,
+      split: 1,
+      net: comNette,
+      statutFacture: comStatut,
+      genereLe: null,
+      envoyeLe: null,
+      histo: [{ action: 'Commission validée', date: nowStamp(), user: USER }],
+    }
+    upsertCom(ligne)
+    setComLigne(ligne)
+  }
+
+  const onFactureClick = () => {
+    if (!comLigne) return
+    const updated: LocalCommission = {
+      ...comLigne,
+      statutFacture: comLigne.statutFacture === 'en_attente' ? 'envoyee' : comLigne.statutFacture,
+      genereLe: comLigne.genereLe ?? nowStamp(),
+      envoyeLe: nowStamp(),
+      histo: [
+        ...comLigne.histo,
+        { action: 'Facture générée', date: nowStamp(), user: USER },
+        { action: 'Email facture ouvert (envoi à Gabrielle)', date: nowStamp(), user: USER },
+      ],
+    }
+    upsertCom(updated)
+    setComLigne(updated)
+    setComStatut(updated.statutFacture)
+  }
 
   // Applique au formulaire l'objet produit extrait de la TS par le modèle.
   const applyParsed = (p: Record<string, unknown>) => {
@@ -221,8 +293,9 @@ export default function NouveauProduit() {
       localStorage.setItem(key, JSON.stringify(existing))
       setSaved(true)
       setSavedIsin(product.isin || product.id || null)
-      setSel([])
-      setAffecte(false)
+      setComClient('')
+      setComLigne(null)
+      setComError(null)
     } catch {
       /* noop */
     }
@@ -460,81 +533,132 @@ export default function NouveauProduit() {
             {saved && <span className="text-sm text-emerald-600">Enregistré localement ✓</span>}
           </div>
 
-          {/* Contrôle d'affectation : un produit ne doit pas rester sans propriétaire. */}
+          {/* #6 — Commission & facturation (apparaît après création du produit) */}
           {savedIsin && (
-            <div className="card p-4 border-amber-300 bg-amber-50/50">
-              {!affecte ? (
-                <>
-                  <div className="flex items-start gap-2">
-                    <span className="text-amber-600 text-lg leading-none">⚠</span>
-                    <div>
-                      <div className="font-semibold text-cmf-navy">
-                        Produit créé mais aucun client n’est actuellement affecté.
-                      </div>
-                      <p className="mt-0.5 text-sm text-slate-600">
-                        Associe un ou plusieurs clients à <span className="font-mono">{savedIsin}</span>{' '}
-                        (affectation simple ou multiple).
-                      </p>
+            <div className="card space-y-3 border-cmf-blue/30 p-4">
+              <div className="flex items-start gap-2">
+                <span className="text-lg leading-none text-emerald-600">✓</span>
+                <div>
+                  <div className="font-semibold text-cmf-navy">
+                    Produit créé — complète la commission et l’affectation client.
+                  </div>
+                  <p className="mt-0.5 text-sm text-slate-600">
+                    ISIN <span className="font-mono">{savedIsin}</span>. Renseigne client, upfront et
+                    rétrocession : les montants se calculent automatiquement.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <Field label="Client *">
+                  <select className="input" value={comClient} onChange={(e) => setComClient(e.target.value)}>
+                    <option value="">— Sélectionner —</option>
+                    {clientsDispo.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Nominal">
+                  <input className="input" type="number" value={f.nominal} onChange={set('nominal')} />
+                </Field>
+                <Field label="Émetteur">
+                  <input className="input" value={f.emetteur} onChange={set('emetteur')} />
+                </Field>
+                <Field label="Upfront (%)">
+                  <input className="input" inputMode="decimal" value={comUf} onChange={(e) => setComUf(e.target.value)} placeholder="ex. 2.5" />
+                </Field>
+                <Field label="Rétrocession (%)">
+                  <input className="input" inputMode="decimal" value={comRetro} onChange={(e) => setComRetro(e.target.value)} placeholder="ex. 1.0" />
+                </Field>
+                <Field label="Date d’émission">
+                  <input className="input" type="date" value={f.dateEmission} onChange={set('dateEmission')} />
+                </Field>
+                <Field label="Date paiement estimée">
+                  <input className="input" type="date" value={comDatePaiement} onChange={(e) => setComDatePaiement(e.target.value)} />
+                </Field>
+                <Field label="Statut commission">
+                  <select className="input" value={comStatut} onChange={(e) => setComStatut(e.target.value as FactureStatut)}>
+                    {(['en_attente', 'envoyee', 'confirmee', 'payee'] as FactureStatut[]).map((s) => (
+                      <option key={s} value={s}>
+                        {STATUT_LABEL[s]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
+              {/* Calculs automatiques (séparateurs de milliers) */}
+              <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
+                {([
+                  ['Montant upfront', montantUf],
+                  ['Montant rétro', montantRetro],
+                  ['Com. totale', comTotale],
+                  ['Com. nette', comNette],
+                ] as [string, number][]).map(([lab, val]) => (
+                  <div key={lab} className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                    <div className="field-label">{lab}</div>
+                    <div className="font-semibold tabular-nums">
+                      {val.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €
                     </div>
                   </div>
-                  <div className="mt-3 grid max-h-48 grid-cols-2 gap-1.5 overflow-auto sm:grid-cols-3">
-                    {clientsDispo.map((c) => {
-                      const on = sel.includes(c)
-                      return (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => setSel((p) => (on ? p.filter((x) => x !== c) : [...p, c]))}
-                          className={`truncate rounded border px-2 py-1 text-left text-[13px] ${
-                            on ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 hover:bg-slate-50'
-                          }`}
-                        >
-                          {on ? '✓ ' : ''}
-                          {c}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      value={nouveauClient}
-                      onChange={(e) => setNouveauClient(e.target.value)}
-                      placeholder="Nouveau client (code)"
-                      className="input max-w-[240px]"
-                    />
-                    <button
-                      type="button"
-                      className="text-sm text-cmf-blue hover:underline"
-                      onClick={() => {
-                        const v = nouveauClient.trim()
-                        if (v && !sel.includes(v)) setSel([...sel, v])
-                        setNouveauClient('')
-                      }}
-                    >
-                      + Ajouter
-                    </button>
-                  </div>
-                  <div className="mt-3 flex items-center gap-3">
-                    <button
-                      type="button"
-                      disabled={sel.length === 0}
-                      onClick={() => {
-                        setClients(savedIsin, sel.map((client) => ({ client })))
-                        setAffecte(true)
-                      }}
-                      className="rounded-md bg-cmf-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40"
-                    >
-                      Affecter{sel.length > 0 ? ` (${sel.length})` : ''}
-                    </button>
-                    <span className="text-xs text-slate-500">{sel.length} client(s) sélectionné(s)</span>
-                  </div>
-                </>
+                ))}
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                  <div className="field-label">% du nominal</div>
+                  <div className="font-semibold tabular-nums">{(ufNum * 100).toFixed(2)} %</div>
+                </div>
+              </div>
+
+              {comError && <div className="text-sm text-red-600">⚠ {comError}</div>}
+
+              {!comLigne ? (
+                <button
+                  type="button"
+                  onClick={validerCommission}
+                  className="rounded-md bg-cmf-navy px-4 py-2 text-sm font-medium text-white hover:bg-[#0b1d36]"
+                >
+                  Valider la commission
+                </button>
               ) : (
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <span>✓</span>
-                  <span className="font-medium">
-                    {sel.length} client(s) affecté(s) à <span className="font-mono">{savedIsin}</span>.
-                  </span>
+                <div className="space-y-2">
+                  <div className="text-sm text-emerald-700">
+                    ✓ Commission enregistrée · produit affecté à <span className="font-medium">{comClient}</span>.
+                  </div>
+                  <a
+                    href={factureMailto({
+                      emetteur: f.emetteur,
+                      isin: f.isin || savedIsin,
+                      issue: f.dateEmission,
+                      description: f.nom,
+                      nominal: nominalNum,
+                      ufPct: ufNum,
+                      comTotal: comTotale,
+                      comClient: montantRetro,
+                      client: comClient,
+                    })}
+                    onClick={onFactureClick}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-cmf-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    title="Ouvre l’email pré-rempli — skill CMF FACTURE GABRIELLE"
+                  >
+                    ✉ Générer et envoyer la facture à Gabrielle
+                  </a>
+
+                  <div className="rounded-md border border-slate-200 bg-white p-2 text-[12px]">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-700">Historique</span>
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-600">
+                        Statut : {STATUT_LABEL[comLigne.statutFacture]}
+                      </span>
+                    </div>
+                    <ul className="mt-1 space-y-0.5 text-slate-500">
+                      {comLigne.histo.map((h, i) => (
+                        <li key={i}>
+                          • {h.action} — <span className="tabular-nums">{h.date}</span> · {h.user}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>

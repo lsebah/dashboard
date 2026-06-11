@@ -6,7 +6,7 @@ const TABS: { name: string; href: string }[] = [
   { name: 'Synthèse', href: '/lifecycle2' },
   { name: 'Portefeuille', href: '/lifecycle2/portefeuille' },
   { name: 'Calendrier', href: '/lifecycle2/calendrier' },
-  { name: 'Comparatif', href: '/lifecycle2/comparatif' },
+  { name: 'Décrément', href: '/lifecycle2/comparatif' },
   { name: 'Commissions', href: '/lifecycle2/commissions' },
   { name: 'Bloomberg', href: '/lifecycle2/bloomberg' },
   { name: 'Nouveau produit', href: '/lifecycle2/produits/nouveau' },
