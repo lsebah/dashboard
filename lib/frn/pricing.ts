@@ -14,9 +14,14 @@ export function couponZeroUF(coupon: number, uf: number, sensitivity: number): n
   return coupon + uf / sensitivity
 }
 
-/** Ajuste un coupon (déjà à 0 % d'UF) au reoffer R. */
-export function couponAtReoffer(coupon0UF: number, reoffer: number, sensitivity: number): number {
-  return coupon0UF - (100 - reoffer) / sensitivity
+/** Ajuste un coupon (à 0 % d'UF) du reoffer de base R0 vers le reoffer R. */
+export function couponAtReoffer(
+  coupon0UF: number,
+  reoffer: number,
+  sensitivity: number,
+  baseReoffer = 100,
+): number {
+  return coupon0UF - (baseReoffer - reoffer) / sensitivity
 }
 
 export interface DisplayResult {
@@ -29,14 +34,14 @@ export interface DisplayResult {
  * renvoie le coupon brut avec le drapeau `missingSensi` (exclu du meilleur prix).
  */
 export function displayedCoupon(
-  q: Pick<FrnQuote, 'coupon' | 'uf' | 'sensitivity'>,
+  q: Pick<FrnQuote, 'coupon' | 'uf' | 'sensitivity' | 'baseReoffer'>,
   reoffer: number,
 ): DisplayResult {
   if (q.sensitivity == null || q.sensitivity === 0) {
     return { value: q.coupon, missingSensi: true }
   }
   const zero = couponZeroUF(q.coupon, q.uf, q.sensitivity)
-  return { value: couponAtReoffer(zero, reoffer, q.sensitivity), missingSensi: false }
+  return { value: couponAtReoffer(zero, reoffer, q.sensitivity, q.baseReoffer ?? 100), missingSensi: false }
 }
 
 /** Meilleur coupon (max) par maturité, en ignorant les prix « sensi manquante ». */

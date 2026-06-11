@@ -32,6 +32,18 @@ test('displayedCoupon : reoffer 99.5', () => {
   near(r.value, 3.1 - 0.5 / 3.0)
 })
 
+test('couponAtReoffer : reoffer de base ≠ 100', () => {
+  // coté à 97.5, restaté à 100 ⇒ coupon plus élevé de (100−97.5)/sensi
+  near(couponAtReoffer(3.76, 100, 6.21, 97.5), 3.76 + 2.5 / 6.21)
+  // restaté au même reoffer ⇒ inchangé
+  near(couponAtReoffer(3.76, 97.5, 6.21, 97.5), 3.76)
+})
+
+test('displayedCoupon : utilise baseReoffer du quote', () => {
+  const r = displayedCoupon({ coupon: 3.76, uf: 0, sensitivity: 6.21, baseReoffer: 97.5 }, 100)
+  near(r.value, 3.76 + 2.5 / 6.21)
+})
+
 test('displayedCoupon : sensibilité manquante ⇒ brut + flag', () => {
   const r = displayedCoupon({ coupon: 4.2, uf: 0.4, sensitivity: null }, 99)
   assert.equal(r.missingSensi, true)

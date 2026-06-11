@@ -39,7 +39,7 @@ export default function FrnView() {
   const [currency, setCurrency] = useState<Currency>('EUR')
   const [reofferStr, setReofferStr] = useState('100.00')
   const [reoffer, setReoffer] = useState(100)
-  const [staleDays, setStaleDays] = useState(2)
+  const [staleDays, setStaleDays] = useState(5)
   const [importOpen, setImportOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -177,7 +177,7 @@ export default function FrnView() {
                         title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · duration non fournie'} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
                       <div className="leading-tight">{fmt2(d.value)}</div>
                       <div className="text-[9px] font-normal leading-none text-slate-400">
-                        {q.sensitivity != null ? `s ${q.sensitivity}` : 'sans sensi'}
+                        {q.sensitivity != null ? `s ${q.sensitivity}` : `@${fmt2(q.baseReoffer)}`}
                       </div>
                     </td>
                   )
