@@ -1,23 +1,8 @@
-import state from '@/data/decrement-monitoring.json'
+'use client'
 
-interface Run {
-  date: string
-  nouveaux: number
-  majs: number
-  statut: string
-  details?: string
-}
-interface MonitoringState {
-  frequence: string
-  dossier: string | null
-  lastCheck: string | null
-  statut: string
-  nouveaux: number
-  majs: number
-  historique: Run[]
-}
-
-const S = state as MonitoringState
+import { useEffect, useState } from 'react'
+import seed from '@/data/decrement-monitoring.json'
+import type { MonitoringState } from '@/lib/decrement/types'
 
 const STATUT_STYLE: Record<string, string> = {
   ok: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -27,8 +12,23 @@ const STATUT_STYLE: Record<string, string> = {
 }
 const dateFr = (iso: string | null) => (iso ? new Date(iso).toLocaleString('fr-FR') : '—')
 
-/** Dashboard de suivi de la veille « Décrément » (alimenté par l'agent quotidien). */
+/** Dashboard de suivi de la veille « Décrément » (état live KV, fallback seed). */
 export default function DecrementMonitoringBanner() {
+  const [S, setS] = useState<MonitoringState>(seed as MonitoringState)
+
+  useEffect(() => {
+    let on = true
+    fetch('/api/decrement/monitoring', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: MonitoringState) => {
+        if (on && d) setS(d)
+      })
+      .catch(() => {})
+    return () => {
+      on = false
+    }
+  }, [])
+
   const style = STATUT_STYLE[S.statut] ?? STATUT_STYLE['rien']
   return (
     <div className="mb-3 rounded-lg border border-[#e2e6ec] bg-white p-3">
@@ -52,12 +52,14 @@ export default function DecrementMonitoringBanner() {
 
       {S.historique.length > 0 && (
         <ul className="mt-2 space-y-0.5 border-t border-slate-100 pt-2 text-[12px] text-slate-500">
-          {S.historique.slice(-4).reverse().map((r, i) => (
-            <li key={i}>
-              • {dateFr(r.date)} — {r.nouveaux} nouveau(x), {r.majs} MAJ
-              {r.details ? ` · ${r.details}` : ''}
-            </li>
-          ))}
+          {S.historique
+            .slice(-4)
+            .reverse()
+            .map((r, i) => (
+              <li key={i}>
+                • {dateFr(r.date)} — {r.nouveaux} nouveau(x), {r.majs} MAJ{r.details ? ` · ${r.details}` : ''}
+              </li>
+            ))}
         </ul>
       )}
 
