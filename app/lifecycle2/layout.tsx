@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function Lifecycle2Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="lc2-root min-h-screen text-slate-800">
-      <header className="sticky top-0 z-30 border-b border-[#e7e2d8] bg-[#f5f3ee]/90 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-[#e2e6ec] bg-white/95 backdrop-blur-md">
         <div className="mx-auto max-w-[1700px] px-4 sm:px-6">
           {/* Ligne 1 — marque */}
           <div className="flex h-14 items-center justify-between gap-4">
@@ -19,15 +19,15 @@ export default function Lifecycle2Layout({ children }: { children: React.ReactNo
                 ←
               </a>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black tracking-[0.16em] text-slate-900">LIFECYCLE</span>
-                <span className="rounded bg-bb-orange px-1.5 py-0.5 text-[11px] font-bold text-white">2</span>
+                <span className="text-xl font-semibold tracking-[0.22em] text-cmf-navy">LIFECYCLE</span>
+                <span className="rounded-sm bg-cmf-navy px-1.5 py-0.5 text-[11px] font-bold text-white">2</span>
               </div>
               <span className="hidden text-[11px] uppercase tracking-[0.2em] text-slate-400 md:inline">
                 Capital Management France
               </span>
             </div>
             <span className="hidden items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate-400 sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-bb-orange" />
+              <span className="h-1.5 w-1.5 rounded-full bg-cmf-navy" />
               Terminal
             </span>
           </div>

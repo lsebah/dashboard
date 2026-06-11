@@ -72,21 +72,18 @@ body {
   }
 }
 
-/* ── LIFECYCLE 2 — terminal premium (blanc cassé · accent orange Bloomberg) ── */
+/* ── LIFECYCLE 2 — terminal institutionnel (banque privée) ─────────────────── */
 .lc2-root {
-  background:
-    radial-gradient(1100px 520px at 100% -12%, rgba(255, 106, 0, 0.06), transparent 60%),
-    radial-gradient(800px 420px at -8% 4%, rgba(255, 176, 0, 0.05), transparent 55%),
-    #f5f3ee;
-  color: #1e293b;
+  background: #f4f6f9;
+  color: #1f2937;
 }
 
 @layer components {
   .lc2-panel {
-    @apply rounded-xl border border-[#e7e2d8] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+    @apply rounded-lg border border-[#e2e6ec] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
   }
   .lc2-kpi {
-    @apply rounded-xl border border-[#e7e2d8] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+    @apply rounded-lg border border-[#e2e6ec] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
   }
   .lc2-label {
     @apply text-[11px] font-semibold uppercase tracking-wider text-slate-500;

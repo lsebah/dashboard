@@ -27,7 +27,7 @@ export default function Lifecycle2Nav() {
             aria-current={active ? 'page' : undefined}
             className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
               active
-                ? 'border-bb-orange text-slate-900'
+                ? 'border-cmf-navy text-cmf-navy'
                 : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
             }`}
           >

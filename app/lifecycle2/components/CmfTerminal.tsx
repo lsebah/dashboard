@@ -35,7 +35,7 @@ import {
   RadialStat,
   Sparkline,
   colorAt,
-  BB_ORANGE,
+  ACCENT,
 } from './charts'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
@@ -57,20 +57,19 @@ function sitLive(p: Product, wo: number | null | undefined): Sit {
   return 'sans_stress'
 }
 const SIT_META: Record<Sit, { label: string; color: string }> = {
-  positive: { label: 'En gain', color: '#16a34a' },
-  sans_stress: { label: 'Sans stress', color: '#0ea5e9' },
-  proche: { label: 'Proche barrière', color: '#f59e0b' },
-  sous: { label: 'Sous barrière', color: '#ef4444' },
+  positive: { label: 'En gain', color: '#1b7a4b' },
+  sans_stress: { label: 'Sans stress', color: '#3e6188' },
+  proche: { label: 'Proche barrière', color: '#b8860b' },
+  sous: { label: 'Sous barrière', color: '#b42318' },
   non_classe: { label: 'Non classé', color: '#94a3b8' },
 }
 
 function heatColor(m: number | null): string {
-  if (m === null) return '#ece9e2'
-  if (m < 0) return '#ef4444'
-  if (m < 8) return '#f59e0b'
-  if (m < 20) return '#eab308'
-  if (m < 35) return '#84cc16'
-  return '#22c55e'
+  if (m === null) return '#eef1f5'
+  if (m < 0) return '#b42318'
+  if (m < 10) return '#c2840a'
+  if (m < 25) return '#5a8f4e'
+  return '#2f7d4f'
 }
 
 // Top N + regroupement du reste en « Autres ».
@@ -163,21 +162,21 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600">
-          <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-emerald-500' : 'bg-bb-orange lc2-pulse'}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-emerald-600' : 'bg-slate-400 lc2-pulse'}`} />
           {live ? 'Niveaux temps réel' : 'Chargement des niveaux…'}
         </span>
       </div>
 
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Encours nominal" value={eurCompact(T.nominal)} sub={`${T.nbVivant} produits vivants`} accent={BB_ORANGE} style={{ animationDelay: '0ms' }} spark={<Sparkline data={sparkEncours} />} />
-        <StatCard label="Valorisation MtM" value={eurCompact(T.valorisation)} delta={T.pnlPct} deltaLabel="vs nominal" accent="#0ea5e9" style={{ animationDelay: '40ms' }} />
-        <StatCard label="P&L latent" value={`${T.pnlEur >= 0 ? '+' : ''}${eurCompact(T.pnlEur)}`} sub="MtM + coupons encaissés" accent={T.pnlEur >= 0 ? '#16a34a' : '#e11d48'} style={{ animationDelay: '80ms' }} />
-        <StatCard label="Rdt depuis origine" value={pct(T.pnlPct)} sub="pondéré nominal" accent="#10b981" style={{ animationDelay: '120ms' }} />
-        <StatCard label="Carry p.a. (cible)" value={pctAbs(T.carryPa)} sub="coupon annualisé moyen" accent="#f59e0b" style={{ animationDelay: '160ms' }} />
-        <StatCard label="Rendement YTD" value={pctAbs(T.carryYtd)} sub="carry couru 2026 · indicatif" accent="#ffb000" style={{ animationDelay: '200ms' }} />
-        <StatCard label="Dispersion P&L" value={`${T.dispersion.toFixed(1)} pt`} sub="écart-type pondéré · indicatif" accent="#8b5cf6" style={{ animationDelay: '240ms' }} />
-        <StatCard label="Ratio rdt / risque" value={T.ratio.toFixed(2)} sub="rendement / dispersion" accent="#0891b2" style={{ animationDelay: '280ms' }} />
+        <StatCard label="Encours nominal" value={eurCompact(T.nominal)} sub={`${T.nbVivant} produits vivants`} accent={ACCENT} style={{ animationDelay: '0ms' }} spark={<Sparkline data={sparkEncours} />} />
+        <StatCard label="Valorisation MtM" value={eurCompact(T.valorisation)} delta={T.pnlPct} deltaLabel="vs nominal" accent={ACCENT} style={{ animationDelay: '40ms' }} />
+        <StatCard label="P&L latent" value={`${T.pnlEur >= 0 ? '+' : ''}${eurCompact(T.pnlEur)}`} sub="MtM + coupons encaissés" accent={T.pnlEur >= 0 ? '#1b7a4b' : '#b42318'} style={{ animationDelay: '80ms' }} />
+        <StatCard label="Rdt depuis origine" value={pct(T.pnlPct)} sub="pondéré nominal" accent={ACCENT} style={{ animationDelay: '120ms' }} />
+        <StatCard label="Carry p.a. (cible)" value={pctAbs(T.carryPa)} sub="coupon annualisé moyen" accent={ACCENT} style={{ animationDelay: '160ms' }} />
+        <StatCard label="Rendement YTD" value={pctAbs(T.carryYtd)} sub="carry couru 2026 · indicatif" accent={ACCENT} style={{ animationDelay: '200ms' }} />
+        <StatCard label="Dispersion P&L" value={`${T.dispersion.toFixed(1)} pt`} sub="écart-type pondéré · indicatif" accent={ACCENT} style={{ animationDelay: '240ms' }} />
+        <StatCard label="Ratio rdt / risque" value={T.ratio.toFixed(2)} sub="rendement / dispersion" accent={ACCENT} style={{ animationDelay: '280ms' }} />
       </div>
 
       {/* ── Allocation des actifs ──────────────────────────────────────── */}
@@ -216,7 +215,7 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
       {/* ── Évolution & contribution ───────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Panel title="Évolution de l'encours" sub="nominal actif reconstruit (mensuel)" className="lg:col-span-3">
-          <AreaChart points={histo.map((h) => ({ label: h.label, value: h.encours }))} format={eurCompact} color={BB_ORANGE} />
+          <AreaChart points={histo.map((h) => ({ label: h.label, value: h.encours }))} format={eurCompact} color={ACCENT} />
         </Panel>
         <Panel title="Contributeurs au P&L" sub="meilleurs / moins bons (€, MtM)" className="lg:col-span-2">
           <DivergingBars
@@ -236,9 +235,9 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
           className="lg:col-span-3"
           right={
             <div className="flex items-center gap-2 text-[10px] text-slate-500">
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#ef4444' }} />sous</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#f59e0b' }} />proche</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#22c55e' }} />confortable</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#b42318' }} />sous</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#c2840a' }} />proche</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#2f7d4f' }} />confortable</span>
             </div>
           }
         >
@@ -255,7 +254,7 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
                 key: r.p.isin,
                 label: typeof r.wo === 'number' ? `${Math.round(r.wo)}` : '·',
                 bg: heatColor(r.marge),
-                fg: r.marge === null ? '#94a3b8' : '#1e293b',
+                fg: r.marge === null ? '#94a3b8' : '#ffffff',
                 title: `${r.p.emetteur} · ${r.p.isin}\n${r.p.productType ?? r.p.nom}\nWorst-of ${typeof r.wo === 'number' ? r.wo.toFixed(1) + ' %' : 'n/c'} · barrière ${typeof r.prot === 'number' ? r.prot + ' %' : 'n/c'}${r.marge !== null ? ` · marge ${r.marge.toFixed(1)} pt` : ''}`,
               }))}
             />
@@ -272,7 +271,7 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
               value={live ? 1 - proches / Math.max(1, risque.length) : 0}
               centerTop={live ? `${risque.length - proches}` : '…'}
               centerSub="hors zone"
-              color={proches > 0 ? '#f59e0b' : '#16a34a'}
+              color={proches > 0 ? '#b8860b' : '#1b7a4b'}
             />
             <div className="min-w-0 flex-1 space-y-2 text-[13px]">
               <Stat k="Produits proches / sous barrière" v={live ? `${proches}` : '…'} warn={proches > 0} />
@@ -310,7 +309,7 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
       {/* ── Échéancier & clients ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Échéancier (maturity ladder)" sub="nominal arrivant à maturité par année">
-          <BarList items={echeances.map((e) => ({ label: e.label, value: e.montant, pct: e.pct, sub: `${e.n}`, color: '#0ea5e9' }))} format={eurCompact} />
+          <BarList items={echeances.map((e) => ({ label: e.label, value: e.montant, pct: e.pct, sub: `${e.n}`, color: ACCENT }))} format={eurCompact} />
         </Panel>
         <Panel title="Allocation par client" sub="montants investis (feed)">
           <BarList items={clients.map((e, i) => ({ label: e.label, value: e.montant, pct: e.pct, sub: `${e.n}`, color: colorAt(i + 1) }))} format={eurCompact} />
@@ -378,7 +377,7 @@ function PositionsTable({ products, courant }: { products: Product[]; courant: R
           </thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map(({ p, nom, prix, pnl, wo, sit, mat }) => (
-              <tr key={p.isin} className="hover:bg-orange-50/50">
+              <tr key={p.isin} className="hover:bg-slate-50">
                 <td className="whitespace-nowrap px-3 py-1.5 font-mono text-slate-600">{p.isin}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-slate-700">{p.emetteur}</td>
                 <td className="max-w-[180px] truncate px-3 py-1.5 text-slate-500" title={p.nom}>{p.productType ?? p.family}</td>

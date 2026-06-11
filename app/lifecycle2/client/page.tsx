@@ -69,7 +69,7 @@ export default function ClientSpacePage() {
       <div className="px-8 py-10 sm:px-12">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-800">Ce que vous trouverez ici</h2>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-[11px] font-medium text-amber-700">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-500">
             En cours de construction
           </span>
         </div>
@@ -79,9 +79,7 @@ export default function ClientSpacePage() {
               key={f.titre}
               className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <div
-                className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${f.accent} text-lg shadow`}
-              >
+              <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-cmf-navy/[0.06] text-lg ring-1 ring-inset ring-cmf-navy/10">
                 {f.icone}
               </div>
               <h3 className="font-semibold text-slate-800">{f.titre}</h3>

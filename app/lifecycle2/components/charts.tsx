@@ -4,10 +4,11 @@
 // ─────────────────────────────────────────────────────────────────────────
 import type { ReactNode, CSSProperties } from 'react'
 
-export const BB_ORANGE = '#ff6a00'
+// Accent unique (navy institutionnel) + rampe sobre bleu acier / gris ardoise.
+export const ACCENT = '#0f2748'
 export const PALETTE = [
-  '#ff6a00', '#0ea5e9', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444',
-  '#14b8a6', '#6366f1', '#ec4899', '#84cc16', '#0891b2', '#a855f7',
+  '#0f2748', '#27496b', '#3e6188', '#5b7da3', '#86a0bf', '#b3c4d8',
+  '#1b5e4b', '#6b7280', '#94732e', '#43586f', '#7d93ab', '#a8895a',
 ]
 export const colorAt = (i: number) => PALETTE[i % PALETTE.length]
 
@@ -50,7 +51,7 @@ export function StatCard({
   sub,
   delta,
   deltaLabel,
-  accent = BB_ORANGE,
+  accent = ACCENT,
   spark,
   style,
 }: {
@@ -69,7 +70,7 @@ export function StatCard({
       <div className="flex items-center justify-between">
         <span className="lc2-label">{label}</span>
         {delta !== undefined && (
-          <span className={`tabular-nums text-[11px] font-semibold ${delta >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+          <span className={`tabular-nums text-[11px] font-semibold ${delta >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
             {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(2)} %
             {deltaLabel && <span className="ml-1 font-normal text-slate-400">{deltaLabel}</span>}
           </span>
@@ -170,7 +171,7 @@ export function Legend({
 export function BarList({
   items,
   format,
-  accent = BB_ORANGE,
+  accent = ACCENT,
 }: {
   items: { label: string; value: number; pct?: number; color?: string; sub?: string }[]
   format: (n: number) => string
@@ -223,10 +224,10 @@ export function DivergingBars({
               <div className="absolute left-1/2 top-0 h-full w-px bg-slate-300" />
               <div
                 className="absolute top-0.5 h-3 rounded-sm"
-                style={{ [pos ? 'left' : 'right']: '50%', width: `${w}%`, background: pos ? '#10b981' : '#ef4444' } as CSSProperties}
+                style={{ [pos ? 'left' : 'right']: '50%', width: `${w}%`, background: pos ? '#1b7a4b' : '#b42318' } as CSSProperties}
               />
             </div>
-            <span className={`w-24 shrink-0 text-right tabular-nums ${pos ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <span className={`w-24 shrink-0 text-right tabular-nums ${pos ? 'text-emerald-700' : 'text-red-700'}`}>
               {format(it.value)}
             </span>
           </li>
@@ -240,7 +241,7 @@ export function DivergingBars({
 export function AreaChart({
   points,
   height = 150,
-  color = BB_ORANGE,
+  color = ACCENT,
   format,
 }: {
   points: { label: string; value: number }[]
@@ -321,7 +322,7 @@ export function RadialStat({
   value,
   centerTop,
   centerSub,
-  color = BB_ORANGE,
+  color = ACCENT,
   size = 132,
   thickness = 12,
 }: {
@@ -355,7 +356,7 @@ export function RadialStat({
 }
 
 // ── Sparkline ────────────────────────────────────────────────────────────────
-export function Sparkline({ data, color = BB_ORANGE, height = 28 }: { data: number[]; color?: string; height?: number }) {
+export function Sparkline({ data, color = ACCENT, height = 28 }: { data: number[]; color?: string; height?: number }) {
   if (data.length < 2) return null
   const max = Math.max(...data)
   const min = Math.min(...data)
