@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useFrnStore } from '@/lib/frn/store'
-import { displayedCoupon, bestByMaturity, fmt2 } from '@/lib/frn/pricing'
+import { displayedCoupon, fmt2 } from '@/lib/frn/pricing'
 import { issuerInfo, ratingLine, issuerOrder } from '@/lib/frn/issuers'
 import type { Currency, CallType, FrnQuote } from '@/lib/frn/types'
 import FrnImportPanel from './FrnImportPanel'
 
-const MATURITIES = [3, 4, 5, 6, 7, 8, 9, 10, 12]
+const MATURITIES = [3, 4, 5, 6, 7, 8, 9, 10, 12, 15]
 
 /** Nombre de jours OUVRÉS écoulés depuis une date ISO. */
 function businessDaysAgo(iso: string, now = new Date()): number {
@@ -66,14 +66,16 @@ export default function FrnView() {
       grid.get(q.issuer)!.set(q.maturityYears, q)
       if (!lastRun[q.issuer] || q.runDate > lastRun[q.issuer]) lastRun[q.issuer] = q.runDate
     }
-    // Meilleur prix par maturité : parmi les runs FRAIS et avec sensibilité.
-    const fresh = rows
-      .filter((q) => businessDaysAgo(q.runDate) <= staleDays)
-      .map((q) => {
-        const d = displayedCoupon(q, reoffer)
-        return { maturityYears: q.maturityYears, value: d.value, missingSensi: d.missingSensi }
-      })
-    return { issuers, grid, lastRun, best: bestByMaturity(fresh) }
+    // Meilleur coupon par maturité parmi les runs FRAIS (les coupons sont sur la
+    // même base — running annuel au UF du run).
+    const best = new Map<number, number>()
+    for (const q of rows) {
+      if (businessDaysAgo(q.runDate) > staleDays) continue
+      const d = displayedCoupon(q, reoffer)
+      const cur = best.get(q.maturityYears)
+      if (cur === undefined || d.value > cur) best.set(q.maturityYears, d.value)
+    }
+    return { issuers, grid, lastRun, best }
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,7 +111,7 @@ export default function FrnView() {
       return [`=== ${title} ===`, ...lines.map(fmtRow)].join('\n')
     }
     return [
-      `FRN ${currency} — Prix retraités à 0% UF, reoffer ${reoffer.toFixed(2)}%`,
+      `FRN ${currency} — coupons quotés (running annuel), reoffer ${reoffer.toFixed(2)}%`,
       '',
       section(tableNC, 'Non Call'),
       '',
@@ -168,19 +170,12 @@ export default function FrnView() {
                   if (!q) return <td key={mat} className="px-2 py-1 text-right text-slate-300">—</td>
                   const d = displayedCoupon(q, reoffer)
                   const cellStale = businessDaysAgo(q.runDate) > staleDays
-                  const isBest = !d.missingSensi && !cellStale && m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
-                  const cls = cellStale
-                    ? 'text-slate-300'
-                    : isBest
-                      ? 'font-bold text-red-600'
-                      : d.missingSensi
-                        ? 'text-amber-600'
-                        : 'text-slate-700'
+                  const isBest = !cellStale && m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
+                  const cls = cellStale ? 'text-slate-300' : isBest ? 'font-bold text-red-600' : 'text-slate-700'
                   return (
                     <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
-                        title={`${q.issuer} ${q.maturityYears}Y · coupon quoté ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · sensi manquante'} · run ${dateFr(q.runDate)}`}>
+                        title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · duration non fournie'} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
                       {fmt2(d.value)}
-                      {d.missingSensi && <span className="ml-0.5 text-[10px]" title="sensi manquante (exclu du meilleur prix)">⚠</span>}
                     </td>
                   )
                 })}
@@ -198,8 +193,8 @@ export default function FrnView() {
         <div>
           <h1 className="text-2xl font-bold text-cmf-navy">FRN — runs émetteurs</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Fixed Rate Notes · prix retraités à 0 % d&apos;UF puis ajustés au reoffer. Meilleur coupon
-            par maturité en <span className="font-semibold text-red-600">rouge</span>.
+            Fixed Rate Notes · coupons réels des runs émetteurs. Meilleur coupon par maturité en{' '}
+            <span className="font-semibold text-red-600">rouge</span>.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -237,9 +232,10 @@ export default function FrnView() {
       {renderTable(tableCALL, 'Callable (NC1)')}
 
       <p className="text-xs text-slate-400">
-        Prix retraités à 0 % UF, reoffer {reoffer.toFixed(2)} %. Cellules grisées = run &gt; {staleDays} j
-        ouvrés. <span className="text-amber-600">⚠</span> = sensibilité manquante (coupon brut, exclu du
-        meilleur prix). Dernière MAJ {currency} : {dateFr(lastUpdate)}.
+        Coupons réels tirés des runs émetteurs (running annuel, au UF du run). Retraitement à 0 % UF /
+        reoffer {reoffer.toFixed(2)} % appliqué uniquement si la duration est fournie. Cellules grisées =
+        run &gt; {staleDays} j ouvrés. Meilleur coupon/maturité en rouge. Dernière MAJ {currency} :{' '}
+        {dateFr(lastUpdate)}.
       </p>
 
       <FrnImportPanel open={importOpen} onClose={() => setImportOpen(false)} onSave={(qs) => upsert(qs)} defaultCurrency={currency} />
