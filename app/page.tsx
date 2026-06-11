@@ -45,7 +45,7 @@ const categories = [
     links: [
       {
         name: 'Lifecycle',
-        url: '/lifecycle',
+        url: '/lifecycle2',
         description: 'Produits structurés',
         icon: (
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,10 +54,10 @@ const categories = [
         ),
         color: '#38bdf8',
         sub: [
-          { name: 'Portefeuille', url: '/lifecycle' },
-          { name: 'Calendrier', url: '/lifecycle/calendrier' },
-          { name: 'Décrément', url: '/lifecycle/comparatif' },
-          { name: '+ Produit', url: '/lifecycle/produits/nouveau' },
+          { name: 'Portefeuille', url: '/lifecycle2/portefeuille' },
+          { name: 'Calendrier', url: '/lifecycle2/calendrier' },
+          { name: 'Décrément', url: '/lifecycle2/decrement' },
+          { name: '+ Produit', url: '/lifecycle2/produits/nouveau' },
         ],
       },
       {
