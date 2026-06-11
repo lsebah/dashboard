@@ -1,0 +1,51 @@
+{
+  "majLe": "2026-06-11",
+  "note": "Données curatées (non cotées sur Yahoo) — à tenir à jour ici. Chaque valeur porte sa date 'asof'; au-delà de 30 jours elle est signalée périmée.",
+  "groupes": [
+    {
+      "titre": "Banques centrales",
+      "items": [
+        { "label": "BCE — taux de dépôt", "value": null, "unit": "%", "asof": null },
+        { "label": "BCE — refi", "value": null, "unit": "%", "asof": null },
+        { "label": "FED — funds (haut)", "value": null, "unit": "%", "asof": null }
+      ]
+    },
+    {
+      "titre": "Taux monétaires",
+      "items": [
+        { "label": "€STR", "value": null, "unit": "%", "asof": null },
+        { "label": "Euribor 3M", "value": null, "unit": "%", "asof": null },
+        { "label": "SOFR", "value": null, "unit": "%", "asof": null }
+      ]
+    },
+    {
+      "titre": "Inflation",
+      "items": [
+        { "label": "HICP zone euro (a/a)", "value": null, "unit": "%", "asof": null },
+        { "label": "CPI US (a/a)", "value": null, "unit": "%", "asof": null }
+      ]
+    },
+    {
+      "titre": "Taux souverains EUR",
+      "items": [
+        { "label": "Bund 10Y", "value": null, "unit": "%", "asof": null },
+        { "label": "OAT 10Y (TEC 10)", "value": 3.695, "unit": "%", "asof": "2026-06-11" },
+        { "label": "BTP 10Y", "value": null, "unit": "%", "asof": null }
+      ]
+    },
+    {
+      "titre": "Swaps EUR",
+      "items": [
+        { "label": "EUR CMS 10Y", "value": 3.065, "unit": "%", "asof": "2026-06-11" },
+        { "label": "EUR CMS 2Y", "value": null, "unit": "%", "asof": null }
+      ]
+    },
+    {
+      "titre": "Réf. structurés",
+      "items": [
+        { "label": "Autocall SX5E — coupon réf.", "value": null, "unit": "% p.a.", "asof": null },
+        { "label": "Phoenix Bearish CMS — coupon réf.", "value": null, "unit": "% p.a.", "asof": null }
+      ]
+    }
+  ]
+}
