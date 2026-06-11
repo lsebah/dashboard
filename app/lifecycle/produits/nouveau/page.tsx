@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useAllocations, tousLesClients } from '@/lib/allocations'
+import roster from '@/lib/clients-roster.json'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Masque de saisie d'un produit (v1).
@@ -28,6 +30,14 @@ const FAMILIES = [
 ]
 const FREQUENCIES = ['mensuel', 'trimestriel', 'semestriel', 'annuel', 'in_fine', 'autre']
 const BASKETS = ['single', 'worst_of', 'best_of', 'equipondere', 'panier']
+
+// PDF (ArrayBuffer) → base64, par tranches (évite le débordement de pile sur les gros fichiers).
+function toBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf)
+  let bin = ''
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+  return btoa(bin)
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -88,6 +98,62 @@ export default function NouveauProduit() {
     { nom: '', bloomberg: '', niveauInitial: '' },
   ])
   const [saved, setSaved] = useState(false)
+  // Import intelligent de TS (lecture LLM) + affectation client post-création.
+  const [tsLoading, setTsLoading] = useState(false)
+  const [tsError, setTsError] = useState<string | null>(null)
+  const [tsOk, setTsOk] = useState(false)
+  const [savedIsin, setSavedIsin] = useState<string | null>(null)
+  const { map, setClients } = useAllocations()
+  const clientsDispo = useMemo(() => tousLesClients(map, roster as string[]), [map])
+  const [sel, setSel] = useState<string[]>([])
+  const [nouveauClient, setNouveauClient] = useState('')
+  const [affecte, setAffecte] = useState(false)
+
+  // Applique au formulaire l'objet produit extrait de la TS par le modèle.
+  const applyParsed = (p: Record<string, unknown>) => {
+    const s = (v: unknown) => (v == null ? '' : String(v))
+    const pick = <T,>(v: unknown, fb: T): T => (v == null || v === '' ? fb : (v as T))
+    setF((prev) => ({
+      ...prev,
+      nom: s(p.nom), isin: s(p.isin), emetteur: s(p.emetteur), garant: s(p.garant),
+      assetClass: pick(p.assetClass, prev.assetClass), family: pick(p.family, prev.family), eusipa: s(p.eusipa),
+      devise: pick(s(p.devise), prev.devise), nominal: s(p.nominal),
+      valeurNominale: pick(s(p.valeurNominale), prev.valeurNominale), prixEmission: pick(s(p.prixEmission), prev.prixEmission),
+      dateConstatationInitiale: s(p.dateConstatationInitiale), dateEmission: s(p.dateEmission),
+      dateConstatationFinale: s(p.dateConstatationFinale), dateEcheance: s(p.dateEcheance),
+      frequence: pick(p.frequence, prev.frequence), basket: pick(p.basket, prev.basket),
+      sens: pick(p.sens, prev.sens), effetMemoire: !!p.effetMemoire, degressif: !!p.degressif, airbag: !!p.airbag, oxygene: !!p.oxygene,
+      couponPa: s(p.couponPa), barriereCouponPct: s(p.barriereCouponPct),
+      barriereRappelPct: pick(s(p.barriereRappelPct), prev.barriereRappelPct),
+      protectionPct: s(p.protectionPct), protectionStyle: pick(p.protectionStyle, prev.protectionStyle), bonusFinalPct: s(p.bonusFinalPct),
+    }))
+    const sj = p.sousJacents
+    if (Array.isArray(sj) && sj.length)
+      setSousJacents(sj.map((u: Record<string, unknown>) => ({ nom: s(u.nom), bloomberg: s(u.bloomberg), niveauInitial: s(u.niveauInitial) })))
+    setSaved(false)
+  }
+
+  const analyzeTs = async (file: File) => {
+    setTsLoading(true)
+    setTsError(null)
+    setTsOk(false)
+    try {
+      const b64 = toBase64(await file.arrayBuffer())
+      const res = await fetch('/api/lifecycle/parse-ts', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pdfBase64: b64 }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`)
+      applyParsed(data.product)
+      setTsOk(true)
+    } catch (e) {
+      setTsError(e instanceof Error ? e.message : 'Échec de l’analyse')
+    } finally {
+      setTsLoading(false)
+    }
+  }
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const v = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value
@@ -154,6 +220,9 @@ export default function NouveauProduit() {
       existing.push(product)
       localStorage.setItem(key, JSON.stringify(existing))
       setSaved(true)
+      setSavedIsin(product.isin || product.id || null)
+      setSel([])
+      setAffecte(false)
     } catch {
       /* noop */
     }
@@ -166,6 +235,43 @@ export default function NouveauProduit() {
         <a href="/lifecycle" className="text-sm text-cmf-blue hover:underline">
           ← Retour au portefeuille
         </a>
+      </div>
+
+      {/* Import intelligent : l'IA lit la TS et pré-remplit le formulaire. */}
+      <div className="card p-4 mb-4 border-cmf-blue/30">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-cmf-navy">📄 Import intelligent d’une Term Sheet</div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Dépose le PDF : le modèle lit la TS, reconnaît la structure (famille / type) et pré-remplit
+              le formulaire. Vérifie toujours avant d’enregistrer.
+            </p>
+          </div>
+          <label
+            className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white ${
+              tsLoading ? 'bg-slate-400 cursor-wait' : 'bg-cmf-blue hover:bg-blue-700 cursor-pointer'
+            }`}
+          >
+            {tsLoading ? 'Analyse en cours…' : 'Importer une TS (PDF)'}
+            <input
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              disabled={tsLoading}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) analyzeTs(file)
+                e.currentTarget.value = ''
+              }}
+            />
+          </label>
+        </div>
+        {tsError && <div className="mt-2 text-sm text-red-600">⚠ {tsError}</div>}
+        {tsOk && (
+          <div className="mt-2 text-sm text-emerald-700">
+            ✓ Champs pré-remplis depuis la TS — vérifie et complète si besoin.
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -353,6 +459,86 @@ export default function NouveauProduit() {
             </button>
             {saved && <span className="text-sm text-emerald-600">Enregistré localement ✓</span>}
           </div>
+
+          {/* Contrôle d'affectation : un produit ne doit pas rester sans propriétaire. */}
+          {savedIsin && (
+            <div className="card p-4 border-amber-300 bg-amber-50/50">
+              {!affecte ? (
+                <>
+                  <div className="flex items-start gap-2">
+                    <span className="text-amber-600 text-lg leading-none">⚠</span>
+                    <div>
+                      <div className="font-semibold text-cmf-navy">
+                        Produit créé mais aucun client n’est actuellement affecté.
+                      </div>
+                      <p className="mt-0.5 text-sm text-slate-600">
+                        Associe un ou plusieurs clients à <span className="font-mono">{savedIsin}</span>{' '}
+                        (affectation simple ou multiple).
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid max-h-48 grid-cols-2 gap-1.5 overflow-auto sm:grid-cols-3">
+                    {clientsDispo.map((c) => {
+                      const on = sel.includes(c)
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setSel((p) => (on ? p.filter((x) => x !== c) : [...p, c]))}
+                          className={`truncate rounded border px-2 py-1 text-left text-[13px] ${
+                            on ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          {on ? '✓ ' : ''}
+                          {c}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      value={nouveauClient}
+                      onChange={(e) => setNouveauClient(e.target.value)}
+                      placeholder="Nouveau client (code)"
+                      className="input max-w-[240px]"
+                    />
+                    <button
+                      type="button"
+                      className="text-sm text-cmf-blue hover:underline"
+                      onClick={() => {
+                        const v = nouveauClient.trim()
+                        if (v && !sel.includes(v)) setSel([...sel, v])
+                        setNouveauClient('')
+                      }}
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={sel.length === 0}
+                      onClick={() => {
+                        setClients(savedIsin, sel.map((client) => ({ client })))
+                        setAffecte(true)
+                      }}
+                      className="rounded-md bg-cmf-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40"
+                    >
+                      Affecter{sel.length > 0 ? ` (${sel.length})` : ''}
+                    </button>
+                    <span className="text-xs text-slate-500">{sel.length} client(s) sélectionné(s)</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <span>✓</span>
+                  <span className="font-medium">
+                    {sel.length} client(s) affecté(s) à <span className="font-mono">{savedIsin}</span>.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Aperçu JSON */}
