@@ -23,6 +23,7 @@ export const ISSUERS: IssuerInfo[] = [
   { name: 'Santander', alias: ['Banco Santander', 'SANTAN'], moody: 'A2', sp: 'A+', fitch: 'A-' },
   { name: 'BBVA', alias: ['Banco Bilbao'], moody: 'A3', sp: 'A', fitch: 'A-' },
   { name: 'CIBC', alias: ['Canadian Imperial'], moody: 'Aa2', sp: 'A+', fitch: 'AA-' },
+  { name: 'Nomura', alias: ['Nomura Holdings', 'Nomura International', 'NOMURA'], moody: 'Baa1', sp: 'BBB+', fitch: 'A-' },
   { name: 'Marex', alias: ['Marex Financial'], moody: 'Baa1', sp: 'BBB', fitch: 'BBB+' },
 ]
 

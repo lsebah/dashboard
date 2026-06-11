@@ -7,7 +7,7 @@ import { issuerInfo, ratingLine, issuerOrder } from '@/lib/frn/issuers'
 import type { Currency, CallType, FrnQuote } from '@/lib/frn/types'
 import FrnImportPanel from './FrnImportPanel'
 
-const MATURITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+const MATURITIES = [3, 4, 5, 6, 7, 8, 9, 10, 12]
 
 /** Nombre de jours OUVRÉS écoulés depuis une date ISO. */
 function businessDaysAgo(iso: string, now = new Date()): number {
@@ -132,13 +132,13 @@ export default function FrnView() {
   const renderTable = (m: TableModel, title: string) => (
     <div className="card overflow-auto">
       <div className="px-3 pt-3 text-sm font-semibold text-cmf-navy">{title}</div>
-      <table className="mt-2 w-full border-collapse text-[13px]">
+      <table className="mt-1.5 w-full border-collapse text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="sticky left-0 z-10 border-b border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">Émetteur</th>
-            <th className="border-b border-slate-200 px-2 py-2 text-left font-medium whitespace-nowrap">Dernier run</th>
+            <th className="sticky left-0 z-10 border-b border-slate-200 bg-slate-50 px-3 py-1 text-left font-medium">Émetteur</th>
+            <th className="border-b border-slate-200 px-2 py-1 text-left font-medium whitespace-nowrap">Dernier run</th>
             {MATURITIES.map((mat) => (
-              <th key={mat} className="border-b border-slate-200 px-2 py-2 text-right font-medium tabular-nums">{mat}Y</th>
+              <th key={mat} className="border-b border-slate-200 px-2 py-1 text-right font-medium tabular-nums">{mat}Y</th>
             ))}
           </tr>
         </thead>
@@ -156,16 +156,16 @@ export default function FrnView() {
             const stale = run ? businessDaysAgo(run) > staleDays : true
             return (
               <tr key={iss} className="hover:bg-orange-50/40">
-                <td className="sticky left-0 z-10 bg-white px-3 py-1.5 whitespace-nowrap">
+                <td className="sticky left-0 z-10 bg-white px-3 py-1 whitespace-nowrap leading-tight">
                   <div className="font-medium text-slate-800">{iss}</div>
-                  {info && <div className="text-[10px] text-slate-400" title="Moody's / S&P / Fitch (indicatif)">{ratingLine(info)}</div>}
+                  {info && <div className="text-[10px] leading-none text-slate-400" title="Moody's / S&P / Fitch (indicatif)">{ratingLine(info)}</div>}
                 </td>
-                <td className={`px-2 py-1.5 whitespace-nowrap tabular-nums ${stale ? 'text-amber-600' : 'text-slate-500'}`} title={stale ? `Plus de ${staleDays} j ouvrés` : undefined}>
+                <td className={`px-2 py-1 whitespace-nowrap tabular-nums ${stale ? 'text-amber-600' : 'text-slate-500'}`} title={stale ? `Plus de ${staleDays} j ouvrés` : undefined}>
                   {dateFr(run)}
                 </td>
                 {MATURITIES.map((mat) => {
                   const q = m.grid.get(iss)?.get(mat)
-                  if (!q) return <td key={mat} className="px-2 py-1.5 text-right text-slate-300">—</td>
+                  if (!q) return <td key={mat} className="px-2 py-1 text-right text-slate-300">—</td>
                   const d = displayedCoupon(q, reoffer)
                   const cellStale = businessDaysAgo(q.runDate) > staleDays
                   const isBest = !d.missingSensi && !cellStale && m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
@@ -177,7 +177,7 @@ export default function FrnView() {
                         ? 'text-amber-600'
                         : 'text-slate-700'
                   return (
-                    <td key={mat} className={`px-2 py-1.5 text-right tabular-nums ${cls}`}
+                    <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
                         title={`${q.issuer} ${q.maturityYears}Y · coupon quoté ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · sensi manquante'} · run ${dateFr(q.runDate)}`}>
                       {fmt2(d.value)}
                       {d.missingSensi && <span className="ml-0.5 text-[10px]" title="sensi manquante (exclu du meilleur prix)">⚠</span>}
