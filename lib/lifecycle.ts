@@ -242,11 +242,14 @@ export interface CouponLigne {
   enMemoirePct: number // coupons actuellement en mémoire (non encore payés)
 }
 
-/** Produit distribuant des coupons périodiques (vs in fine / snowball / crédit). */
+/** Produit dont les coupons sont ACQUIS (comptés au P&L total-rendement). */
 export function distribueCoupons(product: Product): boolean {
-  const t = product.terms
-  if (t?.kind === 'rates') return !t.inFine
-  if (t?.kind === 'credit') return false
+  // Un coupon est acquis dès que son montant figure au calendrier et que la
+  // condition est remplie : le flag `inFine` ne change QUE la date d'encaissement
+  // (cash versé à l'échéance / au rappel), pas l'acquisition. Un Phoenix Bearish
+  // CMS « capital garanti in fine » dont la barrière de taux est franchie doit
+  // donc voir ses coupons comptés. Le crédit (CLN) n'a pas de coupon conditionnel.
+  if (product.terms?.kind === 'credit') return false
   return (product.observations ?? []).some((o) => typeof o.couponPct === 'number')
 }
 
