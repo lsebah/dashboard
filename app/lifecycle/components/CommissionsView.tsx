@@ -51,7 +51,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   const [an, setAn] = useState<string>(ANNEE_COURANTE)
   const [statut, setStatut] = useState<StatutFacture>('toutes')
   const [q, setQ] = useState('')
-  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'issue', dir: 'asc' })
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'issue', dir: 'desc' })
 
   // Ligne « calculée » : applique les surcharges locales (UF/Rétro saisis → on
   // recalcule Com. totale, Reversé CGP, Perçue CMF et P&L depuis le nominal ;
@@ -307,8 +307,11 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filtered.map((l, i) => (
-              <tr key={`${rowKey(l)}|${i}`} className="hover:bg-orange-50">
+            {filtered.map((l, i) => {
+              // Non payé : commission émise (passée) sans date d'encaissement.
+              const impaye = !l.credited && !!l.issue && l.issue <= TODAY
+              return (
+              <tr key={`${rowKey(l)}|${i}`} className={impaye ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-orange-50'}>
                 <td className="px-2 py-1.5 whitespace-nowrap">
                   {dateFr(l.issue) ?? '—'}
                   {l.issue && l.issue > TODAY && (
@@ -320,7 +323,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                 </td>
                 <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.isin}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{l.client ?? '—'}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap">{l.emetteur ?? '—'}</td>
+                <td className={`px-2 py-1.5 whitespace-nowrap ${impaye ? 'font-semibold text-red-600' : ''}`}>{l.emetteur ?? '—'}</td>
                 <td className="px-2 py-1.5 max-w-[220px] truncate" title={l.description ?? undefined}>{l.description ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.nominal, l.devise ?? 'EUR')}</td>
                 {/* UF — éditable (année courante) */}
@@ -365,16 +368,22 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                 {/* Payée : date éditable (année courante), sinon statique */}
                 <td className="px-1 py-1 whitespace-nowrap">
                   {l.editable ? (
-                    <input type="date" defaultValue={l.credited ?? ''} className="rounded border border-transparent bg-transparent px-1 py-0.5 text-[11px] hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none" title="Date d'encaissement (paiement)" onChange={(e) => patch(rowKey(l), { credited: e.target.value || undefined })} />
+                    <span className="inline-flex items-center gap-1.5">
+                      <input type="date" defaultValue={l.credited ?? ''} className="rounded border border-transparent bg-transparent px-1 py-0.5 text-[11px] hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none" title="Date d'encaissement (paiement)" onChange={(e) => patch(rowKey(l), { credited: e.target.value || undefined })} />
+                      {impaye && <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">Non payé</span>}
+                    </span>
                   ) : l.credited ? (
                     <span className="text-emerald-600">{dateFr(l.credited)}</span>
+                  ) : impaye ? (
+                    <span className="inline-flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700">● Non payé</span>
                   ) : (
                     <span className="text-amber-600">en attente</span>
                   )}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{typeof l.split === 'number' ? `${(l.split * 100).toFixed(0)} %` : '—'}</td>
               </tr>
-            ))}
+              )
+            })}
             {filtered.length === 0 && (
               <tr><td colSpan={14} className="px-2 py-6 text-center text-slate-400">Aucune commission pour ce filtre.</td></tr>
             )}

@@ -669,8 +669,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             <div className="text-xs text-slate-500">Produits en cours</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-cmf-navy">
-              {(synthese.total / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })}M
+            <div className="text-2xl font-bold text-cmf-navy tabular-nums">
+              {synthese.total.toLocaleString('fr-FR')}
             </div>
             <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
           </div>
