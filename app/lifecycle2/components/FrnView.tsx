@@ -175,7 +175,10 @@ export default function FrnView() {
                   return (
                     <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
                         title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · duration non fournie'} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
-                      {fmt2(d.value)}
+                      <div className="leading-tight">{fmt2(d.value)}</div>
+                      <div className="text-[9px] font-normal leading-none text-slate-400">
+                        {q.sensitivity != null ? `s ${q.sensitivity}` : 'sans sensi'}
+                      </div>
                     </td>
                   )
                 })}
