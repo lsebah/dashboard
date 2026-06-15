@@ -37,8 +37,8 @@ export default function ClientReport({
 }) {
   const date = new Date().toLocaleDateString('fr-FR')
   return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-slate-200/80 p-4">
-      <div className="mx-auto max-w-4xl">
+    <div className="fixed inset-0 z-50 overflow-auto bg-slate-200/80 p-4 print:static print:z-auto print:overflow-visible print:bg-transparent print:p-0">
+      <div className="mx-auto max-w-4xl print:mx-0 print:max-w-none">
         <div className="mb-3 flex justify-end gap-2 print:hidden">
           <button onClick={() => window.print()} className="rounded-md bg-cmf-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
             ⬇ Imprimer / Enregistrer en PDF
