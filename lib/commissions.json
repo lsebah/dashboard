@@ -1,7 +1,7 @@
 {
  "majLe": "2026-06-15",
  "commissionsNettesParAnnee": {
-  "2026": 259709.76,
+  "2026": 258449.76,
   "2025": 481903.5,
   "2024": 203212.47,
   "2023": 27995
@@ -14,29 +14,29 @@
  },
  "trimestre2026": {
   "Q1": 120793,
-  "Q2": 138916.76,
+  "Q2": 137656.76,
   "Q3": 0,
   "Q4": 0
  },
  "lignes": [
   {
    "isin": "FR1459ABG521",
-   "issue": null,
-   "client": null,
+   "issue": "2026-09-21",
+   "client": "RENAUD GESTION PRIVEE",
    "emetteur": "GS",
-   "description": "Phoenix Autocallable sur MSCI ACWI IMI Copper and Power Select 20 Fixed Basket 50 Points Decrement (EUR)",
+   "description": "Phoenix Autocallable sur MSCI ACWI IMI Copper and Power Select 20 Fixed Basket 50 Points DIV EUR Index — apporteur Maxime Gohin",
    "devise": "EUR",
    "nominal": 63000,
    "ufPct": 0.05,
-   "comCmf": 3150,
-   "retroPct": 0,
-   "comClient": 0,
+   "comCmf": 1890,
+   "retroPct": 0.02,
+   "comClient": 1260,
    "comTotal": 3150,
    "facture": "2026-194",
    "sent": "2026-06-15",
    "credited": null,
    "split": 1,
-   "net": 3150
+   "net": 1890
   },
   {
    "isin": "XS3395348454",
