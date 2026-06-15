@@ -334,16 +334,24 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap])
 
-  // Positions du client sélectionné (toutes, hors filtres live/texte) → reporting.
+  // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
+  // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
   const reportRows = useMemo(
     () =>
       client
-        ? productsAll
+        ? productsO
             .filter((p) => allocsOf(p).some((a) => a.client === client))
+            .filter(
+              (p) =>
+                typeof p.prixMarche === 'number' &&
+                p.statut !== 'rappele' &&
+                p.statut !== 'vendu' &&
+                p.statut !== 'echu',
+            )
             .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [client, productsAll, allocsOf, perfMap],
+    [client, productsO, allocsOf, perfMap],
   )
 
   // Filtre « situation » (bulles cliquables de la synthèse) — appliqué sur la
