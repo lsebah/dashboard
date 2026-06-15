@@ -2,6 +2,7 @@
 
 import type { Product } from '@/lib/types'
 import { issuerCode } from '@/lib/termsheets'
+import { couponsEncaissesPct } from '@/lib/lifecycle'
 
 // Reporting client mensuel (format CMF) — imprimable en PDF via le navigateur.
 // Reproduit la « Valorisation au … » + ajoute, par produit, les niveaux des
@@ -50,7 +51,7 @@ export default function ClientReport({
         <div id="client-report" className="bg-white p-8 shadow-lg">
           {/* En-tête CMF */}
           <div className="mb-5 flex items-stretch gap-3">
-            <img src="/cmf-logo.svg" alt="CMF — Capital Management France" className="h-20 w-20 rounded" />
+            <img src="/cmf-logo.png" alt="CMF — Capital Management France" className="h-20 w-20 rounded" />
 
             <div className="flex flex-1 flex-col justify-center rounded bg-cmf-navy px-5 py-3 text-white">
               <div className="text-xl font-bold tracking-tight">{client}</div>
@@ -76,6 +77,9 @@ export default function ClientReport({
                 const sj = p.sousJacents.map((u) => ({ nom: u.nom, pct: pm[u.nom] as number | undefined }))
                 const lvls = sj.filter((s) => typeof s.pct === 'number').map((s) => s.pct as number)
                 const worst = lvls.length ? Math.min(...lvls) : null
+                // Coupons déjà encaissés (% du nominal) : le produit reçu est déjà
+                // augmenté des niveaux constatés, donc valeur cohérente avec la fiche.
+                const coupons = couponsEncaissesPct(p)
                 return (
                   <tr key={p.isin} className="border-b border-slate-200 align-top">
                     <td className="px-2 py-2">
@@ -99,7 +103,14 @@ export default function ClientReport({
                     <td className="px-2 py-2 text-slate-700">{dfr(p.dateEmission)}</td>
                     <td className="px-2 py-2 text-slate-700">{dureeAns(p)}</td>
                     <td className="px-2 py-2 text-right tabular-nums text-slate-700">{eur0(montant)}</td>
-                    <td className="px-2 py-2 text-right font-semibold tabular-nums text-slate-800">{val(p)}</td>
+                    <td className="px-2 py-2 text-right tabular-nums text-slate-800">
+                      <div className="font-semibold">{val(p)}</div>
+                      {typeof coupons === 'number' && coupons > 0 && (
+                        <div className="text-[10px] font-normal text-slate-500">
+                          Coupons versés +{coupons.toFixed(2).replace('.', ',')} %
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
