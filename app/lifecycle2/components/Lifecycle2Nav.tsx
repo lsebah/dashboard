@@ -8,6 +8,7 @@ const TABS: { name: string; href: string }[] = [
   { name: 'Calendrier', href: '/lifecycle2/calendrier' },
   { name: 'Décrément', href: '/lifecycle2/decrement' },
   { name: 'FRN', href: '/lifecycle2/frn' },
+  { name: 'iTraxx', href: '/lifecycle2/itraxx' },
   { name: 'Commissions', href: '/lifecycle2/commissions' },
   { name: 'Bloomberg', href: '/lifecycle2/bloomberg' },
   { name: 'Nouveau produit', href: '/lifecycle2/produits/nouveau' },
