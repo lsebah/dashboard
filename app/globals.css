@@ -105,3 +105,22 @@ body {
 .lc2-pulse {
   animation: lc2Pulse 1.8s ease-in-out infinite;
 }
+
+/* Impression : ne rendre que le reporting client (#client-report) en PDF. */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #client-report,
+  #client-report * {
+    visibility: visible !important;
+  }
+  #client-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
