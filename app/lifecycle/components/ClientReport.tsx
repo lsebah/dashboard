@@ -50,9 +50,8 @@ export default function ClientReport({
         <div id="client-report" className="bg-white p-8 shadow-lg">
           {/* En-tête CMF */}
           <div className="mb-5 flex items-stretch gap-3">
-            <div className="flex items-center justify-center rounded bg-cmf-navy px-4">
-              <span className="text-2xl font-extrabold tracking-tight text-white">CMF</span>
-            </div>
+            <img src="/cmf-logo.svg" alt="CMF — Capital Management France" className="h-20 w-20 rounded" />
+
             <div className="flex flex-1 flex-col justify-center rounded bg-cmf-navy px-5 py-3 text-white">
               <div className="text-xl font-bold tracking-tight">{client}</div>
               <div className="text-lg font-semibold">Valorisation au {date}</div>
