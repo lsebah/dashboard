@@ -4844,7 +4844,7 @@ const barclaysEssMt: Product = {
     '5Y Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal — autocall dégressif 96→80 %, coupon 10,65 % p.a. (barrière 50 %), trimestriel, protection 50 %',
   clients: ['ALVES - 06001'],
   badges: ['Mémoire', 'Worst-of', 'Dégressif'],
-  termsheetFichier: 'TS - XS3395348454.pdf',
+  termsheetFichier: '260626_5Y_Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal_Trimestriel_XS3395348454_BARCLAYS.pdf',
 }
 
 const detailed: Product[] = [
