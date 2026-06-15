@@ -1,11 +1,18 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-06-11T14:05:00",
+  "lastCheck": "2026-06-15T12:30:00",
   "statut": "ok",
   "nouveaux": 0,
-  "majs": 6,
+  "majs": 1,
   "historique": [
+    {
+      "date": "2026-06-15T12:30:00",
+      "nouveaux": 0,
+      "majs": 1,
+      "statut": "ok",
+      "details": "Rafraîchissement complet 15/06 — Décrément : 1 run GS (Autocall Actions Decrement 15/06), 0 nouvel indice (1 idée BNP non comptée). FRN : 0 nouveau run depuis le 11/06. Module iTraxx créé (tranches CLN Main/Crossover)."
+    },
     {
       "date": "2026-06-11T13:25:00",
       "nouveaux": 0,
