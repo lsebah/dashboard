@@ -7,14 +7,13 @@ export type ItraxxIndex = 'Main' | 'Crossover'
 export interface ItraxxTranche {
   id: string
   index: ItraxxIndex
-  series?: string // ex. « S45 »
+  series?: string | null // ex. « S45 »
   tranche: string // ex. « 3-6% »
   attachment?: number // point d'attachement (%)
   detachment?: number // point de détachement (%)
   maturityYears?: number
-  coupon?: number | null // coupon (unité dans couponUnit)
-  couponUnit?: string // '%' | 'bps'
-  couponType?: string // 'fixed' | 'floating' | 'balloon' | 'zero recovery' | 'combo'
+  coupon?: string | null // coupon tel que coté (multi-format possible : fixed / balloon / floating)
+  couponType?: string // 'fixed' | 'floating' | 'balloon' | 'in fine' | 'combo'
   format?: string // ex. « Zero Recovery », « 100% Capital Protected », « Balloon »
   issuer?: string
   devise?: string
