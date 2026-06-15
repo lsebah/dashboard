@@ -108,6 +108,18 @@ body {
 
 /* Impression : ne rendre que le reporting client (#client-report) en PDF. */
 @media print {
+  /* Marges propres gérées par la page imprimée (pas de cadre applicatif). */
+  @page {
+    margin: 12mm;
+  }
+  /* Pas de scroll au niveau document → supprime la barre verticale parasite
+     à droite quand on imprime « avec les graphiques d'arrière-plan ». */
+  html,
+  body {
+    background: #fff !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
   body * {
     visibility: hidden !important;
   }
@@ -115,12 +127,14 @@ body {
   #client-report * {
     visibility: visible !important;
   }
+  /* Le rapport occupe la page, sans ombre, cadre ni fond superflu. */
   #client-report {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
     box-shadow: none !important;
+    border: 0 !important;
     padding: 0 !important;
   }
 }
