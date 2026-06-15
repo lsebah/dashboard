@@ -54,6 +54,12 @@ export type ProductStatus =
   | 'echu' // arrivé à maturité
   | 'monitore' // suivi sans position (watchlist)
 
+/** Allocation d'un produit à un client (code client + montant investi). */
+export interface ClientAlloc {
+  client: string
+  montant?: number
+}
+
 // ─── Sous-jacent ───────────────────────────────────────────────────────────
 export interface Underlying {
   nom: string
@@ -74,12 +80,16 @@ export interface Observation {
   dateObservation: string // ISO (yyyy-mm-dd)
   datePaiement?: string // ISO
   // — Rappel automatique (autocall) —
-  autocallActif?: boolean // false pendant la période d'Oxygène (lock-out)
+  autocallActif?: boolean // false pendant la période non-call (lock-out)
   niveauRappelPct?: number // niveau de déclenchement, en % du niveau initial
   montantRemboursementPct?: number // remboursement si rappelé, en % du nominal
   // — Coupon —
   niveauCouponPct?: number // barrière de coupon, en % du niveau initial
   couponPct?: number // coupon de la période, en % du nominal
+  // Niveau du worst-of effectivement constaté à cette date d'observation, en %
+  // du niveau initial (renseigné a posteriori depuis l'historique des sous-jacents).
+  // Permet de savoir si le coupon a été payé / mis en mémoire / rattrapé.
+  niveauConstatePct?: number
   // — Résultat (rempli au fil de la vie du produit) —
   statut?: 'a_venir' | 'passe' | 'rappele'
   resultat?: string
@@ -92,7 +102,12 @@ export interface AutocallTerms {
   kind: 'autocall'
   sens: 'standard' | 'inverse' // inverse : rappel si sous-jacent SOUS le niveau
   effetMemoire: boolean // coupon à effet mémoire
-  oxygene?: boolean // rappel non-actif sur les premières périodes
+  // Oxygène : feature propre aux Athena. À MATURITÉ uniquement (si le produit
+  // n'a pas été rappelé avant), si le sous-jacent est ≥ au niveau Oxygène, tous
+  // les coupons mémoire sont payés. À ne pas confondre avec la période non-call
+  // (lock-out), qui est gérée par `rappelActifAPartirDe` / `autocallActif`.
+  oxygene?: boolean
+  oxygenePct?: number // niveau Oxygène, en % de l'initial (si feature présente)
   couponPa?: number // coupon annualisé indicatif, en %
   barriereCouponPct?: number // barrière de coupon, en % de l'initial
   barriereRappelPct?: number // niveau de rappel de base, en % de l'initial
@@ -107,34 +122,66 @@ export interface AutocallTerms {
 }
 
 /**
- * Crédit (CLN / FTD / tranche). Ébauche — à compléter sur termsheet réelle.
- * (En attente d'un exemple de produit crédit.)
+ * Crédit (CLN / FTD / tranche d'indice iTraxx). Le capital est à risque via les
+ * événements de crédit (défauts) qui « rongent » la tranche entre le point
+ * d'attachement et de détachement. Souvent zero-recovery (perte = 100% du nom).
  */
 export interface CreditTerms {
   kind: 'credit'
-  entitesReference: string[] // entités/indice de référence (ex. iTraxx Europe S40)
   type: 'single_name' | 'first_to_default' | 'tranche' | 'index'
-  attachementPct?: number // point d'attachement (tranche)
-  detachementPct?: number // point de détachement (tranche)
-  recouvrementPct?: number // taux de recouvrement supposé
-  couponPa?: number
-  protectionCapital?: boolean
+  indexReference?: string // ex. "iTraxx Europe Crossover Série 42"
+  entitesReference?: string[] // liste de noms (FTD / single name)
+  nbEntites?: number // nombre de noms du portefeuille (ex. 125)
+  attachementPct?: number // point d'attachement (tranche), en %
+  detachementPct?: number // point de détachement (tranche), en %
+  recouvrementPct?: number // taux de recouvrement supposé, en %
+  zeroRecovery?: boolean // recouvrement fixé à 0% (perte = 100% du nom)
+  levier?: number // levier de tranche = 1 / (détachement − attachement)
+  nbDefautsBuffer?: number // défauts absorbés avant d'entamer la tranche
+  nbDefautsWipe?: number // défauts cumulés qui épuisent la tranche
+  couponPct?: number // coupon par période, en %
+  couponPa?: number // coupon annualisé, en %
+  couponGaranti?: boolean // coupon non réduit par les événements de crédit
+  prixEmissionPct?: number // prix d'émission (ZC à escompte, ex. 53.6)
+  inFine?: boolean
+  protectionCapital?: boolean // capital protégé (false pour ces CLN)
 }
 
 /**
- * Taux structuré (CMS steepener / range accrual / TARN / callable…).
- * Ébauche — à compléter sur termsheet réelle. (En attente d'un exemple taux.)
+ * Taux structuré : Phoenix/Autocall sur taux (« Bearish CMS10 »), CMS steepener,
+ * range accrual, TARN, callable…
+ *
+ * Phoenix Bearish CMS10 : produit de taux où le coupon conditionnel est versé si
+ * le taux de référence (ex. EUR CMS 10Y) est SOUS une barrière (sens « bearish »),
+ * avec effet mémoire ; rappel anticipé si le taux passe sous la barrière de rappel.
+ * Souvent capital garanti à maturité + un coupon garanti one-off, paiement in fine.
+ * Le calendrier (barrières de taux par observation) est porté par `observations`
+ * (niveauCouponPct = barrière de coupon en taux ; niveauRappelPct = barrière de
+ * rappel en taux ; couponPct = coupon conditionnel de la période).
  */
 export interface RatesTerms {
   kind: 'rates'
   type:
+    | 'phoenix_taux'
     | 'cms_steepener'
     | 'range_accrual'
     | 'tarn'
     | 'fixed_to_float'
     | 'callable'
     | 'autre'
-  indices: string[] // ex. ["EUR CMS 10Y", "EUR CMS 2Y"]
+  /** « bearish » : coupon/rappel si le taux est BAS (≤ barrière) ; « bullish » : si HAUT. */
+  sens?: 'bearish' | 'bullish'
+  tauxReference?: string // ex. "EUR CMS 10Y"
+  tauxReference2?: string // 2e taux (steepener / TARN), ex. "EUR CMS 2Y"
+  indices?: string[] // compat. ancienne (liste d'indices)
+  effetMemoire?: boolean
+  couponConditionnelPct?: number // coupon conditionnel par période, en %
+  couponConditionnelPa?: number // coupon conditionnel annualisé indicatif, en %
+  couponGarantiPct?: number // coupon garanti one-off (in fine), en %
+  barriereCouponTauxPct?: number // barrière de coupon, en taux (ex. 3.20)
+  barriereRappelTauxPct?: number // barrière de rappel, en taux (ex. 2.30)
+  capitalGaranti?: boolean // capital protégé 100% à maturité (hors défaut émetteur)
+  inFine?: boolean // coupons payés uniquement au dénouement (rappel ou maturité)
   multiplicateur?: number
   capPct?: number
   floorPct?: number
@@ -194,7 +241,8 @@ export interface Product {
   productType?: string // Phoenix / Athena / Booster / Airbag / Participation / Call Spread / Callable…
   pnlPct?: number // P&L courant, en %
   pdiPct?: number // PDI — barrière de protection (down-and-in), en %
-  clients?: string[] // CLIENT INFO — codes clients (NON versionné : chargé d'un fichier local)
+  clients?: string[] // CLIENT INFO — codes clients alloués
+  allocations?: ClientAlloc[] // allocation par client (code + montant investi), depuis le feed
   nextEvent?: string // prochaine échéance (ISO) quand le calendrier n'est pas importé
   // Cellules "résumé" de l'Excel, conservées telles quelles pour l'affichage
   // tabulaire (les barrières crédit/taux portent des taux, d'où le format texte) :
@@ -205,5 +253,6 @@ export interface Product {
 
   // — Divers —
   termsheetFichier?: string
+  termsheetUrl?: string // lien SharePoint vers la termsheet (PDF)
   badges?: string[]
 }

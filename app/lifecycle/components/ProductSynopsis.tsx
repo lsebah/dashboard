@@ -5,16 +5,34 @@ import {
   situation,
   couponPa,
   prochainEvenement,
+  prochaineObservation,
+  couponsEncaissesPct,
+  pnlAvecCoupons,
   formatDateFr,
   formatPct,
   formatMontant,
 } from '@/lib/lifecycle'
 import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
+import { rateNow } from '@/lib/rates-levels'
+import tsPdfs from '@/lib/ts-pdfs.json'
 
-/** Carte « Synopsis produit » — reproduit la fiche de vizibility. */
-export default function ProductSynopsis({ product }: { product: Product }) {
+// PDF banque déposé dans public/ts/<ISIN>.pdf (indexé par scripts/index-ts-pdfs.mjs).
+const TS_PDFS = tsPdfs as Record<string, string>
+
+/** Carte « Synopsis produit » — reproduit la fiche de vizibility.
+ *  `compact` : masque de taille UNIVERSELLE (hauteur fixe) pour la grille de
+ *  cartes ⇒ toutes les cartes ont exactement la même taille. En modal, la
+ *  hauteur s'adapte au contenu (compact=false). */
+export default function ProductSynopsis({
+  product,
+  compact = false,
+}: {
+  product: Product
+  compact?: boolean
+}) {
   const s = situation(product)
   const next = prochainEvenement(product)
+  const nextObs = prochaineObservation(product)
   const mois = moisRestants(product)
   const progress = Math.round(avancement(product) * 100)
   const terms = product.terms
@@ -22,7 +40,9 @@ export default function ProductSynopsis({ product }: { product: Product }) {
 
   const protection =
     terms?.kind === 'autocall'
-      ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}`
+      ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}${
+          terms.airbag ? ' · Airbag' : ''
+        }`
       : product.pdiText ?? (typeof product.pdiPct === 'number' ? `${product.pdiPct}%` : '—')
 
   const rappel =
@@ -45,7 +65,11 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           : '—'
 
   return (
-    <div className="card p-4 flex flex-col gap-3">
+    <div
+      className={`card p-4 flex flex-col gap-3 ${
+        compact ? 'h-[500px] overflow-hidden' : 'h-full'
+      }`}
+    >
       {/* En-tête */}
       <div className="flex items-start justify-between gap-2">
         <div className="text-xs text-slate-500">
@@ -63,11 +87,23 @@ export default function ProductSynopsis({ product }: { product: Product }) {
         />
       </div>
 
+      {/* Client(s) affecté(s) */}
+      {(() => {
+        const clients = product.clients ?? product.allocations?.map((a) => a.client) ?? []
+        if (clients.length === 0) return null
+        return (
+          <div className="text-[12px] text-slate-500">
+            Client{clients.length > 1 ? 's' : ''} :{' '}
+            <span className="font-medium text-slate-700">{clients.join(', ')}</span>
+          </div>
+        )
+      })()}
+
       {/* Titre + badges */}
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold text-cmf-navy">{product.nom}</h3>
         {product.productType && (
-          <span className="text-[11px] text-slate-500">· {product.productType}</span>
+          <span className="text-[12px] text-slate-500">· {product.productType}</span>
         )}
         {product.badges?.map((b) => (
           <span key={b} className="badge">
@@ -76,22 +112,81 @@ export default function ProductSynopsis({ product }: { product: Product }) {
         ))}
       </div>
 
+      {/* Termsheet — privilégie le PDF banque déposé dans public/ts/<ISIN>.pdf */}
+      {(() => {
+        const bankPdf = TS_PDFS[product.isin]
+        const href = bankPdf ?? product.termsheetUrl
+        if (!href) return null
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-cmf-blue hover:underline inline-flex items-center gap-1 w-fit"
+            title={product.termsheetFichier}
+          >
+            📄 {bankPdf ? 'Termsheet (document banque)' : 'Termsheet'} ↗
+          </a>
+        )
+      })()}
+
       {/* Timeline */}
       <div>
-        <div className="flex justify-between text-[11px] text-slate-500">
+        <div className="flex justify-between text-[12px] text-slate-500">
           <span>{formatDateFr(product.dateConstatationInitiale)}</span>
           <span>{formatDateFr(product.dateEcheance)}</span>
         </div>
         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden my-1">
           <div className="h-full bg-cmf-blue/70" style={{ width: `${progress}%` }} />
         </div>
-        <div className="flex justify-between text-[11px]">
+        <div className="flex justify-between text-[12px]">
           <span className="text-slate-600">
-            {next ? `Prochain événement le ${formatDateFr(next)}` : 'Échéance atteinte'}
+            {next
+              ? `Prochain événement le ${formatDateFr(next)}`
+              : (product.observations?.length ?? 0) === 0
+                ? 'Calendrier à décoder'
+                : 'Échéance atteinte'}
           </span>
           <span className="text-slate-400">{mois} mois restants</span>
         </div>
       </div>
+
+      {/* Monitoring de la prochaine observation (depuis le calendrier décodé) */}
+      {nextObs &&
+        terms?.kind !== 'credit' &&
+        (() => {
+          const isRates = terms?.kind === 'rates'
+          const ref = isRates ? terms.tauxReference ?? 'taux' : 'worst'
+          // Inverse / reverse : rappel (et coupon) si le sous-jacent BAISSE.
+          const inverse =
+            (isRates && terms.sens === 'bearish') ||
+            (terms?.kind === 'autocall' && terms.sens === 'inverse')
+          const cmp = inverse ? '≤' : '≥'
+          const fmt = (v: number) => `${v}%`
+          return (
+            <div className="rounded-md bg-slate-50 border border-slate-200 p-2 text-[12px]">
+              <div className="field-label mb-0.5">
+                Prochaine observation — {formatDateFr(nextObs.dateObservation)}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-slate-600">
+                <span>
+                  Autocall si {ref} {cmp}{' '}
+                  <span className="font-medium text-slate-800">
+                    {nextObs.autocallActif !== false && typeof nextObs.niveauRappelPct === 'number'
+                      ? fmt(nextObs.niveauRappelPct)
+                      : '— (non-call)'}
+                  </span>
+                </span>
+                {typeof nextObs.niveauCouponPct === 'number' && (
+                  <span>
+                    Coupon si {ref} {cmp}{' '}
+                    <span className="font-medium text-slate-800">{fmt(nextObs.niveauCouponPct)}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
       {/* Mécanisme */}
       <dl className="text-xs space-y-1">
@@ -117,7 +212,7 @@ export default function ProductSynopsis({ product }: { product: Product }) {
       </dl>
 
       {/* Sous-jacents + prix */}
-      <div className="flex items-end justify-between border-t border-slate-100 pt-3">
+      <div className="flex items-end justify-between border-t border-slate-100 pt-3 mt-auto">
         <div className="text-xs">
           <div className="field-label mb-1">
             {product.sousJacents.length > 0
@@ -129,23 +224,43 @@ export default function ProductSynopsis({ product }: { product: Product }) {
               : 'Sous-jacents'}
           </div>
           <ul className="space-y-0.5">
-            {product.sousJacents.slice(0, 3).map((u) => (
-              <li key={u.nom} className="flex gap-3">
-                <span className="text-slate-700 truncate max-w-[160px]">{u.nom}</span>
-                <span
-                  className={`ml-auto tabular-nums ${
-                    typeof u.perf === 'number'
-                      ? u.perf >= 0
-                        ? 'text-emerald-600'
-                        : 'text-red-600'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {typeof u.perf === 'number' ? `${(100 + u.perf).toFixed(2)}%` : '—'}
-                </span>
-              </li>
-            ))}
-            {product.sousJacents.length === 0 && (
+            {terms?.kind === 'rates'
+              ? (() => {
+                  // Taux : niveau courant du taux de référence vs barrière (strike).
+                  const ref = terms.tauxReference ?? product.sousJacents[0]?.nom ?? 'taux'
+                  const now = rateNow(terms.tauxReference)
+                  const barr = terms.barriereCouponTauxPct ?? terms.barriereRappelTauxPct
+                  return (
+                    <li className="flex gap-3">
+                      <span className="text-slate-700 truncate max-w-[150px]">{ref}</span>
+                      <span className="ml-auto tabular-nums text-slate-700">
+                        {typeof now === 'number' ? `${now.toFixed(2)} %` : '—'}
+                        {typeof barr === 'number' && (
+                          <span className="text-slate-400"> / barr. {barr}%</span>
+                        )}
+                      </span>
+                    </li>
+                  )
+                })()
+              : product.sousJacents.slice(0, 3).map((u) => (
+                  <li key={u.nom} className="flex gap-3">
+                    <span className="text-slate-700 truncate max-w-[150px]">{u.nom}</span>
+                    <span
+                      className={`ml-auto tabular-nums ${
+                        typeof u.perf === 'number'
+                          ? u.perf >= 0
+                            ? 'text-emerald-600'
+                            : 'text-red-600'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {typeof u.perf === 'number'
+                        ? `${u.perf >= 0 ? '+' : ''}${u.perf.toFixed(1)} %`
+                        : '—'}
+                    </span>
+                  </li>
+                ))}
+            {product.sousJacents.length === 0 && terms?.kind !== 'rates' && (
               <li className="text-slate-400">{product.description ?? '—'}</li>
             )}
           </ul>
@@ -154,17 +269,27 @@ export default function ProductSynopsis({ product }: { product: Product }) {
           <div className="text-lg font-bold text-cmf-navy tabular-nums">
             {formatPct(product.prixMarche)}
           </div>
-          <div className="text-[11px] text-slate-500">Prix (mark-to-market)</div>
-          {typeof product.pnlPct === 'number' && (
-            <div
-              className={`text-[11px] tabular-nums ${
-                product.pnlPct >= 0 ? 'text-emerald-600' : 'text-red-600'
-              }`}
-            >
-              P&amp;L {product.pnlPct >= 0 ? '+' : ''}
-              {product.pnlPct.toFixed(2)}%
-            </div>
-          )}
+          <div className="text-[12px] text-slate-500">Prix (mark-to-market)</div>
+          {(() => {
+            const coupons = couponsEncaissesPct(product)
+            const pnl = pnlAvecCoupons(product) ?? product.pnlPct
+            if (typeof pnl !== 'number') return null
+            return (
+              <>
+                <div
+                  className={`text-[12px] tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                >
+                  P&amp;L {pnl >= 0 ? '+' : ''}
+                  {pnl.toFixed(2)}%
+                </div>
+                {typeof coupons === 'number' && coupons > 0 && (
+                  <div className="text-[11px] text-slate-400 tabular-nums">
+                    dont coupons encaissés +{coupons.toFixed(2)}%
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
       </div>
     </div>

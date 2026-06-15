@@ -15,6 +15,7 @@ import type {
   ProductFamily,
   Frequency,
   ProductStatus,
+  Underlying,
 } from './types'
 
 const FREQ: Record<string, Frequency> = {
@@ -68,10 +69,46 @@ interface Row {
   bAuto?: string
   bCoupon?: string
   pdi?: string
+  sj?: Underlying[] // worst-of décodés (bloomberg → mapping Yahoo pour la perf live)
+}
+
+// Codes clients (colonne CLIENT INFO de l'Excel), par ISIN. Seed d'affichage ;
+// l'utilisateur peut surcharger l'allocation localement (localStorage).
+const CLIENTS: Record<string, string[]> = {
+  XS3317870197: ['APPN - 05277'],
+  XS3304996484: ['ALVES - 06001'],
+  XS3309979311: ['ALVES - 06001'],
+  XS3283137407: ['APPN - 05277'],
+  XS3153607810: ['VIA - 08001'],
+  FR0014013N00: ['SPG - 05774'],
+  XS3149199807: ['ALVES - 06001'],
+  XS3148625976: ['APPN - 05277'],
+  XS2925309945: ['ALVES - 06001'],
+  FRIP000014P8: ['GRICOURT - 05474'],
+  XS2769371209: ['GRICOURT - 05474'],
+  XS2872777334: ['ARCHE - 05272'],
+  XS2884074795: ['PRESTINVEST - 05773'],
+  XS3073984430: ['CAPITALL - 01227'],
+  XS2979390502: ['SCALA - 05722'],
+  XS2975786000: ['OPTIMAL - 01674'],
+  XS2919373816: ['SCALA - 05722'],
+  XS2576621366: ['SCALA - 05722'],
+  XS2442403130: ['OPTIMAL - 01674'],
+  XS2464629414: ['OPTIMAL - 01674'],
+  XS2110091449: ['SCALA - 05722'],
+  FR001400T357: ['MANTU - 05626'],
+  CH1271361060: ['SOCIPAR - 05762'],
+  'FEI-2025': ['MACIF'],
+  XS2621505341: ['PRESTINVEST - 05773'],
+  XS2863761933: ['VIA - 08001'],
 }
 
 function mk(r: Row): Product {
   const issue = iso(r.issue)!
+  // Barrière de protection en nombre (pour `situation()` : proche/sous protection).
+  // On ne retient qu'un pourcentage propre en tête de `pdi` (ex. « 60% », « 50% »).
+  const pdiM = r.pdi?.match(/^\s*(\d+(?:[.,]\d+)?)\s*%/)
+  const pdiPct = pdiM ? parseFloat(pdiM[1].replace(',', '.')) : undefined
   return {
     id: r.isin,
     nom: r.desc,
@@ -86,8 +123,9 @@ function mk(r: Row): Product {
     dateConstatationFinale: addYears(issue, r.y),
     dateEcheance: addYears(issue, r.y),
     frequence: FREQ[r.freq],
-    basket: /\bwof\b|worst/i.test(r.desc) ? 'worst_of' : 'single',
-    sousJacents: [],
+    basket:
+      (r.sj?.length ?? 0) > 1 || /\bwof\b|worst/i.test(r.desc) ? 'worst_of' : 'single',
+    sousJacents: r.sj ?? [],
     prixMarche: r.last,
     pnlPct: r.pnl,
     statut: r.statut ?? 'vivant',
@@ -99,6 +137,8 @@ function mk(r: Row): Product {
     barriereAutocall: r.bAuto,
     barriereCoupon: r.bCoupon,
     pdiText: r.pdi,
+    pdiPct,
+    clients: CLIENTS[r.isin],
   }
 }
 
@@ -110,11 +150,11 @@ const rows: Row[] = [
   { rr: 'LS', issue: '04/07/26', isin: 'XS3304996484', last: 101.25, pnl: 1.25, next: '06/20/26', cy: 'EUR', amount: 300_000, issuer: 'BARCLAYS', freq: 'Trimestriel', y: 5, desc: 'Phoenix Mémoire Wof Engie + Veolia + BNP', cls: 'equity', type: 'Phoenix', coupon: 10.1, bAuto: '100%', bCoupon: '50%', pdi: '50%' },
   { rr: 'LS', issue: '04/07/26', isin: 'XS3309979311', last: 95.5, pnl: 4.5, next: '06/20/26', cy: 'EUR', amount: 300_000, issuer: 'BNP', freq: 'Trimestriel', y: 5, desc: 'Phoenix Mémoire Software Wof CRM + MSFT + SAP', cls: 'equity', type: 'Phoenix', coupon: 9.2, bAuto: '98%', bCoupon: '50%', pdi: '50%' },
   { rr: 'LS', issue: '03/16/26', isin: 'XS3283137407', last: 97.63, pnl: 2.37, next: '06/02/26', cy: 'EUR', amount: 300_000, issuer: 'BNP', freq: 'Trimestriel', y: 5, desc: 'Phoenix Mémoire Wof Alphabet + Amazon + CrowdStrike', cls: 'equity', type: 'Phoenix', coupon: 10.7, bAuto: '75%', bCoupon: '50%', pdi: '50%' },
-  { rr: 'PD', issue: '10/28/25', isin: 'XS3153607810', last: 100.2, pnl: 0.2, next: '10/13/26', cy: 'EUR', amount: 510_000, issuer: 'BNP', freq: 'Annuel', y: 5, desc: 'Athena Booster Wof SPX + SX5E + NKY', cls: 'equity', type: 'Booster', coupon: 8.15, bAuto: '100%', pdi: '60%' },
-  { rr: 'LS', issue: '10/27/25', isin: 'FR0014013N00', last: 99.94, pnl: 0.06, next: '04/15/26', cy: 'EUR', amount: 650_000, issuer: 'BNP', freq: 'Semestriel', y: 6, desc: 'Autocall Équipondéré Schneider + Siemens Energy + Bouygues', cls: 'equity', type: 'Athena', coupon: 7.0, bAuto: '100%', pdi: '60%' },
-  { rr: 'LS', issue: '10/22/25', isin: 'XS3149199807', last: 93.63, pnl: 6.37, next: '05/08/26', cy: 'EUR', amount: 300_000, issuer: 'SANTANDER', freq: 'Mensuel', y: 5, desc: 'Athena Airbag Dégressif BNP + Intesa + Crédit Agricole', cls: 'equity', type: 'Airbag', coupon: 10.5, bAuto: '100%', bCoupon: '50%', pdi: '50%' },
+  { rr: 'PD', issue: '10/28/25', isin: 'XS3153607810', last: 100.2, pnl: 0.2, next: '10/13/26', cy: 'EUR', amount: 510_000, issuer: 'BNP', freq: 'Annuel', y: 5, desc: 'Athena Booster Wof SPX + SX5E + NKY', cls: 'equity', type: 'Booster', coupon: 8.15, bAuto: '100%', pdi: '60%', sj: [{ nom: 'S&P 500', bloomberg: 'SPX Index' }, { nom: 'EURO STOXX 50', bloomberg: 'SX5E Index' }, { nom: 'Nikkei 225', bloomberg: 'NKY Index' }] },
+  { rr: 'LS', issue: '10/27/25', isin: 'FR0014013N00', last: 99.94, pnl: 0.06, next: '04/15/26', cy: 'EUR', amount: 650_000, issuer: 'BNP', freq: 'Semestriel', y: 6, desc: 'Autocall Équipondéré Schneider + Siemens Energy + Bouygues', cls: 'equity', type: 'Athena', coupon: 7.0, bAuto: '100%', pdi: '60%', sj: [{ nom: 'Schneider Electric SE', bloomberg: 'SU FP' }, { nom: 'Siemens Energy AG', bloomberg: 'ENR GY' }, { nom: 'Bouygues SA', bloomberg: 'EN FP' }] },
+  { rr: 'LS', issue: '10/22/25', isin: 'XS3149199807', last: 93.63, pnl: 6.37, next: '05/08/26', cy: 'EUR', amount: 300_000, issuer: 'SANTANDER', freq: 'Mensuel', y: 5, desc: 'Athena Airbag Dégressif BNP + Intesa + Crédit Agricole', cls: 'equity', type: 'Airbag', coupon: 10.5, bAuto: '100%', bCoupon: '50%', pdi: '50%', sj: [{ nom: 'BNP Paribas SA', bloomberg: 'BNP FP' }, { nom: 'Intesa Sanpaolo SpA', bloomberg: 'ISP IM' }, { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP' }] },
   { rr: 'LS', issue: '10/30/25', isin: 'XS3148625976', last: 66.1, pnl: 30.65, next: '04/16/26', cy: 'EUR', amount: 300_000, issuer: 'BBVA', freq: 'Trimestriel', y: 5, desc: 'Phoenix Mémoire Dégressif Wof RACE + ACA + NOVOB', cls: 'equity', type: 'Phoenix', coupon: 13.0, bAuto: '100%', bCoupon: '70%', pdi: '50%' },
-  { rr: 'JLL', issue: '07/15/25', isin: 'XS2925309945', last: 40.77, pnl: 59.23, next: '04/30/26', cy: 'EUR', amount: 200_000, issuer: 'MAREX', freq: 'Mensuel', y: 5, desc: 'Autocall Airbag MSTR', cls: 'equity', type: 'Airbag', coupon: 13.5, bAuto: '100%', pdi: '50%' },
+  { rr: 'JLL', issue: '07/15/25', isin: 'XS2925309945', last: 40.77, pnl: 59.23, next: '04/30/26', cy: 'EUR', amount: 200_000, issuer: 'MAREX', freq: 'Mensuel', y: 5, desc: 'Autocall Airbag MSTR', cls: 'equity', type: 'Airbag', coupon: 13.5, bAuto: '100%', pdi: '50%', sj: [{ nom: 'MicroStrategy Inc', bloomberg: 'MSTR US' }] },
   { rr: 'LS', issue: '01/13/25', isin: 'FRIP000014P8', last: 54.62, pnl: 45.38, next: '12/23/26', cy: 'EUR', amount: 1_200_000, issuer: 'MSCO', freq: 'Annuel', y: 10, desc: 'Autocall Bonus Luxe', cls: 'equity', type: 'Athena' },
   { rr: 'LS', issue: '11/11/24', isin: 'XS2769371209', statut: 'rappele', cy: 'EUR', amount: 980_000, issuer: 'GS', freq: 'Annuel', y: 5, desc: 'Autocall Airbag ASML', cls: 'equity', type: 'Airbag', coupon: 10.6, bAuto: '100%', pdi: '60%' },
   { rr: 'LS', issue: '08/12/24', isin: 'XS2872777334', statut: 'vendu', cy: 'USD', amount: 3_030_000, issuer: 'CIBC', freq: 'In Fine', y: 4, desc: 'Participation note SPX no gearing - KG 18.8%', cls: 'equity', type: 'Participation' },

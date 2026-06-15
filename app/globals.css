@@ -71,3 +71,37 @@ body {
     @apply w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:border-cmf-blue focus:outline-none focus:ring-1 focus:ring-cmf-blue;
   }
 }
+
+/* ── LIFECYCLE 2 — terminal institutionnel (banque privée) ─────────────────── */
+.lc2-root {
+  background: #f4f6f9;
+  color: #1f2937;
+}
+
+@layer components {
+  .lc2-panel {
+    @apply rounded-lg border border-[#e2e6ec] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
+  }
+  .lc2-kpi {
+    @apply rounded-lg border border-[#e2e6ec] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
+  }
+  .lc2-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-slate-500;
+  }
+}
+
+@keyframes lc2Rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.lc2-rise {
+  animation: lc2Rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes lc2Pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.lc2-pulse {
+  animation: lc2Pulse 1.8s ease-in-out infinite;
+}

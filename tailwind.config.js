@@ -13,6 +13,12 @@ module.exports = {
           blue: '#1d4ed8',
           slate: '#64748b',
         },
+        // Orange Bloomberg — accent du terminal Lifecycle 2.
+        bb: {
+          orange: '#ff6a00',
+          amber: '#ffb000',
+          dark: '#1a1a1a',
+        },
         situation: {
           positive: '#22c55e',
           neutre: '#94a3b8',
