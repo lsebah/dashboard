@@ -31,12 +31,12 @@ import {
   BarList,
   DivergingBars,
   AreaChart,
-  HeatGrid,
   RadialStat,
   Sparkline,
   colorAt,
   ACCENT,
 } from './charts'
+import RiskCartography from './RiskCartography'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
 function barriereProtection(p: Product): number | undefined {
@@ -62,14 +62,6 @@ const SIT_META: Record<Sit, { label: string; color: string }> = {
   proche: { label: 'Proche barrière', color: '#b8860b' },
   sous: { label: 'Sous barrière', color: '#b42318' },
   non_classe: { label: 'Non classé', color: '#94a3b8' },
-}
-
-function heatColor(m: number | null): string {
-  if (m === null) return '#eef1f5'
-  if (m < 0) return '#b42318'
-  if (m < 10) return '#c2840a'
-  if (m < 25) return '#5a8f4e'
-  return '#2f7d4f'
 }
 
 // Top N + regroupement du reste en « Autres ».
@@ -227,45 +219,12 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
         </Panel>
       </div>
 
-      {/* ── Risque ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-        <Panel
-          title="Cartographie du risque — worst-of vs barrière"
-          sub="chaque cellule = un produit, classé du plus risqué au plus sûr (niveaux live)"
-          className="lg:col-span-3"
-          right={
-            <div className="flex items-center gap-2 text-[10px] text-slate-500">
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#b42318' }} />sous</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#c2840a' }} />proche</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: '#2f7d4f' }} />confortable</span>
-            </div>
-          }
-        >
-          {!live ? (
-            <div className="grid animate-pulse grid-cols-12 gap-1">
-              {Array.from({ length: 48 }).map((_, i) => (
-                <div key={i} className="aspect-square rounded-[3px] bg-slate-100" />
-              ))}
-            </div>
-          ) : (
-            <HeatGrid
-              cols={14}
-              cells={risque.map((r) => ({
-                key: r.p.isin,
-                label: typeof r.wo === 'number' ? `${Math.round(r.wo)}` : '·',
-                bg: heatColor(r.marge),
-                fg: r.marge === null ? '#94a3b8' : '#ffffff',
-                title: `${r.p.emetteur} · ${r.p.isin}\n${r.p.productType ?? r.p.nom}\nWorst-of ${typeof r.wo === 'number' ? r.wo.toFixed(1) + ' %' : 'n/c'} · barrière ${typeof r.prot === 'number' ? r.prot + ' %' : 'n/c'}${r.marge !== null ? ` · marge ${r.marge.toFixed(1)} pt` : ''}`,
-              }))}
-            />
-          )}
-          <p className="mt-2 text-[11px] text-slate-400">
-            {live ? `${risque.filter((r) => r.marge !== null).length} produits cotés · ` : ''}
-            indices propriétaires, taux et crédit non cotés → cellules grises.
-          </p>
-        </Panel>
+      {/* ── Cartographie du risque (interactive) ───────────────────────── */}
+      <RiskCartography products={vivants} courant={courant} />
 
-        <Panel title="Indicateurs de risque" className="lg:col-span-2">
+      {/* ── Indicateurs de risque ──────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4">
+        <Panel title="Indicateurs de risque">
           <div className="flex items-center gap-4">
             <RadialStat
               value={live ? 1 - proches / Math.max(1, risque.length) : 0}
