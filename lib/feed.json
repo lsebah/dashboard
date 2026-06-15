@@ -1429,5 +1429,13 @@
   "client": "CAPITALL",
   "devise": "EUR",
   "description": "Quartz 54 Sanofi Décrément 3.92 Pts"
+ },
+ {
+  "isin": "XS3395348454",
+  "last": 100,
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal"
  }
 ]

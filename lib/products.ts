@@ -4801,7 +4801,54 @@ const quartz54Sanofi: Product = {
 }
 
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
+// ── Barclays — Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal ──────
+//    (TS XS3395348454, décodée depuis la termsheet/KID Barclays du 12/06/2026)
+const barclaysEssMt: Product = {
+  id: 'XS3395348454',
+  nom: 'Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal',
+  isin: 'XS3395348454',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-12',
+  dateEmission: '2026-06-26',
+  dateConstatationFinale: '2031-06-12',
+  dateEcheance: '2031-06-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'EssilorLuxottica', bloomberg: 'EL FP Equity', marche: 'Euronext Paris', devise: 'EUR', niveauInitial: 182.7 },
+    { nom: 'ArcelorMittal', bloomberg: 'MT NA Equity', marche: 'Euronext Amsterdam', devise: 'EUR', niveauInitial: 60.6 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 10.65, // 26,63 € / trimestre sur 1 000 € = 2,663 %/T ≈ 10,65 % p.a.
+    barriereCouponPct: 50,
+    barriereRappelPct: 96, // niveau de rappel initial, dégressif jusqu'à 80 %
+    degressif: true,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: [],
+  statut: 'vivant',
+  rr: 'LS',
+  productType: 'Phoenix Mémoire',
+  description:
+    '5Y Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal — autocall dégressif 96→80 %, coupon 10,65 % p.a. (barrière 50 %), trimestriel, protection 50 %',
+  clients: ['ALVES - 06001'],
+  badges: ['Mémoire', 'Worst-of', 'Dégressif'],
+  termsheetFichier: 'TS - XS3395348454.pdf',
+}
+
 const detailed: Product[] = [
+  barclaysEssMt,
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
   msMxeadt50, gsClnSgSub, efgChinaParticipation, efgWarrantSeniorLoans,
   cibcParticipationSpx,

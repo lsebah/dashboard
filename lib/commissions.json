@@ -1,24 +1,43 @@
 {
- "majLe": "2026-06-10",
+ "majLe": "2026-06-15",
  "commissionsNettesParAnnee": {
-  "2026": 250359.76,
+  "2026": 256559.76,
   "2025": 481903.5,
   "2024": 203212.47,
   "2023": 27995
  },
  "dealsParAnnee": {
-  "2026": 25,
+  "2026": 26,
   "2025": 27,
   "2024": 15,
   "2023": 5
  },
  "trimestre2026": {
   "Q1": 120793,
-  "Q2": 129566.76,
+  "Q2": 135766.76,
   "Q3": 0,
   "Q4": 0
  },
  "lignes": [
+  {
+   "isin": "XS3395348454",
+   "issue": "2026-06-26",
+   "client": "ALVES - 06001",
+   "emetteur": "BARCLAYS",
+   "description": "Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal",
+   "devise": "EUR",
+   "nominal": 200000,
+   "ufPct": 0.031,
+   "comCmf": 6200,
+   "retroPct": 0,
+   "comClient": 0,
+   "comTotal": 6200,
+   "facture": null,
+   "sent": null,
+   "credited": null,
+   "split": 1,
+   "net": 6200
+  },
   {
    "isin": "XS3391940502",
    "issue": "2026-06-23",
