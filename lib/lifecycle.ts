@@ -312,7 +312,13 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
   return out
 }
 
-/** Coupons réellement encaissés à ce jour (%), ou undefined si non constatable. */
+/**
+ * Coupons réellement encaissés à ce jour (%). On compte les coupons CONFIRMÉS
+ * payés (registre ou niveau worst-of constaté ≥ barrière) : c'est du cash acquis.
+ * Une date passée encore « à constater » (sous-jacent indisponible) n'est pas
+ * comptée — elle n'efface pas pour autant les coupons déjà confirmés (sinon le
+ * P&L retomberait à tort sur le prix seul). Renvoie 0 si rien n'est encore acquis.
+ */
 export function couponsEncaissesPct(
   product: Product,
   now: Date = new Date(),
@@ -320,7 +326,6 @@ export function couponsEncaissesPct(
   if (!distribueCoupons(product)) return 0
   const passes = suiviCoupons(product, now).filter((l) => l.statut !== 'a_venir')
   if (passes.length === 0) return 0
-  if (passes.some((l) => l.statut === 'a_constater')) return undefined
   return passes[passes.length - 1].cumulPayePct
 }
 

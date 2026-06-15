@@ -296,6 +296,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   // Niveaux courants des sous-jacents (Yahoo, batché) → injectés dans `list` pour
   // afficher la variation en % sur les cartes et la colonne Sous-jacents.
   const [perfMap, setPerfMap] = useState<Record<string, Record<string, number>>>({})
+  // Worst-of constaté aux observations PASSÉES (isin → date → % du strike) : permet
+  // de compter les coupons déjà encaissés DANS LA COLONNE P&L, comme la fiche.
+  const [niveauxMap, setNiveauxMap] = useState<Record<string, Record<string, number>>>({})
   useEffect(() => {
     const isins = products.map((p) => p.isin)
     if (isins.length === 0) return
@@ -305,13 +308,19 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       .then((d) => {
         if (annule) return
         const m: Record<string, Record<string, number>> = {}
+        const nm: Record<string, Record<string, number>> = {}
         for (const [isin, v] of Object.entries(d?.courant ?? {})) {
+          const entry = v as {
+            sj: { nom: string; pct: number | null }[]
+            niveaux?: Record<string, number>
+          }
           const inner: Record<string, number> = {}
-          for (const x of (v as { sj: { nom: string; pct: number | null }[] }).sj ?? [])
-            if (typeof x.pct === 'number') inner[x.nom] = x.pct
+          for (const x of entry.sj ?? []) if (typeof x.pct === 'number') inner[x.nom] = x.pct
           m[isin] = inner
+          nm[isin] = entry.niveaux ?? {}
         }
         setPerfMap(m)
+        setNiveauxMap(nm)
       })
       .catch(() => {})
     return () => {
@@ -321,18 +330,29 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const augment = (p: Product): Product => {
     const pm = perfMap[p.isin]
-    if (!pm) return p
-    return {
-      ...p,
-      sousJacents: p.sousJacents.map((u) =>
-        typeof pm[u.nom] === 'number'
-          ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
-          : u,
-      ),
-    }
+    const nv = niveauxMap[p.isin]
+    if (!pm && !nv) return p
+    const sousJacents = pm
+      ? p.sousJacents.map((u) =>
+          typeof pm[u.nom] === 'number'
+            ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
+            : u,
+        )
+      : p.sousJacents
+    // Niveau worst-of constaté aux observations passées → suivi des coupons (P&L
+    // coupons inclus). Même source (Yahoo) que la fiche, donc valeurs cohérentes.
+    const observations =
+      nv && p.observations
+        ? p.observations.map((o) =>
+            typeof nv[o.dateObservation] === 'number'
+              ? { ...o, niveauConstatePct: nv[o.dateObservation] }
+              : o,
+          )
+        : p.observations
+    return { ...p, sousJacents, observations }
   }
 
-  const listAug = useMemo(() => list.map(augment), [list, perfMap])
+  const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap])
 
   // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
   // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
@@ -351,7 +371,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [client, productsO, allocsOf, perfMap],
+    [client, productsO, allocsOf, perfMap, niveauxMap],
   )
 
   // Filtre « situation » (bulles cliquables de la synthèse) — appliqué sur la
@@ -403,7 +423,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }
     return { n: enCours.length, total, counts }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productsO, perfMap])
+  }, [productsO, perfMap, niveauxMap])
 
   const toggleSort = (key?: string) => {
     if (!key) return
