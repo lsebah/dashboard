@@ -17,6 +17,7 @@ import {
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useLocalProducts } from '@/lib/local-products'
+import ClientReport from './ClientReport'
 import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
@@ -179,6 +180,7 @@ function compare(a: SortVal, b: SortVal): number {
 export default function PortfolioExplorer({ products }: { products: Product[] }) {
   const [view, setView] = useState<'table' | 'cards'>('table')
   const [client, setClient] = useState<string>('')
+  const [showReport, setShowReport] = useState(false)
   const [liveOnly, setLiveOnly] = useState(false)
   const [situ, setSitu] = useState<Situation | null>(null)
   const [q, setQ] = useState('')
@@ -331,6 +333,18 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   }
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap])
+
+  // Positions du client sélectionné (toutes, hors filtres live/texte) → reporting.
+  const reportRows = useMemo(
+    () =>
+      client
+        ? productsAll
+            .filter((p) => allocsOf(p).some((a) => a.client === client))
+            .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
+        : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [client, productsAll, allocsOf, perfMap],
+  )
 
   // Filtre « situation » (bulles cliquables de la synthèse) — appliqué sur la
   // liste augmentée car la situation dépend des niveaux courants injectés.
@@ -802,8 +816,21 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               </option>
             ))}
           </select>
+          {client && (
+            <button
+              onClick={() => setShowReport(true)}
+              className="rounded-md bg-cmf-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0b1d36]"
+              title="Générer le reporting mensuel (PDF) du client"
+            >
+              Reporting PDF
+            </button>
+          )}
         </div>
       </div>
+
+      {showReport && client && (
+        <ClientReport client={client} rows={reportRows} perfMap={perfMap} onClose={() => setShowReport(false)} />
+      )}
 
       {view === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start flex-1 min-h-0 overflow-auto pr-1">
