@@ -590,7 +590,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             <td key="amount" className="px-1 py-1 tabular-nums whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
               <input
                 key={`${p.isin}|${i}|${alloc.montant ?? ''}`}
-                defaultValue={typeof alloc.montant === 'number' ? alloc.montant : ''}
+                defaultValue={typeof alloc.montant === 'number' ? alloc.montant.toLocaleString('fr-FR') : ''}
                 inputMode="numeric"
                 placeholder="—"
                 title="Ajuster le montant investi (local)"
@@ -728,7 +728,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     // la table occupe le reste en flex-1 ⇒ sa barre de défilement HORIZONTALE
     // reste collée en bas de l'écran, quelle que soit la hauteur de la synthèse
     // ou de la barre d'outils (qui peuvent s'enrouler). Plus besoin de scroller.
-    <div className="flex flex-col h-[calc(100vh_-_10rem)]">
+    <div className="flex flex-col h-[calc(100vh_-_11.5rem)]">
       {/* Synthèse « Analyse de risques » (situations calculées en live) */}
       <div className="card p-4 mb-5 shrink-0">
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
