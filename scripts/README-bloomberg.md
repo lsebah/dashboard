@@ -33,17 +33,22 @@ Méthode (réplique ta formule Excel) : pour chaque ISIN, on interroge
 
 ## 3. Automatiser (quotidien)
 
-**Option A — Planificateur de tâches Windows** : créer une tâche qui exécute
-un `.bat` chaque soir :
+**Option A — `scripts\refresh_prices.bat` + Planificateur de tâches Windows** (recommandé).
+Le `.bat` : vérifie que Bloomberg tourne (`bbcomm.exe`), `git pull`, lance le script,
+puis `commit` + `push` **seulement si les prix ont changé**. Il se positionne tout
+seul à la racine du dépôt et journalise dans `scripts\refresh_prices.log`.
 
+Créer la tâche planifiée (ex. toutes les heures en journée) :
 ```bat
-@echo off
-cd /d C:\chemin\vers\dashboard
-python scripts\bloomberg_prices.py
-git add lib/feed.json && git commit -m "Prix Bloomberg auto %date%" && git push
+schtasks /Create /TN "CMF Prix Bloomberg" /TR "C:\chemin\vers\dashboard\scripts\refresh_prices.bat" /SC HOURLY /ST 08:00
 ```
+(ou via l'interface « Planificateur de tâches » → Créer une tâche de base.)
+Si Bloomberg n'est pas lancé à l'heure dite, le `.bat` s'arrête proprement sans rien faire.
 
-**Option B — Claude Code sur le PC** : `/loop` quotidien qui lance le script,
+Pré-requis sur le PC : clone sur la branche **`main`**, `git config user.name/user.email`
+renseignés, et un accès **push** mémorisé (PAT Windows Credential Manager ou SSH).
+
+**Option B — Claude Code sur le PC** : un `/loop` quotidien qui lance le script,
 relit le diff et pousse.
 
 ## 4. Conformité
