@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import { products } from '@/lib/products'
 import { yahooSymbol } from '@/lib/underlyings'
 import { fetchHistory, closeAt, lastClose, type Bar } from '@/lib/yahoo'
+import { kvConfigured, kvGet } from '@/lib/kv'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const runtime = 'nodejs'
 
 // Niveau worst-of constaté à chaque observation passée (pour le suivi des
 // coupons) + niveaux COURANTS des sous-jacents (en % du strike) pour afficher la
@@ -38,13 +40,20 @@ export async function GET(req: Request) {
       }
       const strike =
         u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close
-      return { nom: u.nom, sym, bars, strike }
+      return { nom: u.nom, sym, bars, strike, bbg: u.bloomberg?.trim() }
     }),
   )
 
-  // Niveaux courants (% du strike) par sous-jacent — résilient.
+  // Niveaux Bloomberg (PX_Last) par ticker — repli pour les sous-jacents non
+  // mappables Yahoo (indices à décrément, baskets propriétaires…).
+  const levels = kvConfigured()
+    ? (await kvGet<{ levels: Record<string, number> }>('levels:overlay'))?.levels ?? {}
+    : {}
+
+  // Niveaux courants (% du strike) par sous-jacent — résilient. Repli sur le
+  // niveau Bloomberg (PX_Last) quand Yahoo n'a pas de clôture (décréments…).
   const sj = cols.map((c) => {
-    const last = lastClose(c.bars)
+    const last = lastClose(c.bars) ?? (c.bbg ? levels[c.bbg] : undefined)
     const pct =
       typeof last === 'number' && typeof c.strike === 'number' && c.strike > 0
         ? Math.round((last / c.strike) * 10000) / 100

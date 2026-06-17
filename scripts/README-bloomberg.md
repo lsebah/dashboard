@@ -39,6 +39,11 @@ Méthode de prix (= ta formule Excel) : pour chaque ISIN, `<ISIN>@<SOURCE> Corp`
 sur le champ **PR005**, en parcourant `SOURCES` (LEOZ, BSED, …, BVAL, SGIN, …)
 et en gardant la **première source numérique**.
 
+Le script récupère **aussi** les **niveaux des sous-jacents** (`PX_Last`), utile
+pour les indices à décrément que Yahoo ne sait pas pricer. Il applique ta formule
+Excel : ajoute `" Index"`/`" Equity"` au ticker si le yellow-key est absent.
+Pour ne collecter que les prix produits : `--no-levels`.
+
 ## 3. Automatiser (quotidien, sans git)
 
 Créer `C:\bbg\refresh_prices.bat` :
@@ -67,8 +72,12 @@ Data License Bloomberg — à cadrer avec ton account manager avant diffusion.
 ## 5. Endpoints utilisés
 
 - `GET /api/isins` — liste des ISIN vivants à pricer (public, lecture seule).
-- `POST /api/prices/ingest` — ingestion des prix (protégé par `x-prices-api-key`).
-- `GET /api/prices` — surcouche de prix (lue par le portefeuille).
+- `GET /api/underlyings` — tickers Bloomberg des sous-jacents à pricer (public).
+- `POST /api/prices/ingest` — ingestion (protégé par `x-prices-api-key`). Corps :
+  `{ "prices": { ISIN: nombre } }`, `{ "levels": { ticker: nombre } }`,
+  `{ "remove": [ISIN, …] }` (purge) — au moins un champ.
+- `GET /api/prices` — surcouche de prix produits (lue par le portefeuille).
+- `GET /api/levels` — surcouche de niveaux des sous-jacents (lue par les fiches).
 
 > La variante **avec git** (script qui réécrit `lib/feed.json` puis `git push`)
 > reste possible mais n'est plus le chemin par défaut.
