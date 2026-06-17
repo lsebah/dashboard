@@ -500,7 +500,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     switch (key) {
       case 'rr': {
         const f = frozenAttrs('rr', p)
-        return <td key="rr" style={f.style} className={`px-2 py-1.5 text-slate-500 ${f.cls}`}>{p.rr ?? '—'}</td>
+        return <td key="rr" style={f.style} className={`px-2 py-1.5 text-slate-500 ${f.cls}`}>{p.rr ?? 'LS'}</td>
       }
       case 'issue': {
         const f = frozenAttrs('issue', p)
@@ -592,7 +592,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             <td key="amount" className="px-1 py-1 tabular-nums whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
               <input
                 key={`${p.isin}|${i}|${alloc.montant ?? ''}`}
-                defaultValue={typeof alloc.montant === 'number' ? alloc.montant.toLocaleString('fr-FR') : ''}
+                defaultValue={typeof alloc.montant === 'number' ? alloc.montant.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}
                 inputMode="numeric"
                 placeholder="—"
                 title="Ajuster le montant investi (local)"
@@ -608,7 +608,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         }
         return (
           <td key="amount" className="px-2 py-1.5 tabular-nums whitespace-nowrap">
-            {montantTotal(p).toLocaleString('fr-FR')}
+            {montantTotal(p).toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
           </td>
         )
       }
