@@ -1,5 +1,6 @@
 import { products } from '@/lib/products'
 import PortfolioExplorer from './components/PortfolioExplorer'
+import NouveauTradeButton from './components/NouveauTradeButton'
 
 // La synthèse « Analyse de risques » (compteurs de situations) est rendue par
 // PortfolioExplorer, côté client, pour bénéficier des niveaux courants des
@@ -9,12 +10,7 @@ export default function PortefeuillePage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-cmf-navy">Portefeuille</h1>
-        <a
-          href="/lifecycle/produits/nouveau"
-          className="rounded-md bg-cmf-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-        >
-          + Nouveau produit
-        </a>
+        <NouveauTradeButton />
       </div>
 
       <PortfolioExplorer products={products} />
