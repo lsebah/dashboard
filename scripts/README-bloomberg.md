@@ -26,9 +26,10 @@ git add lib/feed.json && git commit -m "Prix Bloomberg du JJ/MM" && git push
 
 Le push déclenche le redéploiement Vercel → prix à jour sur le dashboard.
 
-Prix retenu : `PX_LAST`, sinon `PX_MID`, sinon mid(BID,ASK), sinon `PX_BID`.
-Adapter la liste `FIELDS` dans le script si une source de prix émetteur précise
-est requise (certaines notes ne cotent que `PX_BID`/`PX_ASK`).
+Méthode (réplique ta formule Excel) : pour chaque ISIN, on interroge
+`<ISIN>@<SOURCE> Corp` sur le champ **PR005**, en parcourant la liste `SOURCES`
+(LEOZ, BSED, …, BVAL, SGIN, …) dans l'ordre de priorité et en retenant la
+**première source qui renvoie un nombre**. Adapter `SOURCES` / `--field` au besoin.
 
 ## 3. Automatiser (quotidien)
 

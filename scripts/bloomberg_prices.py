@@ -4,6 +4,10 @@
 Collecte des prix mark-to-market des produits structurés depuis Bloomberg
 (Desktop API / BLPAPI) et met à jour lib/feed.json (colonne `last`, en % du pair).
 
+Réplique la formule Excel maison :
+  =BDP(isin & "@" & source & " Corp"; "PR005")  pour une liste de sources de prix,
+  en retenant la PREMIÈRE source qui renvoie un nombre (ordre de priorité).
+
 À LANCER SUR LE PC CONNECTÉ AU TERMINAL BLOOMBERG (session ouverte/loggée).
 
 Pré-requis :
@@ -17,10 +21,7 @@ Usage :
   python scripts/bloomberg_prices.py               # met à jour lib/feed.json
   python scripts/bloomberg_prices.py --dry-run     # affiche, n'écrit rien
   python scripts/bloomberg_prices.py --all         # inclut les positions clôturées
-  python scripts/bloomberg_prices.py --host 127.0.0.1 --port 8194
-
-Prix retenu (en % du pair) : PX_LAST, sinon PX_MID, sinon (PX_BID+PX_ASK)/2,
-sinon PX_BID. Les positions rappelées / vendues / échues sont ignorées (sauf --all).
+  python scripts/bloomberg_prices.py --field PX_MID --host 127.0.0.1 --port 8194
 
 Conformité : l'API Desktop est licenciée pour l'usage de l'utilisateur loggé
 (valorisation de ton propre book). La redistribution de ces prix (publication
@@ -43,25 +44,20 @@ except ImportError:
 
 REPO = Path(__file__).resolve().parents[1]
 FEED = REPO / "lib" / "feed.json"
-FIELDS = ["PX_LAST", "PX_MID", "PX_BID", "PX_ASK"]
+
+# Sources de prix (mnémoniques contributeurs), DANS L'ORDRE DE PRIORITÉ — repris
+# tel quel de la formule Excel. La première source qui renvoie un nombre gagne.
+SOURCES = [
+    "LEOZ", "BSED", "BRSP", "BBVL", "BNPA", "BPSN", "CIBX", "CGPP", "CICF",
+    "DBXM", "GSSD", "MARE", "MLEQ", "MSIP", "NOMX", "BVAL", "BSEQ", "SGIN",
+    "SGFR", "UBSF", "BPSP", "BPSL",
+]
 CLOSED = {"rappele", "vendu", "echu"}
 
 
-def pick_price(fd) -> float | None:
-    """Choisit le meilleur prix disponible dans le fieldData d'un titre."""
-    def g(name):
-        return fd.getElementAsFloat(name) if fd.hasElement(name) else None
-    last, mid, bid, ask = g("PX_LAST"), g("PX_MID"), g("PX_BID"), g("PX_ASK")
-    if last:
-        return last
-    if mid:
-        return mid
-    if bid and ask:
-        return (bid + ask) / 2
-    return bid
-
-
-def fetch_prices(isins, host: str, port: int) -> dict[str, float | None]:
+def fetch_prices(isins, field: str, host: str, port: int) -> dict[str, float | None]:
+    """Pour chaque ISIN, interroge <ISIN>@<SOURCE> Corp et garde la 1re source
+    (ordre de priorité) qui renvoie une valeur numérique pour `field` (PR005)."""
     opts = blpapi.SessionOptions()
     opts.setServerHost(host)
     opts.setServerPort(port)
@@ -72,14 +68,15 @@ def fetch_prices(isins, host: str, port: int) -> dict[str, float | None]:
         sys.exit("Service //blp/refdata indisponible.")
     refdata = session.getService("//blp/refdata")
 
-    out: dict[str, float | None] = {}
-    # Bloomberg limite la taille des requêtes : on découpe par paquets.
-    for batch in (isins[i : i + 50] for i in range(0, len(isins), 50)):
+    # Toutes les combinaisons ISIN×source, requêtées par paquets.
+    combos = [f"{isin}@{src} Corp" for isin in isins for src in SOURCES]
+    raw: dict[str, float] = {}
+    for start in range(0, len(combos), 100):
+        batch = combos[start : start + 100]
         req = refdata.createRequest("ReferenceDataRequest")
-        for isin in batch:
-            req.getElement("securities").appendValue(f"/isin/{isin}")
-        for f in FIELDS:
-            req.getElement("fields").appendValue(f)
+        for sec in batch:
+            req.getElement("securities").appendValue(sec)
+        req.getElement("fields").appendValue(field)
         session.sendRequest(req)
         while True:
             ev = session.nextEvent(500)
@@ -89,15 +86,28 @@ def fetch_prices(isins, host: str, port: int) -> dict[str, float | None]:
                 arr = msg.getElement("securityData")
                 for j in range(arr.numValues()):
                     sd = arr.getValueAsElement(j)
-                    isin = sd.getElementAsString("security").rsplit("/", 1)[-1]
+                    name = sd.getElementAsString("security")  # "<ISIN>@<SRC> Corp"
                     if sd.hasElement("securityError"):
-                        out[isin] = None
                         continue
-                    price = pick_price(sd.getElement("fieldData"))
-                    out[isin] = round(price, 4) if price else None
+                    fd = sd.getElement("fieldData")
+                    if fd.hasElement(field):
+                        try:
+                            raw[name] = fd.getElementAsFloat(field)
+                        except Exception:
+                            pass
             if ev.eventType() == blpapi.Event.RESPONSE:
                 break
     session.stop()
+
+    out: dict[str, float | None] = {}
+    for isin in isins:
+        val = None
+        for src in SOURCES:  # priorité : première source numérique
+            v = raw.get(f"{isin}@{src} Corp")
+            if isinstance(v, (int, float)):
+                val = round(v, 4)
+                break
+        out[isin] = val
     return out
 
 
@@ -105,15 +115,16 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="affiche sans écrire")
     ap.add_argument("--all", action="store_true", help="inclut les positions clôturées")
+    ap.add_argument("--field", default="PR005", help="champ de prix (déf. PR005)")
     ap.add_argument("--host", default="localhost")
     ap.add_argument("--port", type=int, default=8194)
     args = ap.parse_args()
 
     feed = json.loads(FEED.read_text(encoding="utf-8"))
     isins = sorted({r["isin"] for r in feed if args.all or r.get("statut") not in CLOSED})
-    print(f"{len(isins)} ISIN à interroger sur Bloomberg…")
+    print(f"{len(isins)} ISIN × {len(SOURCES)} sources à interroger sur Bloomberg…")
 
-    prices = fetch_prices(isins, args.host, args.port)
+    prices = fetch_prices(isins, args.field, args.host, args.port)
     got = {k: v for k, v in prices.items() if v is not None}
     print(f"{len(got)} prix récupérés, {len(isins) - len(got)} sans prix.")
 
