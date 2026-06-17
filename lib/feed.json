@@ -1430,5 +1430,19 @@
   "devise": "EUR",
   "amount": 110000,
   "description": "Autocall Classic on BNP + ACA + GLE"
+ },
+ {
+  "isin": "FR1459ABG521",
+  "client": "RENAUD GESTION PRIVEE",
+  "devise": "EUR",
+  "amount": 63000,
+  "description": "Phoenix Autocallable MSCI ACWI IMI Copper & Power Select 20 Fixed Basket 50pts DIV EUR"
+ },
+ {
+  "isin": "XS3395348454",
+  "client": "ALVES - 06001",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal"
  }
 ]
