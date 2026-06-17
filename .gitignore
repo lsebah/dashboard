@@ -13,3 +13,6 @@ next-env.d.ts
 __pycache__/
 *.pyc
 scripts/refresh_prices.log
+
+# Claude Code session state
+.claude/
