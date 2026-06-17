@@ -55,9 +55,15 @@ SOURCES = [
 ]
 
 
-def http_get_json(url: str):
-    with urllib.request.urlopen(url, timeout=30) as r:
-        return json.loads(r.read().decode("utf-8"))
+def http_get_json(url: str, headers: dict | None = None):
+    req = urllib.request.Request(url)
+    for k, v in (headers or {}).items():
+        req.add_header(k, v)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        sys.exit(f"GET {url} échoué ({e.code}) : {e.read().decode('utf-8', 'replace')[:300]}")
 
 
 def http_post_json(url: str, payload: dict, headers: dict):
@@ -70,7 +76,7 @@ def http_post_json(url: str, payload: dict, headers: dict):
         with urllib.request.urlopen(req, timeout=60) as r:
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        sys.exit(f"POST échoué ({e.code}) : {e.read().decode('utf-8', 'replace')}")
+        sys.exit(f"POST échoué ({e.code}) : {e.read().decode('utf-8', 'replace')[:300]}")
 
 
 def fetch_prices(isins, field: str, host: str, port: int) -> dict[str, float | None]:
@@ -132,6 +138,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_URL"))
     ap.add_argument("--api-key", default=os.environ.get("PRICES_API_KEY"))
+    # Jeton « Protection Bypass for Automation » (si le déploiement est protégé
+    # par Vercel Authentication). Env : VERCEL_AUTOMATION_BYPASS_SECRET.
+    ap.add_argument("--bypass", default=os.environ.get("VERCEL_AUTOMATION_BYPASS_SECRET"))
     ap.add_argument("--dry-run", action="store_true", help="interroge Bloomberg, n'envoie rien")
     ap.add_argument("--field", default="PR005", help="champ de prix (déf. PR005)")
     ap.add_argument("--host", default="localhost")
@@ -142,8 +151,11 @@ def main() -> None:
         sys.exit("Renseigne --dashboard-url ou la variable DASHBOARD_URL (ex. https://...vercel.app).")
     base = args.dashboard_url.rstrip("/")
 
+    # En-tête commun : contourne la protection Vercel pour l'automatisation.
+    bypass = {"x-vercel-protection-bypass": args.bypass} if args.bypass else {}
+
     print("Récupération de la liste d'ISIN depuis le dashboard…")
-    isins = http_get_json(base + "/api/isins").get("isins", [])
+    isins = http_get_json(base + "/api/isins", bypass).get("isins", [])
     if not isins:
         sys.exit("Aucun ISIN renvoyé par /api/isins.")
     print(f"{len(isins)} ISIN × {len(SOURCES)} sources — interrogation Bloomberg (champ {args.field})…")
@@ -166,7 +178,7 @@ def main() -> None:
     res = http_post_json(
         base + "/api/prices/ingest",
         {"prices": got},
-        {"x-prices-api-key": args.api_key},
+        {"x-prices-api-key": args.api_key, **bypass},
     )
     print("Réponse dashboard :", json.dumps(res, ensure_ascii=False))
 
