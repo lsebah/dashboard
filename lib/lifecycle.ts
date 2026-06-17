@@ -120,6 +120,19 @@ export function situation(product: Product): Situation {
       : (product.pdiPct ?? undefined)
   const niveau = 100 + perf // niveau du sous-jacent en % de l'initial
 
+  // Produit INVERSE (bearish) : on joue à la BAISSE, la barrière de protection
+  // est HAUTE ⇒ tout est en miroir du cas standard (la hausse est défavorable).
+  const inverse =
+    (terms?.kind === 'autocall' && terms.sens === 'inverse') ||
+    (terms?.kind === 'rates' && terms.sens === 'bearish')
+  if (inverse) {
+    if (perf <= 0) return 'positive' // sous le strike = favorable au bearish
+    if (protectionPct === undefined) return 'sans_stress'
+    if (niveau >= protectionPct) return 'sous_protection' // barrière haute franchie
+    if (protectionPct - niveau <= 10) return 'proche_protection'
+    return 'sans_stress'
+  }
+
   if (perf >= 0) return 'positive'
   if (protectionPct === undefined) return 'sans_stress'
   const marge = niveau - protectionPct // points au-dessus de la barrière
