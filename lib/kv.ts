@@ -1,10 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────
 //  Mini-client KV (Vercel KV / Upstash Redis REST) via fetch — sans dépendance.
-//  Variables : KV_REST_API_URL, KV_REST_API_TOKEN (fournies par Vercel KV).
+//  Accepte les deux conventions de nommage selon le store créé sur Vercel :
+//   • Vercel KV         : KV_REST_API_URL / KV_REST_API_TOKEN
+//   • Upstash (Market.)  : UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
 //  Dégrade proprement si non configuré (kvConfigured() === false).
 // ─────────────────────────────────────────────────────────────────────────
-const URL = process.env.KV_REST_API_URL
-const TOKEN = process.env.KV_REST_API_TOKEN
+const URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
+const TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
 
 export const kvConfigured = (): boolean => !!(URL && TOKEN)
 
