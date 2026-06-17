@@ -567,7 +567,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 ? `Prix ${p.prixMarche?.toFixed(2)} + coupons ${coupons.toFixed(2)} − 100`
                 : undefined
             }
-            className={`px-2 py-1.5 tabular-nums ${
+            className={`px-2 py-1.5 tabular-nums whitespace-nowrap ${
               typeof pnl === 'number'
                 ? pnl >= 0
                   ? 'text-emerald-600'

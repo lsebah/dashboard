@@ -5494,6 +5494,7 @@ export const products: Product[] = feedIsins.map((isin) => {
   const rappelAuto = rappelConstate(base) ? 'rappele' : undefined
   const merged: Product = {
     ...base,
+    rr: base.rr ?? 'LS', // par défaut, tout produit sans RR est rattaché à LS
     nom: base.nom && base.nom !== isin ? base.nom : desc ?? base.nom,
     description: desc ?? base.description,
     prixMarche: price ?? base.prixMarche,
