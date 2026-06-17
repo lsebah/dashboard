@@ -299,6 +299,21 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   // Worst-of constaté aux observations PASSÉES (isin → date → % du strike) : permet
   // de compter les coupons déjà encaissés DANS LA COLONNE P&L, comme la fiche.
   const [niveauxMap, setNiveauxMap] = useState<Record<string, Record<string, number>>>({})
+  // Surcouche de prix (Vercel KV, alimentée depuis Bloomberg via /api/prices/ingest)
+  // appliquée par-dessus le prix du feed : prix le plus récent gagne.
+  const [priceMap, setPriceMap] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let annule = false
+    fetch('/api/prices')
+      .then((r) => r.json())
+      .then((d) => {
+        if (!annule && d?.prices && typeof d.prices === 'object') setPriceMap(d.prices)
+      })
+      .catch(() => {})
+    return () => {
+      annule = true
+    }
+  }, [])
   useEffect(() => {
     const isins = products.map((p) => p.isin)
     if (isins.length === 0) return
@@ -331,7 +346,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const augment = (p: Product): Product => {
     const pm = perfMap[p.isin]
     const nv = niveauxMap[p.isin]
-    if (!pm && !nv) return p
+    const px = priceMap[p.isin]
+    if (!pm && !nv && typeof px !== 'number') return p
+    const prixMarche = typeof px === 'number' ? px : p.prixMarche
     const sousJacents = pm
       ? p.sousJacents.map((u) =>
           typeof pm[u.nom] === 'number'
@@ -349,10 +366,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               : o,
           )
         : p.observations
-    return { ...p, sousJacents, observations }
+    return { ...p, prixMarche, sousJacents, observations }
   }
 
-  const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap])
+  const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap, priceMap])
 
   // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
   // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
@@ -363,7 +380,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             .filter((p) => allocsOf(p).some((a) => a.client === client))
             .filter(
               (p) =>
-                typeof p.prixMarche === 'number' &&
+                (typeof p.prixMarche === 'number' || typeof priceMap[p.isin] === 'number') &&
                 p.statut !== 'rappele' &&
                 p.statut !== 'vendu' &&
                 p.statut !== 'echu',
@@ -371,7 +388,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
             .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [client, productsO, allocsOf, perfMap, niveauxMap],
+    [client, productsO, allocsOf, perfMap, niveauxMap, priceMap],
   )
 
   // Filtre « situation » (bulles cliquables de la synthèse) — appliqué sur la

@@ -1,66 +1,74 @@
-# Collecte quotidienne des prix via Bloomberg (BLPAPI)
+# Collecte des prix via Bloomberg (BLPAPI) — route SANS git
 
-Met à jour `lib/feed.json` (colonne `last`, en % du pair) avec les prix
-mark-to-market des produits structurés, depuis le **Terminal Bloomberg** du PC.
+Le script `bloomberg_prices.py` récupère la liste d'ISIN depuis le dashboard,
+price chaque produit sur Bloomberg, puis **POSTe** les prix au dashboard
+(→ Vercel KV). Le portefeuille les affiche par-dessus `feed.json` (le plus
+récent gagne). **Aucun git, aucun dépôt cloné sur le PC Bloomberg.**
 
-## 1. Installation (une fois, sur le PC Bloomberg)
+## 0. Côté Vercel (une fois)
 
-- Terminal Bloomberg lancé et **connecté** (le service `bbcomm` doit tourner).
-- Python 3.9+ installé.
-- L'API Desktop :
+- Créer un store **Vercel KV** et le lier au projet (Vercel pose alors
+  `KV_REST_API_URL` et `KV_REST_API_TOKEN` automatiquement).
+- Ajouter une variable d'environnement **`PRICES_API_KEY`** = un secret de ton
+  choix (ex. une longue chaîne aléatoire). Redeploy.
+- Tu utiliseras la **même** valeur `PRICES_API_KEY` sur le PC Bloomberg.
 
-```bat
-python -m pip install --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi
+## 1. Sur le PC Bloomberg (une fois)
+
+- Terminal Bloomberg lancé et **connecté** (service `bbcomm`).
+- Python 3.9+.
+- Installer blpapi (deux tirets `--`, surtout pas un tiret long `—`) :
+
+```
+python -m pip install --user --index-url https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi
 ```
 
-- Dépôt cloné (le script lit/écrit `lib/feed.json` en relatif).
+- Récupérer **un seul fichier** : `bloomberg_prices.py` (ce dossier). Pas besoin
+  du reste du dépôt. Le déposer p. ex. dans `C:\bbg\`.
 
-## 2. Lancer
+## 2. Lancer (PowerShell)
 
-```bat
-python scripts\bloomberg_prices.py --dry-run   :: test : affiche, n'écrit rien
-python scripts\bloomberg_prices.py             :: met à jour lib\feed.json
-git diff lib/feed.json                          :: vérifier
-git add lib/feed.json && git commit -m "Prix Bloomberg du JJ/MM" && git push
+```powershell
+$env:DASHBOARD_URL  = "https://TON-DOMAINE.vercel.app"
+$env:PRICES_API_KEY = "le-meme-secret-que-sur-vercel"
+python C:\bbg\bloomberg_prices.py --dry-run     # TEST : price, n'envoie rien
+python C:\bbg\bloomberg_prices.py               # POSTe les prix au dashboard
 ```
 
-Le push déclenche le redéploiement Vercel → prix à jour sur le dashboard.
+Méthode de prix (= ta formule Excel) : pour chaque ISIN, `<ISIN>@<SOURCE> Corp`
+sur le champ **PR005**, en parcourant `SOURCES` (LEOZ, BSED, …, BVAL, SGIN, …)
+et en gardant la **première source numérique**.
 
-Méthode (réplique ta formule Excel) : pour chaque ISIN, on interroge
-`<ISIN>@<SOURCE> Corp` sur le champ **PR005**, en parcourant la liste `SOURCES`
-(LEOZ, BSED, …, BVAL, SGIN, …) dans l'ordre de priorité et en retenant la
-**première source qui renvoie un nombre**. Adapter `SOURCES` / `--field` au besoin.
+## 3. Automatiser (quotidien, sans git)
 
-## 3. Automatiser (quotidien)
+Créer `C:\bbg\refresh_prices.bat` :
 
-**Option A — `scripts\refresh_prices.bat` + Planificateur de tâches Windows** (recommandé).
-Le `.bat` : vérifie que Bloomberg tourne (`bbcomm.exe`), `git pull`, lance le script,
-puis `commit` + `push` **seulement si les prix ont changé**. Il se positionne tout
-seul à la racine du dépôt et journalise dans `scripts\refresh_prices.log`.
-
-Créer la tâche planifiée (ex. toutes les heures en journée) :
 ```bat
-schtasks /Create /TN "CMF Prix Bloomberg" /TR "C:\chemin\vers\dashboard\scripts\refresh_prices.bat" /SC HOURLY /ST 08:00
+@echo off
+set DASHBOARD_URL=https://TON-DOMAINE.vercel.app
+set PRICES_API_KEY=le-meme-secret-que-sur-vercel
+python "%~dp0bloomberg_prices.py" >> "%~dp0refresh_prices.log" 2>&1
 ```
-(ou via l'interface « Planificateur de tâches » → Créer une tâche de base.)
-Si Bloomberg n'est pas lancé à l'heure dite, le `.bat` s'arrête proprement sans rien faire.
 
-Pré-requis sur le PC : clone sur la branche **`main`**, `git config user.name/user.email`
-renseignés, et un accès **push** mémorisé (PAT Windows Credential Manager ou SSH).
+Puis une tâche planifiée (ex. toutes les heures en journée) :
 
-**Option B — Claude Code sur le PC** : un `/loop` quotidien qui lance le script,
-relit le diff et pousse.
+```bat
+schtasks /Create /TN "CMF Prix Bloomberg" /TR "C:\bbg\refresh_prices.bat" /SC HOURLY /ST 08:00
+```
+
+Si le Terminal n'est pas lancé, blpapi échoue proprement (log) sans rien casser.
 
 ## 4. Conformité
 
-L'API Desktop est licenciée pour l'usage de l'utilisateur **loggé** (valoriser
-ton propre book = OK). La **redistribution** de ces prix (publication externe,
-reportings PDF clients) peut relever du Data License Bloomberg : à cadrer avec
-ton account manager avant toute diffusion.
+L'API Desktop est licenciée pour ton usage (valoriser ton book). La
+**redistribution** de ces prix (site externe, PDF clients) peut relever du
+Data License Bloomberg — à cadrer avec ton account manager avant diffusion.
 
-## 5. Évolution (sans redéploiement)
+## 5. Endpoints utilisés
 
-Étape suivante possible : un endpoint d'ingestion `POST /api/prices/ingest`
-(protégé par secret) qui écrit les prix dans **Vercel KV**, lus en surcouche
-de `feed.json` côté app. Le script Bloomberg `POST` alors les prix au lieu de
-réécrire le JSON → plus de commit ni de redéploiement par mise à jour.
+- `GET /api/isins` — liste des ISIN vivants à pricer (public, lecture seule).
+- `POST /api/prices/ingest` — ingestion des prix (protégé par `x-prices-api-key`).
+- `GET /api/prices` — surcouche de prix (lue par le portefeuille).
+
+> La variante **avec git** (script qui réécrit `lib/feed.json` puis `git push`)
+> reste possible mais n'est plus le chemin par défaut.
