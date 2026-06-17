@@ -5272,7 +5272,58 @@ const bnpSphinx15: Product = {
   termsheetFichier: '241202_12Y_SPHINX 15_Semestriel_FR001400T985_BNP.pdf',
 }
 
+// ── FRIP00001UV3 — Morgan Stanley Quartz 51 Autocall BNP Décrément 4,2 pts ────
+const q51Obs = ['2027-02-19','2027-05-19','2027-08-19','2027-11-19','2028-02-21','2028-05-19','2028-08-21','2028-11-20','2029-02-19','2029-05-21','2029-08-20','2029-11-19','2030-02-19','2030-05-20','2030-08-19','2030-11-19','2031-02-19','2031-05-19','2031-08-19','2031-11-19','2032-02-19','2032-05-19','2032-08-19','2032-11-19','2033-02-21','2033-05-19','2033-08-19','2033-11-21','2034-02-20','2034-05-19','2034-08-21','2034-11-20','2035-02-19','2035-05-21','2035-08-20','2035-11-19','2036-02-19','2036-05-19','2036-08-19','2036-11-19','2037-02-19','2037-05-19','2037-08-19','2037-11-19']
+const q51Pay = ['2027-02-26','2027-05-26','2027-08-26','2027-11-26','2028-02-28','2028-05-26','2028-08-28','2028-11-27','2029-02-26','2029-05-28','2029-08-27','2029-11-26','2030-02-26','2030-05-27','2030-08-26','2030-11-26','2031-02-26','2031-05-26','2031-08-26','2031-11-26','2032-02-26','2032-05-26','2032-08-26','2032-11-26','2033-02-28','2033-05-26','2033-08-26','2033-11-28','2034-02-27','2034-05-26','2034-08-28','2034-11-27','2035-02-26','2035-05-28','2035-08-27','2035-11-26','2036-02-26','2036-05-26','2036-08-26','2036-11-26','2037-02-26','2037-05-26','2037-08-26','2037-11-26']
+const q51Aer = [100,99.5,99,98.5,98,97.5,97,96.5,96,95.5,95,94.5,94,93.5,93,92.5,92,91.5,91,90.5,90,89.5,89,88.5,88,87.5,87,86.5,86,85.5,85,84.5,84,83.5,83,82.5,82,81.5,81,80.5,80,79.5,79,78.5]
+const q51Remb = [113,116.25,119.5,122.75,126,129.25,132.5,135.75,139,142.25,145.5,148.75,152,155.25,158.5,161.75,165,168.25,171.5,174.75,178,181.25,184.5,187.75,191,194.25,197.5,200.75,204,207.25,210.5,213.75,217,220.25,223.5,226.75,230,233.25,236.5,239.75,243,246.25,249.5,252.75]
+const msQuartz51: Product = {
+  id: 'FRIP00001UV3',
+  nom: 'Quartz 51 — Autocall BNP Décrément 4,2 pts',
+  isin: 'FRIP00001UV3',
+  emetteur: 'Morgan Stanley & Co International plc',
+  notationEmetteur: 'S&P A+ / Moody’s Aa3 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-02-19',
+  dateEmission: '2025-11-11',
+  dateConstatationFinale: '2038-02-19',
+  dateEcheance: '2038-02-26',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'MerQube BNP Paribas Class A 4.20 Point Decrement (EUR)', bloomberg: 'MQDBN420 Index' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    couponPa: 13,
+    barriereRappelPct: 100,
+    protectionPct: 40,
+    protectionStyle: 'europeenne',
+    decrement: '4,2 pts',
+  },
+  observations: buildObservations(q51Obs, q51Pay, {
+    niveauRappelPct: (n) => q51Aer[n - 1],
+    montantRemboursementPct: (n) => q51Remb[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '12Y Quartz 51 — Autocall sur indice BNP décrément 4,2 pts (MerQube), barrière dégressive 100 %→78,5 %, prime croissante 113 %→252,75 %, bonus 256 % si ≥ 60 %, KI 40 % européen',
+  badges: ['Décrément', 'Dégressif', 'Athena'],
+  termsheetFichier: '251111_12Y_Quartz 51 BNP Decrement 4.2 pts_Trimestriel_FRIP00001UV3_MSCO.pdf',
+}
+
 const detailed: Product[] = [
+  msQuartz51,
   barclaysEngieNexansSchneider, bbvaMittalEssilor, bnpTec10Phoenix, barclaysSanofiDecrement,
   bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,
