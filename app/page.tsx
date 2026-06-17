@@ -57,7 +57,6 @@ const categories = [
           { name: 'Portefeuille', url: '/lifecycle2/portefeuille' },
           { name: 'Calendrier', url: '/lifecycle2/calendrier' },
           { name: 'Décrément', url: '/lifecycle2/decrement' },
-          { name: '+ Produit', url: '/lifecycle2/produits/nouveau' },
         ],
       },
       {
