@@ -38,6 +38,11 @@ export default function ProductSynopsis({
   const terms = product.terms
   const cpa = couponPa(product)
 
+  // Filigrane de statut : produit rappelé ⇒ CALLED, arrivé à maturité ⇒ MATURED.
+  // Gris clair, posé DERRIÈRE le texte (z négatif) ⇒ contenu parfaitement lisible.
+  const watermark =
+    product.statut === 'rappele' ? 'CALLED' : product.statut === 'echu' ? 'MATURED' : null
+
   const protection =
     terms?.kind === 'autocall'
       ? `${terms.protectionPct}% KI ${terms.protectionStyle === 'europeenne' ? 'Européenne' : 'Américaine'}${
@@ -66,10 +71,17 @@ export default function ProductSynopsis({
 
   return (
     <div
-      className={`card p-4 flex flex-col gap-3 ${
-        compact ? 'h-[500px] overflow-hidden' : 'h-full'
+      className={`card relative isolate overflow-hidden p-4 flex flex-col gap-3 ${
+        compact ? 'h-[500px]' : 'h-full'
       }`}
     >
+      {watermark && (
+        <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center select-none">
+          <span className="-rotate-[18deg] whitespace-nowrap text-5xl font-extrabold tracking-[0.25em] text-slate-300">
+            {watermark}
+          </span>
+        </div>
+      )}
       {/* En-tête */}
       <div className="flex items-start justify-between gap-2">
         <div className="text-xs text-slate-500">
