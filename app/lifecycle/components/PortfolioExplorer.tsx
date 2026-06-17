@@ -113,30 +113,32 @@ function sjVal(p: Product): string | undefined {
 }
 
 // Colonnes du tableau (ordre = ordre des cellules du corps). `key` ⇒ triable.
-type Col = { label: string; key?: string; align?: 'center'; noSort?: boolean }
+// `w` = largeur FIXE (px) : combinée à `table-fixed` + `<colgroup>`, les colonnes
+// gardent EXACTEMENT la même largeur au défilement horizontal (plus de « saut »).
+type Col = { label: string; key?: string; align?: 'center'; noSort?: boolean; w: number }
 const COLUMNS: Col[] = [
-  { label: 'RR', key: 'rr' },
-  { label: 'Issue', key: 'issue' },
-  { label: 'ISIN', key: 'isin' },
-  { label: 'TS', key: 'ts', noSort: true },
-  { label: 'Last', key: 'last' },
-  { label: 'P&L', key: 'pnl' },
-  { label: 'Next event', key: 'next' },
-  { label: 'CY', key: 'cy' },
-  { label: 'Amount', key: 'amount' },
-  { label: 'Issuer', key: 'issuer' },
-  { label: 'Freq.', key: 'freq' },
-  { label: 'Y', key: 'y' },
-  { label: 'Description', key: 'desc' },
-  { label: 'Cpn p.a.', key: 'cpn' },
-  { label: 'Eq/Cr', key: 'asset' },
-  { label: 'Type', key: 'type' },
-  { label: 'Mém.', key: 'mem', align: 'center' },
-  { label: 'B. Autocall', key: 'bauto' },
-  { label: 'B. Coupon', key: 'bcoupon' },
-  { label: 'PDI', key: 'pdi' },
-  { label: 'Client', key: 'client' },
-  { label: 'Sous-jacents', key: 'sj' },
+  { label: 'RR', key: 'rr', w: 40 },
+  { label: 'Issue', key: 'issue', w: 88 },
+  { label: 'ISIN', key: 'isin', w: 118 },
+  { label: 'TS', key: 'ts', noSort: true, w: 26 },
+  { label: 'Last', key: 'last', w: 62 },
+  { label: 'P&L', key: 'pnl', w: 74 },
+  { label: 'Next event', key: 'next', w: 96 },
+  { label: 'CY', key: 'cy', w: 44 },
+  { label: 'Amount', key: 'amount', w: 100 },
+  { label: 'Issuer', key: 'issuer', w: 96 },
+  { label: 'Freq.', key: 'freq', w: 84 },
+  { label: 'Y', key: 'y', w: 40 },
+  { label: 'Description', key: 'desc', w: 240 },
+  { label: 'Cpn p.a.', key: 'cpn', w: 74 },
+  { label: 'Eq/Cr', key: 'asset', w: 64 },
+  { label: 'Type', key: 'type', w: 120 },
+  { label: 'Mém.', key: 'mem', align: 'center', w: 48 },
+  { label: 'B. Autocall', key: 'bauto', w: 100 },
+  { label: 'B. Coupon', key: 'bcoupon', w: 96 },
+  { label: 'PDI', key: 'pdi', w: 56 },
+  { label: 'Client', key: 'client', w: 130 },
+  { label: 'Sous-jacents', key: 'sj', w: 240 },
 ]
 
 // Colonnes figées à gauche : largeurs px fixes → offsets `left` cumulés. Chaque
@@ -891,7 +893,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // en bas de la liste). Les 6 premières colonnes sont figées à gauche
         // (sticky + fond opaque), le reste défile sous elles sans transparence.
         <div className="card overflow-auto flex-1 min-h-0">
-          <table className="text-[13px] border-separate border-spacing-0 w-max min-w-full">
+          <table
+            className="portfolio-table text-[13px] border-separate border-spacing-0 table-fixed min-w-full"
+            style={{ width: COLUMNS.reduce((s, c) => s + c.w, 0) }}
+          >
+            <colgroup>
+              {COLUMNS.map((c) => (
+                <col key={c.key} style={{ width: c.w }} />
+              ))}
+            </colgroup>
             <thead className="text-slate-500">
               <tr>{COLUMNS.map(headerCell)}</tr>
             </thead>

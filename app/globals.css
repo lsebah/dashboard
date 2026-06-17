@@ -106,6 +106,16 @@ body {
   animation: lc2Pulse 1.8s ease-in-out infinite;
 }
 
+/* Portefeuille : largeurs de colonnes FIXES (table-fixed + colgroup). On clippe
+   le contenu trop large (ellipsis) pour que les colonnes ne bougent JAMAIS au
+   défilement horizontal. */
+.portfolio-table th,
+.portfolio-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Impression : ne rendre que le reporting client (#client-report) en PDF. */
 @media print {
   /* Marges propres gérées par la page imprimée (pas de cadre applicatif). */
