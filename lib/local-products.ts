@@ -45,6 +45,20 @@ export function removeLocalProduct(isin: string) {
   try {
     const arr = read().filter((p) => p.isin !== isin)
     window.localStorage.setItem(KEY, JSON.stringify(arr))
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Ajoute (ou remplace par ISIN) un produit local — utilisé par « Nouveau trade ». */
+export function addLocalProduct(p: Product) {
+  if (typeof window === 'undefined') return
+  try {
+    const arr = read().filter((x) => x.isin !== p.isin)
+    arr.push(p)
+    window.localStorage.setItem(KEY, JSON.stringify(arr))
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
   } catch {
     /* ignore */
   }

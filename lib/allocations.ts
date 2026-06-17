@@ -100,6 +100,20 @@ export function useAllocations() {
   return { map, setClients, statut, setStatut, noms, setNom }
 }
 
+/** Écrit les allocations d'un ISIN hors hook (utilisé par « Nouveau trade »). */
+export function setLocalAllocations(isin: string, allocs: ClientAlloc[]) {
+  if (typeof window === 'undefined') return
+  try {
+    const next = { ...read() }
+    if (allocs.length === 0) delete next[isin]
+    else next[isin] = allocs
+    window.localStorage.setItem(KEY, JSON.stringify(next))
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Liste triée et dédupliquée de tous les clients connus (allocations ∪ seed). */
 export function tousLesClients(map: AllocMap, seed: string[] = []): string[] {
   const set = new Set<string>(seed)
