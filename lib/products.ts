@@ -5322,8 +5322,44 @@ const msQuartz51: Product = {
   termsheetFichier: '251111_12Y_Quartz 51 BNP Decrement 4.2 pts_Trimestriel_FRIP00001UV3_MSCO.pdf',
 }
 
+// ── XS2110091449 — Citigroup Note Callable Zéro Coupon 15Y (≠ « FRN 5,35 % ») ─
+//    TS du dossier (LIR006986) : zéro coupon, remboursement 180,25 % à terme,
+//    call émetteur annuel dès 2027 (116,05 %→174,90 %). Le 5,35 % = TRI an 1.
+const citiZcCallable: Product = {
+  id: 'XS2110091449',
+  nom: 'Note Callable Zéro Coupon Citigroup 15Y',
+  isin: 'XS2110091449',
+  emetteur: 'Citigroup Inc.',
+  notationEmetteur: 'Moody’s A3 / S&P BBB+ / Fitch A',
+  assetClass: 'rates',
+  family: 'rates_structured',
+  devise: 'EUR',
+  nominal: 1_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-02-09',
+  dateEmission: '2024-02-23',
+  dateConstatationFinale: '2039-02-23',
+  dateEcheance: '2039-02-23',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [],
+  terms: {
+    kind: 'rates',
+    type: 'callable',
+    couponConditionnelPa: 0,
+    capitalGaranti: false,
+    callable: true,
+  },
+  rr: 'LS',
+  productType: 'Callable Zéro Coupon',
+  description: '15Y Note Citigroup callable zéro coupon — aucun coupon, remboursement 180,25 % à l’échéance (TRI ~5,35 % an 1), call émetteur annuel dès févr. 2027 (116,05 %→174,90 %)',
+  badges: ['Taux', 'Zéro coupon', 'Callable'],
+  termsheetFichier: 'LIR006986_XS2110091449_termsheet_Prelim_EN.pdf',
+}
+
 const detailed: Product[] = [
-  msQuartz51,
+  msQuartz51, citiZcCallable,
   barclaysEngieNexansSchneider, bbvaMittalEssilor, bnpTec10Phoenix, barclaysSanofiDecrement,
   bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,

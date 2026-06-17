@@ -689,9 +689,9 @@
   "isin": "XS2110091449",
   "last": 102.792,
   "client": "SCALA - 05722",
-  "devise": "JPY",
+  "devise": "EUR",
   "amount": 1000000,
-  "description": "Callable FRN 5,35% p.a. NC2"
+  "description": "Note Callable Zéro Coupon Citigroup 15Y"
  },
  {
   "isin": "XS2696236590",
