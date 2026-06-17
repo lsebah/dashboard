@@ -134,7 +134,16 @@ export default function FrnView() {
   const renderTable = (m: TableModel, title: string) => (
     <div className="card overflow-auto">
       <div className="px-3 pt-3 text-sm font-semibold text-cmf-navy">{title}</div>
-      <table className="mt-1.5 w-full border-collapse text-[13px]">
+      <table className="mt-1.5 w-full table-fixed border-collapse text-[13px]">
+        {/* Largeurs FIXES identiques dans les deux tableaux ⇒ les colonnes
+            d'années s'alignent verticalement d'un tableau à l'autre. */}
+        <colgroup>
+          <col style={{ width: 190 }} />
+          <col style={{ width: 96 }} />
+          {MATURITIES.map((m) => (
+            <col key={m} />
+          ))}
+        </colgroup>
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="sticky left-0 z-10 border-b border-slate-200 bg-slate-50 px-3 py-1 text-left font-medium">Émetteur</th>

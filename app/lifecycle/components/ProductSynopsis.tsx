@@ -255,7 +255,7 @@ export default function ProductSynopsis({
                       }`}
                     >
                       {typeof u.perf === 'number'
-                        ? `${u.perf >= 0 ? '+' : ''}${u.perf.toFixed(1)} %`
+                        ? `${(100 + u.perf).toFixed(1)} %`
                         : '—'}
                     </span>
                   </li>
