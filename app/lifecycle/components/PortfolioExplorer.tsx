@@ -18,6 +18,7 @@ import {
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useLocalProducts } from '@/lib/local-products'
 import ClientReport from './ClientReport'
+import NouveauTrade from './NouveauTrade'
 import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
@@ -181,6 +182,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const [view, setView] = useState<'table' | 'cards'>('table')
   const [client, setClient] = useState<string>('')
   const [showReport, setShowReport] = useState(false)
+  const [showNouveau, setShowNouveau] = useState(false)
   const [liveOnly, setLiveOnly] = useState(true)
   const [situ, setSitu] = useState<Situation | null>(null)
   const [q, setQ] = useState('')
@@ -830,6 +832,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowNouveau(true)}
+            className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-orange-600"
+            title="Saisir un nouveau trade (termsheet, montants par client, commissions)"
+          >
+            + Nouveau trade
+          </button>
           <div className="relative">
             <input
               value={q}
@@ -876,6 +885,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       {showReport && client && (
         <ClientReport client={client} rows={reportRows} perfMap={perfMap} onClose={() => setShowReport(false)} />
       )}
+
+      {showNouveau && <NouveauTrade onClose={() => setShowNouveau(false)} />}
 
       {view === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start flex-1 min-h-0 overflow-auto pr-1">
