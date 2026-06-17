@@ -181,7 +181,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   const [view, setView] = useState<'table' | 'cards'>('table')
   const [client, setClient] = useState<string>('')
   const [showReport, setShowReport] = useState(false)
-  const [liveOnly, setLiveOnly] = useState(false)
+  const [liveOnly, setLiveOnly] = useState(true)
   const [situ, setSitu] = useState<Situation | null>(null)
   const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -738,7 +738,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </div>
           <div>
             <div className="text-2xl font-bold text-cmf-navy tabular-nums">
-              {synthese.total.toLocaleString('fr-FR')}
+              {Math.round(synthese.total / 1_000_000).toLocaleString('fr-FR')} M
             </div>
             <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
           </div>
