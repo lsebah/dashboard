@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import { products } from '@/lib/products'
 import { yahooSymbol } from '@/lib/underlyings'
 import { fetchHistory, closeAt, lastClose, type Bar } from '@/lib/yahoo'
+import { kvConfigured, kvGet } from '@/lib/kv'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const runtime = 'nodejs'
 
 // Niveau COURANT du worst-of par produit (en % du strike), pour estimer la
 // probabilité d'autocall dans le calendrier. Batché : on ne télécharge qu'UNE
@@ -39,6 +41,12 @@ export async function GET(req: Request) {
     }),
   )
 
+  // Niveaux Bloomberg (PX_Last) par ticker — repli pour les sous-jacents non
+  // mappables Yahoo (indices à décrément, baskets propriétaires…).
+  const levels = kvConfigured()
+    ? (await kvGet<{ levels: Record<string, number> }>('levels:overlay'))?.levels ?? {}
+    : {}
+
   const today = new Date().toISOString().slice(0, 10)
   const courant: Record<
     string,
@@ -56,12 +64,13 @@ export async function GET(req: Request) {
       const bars = s ? hist.get(s) ?? [] : []
       const strike =
         u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close
-      return { nom: u.nom, bars, strike }
+      return { nom: u.nom, bars, strike, bbg: u.bloomberg?.trim() }
     })
 
-    // Niveaux COURANTS (% du strike) par sous-jacent — résilient.
+    // Niveaux COURANTS (% du strike) par sous-jacent — résilient. Repli sur le
+    // niveau Bloomberg (PX_Last) quand Yahoo n'a pas de clôture (décréments…).
     const sj = cols.map((c) => {
-      const last = lastClose(c.bars)
+      const last = lastClose(c.bars) ?? (c.bbg ? levels[c.bbg] : undefined)
       const pct =
         typeof last === 'number' && typeof c.strike === 'number' && c.strike > 0
           ? Math.round((last / c.strike) * 10000) / 100
