@@ -21,6 +21,29 @@ const dureeAns = (p: Product) => {
   if (Number.isNaN(a) || Number.isNaN(b)) return '—'
   return `${Math.max(1, Math.round((b - a) / (365.25 * 86_400_000)))} Ans`
 }
+const dureeYears = (p: Product): number | null => {
+  const a = new Date(p.dateConstatationInitiale || p.dateEmission).getTime()
+  const b = new Date(p.dateEcheance).getTime()
+  if (Number.isNaN(a) || Number.isNaN(b)) return null
+  return Math.max(1, Math.round((b - a) / (365.25 * 86_400_000)))
+}
+// Récap compact sous le nom : « 5Y | Phoenix | PDI 50 | B. coupon 40 | Dégressif ».
+const recapParts = (p: Product): string[] => {
+  const parts: string[] = []
+  const y = dureeYears(p)
+  if (y) parts.push(`${y}Y`)
+  if (p.productType) parts.push(p.productType)
+  const t = p.terms
+  if (t?.kind === 'autocall') {
+    if (typeof t.protectionPct === 'number') parts.push(`PDI ${t.protectionPct}`)
+    if (typeof t.barriereCouponPct === 'number') parts.push(`B. coupon ${t.barriereCouponPct}`)
+    if (t.degressif) parts.push('Dégressif')
+    if (t.effetMemoire) parts.push('Mémoire')
+  } else if (typeof p.pdiPct === 'number') {
+    parts.push(`PDI ${p.pdiPct}`)
+  }
+  return parts
+}
 const eur0 = (n?: number) => (typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '—')
 const val = (p: Product) => (typeof p.prixMarche === 'number' ? p.prixMarche.toFixed(2).replace('.', ',') : '—')
 
@@ -51,7 +74,11 @@ export default function ClientReport({
         <div id="client-report" className="bg-white p-8 shadow-lg">
           {/* En-tête CMF */}
           <div className="mb-5 flex items-stretch gap-3">
-            <img src="/cmf-logo.png" alt="CMF — Capital Management France" className="h-20 w-20 rounded" />
+            <img
+              src="/cmf-logo.png"
+              alt="CMF — Capital Management France"
+              className="aspect-square self-stretch rounded object-cover"
+            />
 
             <div className="flex flex-1 flex-col justify-center rounded bg-cmf-navy px-5 py-3 text-white">
               <div className="text-xl font-bold tracking-tight">{client}</div>
@@ -75,8 +102,6 @@ export default function ClientReport({
               {rows.map(({ p, montant }) => {
                 const pm = perfMap[p.isin] ?? {}
                 const sj = p.sousJacents.map((u) => ({ nom: u.nom, pct: pm[u.nom] as number | undefined }))
-                const lvls = sj.filter((s) => typeof s.pct === 'number').map((s) => s.pct as number)
-                const worst = lvls.length ? Math.min(...lvls) : null
                 // Coupons déjà encaissés (% du nominal) : le produit reçu est déjà
                 // augmenté des niveaux constatés, donc valeur cohérente avec la fiche.
                 const coupons = couponsEncaissesPct(p)
@@ -85,18 +110,37 @@ export default function ClientReport({
                     <td className="px-2 py-2">
                       <div className="font-bold text-slate-800">{p.isin}</div>
                       <div className="text-slate-700">{p.description ?? p.nom}</div>
-                      {sj.length > 0 && (
-                        <div className="mt-0.5 text-[10px] leading-snug text-slate-500">
-                          Sous-jacents (% du strike) :{' '}
-                          {sj.map((s, i) => (
-                            <span key={i} className={typeof s.pct === 'number' && s.pct === worst ? 'font-semibold text-slate-700' : ''}>
-                              {i > 0 ? ' · ' : ''}
-                              {s.nom} {typeof s.pct === 'number' ? `${s.pct.toFixed(0)} %` : 'n/c'}
-                            </span>
-                          ))}
-                          {typeof worst === 'number' && <span className="text-slate-400"> — worst {worst.toFixed(0)} %</span>}
-                        </div>
-                      )}
+                      {(() => {
+                        const r = recapParts(p)
+                        return r.length > 0 ? (
+                          <div className="text-[10px] font-medium text-cmf-navy">{r.join(' | ')}</div>
+                        ) : null
+                      })()}
+                      {(() => {
+                        // Sous-jacents (equity / indice) avec un niveau connu, en % du strike.
+                        // Le déterminant (worst-of) est mis en gras.
+                        const shown = sj.filter(
+                          (s): s is { nom: string; pct: number } => typeof s.pct === 'number',
+                        )
+                        if (shown.length === 0) return null
+                        const wo =
+                          p.basket === 'worst_of' && shown.length > 1
+                            ? Math.min(...shown.map((s) => s.pct))
+                            : null
+                        return (
+                          <div className="mt-0.5 text-[10px] leading-snug text-slate-500">
+                            {shown.map((s, i) => (
+                              <span
+                                key={i}
+                                className={wo !== null && s.pct === wo ? 'font-semibold text-slate-700' : ''}
+                              >
+                                {i > 0 ? ' · ' : ''}
+                                {s.nom} {s.pct.toFixed(0)} %
+                              </span>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
                     <td className="px-2 py-2 font-medium text-slate-700">{issuerCode(p.emetteur)}</td>
                     <td className="px-2 py-2 text-slate-700">{p.devise}</td>
@@ -124,10 +168,10 @@ export default function ClientReport({
             </tbody>
           </table>
 
-          <p className="mt-6 text-center text-[10px] text-slate-400">
+          <div className="mt-6 rounded bg-cmf-navy px-5 py-2 text-center text-[9px] leading-snug text-white">
             Source : Bloomberg / Yahoo. Niveaux des sous-jacents en % du strike (cours / niveau initial). Les données
             sont fournies à chaque destinataire à titre d&apos;information.
-          </p>
+          </div>
         </div>
       </div>
     </div>
