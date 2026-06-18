@@ -4341,7 +4341,7 @@ const cicBearishTec10: Product = {
     couponConditionnelPa: 6.3,
     barriereCouponTauxPct: 3.15,
     barriereRappelTauxPct: 2.35,
-    capitalGaranti: false,
+    capitalGaranti: true,
   },
   observations: buildObservations(
     [
@@ -4365,8 +4365,8 @@ const cicBearishTec10: Product = {
   rr: 'LS',
   productType: 'Phoenix Taux',
   description:
-    '12Y Phoenix Bearish TEC 10 (CIC) — coupon 6,30 % p.a. si TEC < 3,15 %, autocall si < 2,35 % ; capital NON garanti (amorti si TEC ≥ 3,15 % à l’échéance)',
-  badges: ['Taux', 'Bearish TEC10', 'Capital non garanti'],
+    '12Y Phoenix Bearish TEC 10 (CIC) — coupon 6,30 % p.a. si TEC < 3,15 %, autocall si < 2,35 % ; capital garanti à 100 % à l’échéance',
+  badges: ['Taux', 'Bearish TEC10', 'Capital garanti'],
   termsheetFichier: 'TS_2024-10-02_CIC_PhoenixTEC_FR001400SDV1.pdf',
 }
 
