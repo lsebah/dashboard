@@ -3912,50 +3912,6 @@ function metaProduct(p: {
 }
 
 const metaProducts: Product[] = [
-  // Lus sur termsheet (run 02/26) : coupon mémoire trimestriel, autocall dégressif
-  // (−1,5 %/T, observable à partir de T+1Y), barrière finale (PDI) européenne 50 %.
-  metaProduct({
-    isin: 'XS3266613416',
-    nom: 'Phoenix Mémoire Réarmement Europe',
-    emetteur: 'BNP Paribas Issuance B.V.',
-    productType: 'Phoenix',
-    dateEmission: '2026-02-26',
-    dureeAnnees: 5,
-    frequence: 'trimestriel',
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Leonardo SpA', bloomberg: 'LDO IM' },
-      { nom: 'Rheinmetall AG', bloomberg: 'RHM GY' },
-      { nom: 'Safran SA', bloomberg: 'SAF FP' },
-    ],
-    couponPaPct: 9.8,
-    barriereAutocall: '89 % dégr. −1,5 %/T',
-    barriereCoupon: '65 %',
-    pdiPct: 50,
-    description: '5Y Phoenix Mémoire Wof — Réarmement Europe (Leonardo / Rheinmetall / Safran)',
-    badges: ['Worst-of', 'Effet mémoire'],
-  }),
-  metaProduct({
-    isin: 'XS3266613333',
-    nom: 'Phoenix Mémoire Ferroviaires + Infrastructures',
-    emetteur: 'BNP Paribas Issuance B.V.',
-    productType: 'Phoenix',
-    dateEmission: '2026-02-26',
-    dureeAnnees: 5,
-    frequence: 'trimestriel',
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Alstom SA', bloomberg: 'ALO FP' },
-      { nom: 'Siemens AG', bloomberg: 'SIE GY' },
-      { nom: 'Thales SA', bloomberg: 'HO FP' },
-    ],
-    couponPaPct: 10.2,
-    barriereAutocall: '94 % dégr. −1,5 %/T',
-    barriereCoupon: '70 %',
-    pdiPct: 50,
-    description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infra (Alstom / Siemens / Thales)',
-    badges: ['Worst-of', 'Effet mémoire'],
-  }),
   metaProduct({
     isin: 'XS3251223155',
     nom: 'Callable 90 % sur CSI Smallcap 500',
@@ -3983,22 +3939,6 @@ const metaProducts: Product[] = [
     sousJacents: [{ nom: 'Sanofi (décrément 3,76)', marche: 'Euronext Paris' }],
     description: '10Y Athena Airbag — Sanofi à décrément 3,76',
     badges: ['Single', 'Airbag', 'Décrément', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2769472221',
-    nom: 'Autocall Équipondéré Veolia + Eramet + LVMH',
-    emetteur: 'Goldman Sachs International',
-    productType: 'Autocall',
-    dateEmission: '2025-06-13',
-    dureeAnnees: 5,
-    basket: 'equipondere',
-    sousJacents: [
-      { nom: 'Veolia Environnement', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris' },
-      { nom: 'Eramet SA', bloomberg: 'ERA FP', isin: 'FR0000131757', marche: 'Euronext Paris' },
-      { nom: 'LVMH', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH',
-    badges: ['Équipondéré', 'TS à fournir'],
   }),
 ]
 
@@ -4079,15 +4019,6 @@ const metaProducts2: Product[] = [
     productType: 'Athena Airbag', dateEmission: '2026-04-13', dureeAnnees: 6, basket: 'single',
     sousJacents: [{ nom: 'Banco Bilbao Vizcaya Argentaria', bloomberg: 'BBVA SM', marche: 'BME' }],
     description: '6Y Athena Airbag — BBVA', badges: ['Airbag', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2953818841', nom: 'Athena Wof Microsoft + Alphabet', emetteur: 'CIBC',
-    productType: 'Athena', dateEmission: '2025-02-19', dureeAnnees: 3, basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Microsoft Corp', bloomberg: 'MSFT US', marche: 'NASDAQ' },
-      { nom: 'Alphabet Inc (Google)', bloomberg: 'GOOGL US', marche: 'NASDAQ' },
-    ],
-    description: '3Y Athena Wof — Microsoft + Alphabet', badges: ['Worst-of', 'TS à fournir'],
   }),
   // Lu sur termsheet : produit de TAUX à capital garanti (pas un autocall actions).
   // Coupon 8 %/an années 1-3, puis 5 × (pente CMS 30Y−5Y) plancher 0 % ; call
@@ -5826,8 +5757,314 @@ const marexMoncMcVsco: Product = {
   termsheetFichier: '250715_5Y_Autocall Airbag Wof MONC + MC + VSCO_Mensuel_XS2925309275_MAREX.pdf',
 }
 
+// ── XS3266613416 — BNP Phoenix Snowball Wof "Réarmement Europe" (5Y trim.) ────
+// Réf. CE8664MDY. Strike/Trade 12/02/2026, Emission 26/02/2026, Constatation
+// finale 12/02/2031. Coupon mémoire 2,45 %/trim. (×(1+T)), barrière coupon 65 %.
+// Autocall dégressif : 89 % à T+1Y (obs 4) puis −1,5 %/trim. jusqu'à 66,5 %
+// (obs 19) ; pas d'autocall sur obs 1-3 ni sur l'observation finale (obs 20).
+// KI finale (PDI) 50 % européenne.
+const bnpRearmementObs = [
+  '2026-05-12', '2026-08-12', '2026-11-12', '2027-02-12', '2027-05-12', '2027-08-12',
+  '2027-11-12', '2028-02-14', '2028-05-12', '2028-08-14', '2028-11-13', '2029-02-12',
+  '2029-05-14', '2029-08-13', '2029-11-12', '2030-02-12', '2030-05-13', '2030-08-12',
+  '2030-11-12', '2031-02-12',
+]
+const bnpRearmementPay = [
+  '2026-05-26', '2026-08-26', '2026-11-26', '2027-02-26', '2027-05-26', '2027-08-26',
+  '2027-11-26', '2028-02-28', '2028-05-26', '2028-08-28', '2028-11-27', '2029-02-26',
+  '2029-05-28', '2029-08-27', '2029-11-26', '2030-02-26', '2030-05-27', '2030-08-26',
+  '2030-11-26', '2031-02-26',
+]
+const bnpRearmement: Product = {
+  id: 'XS3266613416',
+  nom: 'BNP Phoenix Mémoire Wof "Réarmement Europe" (5Y)',
+  isin: 'XS3266613416',
+  valor: '153203534',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-02-12',
+  dateEmission: '2026-02-26',
+  dateConstatationFinale: '2031-02-12',
+  dateEcheance: '2031-02-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Leonardo SpA', bloomberg: 'LDO IM', niveauInitial: 53.26 },
+    { nom: 'Rheinmetall AG', bloomberg: 'RHM GY', niveauInitial: 1579.50 },
+    { nom: 'Safran SA', bloomberg: 'SAF FP', niveauInitial: 307.30 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 9.8,
+    barriereCouponPct: 65,
+    barriereRappelPct: 89,
+    degressif: true,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bnpRearmementObs, bnpRearmementPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 19 ? 89 - (n - 4) * 1.5 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 19 ? 100 : undefined),
+    couponPct: 2.45,
+    niveauCouponPct: 65,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof — Réarmement Europe (Leonardo / Rheinmetall / Safran) · coupon 2,45 %/trim. (9,8 % p.a.) · mémoire · barrière coupon 65 % · autocall 89 % dégr. −1,5 %/T (dès T+1Y) · KI 50 % européenne',
+  clients: ['SAMY - 01674'],
+  badges: ['Worst-of', 'Effet mémoire', 'Dégressif'],
+  termsheetFichier: '260226_5Y_Phoenix Rearmement Europe_Trimestriel_XS3266613416_BNP.pdf',
+}
+
+// ── XS3266613333 — BNP Phoenix Snowball Wof "Ferroviaires + Infra" (5Y trim.) ─
+// Réf. CE8663MDY. Strike/Trade 12/02/2026, Emission 26/02/2026, Constatation
+// finale 12/02/2031. Coupon mémoire 2,55 %/trim. (×(1+T)), barrière coupon 70 %.
+// Autocall dégressif : 94 % à T+1Y (obs 4) puis −1,5 %/trim. jusqu'à 71,5 %
+// (obs 19) ; pas d'autocall sur obs 1-3 ni sur l'observation finale (obs 20).
+// KI finale (PDI) 50 % européenne.
+const bnpFerroviairesObs = bnpRearmementObs
+const bnpFerroviairesPay = bnpRearmementPay
+const bnpFerroviaires: Product = {
+  id: 'XS3266613333',
+  nom: 'BNP Phoenix Mémoire Wof "Ferroviaires + Infrastructures" (5Y)',
+  isin: 'XS3266613333',
+  valor: '153203533',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-02-12',
+  dateEmission: '2026-02-26',
+  dateConstatationFinale: '2031-02-12',
+  dateEcheance: '2031-02-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Alstom SA', bloomberg: 'ALO FP', niveauInitial: 29.24 },
+    { nom: 'Siemens AG-REG', bloomberg: 'SIE GY', niveauInitial: 257.00 },
+    { nom: 'Thales SA', bloomberg: 'HO FP', niveauInitial: 246.70 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 10.2,
+    barriereCouponPct: 70,
+    barriereRappelPct: 94,
+    degressif: true,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bnpFerroviairesObs, bnpFerroviairesPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 19 ? 94 - (n - 4) * 1.5 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 19 ? 100 : undefined),
+    couponPct: 2.55,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infra (Alstom / Siemens / Thales) · coupon 2,55 %/trim. (10,2 % p.a.) · mémoire · barrière coupon 70 % · autocall 94 % dégr. −1,5 %/T (dès T+1Y) · KI 50 % européenne',
+  clients: ['SAMY - 01674'],
+  badges: ['Worst-of', 'Effet mémoire', 'Dégressif'],
+  termsheetFichier: '260226_5Y_Phoenix Ferroviaires + Infra_Trimestriel_XS3266613333_BNP.pdf',
+}
+
+// ── XS2769472221 — GS "Leaders 7%" Autocall équipondéré Veolia/Eramet/LVMH ────
+// (5Y annuel). EUSIPA 1260 (BRC à coupon conditionnel — ici sans coupon, payoff
+// snowball : Early Redemption Value croissante 107 %→135 %). Initial Fixing
+// 09/07/2025, Emission 13/06/2025, Final Fixing 09/07/2030, Remb. 23/07/2030.
+// Trigger dégressif 100 %→94 %, autocall dès T+1Y (5 observations annuelles).
+// Barrière finale (PDI) 65 % européenne.
+const gsVeoliaErametLvmhObs = [
+  '2026-07-09', '2027-07-09', '2028-07-10', '2029-07-09', '2030-07-09',
+]
+const gsVeoliaErametLvmhPay = [
+  '2026-07-23', '2027-07-23', '2028-07-24', '2029-07-23', '2030-07-23',
+]
+const gsVeoliaErametLvmh: Product = {
+  id: 'XS2769472221',
+  nom: 'GS "Leaders 7%" Autocall équipondéré Veolia + Eramet + LVMH (5Y)',
+  isin: 'XS2769472221',
+  valor: '134740114',
+  emetteur: 'Goldman Sachs Finance Corp International Ltd',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: "Moody's A2 / S&P BBB+ / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-07-09',
+  dateEmission: '2025-06-13',
+  dateConstatationFinale: '2030-07-09',
+  dateEcheance: '2030-07-23',
+  frequence: 'annuel',
+  basket: 'equipondere',
+  sousJacents: [
+    { nom: 'Eramet SA', bloomberg: 'ERA FP', isin: 'FR0000131757', marche: 'Euronext Paris', niveauInitial: 47.7 },
+    { nom: 'LVMH Moët Hennessy Louis Vuitton SE', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris', niveauInitial: 487.85 },
+    { nom: 'Veolia Environnement S.A.', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris', niveauInitial: 30.61 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    degressif: true,
+    protectionPct: 65,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(gsVeoliaErametLvmhObs, gsVeoliaErametLvmhPay, {
+    niveauRappelPct: (n) => [100, 98.5, 97, 95.5, 94][n - 1],
+    montantRemboursementPct: (n) => [107, 114, 121, 128, 135][n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH (GS "Leaders 7%") · montant croissant 107 %→135 % · trigger 100 % dégr. → 94 % · KI 65 % européenne · sans coupon périodique',
+  clients: ['SPG - 05774'],
+  badges: ['Équipondéré', 'Snowball', 'Dégressif'],
+  termsheetFichier: '250613_5Y_Autocall Equipondéré Veolia + Eramet + LVMH_Annuel_XS2769472221_GS.pdf',
+}
+
+// ── FR0014013N00 — BNP Autocall équipondéré Schneider/Siemens Energy/Bouygues ─
+// (6Y semestriel). Réf. EI2565MDY. Négociation 15/10/2025, Emission 27/10/2025,
+// Constatation initiale 28/11/2025, Constatation finale 28/11/2031, Remb. final
+// 12/12/2031. Autocall semestriel à 100 % (10 obs dès T+1Y), montant croissant
+// 107 %→138,5 % (N×[103,5 % + n×3,5 %]). Remb. final : 142 % si panier ≥ 100 %,
+// 100 % si entre la barrière 60 % et 100 %, sinon perte (KI 60 % européenne).
+// Sans coupon périodique.
+const bnpSchneiderEnrBouyObs = [
+  '2026-11-30', '2027-05-28', '2027-11-29', '2028-05-29', '2028-11-28',
+  '2029-05-28', '2029-11-28', '2030-05-28', '2030-11-28', '2031-05-28',
+]
+const bnpSchneiderEnrBouyPay = [
+  '2026-12-14', '2027-06-11', '2027-12-13', '2028-06-12', '2028-12-12',
+  '2029-06-11', '2029-12-12', '2030-06-11', '2030-12-12', '2031-06-11',
+]
+const bnpSchneiderEnrBouy: Product = {
+  id: 'FR0014013N00',
+  nom: 'BNP Autocall équipondéré Schneider + Siemens Energy + Bouygues (6Y)',
+  isin: 'FR0014013N00',
+  valor: '149445133',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 650_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-11-28',
+  dateEmission: '2025-10-27',
+  dateConstatationFinale: '2031-11-28',
+  dateEcheance: '2031-12-12',
+  frequence: 'semestriel',
+  basket: 'equipondere',
+  sousJacents: [
+    { nom: 'Schneider Electric SE', bloomberg: 'SU FP', niveauInitial: 231.00 },
+    { nom: 'Bouygues SA', bloomberg: 'EN FP', niveauInitial: 43.02 },
+    { nom: 'Siemens Energy AG', bloomberg: 'ENR GY', niveauInitial: 115.30 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 142,
+  },
+  observations: buildObservations(bnpSchneiderEnrBouyObs, bnpSchneiderEnrBouyPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => 103.5 + n * 3.5,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: '6Y Autocall équipondéré — Schneider + Siemens Energy + Bouygues · autocall 100 % semestriel · montant croissant 107 %→138,5 % · remb. final 142 % si panier ≥ 100 % · KI 60 % européenne · sans coupon périodique',
+  clients: ['SPG - 05774'],
+  badges: ['Équipondéré', 'Snowball'],
+  termsheetFichier: '251027_6Y_Autocall Equipondéré Schneider + Siemens Energy + Bouygues_Semestriel_FR0014013N00_BNP.pdf',
+}
+
+// ── XS2953818841 — CIBC Athena Wof Microsoft + Alphabet (3Y trim.) ────────────
+// Réf. SN7651DB. Strike/Trade 05/02/2025, Emission 19/02/2025, Valuation
+// 07/02/2028, Maturité 21/02/2028. 12 obs trimestrielles. Coupon 3,15 % × t
+// (t = numéro de période, obs 4 à 12), barrière coupon 100 %.
+// Autocall 100 % à partir de l'obs 4 (T+1Y) ; obs 1-3 sans rappel ni coupon.
+// KI finale 70 % européenne. Sous-jacents en USD (note en EUR, FX final).
+const cibcMsftGooglObs = [
+  '2025-05-05', '2025-08-05', '2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05',
+  '2026-11-05', '2027-02-05', '2027-05-05', '2027-08-05', '2027-11-05', '2028-02-07',
+]
+const cibcMsftGooglPay = [
+  '2025-05-19', '2025-08-19', '2025-11-19', '2026-02-19', '2026-05-19', '2026-08-19',
+  '2026-11-19', '2027-02-19', '2027-05-19', '2027-08-19', '2027-11-19', '2028-02-21',
+]
+const cibcMsftGoogl: Product = {
+  id: 'XS2953818841',
+  nom: 'CIBC Athena Wof Microsoft + Alphabet (3Y)',
+  isin: 'XS2953818841',
+  valor: '117039154',
+  emetteur: 'Canadian Imperial Bank of Commerce',
+  notationEmetteur: "Moody's Aa2 / S&P A+ / Fitch AA",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-02-05',
+  dateEmission: '2025-02-19',
+  dateConstatationFinale: '2028-02-07',
+  dateEcheance: '2028-02-21',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Microsoft Corp', bloomberg: 'MSFT UW', devise: 'USD', niveauInitial: 413.2900 },
+    { nom: 'Alphabet Inc', bloomberg: 'GOOGL UW', devise: 'USD', niveauInitial: 191.3300 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereCouponPct: 100,
+    barriereRappelPct: 100,
+    protectionPct: 70,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(cibcMsftGooglObs, cibcMsftGooglPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 11 ? 100 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 11 ? 100 : undefined),
+    couponPct: (n) => (n >= 4 ? 3.15 * n : undefined),
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '3Y Athena Wof — Microsoft + Alphabet (CIBC) · coupon 3,15 % × t (dès T+1Y) · barrière coupon/autocall 100 % · autocall dès T+1Y · KI 70 % européenne',
+  badges: ['Worst-of', 'Athena'],
+  termsheetFichier: '250219_3Y_Athena Wof MSFT + GOOGL_Trimestriel_XS2953818841_CIBC.pdf',
+}
+
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
+  bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
   barclaysEngieNexansSchneider, bbvaMittalEssilor, bnpTec10Phoenix, barclaysSanofiDecrement,
   bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,
