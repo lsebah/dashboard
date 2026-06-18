@@ -40,6 +40,20 @@ function ticker(s: string): string {
   return s.split(' ')[0]
 }
 
+// Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
+function formatHorodatage(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Paris',
+  })
+}
+
 // Produit "en cours" : ni rappelé, ni vendu, ni arrivé à maturité.
 function estEnCours(p: Product): boolean {
   return p.statut !== 'rappele' && p.statut !== 'vendu' && p.statut !== 'echu'
@@ -304,12 +318,16 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   // Surcouche de prix (Vercel KV, alimentée depuis Bloomberg via /api/prices/ingest)
   // appliquée par-dessus le prix du feed : prix le plus récent gagne.
   const [priceMap, setPriceMap] = useState<Record<string, number>>({})
+  // Horodatage du dernier update des prix (asof de la surcouche KV Bloomberg).
+  const [priceAsof, setPriceAsof] = useState<string | null>(null)
   useEffect(() => {
     let annule = false
     fetch('/api/prices')
       .then((r) => r.json())
       .then((d) => {
-        if (!annule && d?.prices && typeof d.prices === 'object') setPriceMap(d.prices)
+        if (annule) return
+        if (d?.prices && typeof d.prices === 'object') setPriceMap(d.prices)
+        if (typeof d?.asof === 'string') setPriceAsof(d.asof)
       })
       .catch(() => {})
     return () => {
@@ -743,6 +761,14 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               {Math.round(synthese.total / 1_000_000).toLocaleString('fr-FR')} M
             </div>
             <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-cmf-navy tabular-nums">
+              {priceAsof ? formatHorodatage(priceAsof) : '—'}
+            </div>
+            <div className="text-xs text-slate-500">
+              Prix mis à jour{priceAsof ? ' (Bloomberg)' : ' — feed'}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(SITUATION_LABEL) as Situation[]).map((s) => {
