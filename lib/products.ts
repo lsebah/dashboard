@@ -2662,7 +2662,7 @@ const sgPhoenixCms10: Product = {
   description: '12Y Phoenix Bearish EUR CMS 10Y — coupon 3,75%/sem. si ≤ 3,20%, autocall si ≤ 2,30%, capital garanti',
   badges: ['Taux', 'Bearish CMS10', 'Capital garanti', 'Effet mémoire'],
   termsheetFichier:
-    '240630_12Y_Phoenix Memory sur Taux en Juin 2024 -  2.30%3.20% (ADEQUITY)_Semestriel_FR001400OZR1_.pdf',
+    '240404_12Y_Phoenix Bearish CMS10 7.5%_Semestriel_FR001400OZR1_SOCGEN.pdf',
 }
 
 // ── Helper : produit Phoenix Bearish sur taux (capital garanti) ──────────────
@@ -5052,7 +5052,7 @@ const sipChabanais: Product = {
   productType: 'Dette Privée',
   description: 'Dette privée senior (prêt Holding du 6 rue Chabanais) — coupon 10,25 %/an semestriel, capital non protégé, échéance 12/06/2025',
   badges: ['Dette privée', 'Coupon fixe'],
-  termsheetFichier: '231201_2Y_Dette Privée - SIP Chabanais_Semestriel_CH1271361060_.pdf',
+  termsheetFichier: '231201_2Y_Dette Privée - SIP Chabanais_Semestriel_CH1271361060_SIP.pdf',
 }
 
 // ── FRIP000014P8 — Morgan Stanley Autocall Bonus Luxe (MerQube décrément) ─────
@@ -5228,7 +5228,7 @@ const citiZcCallable: Product = {
   productType: 'Callable Zéro Coupon',
   description: '15Y Note Citigroup callable zéro coupon — aucun coupon, remboursement 180,25 % à l’échéance (TRI ~5,35 % an 1), call émetteur annuel dès févr. 2027 (116,05 %→174,90 %)',
   badges: ['Taux', 'Zéro coupon', 'Callable'],
-  termsheetFichier: 'LIR006986_XS2110091449_termsheet_Prelim_EN.pdf',
+  termsheetFichier: '240223_15Y_Note Callable Zéro Coupon Citigroup_In Fine_XS2110091449_CITI.pdf',
 }
 
 // ══════ Termsheets décodés — Batches B & C (2026-06) ══════
