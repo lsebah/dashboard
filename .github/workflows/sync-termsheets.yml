@@ -7,7 +7,7 @@ name: Sync termsheets (OneDrive)
 # Graph Files.ReadWrite.All consentie (voir scripts/sync-termsheets.mjs).
 on:
   schedule:
-    - cron: '0 6 * * 1-5' # 1× par jour ouvré (06:00 UTC ≈ 08:00 Paris, lun.→ven.)
+    - cron: '0 16 * * 1-5' # 1× par jour ouvré à 18:00 Paris (16:00 UTC en été), lun.→ven.
   workflow_dispatch:
     inputs:
       rename:
