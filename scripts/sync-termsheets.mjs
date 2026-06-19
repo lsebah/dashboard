@@ -92,6 +92,12 @@ async function rename(tok, id, name) {
 }
 
 async function main() {
+  // Secrets Graph absents (repo pas encore configuré) : on SKIP proprement
+  // (exit 0) au lieu de planter → pas d'email « Run failed » à chaque cron.
+  if (!GRAPH_CLIENT_ID || !GRAPH_CLIENT_SECRET || !GRAPH_TENANT_ID) {
+    console.log('⏭️  Microsoft Graph non configuré (secrets GRAPH_* absents) — synchro ignorée.')
+    return
+  }
   const tok = await token()
   let files = await listFolder(tok)
   console.log(`Dossier Termsheets : ${files.length} fichiers.`)

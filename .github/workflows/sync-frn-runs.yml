@@ -1,0 +1,44 @@
+name: Sync FRN runs (emails → grille FRN)
+
+# Une fois par jour ouvré : lit les mails de run FRN (Fixed Rate Note) classés
+# dans le sous-dossier Outlook « Exchange FRN », parse les prix et met à jour
+# data/frn-quotes.json (run le plus récent par couple émetteur/devise/type/maturité).
+# Ouvre une PR si la grille a changé. Nécessite les secrets Azure AD + la
+# permission Graph « Mail.Read » (voir scripts/sync-frn-runs.mjs).
+on:
+  schedule:
+    - cron: '0 6 * * 1-5' # 1× par jour ouvré (06:00 UTC ≈ 08:00 Paris, lun.→ven.)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save xlsx
+      - name: Mettre à jour la grille FRN depuis les derniers runs (email)
+        env:
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
+          GRAPH_USER: ${{ secrets.GRAPH_USER }}
+          FRN_MAIL_FOLDER: ${{ vars.FRN_MAIL_FOLDER }}
+          FRN_MAIL_FOLDER_ID: ${{ vars.FRN_MAIL_FOLDER_ID }}
+          FRN_MAIL_QUERY: ${{ vars.FRN_MAIL_QUERY }}
+          FRN_MAIL_SENDER: ${{ secrets.FRN_MAIL_SENDER }}
+        run: node scripts/sync-frn-runs.mjs
+      - name: Ouvrir une PR si la grille FRN a changé
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: sync grille FRN depuis les runs email'
+          title: 'Sync FRN runs (emails → grille FRN)'
+          body: 'Mise à jour automatique de data/frn-quotes.json depuis les mails de run FRN (dossier « Exchange FRN »).'
+          branch: auto/frn-runs-sync
+          add-paths: data/frn-quotes.json
