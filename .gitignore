@@ -9,6 +9,9 @@ next-env.d.ts
 # Données sensibles (allocations clients, jamais versionnées)
 *.local.json
 
+# Documents de travail (audits portefeuille, exports) — non versionnés
+audit_*.txt
+
 # Python (scripts Bloomberg)
 __pycache__/
 *.pyc
