@@ -84,6 +84,12 @@ function matchTicker(name, idx) {
 }
 
 async function main() {
+  // Secrets Graph absents (repo pas encore configuré) : skip propre (exit 0)
+  // au lieu de planter → plus d'email « Run failed » à chaque exécution.
+  if (!process.env.GRAPH_CLIENT_ID || !process.env.GRAPH_CLIENT_SECRET || !process.env.GRAPH_TENANT_ID) {
+    console.log('⏭️  Microsoft Graph non configuré (secrets GRAPH_* absents) — synchro ignorée.')
+    return
+  }
   const tok = await token()
   const idx = JSON.parse(readFileSync(INDEX, 'utf8'))
   mkdirSync(DIR, { recursive: true })

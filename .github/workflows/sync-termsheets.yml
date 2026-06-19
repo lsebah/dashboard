@@ -6,7 +6,7 @@ name: Sync termsheets (OneDrive)
 # a changé. Nécessite les secrets Azure AD (voir scripts/sync-termsheets.mjs).
 on:
   schedule:
-    - cron: '0 */2 * * *' # toutes les 2 heures
+    - cron: '0 16 * * 1-5' # 1× par jour ouvré à 18:00 Paris (16:00 UTC en été), lun.→ven.
   workflow_dispatch:
     inputs:
       rename:
