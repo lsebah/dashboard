@@ -276,6 +276,11 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
   const t = product.terms
   const memoire =
     (t?.kind === 'autocall' && t.effetMemoire) || (t?.kind === 'rates' && !!t.effetMemoire)
+  // Produit INVERSE (bearish) : le coupon tombe quand le sous-jacent est SOUS la
+  // barrière (la hausse est défavorable) ⇒ condition en miroir du cas standard.
+  const inverse =
+    (t?.kind === 'autocall' && t.sens === 'inverse') ||
+    (t?.kind === 'rates' && t.sens === 'bearish')
   const today = now.toISOString().slice(0, 10)
   let mem = 0
   let cumul = 0
@@ -288,13 +293,15 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     const niveau = o.niveauConstatePct
     // Condition du coupon : le REGISTRE (write-once) fait foi pour les dates déjà
     // constatées ; sinon on la dérive du niveau worst-of constaté vs la barrière
-    // (actions) ; sinon « à constater » tant qu'on n'a pas l'info.
+    // (actions ; inversée pour un produit bearish) ; sinon « à constater ».
     const enregistre = couponLedger(product.isin, o.dateObservation)
     const conditionRemplie: boolean | undefined =
       enregistre !== undefined
         ? enregistre === 'paye'
         : typeof niveau === 'number' && typeof barriere === 'number'
-          ? niveau >= barriere
+          ? inverse
+            ? niveau <= barriere
+            : niveau >= barriere
           : undefined
     let statut: CouponStatut
     if (!past) {
@@ -394,13 +401,23 @@ export function rappelConstate(
   now: Date = new Date(),
 ): { n: number; date: string; niveauPct: number; barrierePct: number } | undefined {
   const today = now.toISOString().slice(0, 10)
+  // Inverse (bearish) : l'autocall se déclenche quand le sous-jacent passe SOUS la
+  // barrière de rappel (≤), et non au-dessus (≥) comme un autocall standard.
+  const t = product.terms
+  const inverse =
+    (t?.kind === 'autocall' && t.sens === 'inverse') ||
+    (t?.kind === 'rates' && t.sens === 'bearish')
   for (const o of product.observations ?? []) {
     if (o.autocallActif === false) continue // période non-call (lock-out)
     if (o.dateObservation > today) continue // observation future
     const barriere = o.niveauRappelPct
     const niveau = o.niveauConstatePct
-    if (typeof barriere === 'number' && typeof niveau === 'number' && niveau >= barriere)
-      return { n: o.n, date: o.dateObservation, niveauPct: niveau, barrierePct: barriere }
+    const declenche =
+      typeof barriere === 'number' &&
+      typeof niveau === 'number' &&
+      (inverse ? niveau <= barriere : niveau >= barriere)
+    if (declenche)
+      return { n: o.n, date: o.dateObservation, niveauPct: niveau!, barrierePct: barriere! }
   }
   return undefined
 }
