@@ -1,17 +1,18 @@
 name: Sync termsheets (OneDrive)
 
-# Monitore le dossier OneDrive « Termsheets » toutes les 2 h (et à la demande).
-# Met à jour lib/termsheets-index.json (→ nouvelles TS visibles dans l'app),
-# renomme optionnellement les fichiers non conformes, et ouvre une PR si l'index
-# a changé. Nécessite les secrets Azure AD (voir scripts/sync-termsheets.mjs).
+# Monitore le dossier OneDrive « Termsheets » une fois par jour ouvré (et à la
+# demande). Renomme AUTOMATIQUEMENT les fichiers non conformes à la nomenclature,
+# met à jour lib/termsheets-index.json (→ nouvelles TS visibles dans l'app), et
+# ouvre une PR si l'index a changé. Nécessite les secrets Azure AD + la permission
+# Graph Files.ReadWrite.All consentie (voir scripts/sync-termsheets.mjs).
 on:
   schedule:
-    - cron: '0 */2 * * *' # toutes les 2 heures
+    - cron: '0 6 * * 1-5' # 1× par jour ouvré (06:00 UTC ≈ 08:00 Paris, lun.→ven.)
   workflow_dispatch:
     inputs:
       rename:
         description: 'Renommer les fichiers non conformes (true/false)'
-        default: 'false'
+        default: 'true'
 
 permissions:
   contents: write
@@ -34,7 +35,7 @@ jobs:
           GRAPH_USER: ${{ secrets.GRAPH_USER }}
           GRAPH_FOLDER_PATH: ${{ secrets.GRAPH_FOLDER_PATH }}
           APP_URL: ${{ secrets.APP_URL }}
-          SYNC_RENAME: ${{ github.event.inputs.rename || 'false' }}
+          SYNC_RENAME: ${{ github.event.inputs.rename || 'true' }}
         run: node scripts/sync-termsheets.mjs
       - name: Ouvrir une PR si l'index a changé
         uses: peter-evans/create-pull-request@v6
