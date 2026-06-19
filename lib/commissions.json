@@ -566,7 +566,7 @@
    "comTotal": 9500,
    "facture": "2025-277",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 9500
   },
@@ -794,7 +794,7 @@
    "comTotal": 15000,
    "facture": "2025-128",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 4500
   },
@@ -851,7 +851,7 @@
    "comTotal": 10000,
    "facture": "2025-067",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 10000
   },
@@ -927,7 +927,7 @@
    "comTotal": 15000,
    "facture": "2025-015",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 15000
   },
@@ -946,7 +946,7 @@
    "comTotal": 15900,
    "facture": "2025-003",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 15900
   },
@@ -984,7 +984,7 @@
    "comTotal": 15750,
    "facture": "2024-327",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
    "net": 13634
   },
@@ -1003,7 +1003,7 @@
    "comTotal": 47922,
    "facture": "2024-301",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
    "net": 12642
   },
@@ -1060,7 +1060,7 @@
    "comTotal": 4000,
    "facture": "2024-202",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
    "net": 3462.6
   },
@@ -1269,7 +1269,7 @@
    "comTotal": 25625,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 9225
   },
@@ -1288,7 +1288,7 @@
    "comTotal": 18125,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1307,7 +1307,7 @@
    "comTotal": 26000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1326,7 +1326,7 @@
    "comTotal": 42000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1345,7 +1345,7 @@
    "comTotal": 15000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1364,7 +1364,7 @@
    "comTotal": 10000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1383,7 +1383,7 @@
    "comTotal": 9000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1402,7 +1402,7 @@
    "comTotal": 4900,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 900
   },
@@ -1421,7 +1421,7 @@
    "comTotal": 50000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1440,7 +1440,7 @@
    "comTotal": 20000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1459,7 +1459,7 @@
    "comTotal": 25000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1478,7 +1478,7 @@
    "comTotal": 25000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1497,7 +1497,7 @@
    "comTotal": 19527.5,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1516,7 +1516,7 @@
    "comTotal": 28000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1535,7 +1535,7 @@
    "comTotal": 18000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1554,7 +1554,7 @@
    "comTotal": 90000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1573,7 +1573,7 @@
    "comTotal": 4062.5,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
    "net": 2031.25
   },
@@ -1592,7 +1592,7 @@
    "comTotal": 43750,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1611,7 +1611,7 @@
    "comTotal": 46550,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1630,7 +1630,7 @@
    "comTotal": 11880,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
    "net": 5940
   },
@@ -1649,7 +1649,7 @@
    "comTotal": 12780,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
    "net": 6390
   },
@@ -1668,7 +1668,7 @@
    "comTotal": 77500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1687,7 +1687,7 @@
    "comTotal": 45000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1706,7 +1706,7 @@
    "comTotal": 45100,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1725,7 +1725,7 @@
    "comTotal": 11250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1744,7 +1744,7 @@
    "comTotal": 4000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1763,7 +1763,7 @@
    "comTotal": 14490,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1782,7 +1782,7 @@
    "comTotal": 15750,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1801,7 +1801,7 @@
    "comTotal": 19250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1820,7 +1820,7 @@
    "comTotal": 14040,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0.5,
    "net": 7020
   },
@@ -1839,7 +1839,7 @@
    "comTotal": 5000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1858,7 +1858,7 @@
    "comTotal": 10500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1877,7 +1877,7 @@
    "comTotal": 92500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1896,7 +1896,7 @@
    "comTotal": 6000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0.5,
    "net": 3000
   },
@@ -1915,7 +1915,7 @@
    "comTotal": 12000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1934,7 +1934,7 @@
    "comTotal": 16250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -1953,7 +1953,7 @@
    "comTotal": 10800,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -1972,7 +1972,7 @@
    "comTotal": 54000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -2010,7 +2010,7 @@
    "comTotal": 10567,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 10567
   },
@@ -2029,14 +2029,14 @@
    "comTotal": 21400,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 21400
   },
   {
    "isin": "XS3401965978",
    "issue": "2026-06-26",
-   "client": "ABACUS",
+   "client": "ABACUS - 05268",
    "emetteur": "BARCLAYS",
    "description": "Phoenix BNP Paribas, Crédit Agricole, Société Générale",
    "devise": "EUR",
@@ -2046,9 +2046,9 @@
    "retroPct": 0.04,
    "comClient": 8000,
    "comTotal": 11300,
-   "facture": null,
-   "sent": null,
-   "credited": null,
+   "facture": "2026-001",
+   "sent": "2026-06-26",
+   "credited": "2026-06-26",
    "split": 1,
    "net": 3300
   }

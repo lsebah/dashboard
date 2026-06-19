@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react'
 import type { Frequency, Product } from '@/lib/types'
 import { canonicalTermsheetName, issuerCode } from '@/lib/termsheets'
 import { addLocalProduct } from '@/lib/local-products'
-import { setLocalAllocations } from '@/lib/allocations'
+import { setLocalAllocations, useAllocations, tousLesClients } from '@/lib/allocations'
 import { addLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
+import { commissions } from '@/lib/commissions'
 
 // Modale « Nouveau trade » : saisie d'un trade (TS à renommer + déposer dans le
 // dossier Termsheets), répartition multi-clients, commissions (UF / Rétro)
@@ -46,6 +47,17 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
   const [gabrielle, setGabrielle] = useState('office@cmf.finance')
   const [copied, setCopied] = useState('')
   const [saved, setSaved] = useState('') // message de confirmation après enregistrement
+
+  // Liste des clients connus (carnet) pour la saisie en liste déroulante :
+  // allocations du portefeuille ∪ clients des commissions ∪ carnet d'adresses.
+  // L'input reste libre → taper un nom absent « crée » un nouveau client.
+  const { map: allocMap } = useAllocations()
+  const clientOptions = useMemo(() => {
+    const set = new Set<string>(tousLesClients(allocMap))
+    for (const l of commissions.lignes) if (l.client) set.add(l.client)
+    for (const k of Object.keys(commissions.mailing ?? {})) set.add(k)
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'))
+  }, [allocMap])
 
   const setA = (i: number, k: keyof Alloc, v: string) =>
     setAllocs((a) => a.map((row, j) => (j === i ? { ...row, [k]: v } : row)))
@@ -362,7 +374,14 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                 {allocs.map((a, i) => (
                   <tr key={i}>
                     <td className={cell}>
-                      <input value={a.client} onChange={(e) => setA(i, 'client', e.target.value)} className="w-full bg-transparent outline-none" placeholder="NOM - 00000" />
+                      <input
+                        value={a.client}
+                        onChange={(e) => setA(i, 'client', e.target.value)}
+                        list="nt-clients"
+                        className="w-full bg-transparent outline-none"
+                        placeholder="Choisir ou créer un client…"
+                        title="Choisis un client existant, ou tape un nouveau nom pour le créer"
+                      />
                     </td>
                     <td className={cell}>
                       <input value={a.montant} onChange={(e) => setA(i, 'montant', e.target.value)} inputMode="numeric" className="w-full bg-transparent text-right tabular-nums outline-none" placeholder="200000" />
@@ -395,6 +414,13 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                 </tr>
               </tfoot>
             </table>
+            {/* Liste des clients connus (partagée par toutes les lignes). L'input
+                reste libre : un nom absent de la liste crée un nouveau client. */}
+            <datalist id="nt-clients">
+              {clientOptions.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
             <p className="mt-1 text-[10px] text-slate-400">
               Com. totale = Montant × UF · Rétro client = Montant × Rétro · Com. CMF (net) = UF − Rétro.
             </p>
