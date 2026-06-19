@@ -1,7 +1,7 @@
 'use client'
 // ─────────────────────────────────────────────────────────────────────────
 //  Commissions créées localement (depuis l'import d'une TS / « Nouveau
-//  produit »). localStorage, NON versionnées. Fusionnées dans l'onglet
+//  trade »). localStorage, NON versionnées. Fusionnées dans l'onglet
 //  Commissions pour un suivi instantané + historique de facturation.
 // ─────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react'
@@ -48,6 +48,16 @@ function write(list: LocalCommission[]) {
     /* ignore */
   }
 }
+// Notifie les AUTRES composants montés (même onglet) — l'événement natif
+// « storage » ne se déclenche que dans les autres onglets. À n'appeler que
+// hors d'un updater React (le hook met déjà son state à jour lui-même).
+function notify() {
+  try {
+    window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+  } catch {
+    /* ignore */
+  }
+}
 
 const sameRow = (a: LocalCommission, isin: string, client: string | null) =>
   a.isin === isin && a.client === client
@@ -79,4 +89,34 @@ export function useLocalCommissions() {
     })
   }
   return { list, upsert, remove }
+}
+
+// ── Helpers hors hook (utilisés par « Nouveau trade ») ─────────────────────
+
+/** Ajoute (ou remplace par ISIN + client) une ou plusieurs commissions locales. */
+export function addLocalCommissions(lignes: LocalCommission[]) {
+  if (typeof window === 'undefined' || lignes.length === 0) return
+  try {
+    const arr = read()
+    for (const c of lignes) {
+      const i = arr.findIndex((x) => sameRow(x, c.isin, c.client))
+      if (i >= 0) arr[i] = c
+      else arr.push(c)
+    }
+    write(arr)
+    notify()
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Supprime une commission locale (ISIN + client). */
+export function removeLocalCommission(isin: string, client: string | null) {
+  if (typeof window === 'undefined') return
+  try {
+    write(read().filter((x) => !sameRow(x, isin, client)))
+    notify()
+  } catch {
+    /* ignore */
+  }
 }
