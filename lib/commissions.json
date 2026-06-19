@@ -1,5 +1,5 @@
 {
- "majLe": "2026-06-15",
+ "majLe": "2026-06-19",
  "commissionsNettesParAnnee": {
   "2023": 27995,
   "2024": 203212.47,
@@ -2032,6 +2032,25 @@
    "credited": null,
    "split": 1,
    "net": 21400
+  },
+  {
+   "isin": "XS3401965978",
+   "issue": "2026-06-26",
+   "client": "ABACUS",
+   "emetteur": "BARCLAYS",
+   "description": "Phoenix BNP Paribas, Crédit Agricole, Société Générale",
+   "devise": "EUR",
+   "nominal": 200000,
+   "ufPct": 0.0565,
+   "comCmf": 3300,
+   "retroPct": 0.04,
+   "comClient": 8000,
+   "comTotal": 11300,
+   "facture": null,
+   "sent": null,
+   "credited": null,
+   "split": 1,
+   "net": 3300
   }
  ],
  "mailing": {
