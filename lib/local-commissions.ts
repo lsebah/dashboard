@@ -1,11 +1,14 @@
 'use client'
 // ─────────────────────────────────────────────────────────────────────────
 //  Commissions créées localement (depuis l'import d'une TS / « Nouveau
-//  trade »). localStorage, NON versionnées. Fusionnées dans l'onglet
-//  Commissions pour un suivi instantané + historique de facturation.
+//  trade »). Persistées côté serveur (KV) quand il est configuré → mémorisées
+//  sur tous les appareils ; sinon dans le navigateur uniquement. localStorage
+//  sert de cache instantané. Fusionnées dans l'onglet Commissions pour un suivi
+//  instantané + historique de facturation.
 // ─────────────────────────────────────────────────────────────────────────
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CommissionLigne } from './commissions'
+import { loadSlot, saveSlot } from './commissions-sync'
 
 export type FactureStatut = 'en_attente' | 'envoyee' | 'confirmee' | 'payee'
 
@@ -49,8 +52,7 @@ function write(list: LocalCommission[]) {
   }
 }
 // Notifie les AUTRES composants montés (même onglet) — l'événement natif
-// « storage » ne se déclenche que dans les autres onglets. À n'appeler que
-// hors d'un updater React (le hook met déjà son state à jour lui-même).
+// « storage » ne se déclenche que dans les autres onglets.
 function notify() {
   try {
     window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
@@ -64,8 +66,17 @@ const sameRow = (a: LocalCommission, isin: string, client: string | null) =>
 
 export function useLocalCommissions() {
   const [list, setList] = useState<LocalCommission[]>([])
+  const hydrated = useRef(false)
+
+  // Chargement : cache navigateur (instantané) puis serveur (fait foi s'il est
+  // configuré). Après hydratation, chaque changement de `list` est persisté.
   useEffect(() => {
-    setList(read())
+    const local = read()
+    if (local.length) setList(local)
+    loadSlot<LocalCommission[]>('local').then(({ configured, value }) => {
+      if (configured && Array.isArray(value) && value.length) setList(value)
+      hydrated.current = true
+    })
     const on = (e: StorageEvent) => {
       if (e.key === KEY) setList(read())
     }
@@ -73,22 +84,32 @@ export function useLocalCommissions() {
     return () => window.removeEventListener('storage', on)
   }, [])
 
+  // Persiste tout changement (cache navigateur + serveur), une fois hydraté.
+  useEffect(() => {
+    if (!hydrated.current) return
+    write(list)
+    void saveSlot('local', list)
+  }, [list])
+
+  // Méthodes « pures » (updater fonctionnel) → robustes aux appels successifs.
   const upsert = (c: LocalCommission) => {
     setList((prev) => {
       const i = prev.findIndex((x) => sameRow(x, c.isin, c.client))
-      const next = i >= 0 ? prev.map((x, j) => (j === i ? c : x)) : [...prev, c]
-      write(next)
-      return next
+      return i >= 0 ? prev.map((x, j) => (j === i ? c : x)) : [...prev, c]
     })
   }
   const remove = (isin: string, client: string | null) => {
+    setList((prev) => prev.filter((x) => !sameRow(x, isin, client)))
+  }
+  // Remplace une ligne (gère le renommage ISIN/client en un seul passage).
+  const replace = (oldIsin: string, oldClient: string | null, next: LocalCommission) => {
     setList((prev) => {
-      const next = prev.filter((x) => !sameRow(x, isin, client))
-      write(next)
-      return next
+      const cleaned = prev.filter((x) => !sameRow(x, oldIsin, oldClient))
+      const i = cleaned.findIndex((x) => sameRow(x, next.isin, next.client))
+      return i >= 0 ? cleaned.map((x, j) => (j === i ? next : x)) : [...cleaned, next]
     })
   }
-  return { list, upsert, remove }
+  return { list, upsert, remove, replace }
 }
 
 // ── Helpers hors hook (utilisés par « Nouveau trade ») ─────────────────────
@@ -105,6 +126,7 @@ export function addLocalCommissions(lignes: LocalCommission[]) {
     }
     write(arr)
     notify()
+    void saveSlot('local', arr)
   } catch {
     /* ignore */
   }
@@ -114,8 +136,10 @@ export function addLocalCommissions(lignes: LocalCommission[]) {
 export function removeLocalCommission(isin: string, client: string | null) {
   if (typeof window === 'undefined') return
   try {
-    write(read().filter((x) => !sameRow(x, isin, client)))
+    const arr = read().filter((x) => !sameRow(x, isin, client))
+    write(arr)
     notify()
+    void saveSlot('local', arr)
   } catch {
     /* ignore */
   }

@@ -47,11 +47,11 @@ const rowKey = (l: CommissionLigne) => `${l.isin}|${l.client ?? ''}|${l.issue ??
 type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
 export default function CommissionsView({ data }: { data: CommissionsData }) {
-  const { ov, patch, reset } = useCommissionsStore()
+  const { ov, patch, reset, serverSync } = useCommissionsStore()
   // Commissions créées localement (depuis « Nouveau trade ») → fusionnées.
   // Celles-ci sont entièrement éditables / supprimables (elles t'appartiennent),
   // contrairement aux lignes du classeur (officielles, surcharges limitées).
-  const { list: localCommissions, upsert, remove } = useLocalCommissions()
+  const { list: localCommissions, upsert, remove, replace } = useLocalCommissions()
   const lignesAll = useMemo(() => [...data.lignes, ...localCommissions], [data, localCommissions])
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
@@ -235,7 +235,19 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     <div className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between">
         <h1 className="text-lg font-semibold text-cmf-navy">Commissions</h1>
-        <span className="text-xs text-slate-400">classeur Lifecycle · MAJ {dateFr(data.majLe)}</span>
+        <span className="flex items-center gap-2 text-xs text-slate-400">
+          {serverSync === true && (
+            <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-600" title="Tes modifs (Payé, facture, UF/Rétro, trades) sont mémorisées côté serveur — sur tous tes appareils.">
+              ✓ Sauvegarde serveur
+            </span>
+          )}
+          {serverSync === false && (
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-500" title="Aucun store KV connecté : tes modifs ne sont gardées que dans CE navigateur. Connecte un store KV dans Vercel pour la synchro multi-appareils.">
+              navigateur seul
+            </span>
+          )}
+          <span>classeur Lifecycle · MAJ {dateFr(data.majLe)}</span>
+        </span>
       </div>
 
       {/* Cartes récap par année (chiffres officiels du classeur) */}
@@ -490,10 +502,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           ligne={editLocal}
           onClose={() => setEditLocal(null)}
           onSave={(next) => {
-            // Renommage (ISIN/client modifié) → on retire l'ancienne clé.
-            if (next.isin !== editLocal.isin || next.client !== editLocal.client)
-              remove(editLocal.isin, editLocal.client)
-            upsert(next)
+            // `replace` gère le renommage (ISIN/client modifié) en un seul passage.
+            replace(editLocal.isin, editLocal.client, next)
             setEditLocal(null)
           }}
           onDelete={() => {
