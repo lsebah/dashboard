@@ -17,6 +17,7 @@ import {
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useLocalProducts } from '@/lib/local-products'
+import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
 import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
 import tsPdfs from '@/lib/ts-pdfs.json'
@@ -363,51 +364,16 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }
   }, [products])
 
-  const augment = (p: Product): Product => {
-    const pm = perfMap[p.isin]
-    const nv = niveauxMap[p.isin]
-    const px = priceMap[p.isin]
-    if (!pm && !nv && typeof px !== 'number') return p
-    const prixMarche = typeof px === 'number' ? px : p.prixMarche
-    const sousJacents = pm
-      ? p.sousJacents.map((u) =>
-          typeof pm[u.nom] === 'number'
-            ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
-            : u,
-        )
-      : p.sousJacents
-    // Niveau worst-of constaté aux observations passées → suivi des coupons (P&L
-    // coupons inclus). Même source (Yahoo) que la fiche, donc valeurs cohérentes.
-    const observations =
-      nv && p.observations
-        ? p.observations.map((o) =>
-            typeof nv[o.dateObservation] === 'number'
-              ? { ...o, niveauConstatePct: nv[o.dateObservation] }
-              : o,
-          )
-        : p.observations
-    return { ...p, prixMarche, sousJacents, observations }
-  }
+  // Niveaux courants + surcouche prix + niveaux constatés (cf. lib/client-report).
+  const augment = (p: Product): Product =>
+    augmentProduct(p, { perfMap, niveauxMap, priceMap })
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap, priceMap])
 
   // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
   // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
   const reportRows = useMemo(
-    () =>
-      client
-        ? productsO
-            .filter((p) => allocsOf(p).some((a) => a.client === client))
-            .filter(
-              (p) =>
-                (typeof p.prixMarche === 'number' || typeof priceMap[p.isin] === 'number') &&
-                p.statut !== 'rappele' &&
-                p.statut !== 'vendu' &&
-                p.statut !== 'echu',
-            )
-            .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
-        : [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => clientReportRows(productsO, client, { perfMap, niveauxMap, priceMap }, allocsOf),
     [client, productsO, allocsOf, perfMap, niveauxMap, priceMap],
   )
 

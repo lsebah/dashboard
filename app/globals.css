@@ -133,8 +133,13 @@ body {
   body * {
     visibility: hidden !important;
   }
+  /* #client-report : aperçu modal + export mono-client (/print?client=…).
+     .report-sheet : export « tous les clients » (/print) où l'id ne peut être
+     unique → on révèle chaque feuille par sa classe, enchaînées par saut de page. */
   #client-report,
-  #client-report * {
+  #client-report *,
+  .report-sheet,
+  .report-sheet * {
     visibility: visible !important;
     /* Conserver les fonds bleus CMF (entête, entêtes de colonnes, pied de page)
        à l'impression — sinon les navigateurs les suppriment. */
