@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
+import { useAllocations } from '@/lib/allocations'
 import Modal from './Modal'
 
 // Année en cours : seule éditable. Les précédentes sont clôturées (statiques).
@@ -52,6 +53,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Celles-ci sont entièrement éditables / supprimables (elles t'appartiennent),
   // contrairement aux lignes du classeur (officielles, surcharges limitées).
   const { list: localCommissions, upsert, remove, replace } = useLocalCommissions()
+  // Noms d'affichage renommés manuellement (par ISIN) dans le Portefeuille →
+  // on les applique aussi ici pour que la description suive le renommage.
+  const { noms } = useAllocations()
   const lignesAll = useMemo(() => [...data.lignes, ...localCommissions], [data, localCommissions])
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
@@ -100,7 +104,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const facture = (oFac === undefined ? l.facture : oFac) ?? null
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
     const isLocal = localKeys.has(rowKey(l))
-    return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal }
+    // Renommage manuel (Portefeuille) prioritaire sur la description du classeur.
+    const description = noms[l.isin] ?? l.description
+    return { ...l, description, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal }
   }
 
   // ── Paiement ───────────────────────────────────────────────────────────
@@ -162,7 +168,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       return String(va).localeCompare(String(vb), 'fr') * m
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lignesAll, ov, an, statut, q, sort])
+  }, [lignesAll, ov, noms, an, statut, q, sort])
 
   const tot = useMemo(() => {
     const sum = (k: 'comClient' | 'comTotal' | 'net' | 'nominal') =>

@@ -229,7 +229,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       productsAll.map((p) => {
         const s = statutMap[p.isin]
         const n = noms[p.isin]
-        return s || n ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom } : p
+        // Le renommage manuel est le « nom affiché » : il prime à la fois sur le
+        // nom ET sur la description (colonne affichée dans le tableau), sinon un
+        // produit ayant déjà une description du feed n'afficherait jamais le
+        // nouveau libellé.
+        return s || n
+          ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom, description: n ?? p.description }
+          : p
       }),
     [productsAll, statutMap, noms],
   )
