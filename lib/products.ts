@@ -6062,6 +6062,78 @@ const cibcMsftGoogl: Product = {
   termsheetFichier: '250219_3Y_Athena Wof MSFT + GOOGL_Trimestriel_XS2953818841_CIBC.pdf',
 }
 
+// ── Barclays — Phoenix Mémoire Dégressif Bancaires FR (Wof BNP + ACA + GLE) ──
+//    Décodé de la termsheet indicative (19/06/2026, Série NX00600160 / Tr.1).
+//    20 constatations trimestrielles, non-call 1 an (autocall dès obs 4),
+//    autocall dégressif 100 → 62,5 % (−2,5 %/trim.), coupon 2,275 %/trim. à
+//    mémoire (9,10 % p.a.), barrière coupon 60 %, protection KI 50 % européenne.
+const barclaysBnpAcaGleObs = [
+  '2026-09-21', '2026-12-21', '2027-03-19', '2027-06-21', '2027-09-20',
+  '2027-12-20', '2028-03-20', '2028-06-19', '2028-09-19', '2028-12-19',
+  '2029-03-19', '2029-06-19', '2029-09-19', '2029-12-19', '2030-03-19',
+  '2030-06-19', '2030-09-19', '2030-12-19', '2031-03-19', '2031-06-19',
+]
+const barclaysBnpAcaGlePay = [
+  '2026-09-28', '2026-12-29', '2027-03-30', '2027-06-28', '2027-09-27',
+  '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-26', '2028-12-28',
+  '2029-03-26', '2029-06-26', '2029-09-26', '2029-12-28', '2030-03-26',
+  '2030-06-26', '2030-09-26', '2030-12-30', '2031-03-26', '2031-06-26',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const barclaysBnpAcaGleAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85,
+  82.5, 80, 77.5, 75, 72.5, 70, 67.5, 65, 62.5, undefined,
+]
+
+const barclaysBnpAcaGle: Product = {
+  id: 'XS3401965978',
+  nom: 'Phoenix Mémoire Dégressif BNP + ACA + GLE',
+  isin: 'XS3401965978',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-19',
+  dateEmission: '2026-07-03',
+  dateConstatationFinale: '2031-06-19',
+  dateEcheance: '2031-06-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris', devise: 'EUR' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris', devise: 'EUR' },
+    { nom: 'Société Générale SA', bloomberg: 'GLE FP', isin: 'FR0000130809', marche: 'Euronext Paris', devise: 'EUR' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.1,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(barclaysBnpAcaGleObs, barclaysBnpAcaGlePay, {
+    niveauRappelPct: (n) => barclaysBnpAcaGleAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.275,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Dégressif Wof BNP + ACA + GLE',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier: 'TS - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
+}
+
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
   bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
@@ -6094,6 +6166,7 @@ const detailed: Product[] = [
   bilPorsche, gsQuartz53, msQuartz45, gsBasket50Div,
   santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
   marexMstr, marexMoncMcVsco,
+  barclaysBnpAcaGle,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
