@@ -2046,9 +2046,9 @@
    "retroPct": 0.04,
    "comClient": 8000,
    "comTotal": 11300,
-   "facture": "2026-001",
+   "facture": "2026-200",
    "sent": "2026-06-26",
-   "credited": "2026-06-26",
+   "credited": null,
    "split": 1,
    "net": 3300
   }

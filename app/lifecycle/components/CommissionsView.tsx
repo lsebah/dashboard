@@ -91,9 +91,13 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     // années clôturées on conserve la « com. totale » brute du classeur (qui peut
     // inclure une quote-part co-distributeur quand split < 100 %).
     const comTotal = editable ? net + comClient : l.comTotal ?? net + comClient
-    const credited = (editable ? o.credited : undefined) ?? l.credited
-    // Override prioritaire en année courante (permet de modifier un n° du classeur).
-    const facture = (editable ? o.facture : undefined) ?? l.facture ?? null
+    // Surcharge année courante : `null` = valeur explicitement effacée (ex. paiement
+    // annulé) ; `undefined` = pas de surcharge → on garde la valeur du classeur.
+    const oCred = editable ? o.credited : undefined
+    const credited = oCred === undefined ? l.credited : oCred ?? null
+    // Override prioritaire en année courante (permet de modifier/effacer un n° du classeur).
+    const oFac = editable ? o.facture : undefined
+    const facture = (oFac === undefined ? l.facture : oFac) ?? null
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
     const isLocal = localKeys.has(rowKey(l))
     return { ...l, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal }
@@ -114,7 +118,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           statutFacture: date ? 'payee' : base.facture ? 'envoyee' : 'en_attente',
         })
     } else {
-      patch(rowKey(l), { credited: date ?? undefined })
+      // `null` = surcharge « non payé » qui prime sur la date du classeur ;
+      // une chaîne = date d'encaissement saisie. (undefined serait ignoré.)
+      patch(rowKey(l), { credited: date })
     }
   }
   const togglePaid = (l: ReturnType<typeof calc>) =>
