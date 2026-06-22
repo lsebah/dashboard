@@ -4676,6 +4676,23 @@ const quartz54Sanofi: Product = {
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 // ── Barclays — Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal ──────
 //    (TS XS3395348454, décodée depuis la termsheet/KID Barclays du 12/06/2026)
+const essMtObs = [
+  '2026-09-14', '2026-12-14', '2027-03-12', '2027-06-14', '2027-09-13',
+  '2027-12-13', '2028-03-13', '2028-06-12', '2028-09-12', '2028-12-12',
+  '2029-03-12', '2029-06-12', '2029-09-12', '2029-12-12', '2030-03-12',
+  '2030-06-12', '2030-09-12', '2030-12-12', '2031-03-12', '2031-06-12',
+]
+const essMtPay = [
+  '2026-09-28', '2026-12-29', '2027-03-30', '2027-06-28', '2027-09-27',
+  '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-26', '2028-12-28',
+  '2029-03-26', '2029-06-26', '2029-09-26', '2029-12-28', '2030-03-26',
+  '2030-06-26', '2030-09-26', '2030-12-30', '2031-03-26', '2031-06-26',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const essMtAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 96, 95, 94, 93, 92, 91, 90,
+  89, 88, 87, 86, 85, 84, 83, 82, 81, undefined,
+]
 const barclaysEssMt: Product = {
   id: 'XS3395348454',
   nom: 'Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal',
@@ -4704,12 +4721,18 @@ const barclaysEssMt: Product = {
     effetMemoire: true,
     couponPa: 10.65, // 26,63 € / trimestre sur 1 000 € = 2,663 %/T ≈ 10,65 % p.a.
     barriereCouponPct: 50,
-    barriereRappelPct: 96, // niveau de rappel initial, dégressif jusqu'à 80 %
+    barriereRappelPct: 96, // niveau de rappel initial, dégressif jusqu'à 81 %
     degressif: true,
     protectionPct: 50,
     protectionStyle: 'europeenne',
   },
-  observations: [],
+  observations: buildObservations(essMtObs, essMtPay, {
+    niveauRappelPct: (n) => essMtAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.6625,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
   statut: 'vivant',
   rr: 'LS',
   productType: 'Phoenix Mémoire',
