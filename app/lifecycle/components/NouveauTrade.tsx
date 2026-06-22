@@ -384,7 +384,7 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                       />
                     </td>
                     <td className={cell}>
-                      <input value={a.montant} onChange={(e) => setA(i, 'montant', e.target.value)} inputMode="numeric" className="w-full bg-transparent text-right tabular-nums outline-none" placeholder="200000" />
+                      <input value={a.montant} onChange={(e) => setA(i, 'montant', e.target.value)} inputMode="numeric" className={`w-full bg-transparent text-right tabular-nums outline-none ${!a.montant.trim() && (a.uf.trim() || a.retro.trim()) ? 'ring-1 ring-red-300 rounded' : ''}`} placeholder="ex. 200000" />
                     </td>
                     <td className={cell}>
                       <input value={a.uf} onChange={(e) => setA(i, 'uf', e.target.value)} inputMode="decimal" className="w-16 bg-transparent text-right tabular-nums outline-none" placeholder="5" />
@@ -422,6 +422,7 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
               ))}
             </datalist>
             <p className="mt-1 text-[10px] text-slate-400">
+              Saisis d&apos;abord le <strong>Montant</strong> (sans lui, Com. CMF et totaux restent à 0).
               Com. totale = Montant × UF · Rétro client = Montant × Rétro · Com. CMF (net) = UF − Rétro.
             </p>
           </div>
