@@ -4037,16 +4037,7 @@ const metaProducts2: Product[] = [
     description: 'SPHINX 15 — pente CMS 30Y−5Y · coupon 8 % (an 1-3) puis 5× pente · capital garanti',
     badges: ['Taux', 'Capital garanti', 'Call émetteur'],
   }),
-  metaProduct({
-    isin: 'CH1322027827', nom: 'Phoenix Mémoire Wof Moderna + Pfizer + Sanofi', emetteur: 'Banque Internationale à Luxembourg',
-    productType: 'Phoenix', dateEmission: '2024-02-02', dureeAnnees: 5, basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Moderna Inc', bloomberg: 'MRNA US', marche: 'NASDAQ' },
-      { nom: 'Pfizer Inc', bloomberg: 'PFE US', marche: 'NYSE' },
-      { nom: 'Sanofi SA', bloomberg: 'SAN FP', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Phoenix Mémoire Wof — Moderna + Pfizer + Sanofi', badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
-  }),
+  // CH1322027827 décodé en définition complète plus bas (bilModernaPfizerSanofi).
   metaProduct({
     isin: 'FR001400GV92', nom: 'Phoenix Mémoire Wof Porsche + Volkswagen', emetteur: 'Morgan Stanley',
     productType: 'Phoenix', dateEmission: '2023-04-04', dureeAnnees: 5, basket: 'worst_of',
@@ -6157,6 +6148,129 @@ const barclaysBnpAcaGle: Product = {
   termsheetFichier: 'TS - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
 }
 
+// ── BIL — Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (CH1322027827) ───────
+//    Décodé de la TS BIL (indicative 26/01/2024, EUR Quanto). 20 constatations
+//    trimestrielles, coupon 2,475 %/T à mémoire (9,90 % p.a.), barrière coupon
+//    60 %, autocall 100 % constant (non dégressif) dès la 4e obs (non-call 1 an),
+//    protection KI 60 % européenne.
+const bilMrnaObs = [
+  '2024-04-26', '2024-07-26', '2024-10-28', '2025-01-27', '2025-04-28',
+  '2025-07-28', '2025-10-27', '2026-01-26', '2026-04-27', '2026-07-27',
+  '2026-10-26', '2027-01-26', '2027-04-26', '2027-07-26', '2027-10-26',
+  '2028-01-26', '2028-04-26', '2028-07-26', '2028-10-26', '2029-01-26',
+]
+const bilMrnaPay = [
+  '2024-05-06', '2024-08-02', '2024-11-04', '2025-02-03', '2025-05-06',
+  '2025-08-04', '2025-11-03', '2026-02-02', '2026-05-05', '2026-08-03',
+  '2026-11-02', '2027-02-02', '2027-05-03', '2027-08-02', '2027-11-02',
+  '2028-02-02', '2028-05-04', '2028-08-02', '2028-11-02', '2029-02-02',
+]
+const bilModernaPfizerSanofi: Product = {
+  id: 'CH1322027827',
+  nom: 'Phoenix Mémoire Wof Moderna + Pfizer + Sanofi',
+  isin: 'CH1322027827',
+  emetteur: 'Banque Internationale à Luxembourg',
+  notationEmetteur: 'S&P A- / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-01-26',
+  dateEmission: '2024-02-02',
+  dateConstatationFinale: '2029-01-26',
+  dateEcheance: '2029-02-02',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Moderna Inc', bloomberg: 'MRNA US', marche: 'NASDAQ', devise: 'USD' },
+    { nom: 'Pfizer Inc', bloomberg: 'PFE US', marche: 'NYSE', devise: 'USD' },
+    { nom: 'Sanofi SA', bloomberg: 'SAN FP', marche: 'Euronext Paris', devise: 'EUR' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 9.9,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bilMrnaObs, bilMrnaPay, {
+    niveauRappelPct: (n) => (n >= 4 ? 100 : undefined),
+    montantRemboursementPct: 100,
+    couponPct: 2.475,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix Mémoire',
+  description: '5Y Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (EUR Quanto)',
+  badges: ['Worst-of', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier: '240202_5Y_Phoenix Memory MRNA + PFE + Sanofi_Trimestriel_CH1322027827_BIL.pdf',
+}
+
+// ── BNP — Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500 (XS3153607810) ──────
+//    Décodé de la TS BNP (5Y Athena Wof, EUR Quanto). Rappel annuel (4 dates),
+//    prime de rappel n × 8,15 % (max avec la perf worst-of), pas de coupon
+//    courant, protection KI 60 % européenne. Niveaux initiaux fixés au 14/10/2025.
+const bnpIndicesObs = ['2026-10-14', '2027-10-14', '2028-10-16', '2029-10-15', '2030-10-15']
+const bnpIndicesPay = ['2026-10-28', '2027-10-28', '2028-10-30', '2029-10-29', '2030-10-29']
+const bnpAthenaIndices: Product = {
+  id: 'XS3153607810',
+  nom: 'Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500',
+  isin: 'XS3153607810',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 510_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-10-14',
+  dateEmission: '2025-10-28',
+  dateConstatationFinale: '2030-10-15',
+  dateEcheance: '2030-10-29',
+  frequence: 'annuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'EURO STOXX 50', bloomberg: 'SX5E Index', marche: 'STOXX', devise: 'EUR' },
+    { nom: 'Nikkei 225', bloomberg: 'NKY Index', marche: 'Osaka', devise: 'JPY' },
+    { nom: 'S&P 500', bloomberg: 'SPX Index', marche: 'CBOE', devise: 'USD' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 8.15,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 40.75,
+  },
+  observations: buildObservations(bnpIndicesObs, bnpIndicesPay, {
+    niveauRappelPct: (n) => (n <= 4 ? 100 : undefined),
+    montantRemboursementPct: 100,
+    couponPct: (n) => Math.round(8.15 * n * 100) / 100,
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description:
+    '5Y Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500 (EUR Quanto) — prime de rappel n×8,15 % (max perf worst-of), annuel, protection 60 % européenne',
+  badges: ['Worst-of', 'Athena', 'Quanto EUR'],
+  termsheetFichier: 'TS - Athena SX5E NKY SPX - XS3153607810.PDF',
+}
+
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
   bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
@@ -6189,7 +6303,7 @@ const detailed: Product[] = [
   bilPorsche, gsQuartz53, msQuartz45, gsBasket50Div,
   santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
   marexMstr, marexMoncMcVsco,
-  barclaysBnpAcaGle,
+  barclaysBnpAcaGle, bilModernaPfizerSanofi, bnpAthenaIndices,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
