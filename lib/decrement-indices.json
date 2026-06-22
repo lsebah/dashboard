@@ -546,19 +546,19 @@
   "description": "MerQube Global Electrification & Energy Fixed Basket 50 Point Decrement (EUR) Index. Secteur : Électrification & Énergie (panier fixe). 10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 11.6% p.a. (run BNP 01/06/2026).",
   "source": "Run BNP Paribas (01/06/2026)"
  },
- "MQDEEM50P": {
-  "nom": "MerQube SPYM 50 Point Decrement Index",
-  "secteur": "Multi-Secteurs",
-  "decrement": "50 points/an",
-  "description": "MerQube SPYM 50 Point Decrement Index. Secteur : Multi-Secteurs. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : Bank of America.",
-  "source": "Run Bank of America — Indices Sectoriels (08/06/2026)"
- },
  "MQDELUXE": {
   "nom": "Morningstar Luxe Europe Decrement 50 Points (Citi)",
   "secteur": "Luxe / Conso. Disc.",
   "decrement": "50 points/an",
   "description": "Morningstar Luxe Europe Decrement 50 Points (Citi). Secteur : Luxe / Conso. Disc.. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : Citi.",
   "source": "Comparatif Émetteurs CMF — run Citi (03/2026)"
+ },
+ "MQDEM50P": {
+  "nom": "MerQube SPYM 50 Point Decrement Index",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points/an",
+  "description": "MerQube SPYM 50 Point Decrement Index. Secteur : Multi-Secteurs. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : Bank of America.",
+  "source": "Run Bank of America — Indices Sectoriels (08/06/2026)"
  },
  "MQDER50P": {
   "nom": "MerQube Europe Large Cap Basic Resources 20-50 Point Decrement Index",
@@ -1236,7 +1236,8 @@
   "secteur": "Eurozone diversifié",
   "decrement": "50 points/an",
   "description": "Solactive Eurozone Equity Select 50 Point Decrement Index. Secteur : Eurozone diversifié. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 9.4% p.a. (run BNP 01/06/2026).",
-  "source": "Run BNP Paribas (01/06/2026)"
+  "source": "Run BNP Paribas (01/06/2026)",
+  "nbComposants": 20
  },
  "SOLOIL50": {
   "nom": "Solactive Transatlantic Energy EUR Index 50 AR",
@@ -1281,6 +1282,14 @@
   "decrement": "50 points/an",
   "description": "Bloomberg US & Europe Top Sectors Fixed Basket Decrement 50 Points Index EUR. Secteur : Tech & Luxe (panier fixe). 10 composants. Décrément 50 points/an, autocall trimestriel (T4), protection 50 %, maturité 10-12 ans. Coupon indicatif 9.8% p.a. (run BNP 01/06/2026).",
   "source": "Run BNP Paribas (01/06/2026)"
+ },
+ "TITANC50": {
+  "nom": "Bloomberg US & Euro Titans Select 50 Capped Decrement 50 Points EUR",
+  "secteur": "Transatlantique",
+  "decrement": "50 points/an",
+  "description": "Bloomberg US & Euro Titans Select 50 Capped Decrement 50 Points EUR. Secteur : Transatlantique. ~50 composants. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : BNP Paribas.",
+  "source": "Run BNP Paribas — Indices Efficients en Point (22/06/2026)",
+  "nbComposants": 50
  },
  "TITANFST": {
   "nom": "Bloomberg France Titans Select Decrement 50 Points Index",

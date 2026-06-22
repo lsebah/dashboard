@@ -1,11 +1,18 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-06-15T12:30:00",
+  "lastCheck": "2026-06-22T17:30:00",
   "statut": "ok",
-  "nouveaux": 0,
-  "majs": 1,
+  "nouveaux": 1,
+  "majs": 2,
   "historique": [
+    {
+      "date": "2026-06-22T17:30:00",
+      "nouveaux": 1,
+      "majs": 2,
+      "statut": "ok",
+      "details": "MAJ 22/06 — 2 runs traités : BNPP « Indices Efficients en Point » (34 indices) et BofA « Athéna / Phoenix Mémoire » (15 indices). Comparatif : 47 coupons rafraîchis + 17 nouvelles lignes (BNPP 12, BofA 5). Catalogue : +1 indice (TITANC50) ; réconciliation ticker MQDEEM50P→MQDEM50P (run BofA fait foi)."
+    },
     {
       "date": "2026-06-15T12:30:00",
       "nouveaux": 0,
