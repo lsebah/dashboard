@@ -1444,5 +1444,12 @@
   "devise": "EUR",
   "amount": 200000,
   "description": "Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal"
+ },
+ {
+  "isin": "XS3401965978",
+  "client": "ABACUS - 05268",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix BNP Paribas, Crédit Agricole, Société Générale"
  }
 ]
