@@ -45,7 +45,16 @@ export function useCommissionsStore() {
       setServerSync(configured)
       if (!configured) return
       const server = value && typeof value === 'object' ? value : {}
-      const merged = { ...server, ...local }
+      // Relire le localStorage au moment de la fusion (pas la capture initiale) :
+      // l'utilisateur peut avoir saisi/payé entre le mount et la réponse KV.
+      let currentLocal: Record<string, CommissionOverride> = {}
+      try {
+        const raw = localStorage.getItem(KEY)
+        if (raw) currentLocal = JSON.parse(raw)
+      } catch {
+        /* ignore */
+      }
+      const merged = { ...server, ...currentLocal }
       setOv(merged)
       try {
         localStorage.setItem(KEY, JSON.stringify(merged))

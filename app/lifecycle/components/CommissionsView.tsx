@@ -405,10 +405,28 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                   {!l.editable ? (
                     l.facture ?? <span className="text-slate-300">—</span>
                   ) : l.isLocal ? (
-                    l.facture ? (
-                      <span title="N° de facture (modifiable via le crayon)">{l.facture}</span>
+                    editFac === rowKey(l) ? (
+                      <input
+                        autoFocus
+                        type="text"
+                        defaultValue={l.facture ?? ""}
+                        placeholder="n° facture"
+                        className="w-24 rounded border border-cmf-blue bg-white px-1 py-0.5 text-[11px] focus:outline-none"
+                        onBlur={(e) => {
+                          const val = e.target.value.trim()
+                          const base = localCommissions.find((x) => rowKey(x) === rowKey(l))
+                          if (base) upsert({ ...base, facture: val || null, statutFacture: base.credited ? "payee" : val ? "envoyee" : "en_attente" })
+                          setEditFac(null)
+                        }}
+                        onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditFac(null) }}
+                      />
+                    ) : l.facture ? (
+                      <button onClick={() => setEditFac(rowKey(l))} className="hover:underline decoration-dotted" title="Cliquer pour modifier le n°">{l.facture}</button>
                     ) : (
-                      <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance)">✉ Facturer Gabrielle</a>
+                      <span className="inline-flex items-center gap-1.5">
+                        <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance)">✉ Facturer Gabrielle</a>
+                        <button onClick={() => setEditFac(rowKey(l))} className="text-[11px] text-cmf-blue hover:underline" title="Saisir le n° de facture">+ n°</button>
+                      </span>
                     )
                   ) : editFac === rowKey(l) ? (
                     <input
