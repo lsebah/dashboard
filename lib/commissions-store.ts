@@ -35,22 +35,25 @@ export function useCommissionsStore() {
       /* ignore */
     }
     if (Object.keys(local).length) setOv(local)
-    // 2) Le serveur fait foi s'il est configuré.
+    // 2) Le serveur fait foi s'il est configuré — MAIS sans écraser les saisies
+    //    locales récentes (qui peuvent ne pas encore avoir été remontées). On
+    //    fusionne : le serveur apporte les modifs des autres appareils, le
+    //    navigateur conserve les siennes (qui priment en cas de conflit), puis on
+    //    repousse la fusion au serveur pour qu'elle soit mémorisée partout.
     loadSlot<Record<string, CommissionOverride>>('ov').then(({ configured, value }) => {
       if (cancelled) return
       setServerSync(configured)
       if (!configured) return
-      if (value && Object.keys(value).length) {
-        setOv(value)
-        try {
-          localStorage.setItem(KEY, JSON.stringify(value))
-        } catch {
-          /* ignore */
-        }
-      } else if (Object.keys(local).length) {
-        // Première synchro : pousse le cache navigateur existant vers le serveur.
-        saveSlot('ov', local)
+      const server = value && typeof value === 'object' ? value : {}
+      const merged = { ...server, ...local }
+      setOv(merged)
+      try {
+        localStorage.setItem(KEY, JSON.stringify(merged))
+      } catch {
+        /* ignore */
       }
+      // Repousse au serveur uniquement si la fusion diffère (propage le local).
+      if (JSON.stringify(merged) !== JSON.stringify(server)) void saveSlot('ov', merged)
     })
     return () => {
       cancelled = true
