@@ -74,7 +74,17 @@ export function useLocalCommissions() {
     const local = read()
     if (local.length) setList(local)
     loadSlot<LocalCommission[]>('local').then(({ configured, value }) => {
-      if (configured && Array.isArray(value) && value.length) setList(value)
+      if (configured) {
+        // Fusion serveur + navigateur (les saisies locales priment) : on n'écrase
+        // JAMAIS une commission créée/modifiée ici qui ne serait pas encore
+        // remontée au serveur. Le push de la fusion est assuré par l'effet de
+        // persistance ci-dessous (déclenché par ce setList).
+        const server = Array.isArray(value) ? value : []
+        const byKey = new Map<string, LocalCommission>()
+        for (const c of server) byKey.set(`${c.isin}|${c.client ?? ''}`, c)
+        for (const c of local) byKey.set(`${c.isin}|${c.client ?? ''}`, c)
+        setList(Array.from(byKey.values()))
+      }
       hydrated.current = true
     })
     const on = (e: StorageEvent) => {

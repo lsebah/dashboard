@@ -19,18 +19,27 @@ export async function loadSlot<T>(slot: Slot): Promise<{ configured: boolean; va
   }
 }
 
-/** Écrit un slot côté serveur (fire-and-forget côté appelant). */
+/**
+ * Écrit un slot côté serveur (fire-and-forget côté appelant). Réessaie jusqu'à
+ * 3 fois avec un court backoff : un échec réseau ponctuel ne doit pas faire
+ * perdre une saisie (date de paiement, n° de facture…).
+ */
 export async function saveSlot(slot: Slot, value: unknown): Promise<boolean> {
-  try {
-    const res = await fetch('/api/commissions/store', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot, value }),
-    })
-    if (!res.ok) return false
-    const j = (await res.json()) as { ok?: boolean }
-    return !!j.ok
-  } catch {
-    return false
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch('/api/commissions/store', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slot, value }),
+      })
+      if (res.ok) {
+        const j = (await res.json()) as { ok?: boolean }
+        if (j.ok) return true
+      }
+    } catch {
+      /* on réessaie */
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 300 * (attempt + 1)))
   }
+  return false
 }
