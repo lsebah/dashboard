@@ -88,7 +88,11 @@ function productTypeLabel(p: Product): string {
   if (/snowball/i.test(hay) || p.badges?.includes('Snowball')) return 'Athéna'
   if (/phoenix/i.test(hay)) return /d[ée]gressif/i.test(hay) ? 'Phoenix Ticket Mémoire' : 'Phoenix'
   // Autocall = Athéna : seulement les vrais autocalls (famille / terms / type explicite).
-  if (t?.kind === 'autocall' || p.family === 'autocall' || /autocall|ath[ée]na/i.test(raw)) return 'Athéna'
+  // On préserve la nature « inverse » (reverse autocall) → « Athéna inverse ».
+  if (t?.kind === 'autocall' || p.family === 'autocall' || /autocall|ath[ée]na/i.test(raw)) {
+    const inverse = (t?.kind === 'autocall' && t.sens === 'inverse') || /reverse|inverse/i.test(raw)
+    return inverse ? 'Athéna inverse' : 'Athéna'
+  }
   // Autres familles : on retire un qualificatif « Airbag »/« Mémoire » du libellé
   // (ex. « Participation (Airbag) » → « Participation ») SANS forcer Athéna.
   const s = raw.replace(/\s*\(?\s*airbag\s*\)?/i, ' ').replace(/\s*m[ée]moire/i, ' ').replace(/\s+/g, ' ').trim()
@@ -204,7 +208,7 @@ const COLUMNS: Col[] = [
   { label: 'Type', key: 'type', w: 120 },
   { label: 'Mém.', key: 'mem', align: 'center', w: 48 },
   { label: 'B. Rappel', key: 'bauto', w: 100 },
-  { label: 'B. Coupon', key: 'bcoupon', w: 96 },
+  { label: 'B. Coupon / Airbag', key: 'bcoupon', w: 118 },
   { label: 'PDI', key: 'pdi', w: 56 },
   { label: 'Client', key: 'client', w: 130 },
   { label: 'Sous-jacents', key: 'sj', w: 240 },
