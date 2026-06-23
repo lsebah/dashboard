@@ -41,6 +41,25 @@ function ticker(s: string): string {
   return s.split(' ')[0]
 }
 
+// Présence d'un airbag : signal décodé de la TS (terms.airbag) ou badge explicite.
+// On n'utilise PAS le nom (« Athena Airbag … » peut être un KI standard).
+function aAirbag(p: Product): boolean {
+  return (p.terms?.kind === 'autocall' && p.terms.airbag === true) || (p.badges?.includes('Airbag') ?? false)
+}
+
+// Libellé de la colonne « Type ». Règles métier :
+//  - une tranche de crédit tirée → « CLN Tranche » ;
+//  - « Airbag » n'est PAS un type (il s'affiche en B. Coupon) → un produit
+//    étiqueté Airbag est un Athena (= Autocall).
+function productTypeLabel(p: Product): string {
+  const t = p.terms
+  if (t?.kind === 'credit' && t.type === 'tranche') return 'CLN Tranche'
+  const pt = p.productType?.trim()
+  if (!pt) return '—'
+  if (/^airbag$/i.test(pt)) return 'Athena'
+  return pt
+}
+
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
 function formatHorodatage(iso: string): string {
   const d = new Date(iso)
@@ -573,7 +592,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'next':
         return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
       case 'cy':
-        return <td key="cy" className="px-2 py-1.5 text-slate-500">{p.devise}</td>
+        // Lisibilité devises : EUR en bleu (référence UE), toute autre en rouge.
+        return <td key="cy" className={`px-2 py-1.5 font-medium ${p.devise === 'EUR' ? 'text-blue-700' : 'text-red-600'}`}>{p.devise}</td>
       case 'amount': {
         // Par compte : montant du compte ÉDITABLE en place (clic → saisie, commit
         // à la sortie / Entrée). Sinon (agrégé) : total en lecture seule.
@@ -612,8 +632,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         return <td key="desc" className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>{p.description ?? p.nom}</td>
       case 'asset':
         return <td key="asset" className={`px-2 py-1.5 font-medium ${ASSET_COLOR[p.assetClass] ?? 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
-      case 'type':
-        return <td key="type" className="pl-2 pr-1 py-1.5 max-w-[120px] truncate" title={p.productType ?? undefined}>{p.productType ?? '—'}</td>
+      case 'type': {
+        const label = productTypeLabel(p)
+        return <td key="type" className="pl-2 pr-1 py-1.5 max-w-[120px] truncate" title={label}>{label}</td>
+      }
       case 'mem':
         return <td key="mem" className="px-1 py-1.5 text-center">{(t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '') ? '✓' : ''}</td>
       case 'cpn':
@@ -628,7 +650,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
                   ? `${t.barriereCouponPct}%`
                   : p.barriereCoupon
-              const air = t?.kind === 'autocall' && t.airbag
+              const air = aAirbag(p)
               if (air)
                 return (
                   <span>

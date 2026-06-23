@@ -4,7 +4,7 @@
 //  qu'au futur moteur de monitoring (prochaine observation, statut, distances
 //  aux barrières…).
 // ─────────────────────────────────────────────────────────────────────────
-import type { Product, Observation, Underlying } from './types'
+import type { Product, Observation, Underlying, Frequency } from './types'
 import { couponLedger } from './coupons-ledger'
 
 /** Construit un calendrier d'observations à partir de listes de dates. */
@@ -141,6 +141,31 @@ export function situation(product: Product): Situation {
   return 'sans_stress'
 }
 
+// Nombre de périodes de coupon par an, par fréquence (pour annualiser un coupon
+// de période reconstruit depuis le calendrier). « in_fine »/« autre » exclus :
+// le coupon n'y est pas périodique, on n'extrapole pas.
+const PERIODES_PAR_AN: Partial<Record<Frequency, number>> = {
+  mensuel: 12,
+  trimestriel: 4,
+  semestriel: 2,
+  annuel: 1,
+}
+
+/**
+ * Repli : reconstruit un coupon annuel depuis le calendrier décodé de la TS
+ * (observations) quand aucun coupon p.a. explicite n'est renseigné. On prend le
+ * coupon de période (couponPct) et on l'annualise selon la fréquence.
+ */
+export function couponPaFromObservations(product: Product): number | undefined {
+  const perAn = product.frequence ? PERIODES_PAR_AN[product.frequence] : undefined
+  if (!perAn) return undefined
+  const o = (product.observations ?? []).find(
+    (x) => typeof x.couponPct === 'number' && x.couponPct > 0,
+  )
+  if (!o || typeof o.couponPct !== 'number') return undefined
+  return Math.round(o.couponPct * perAn * 100) / 100
+}
+
 /** Coupon annualisé indicatif, si défini (termsheet, sinon cellule Excel). */
 export function couponPa(product: Product): number | undefined {
   const t = product.terms
@@ -148,7 +173,9 @@ export function couponPa(product: Product): number | undefined {
   if (t?.kind === 'rates' && typeof t.couponConditionnelPa === 'number')
     return t.couponConditionnelPa
   if (t?.kind === 'credit' && typeof t.couponPa === 'number') return t.couponPa
-  return product.couponPaPct
+  if (typeof product.couponPaPct === 'number') return product.couponPaPct
+  // Champ coupon vide → on le dérive du calendrier décodé de la TS.
+  return couponPaFromObservations(product)
 }
 
 /** Scénarios de dénouement pour un produit de taux (Phoenix Bearish CMS, etc.). */
