@@ -47,17 +47,37 @@ function aAirbag(p: Product): boolean {
   return (p.terms?.kind === 'autocall' && p.terms.airbag === true) || (p.badges?.includes('Airbag') ?? false)
 }
 
+// Niveau d'airbag (en %), dérivé de la TS : barrière sous laquelle le mécanisme
+// airbag s'enclenche = barrière de protection (PDI). Repli sur pdiPct.
+function airbagNiveau(p: Product): number | undefined {
+  const t = p.terms
+  if (t?.kind === 'autocall' && typeof t.protectionPct === 'number') return t.protectionPct
+  if (typeof p.pdiPct === 'number') return p.pdiPct
+  return undefined
+}
+// Warning de debug émis une seule fois par ISIN (TS sans niveau airbag identifiable).
+const airbagWarned = new Set<string>()
+function airbagNiveauOrWarn(p: Product): number | null {
+  const n = airbagNiveau(p)
+  if (n == null && !airbagWarned.has(p.isin)) {
+    airbagWarned.add(p.isin)
+    // eslint-disable-next-line no-console
+    console.warn(`[B.Coupon] Niveau d'airbag introuvable (TS incomplète) — ${p.isin} · ${p.nom}`)
+  }
+  return n ?? null
+}
+
 // Libellé de la colonne « Type ». Règles métier :
 //  - une tranche de crédit tirée → « CLN Tranche » ;
-//  - « Airbag » n'est PAS un type (il s'affiche en B. Coupon) → un produit
-//    étiqueté Airbag est un Athena (= Autocall).
+//  - « Airbag » n'est PAS un type (le niveau s'affiche en B. Coupon) : on le
+//    retire du libellé → « Athéna Airbag » devient « Athéna », « Airbag » → « Athena ».
 function productTypeLabel(p: Product): string {
   const t = p.terms
   if (t?.kind === 'credit' && t.type === 'tranche') return 'CLN Tranche'
-  const pt = p.productType?.trim()
-  if (!pt) return '—'
-  if (/^airbag$/i.test(pt)) return 'Athena'
-  return pt
+  const raw = p.productType?.trim()
+  if (!raw) return '—'
+  const pt = raw.replace(/\s*airbag\s*/i, ' ').replace(/\s+/g, ' ').trim()
+  return pt || 'Athena'
 }
 
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
@@ -650,14 +670,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
                   ? `${t.barriereCouponPct}%`
                   : p.barriereCoupon
-              const air = aAirbag(p)
-              if (air)
-                return (
-                  <span>
-                    <span className="text-amber-600">Airbag</span>
-                    {cb ? ` · ${cb}` : ''}
-                  </span>
-                )
+              // Produit airbag : on affiche le NIVEAU d'airbag (%) extrait de la TS,
+              // jamais le texte « Airbag ». TS incomplète → « N/A » + warning debug.
+              if (aAirbag(p)) {
+                const n = airbagNiveauOrWarn(p)
+                return n == null ? <span className="text-slate-400">N/A</span> : `${n}%`
+              }
               return cb ?? '—'
             })()}
           </td>
