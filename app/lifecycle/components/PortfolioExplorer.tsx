@@ -42,9 +42,14 @@ function ticker(s: string): string {
 }
 
 // Présence d'un airbag : signal décodé de la TS (terms.airbag) ou badge explicite.
-// On n'utilise PAS le nom (« Athena Airbag … » peut être un KI standard).
+// Un Snowball est reclassé Athéna Airbag → traité comme airbag ici aussi.
 function aAirbag(p: Product): boolean {
-  return (p.terms?.kind === 'autocall' && p.terms.airbag === true) || (p.badges?.includes('Airbag') ?? false)
+  return (
+    (p.terms?.kind === 'autocall' && p.terms.airbag === true) ||
+    (p.badges?.includes('Airbag') ?? false) ||
+    (p.badges?.includes('Snowball') ?? false) ||
+    /snowball/i.test(p.productType ?? '')
+  )
 }
 
 // Niveau d'airbag (en %), dérivé de la TS : barrière sous laquelle le mécanisme
@@ -67,17 +72,23 @@ function airbagNiveauOrWarn(p: Product): number | null {
   return n ?? null
 }
 
-// Libellé de la colonne « Type ». Règles métier :
-//  - une tranche de crédit tirée → « CLN Tranche » ;
-//  - « Airbag » n'est PAS un type (le niveau s'affiche en B. Coupon) : on le
-//    retire du libellé → « Athéna Airbag » devient « Athéna », « Airbag » → « Athena ».
+// Libellé métier de la colonne « Type ». Règles :
+//  - tranche de crédit tirée → « CLN Tranche » ;
+//  - Autocall = Athéna (le terme « Autocall » ne doit plus apparaître) ;
+//  - « Airbag » n'est pas un type (le niveau s'affiche en B. Coupon) → Athéna ;
+//  - Snowball → Athéna (Airbag) ;
+//  - Phoenix : « Mémoire »/« Memory » implicites → « Phoenix » ; la variante
+//    dégressive (à ticket) est nommée « Phoenix Ticket Mémoire » ;
+//  - autres types (Booster, Participation, Callable, TARN, Quartz, CLN…) tels quels.
 function productTypeLabel(p: Product): string {
   const t = p.terms
   if (t?.kind === 'credit' && t.type === 'tranche') return 'CLN Tranche'
-  const raw = p.productType?.trim()
-  if (!raw) return '—'
-  const pt = raw.replace(/\s*airbag\s*/i, ' ').replace(/\s+/g, ' ').trim()
-  return pt || 'Athena'
+  const raw = (p.productType ?? '').trim()
+  const hay = `${raw} ${p.nom ?? ''} ${p.description ?? ''}`
+  if (/snowball/i.test(hay) || p.badges?.includes('Snowball')) return 'Athéna'
+  if (/phoenix/i.test(hay)) return /d[ée]gressif/i.test(hay) ? 'Phoenix Ticket Mémoire' : 'Phoenix'
+  if (/autocall|ath[ée]na|airbag/i.test(raw) || t?.kind === 'autocall' || p.family === 'autocall') return 'Athéna'
+  return raw || '—'
 }
 
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
@@ -188,7 +199,7 @@ const COLUMNS: Col[] = [
   { label: 'Eq/Cr', key: 'asset', w: 64 },
   { label: 'Type', key: 'type', w: 120 },
   { label: 'Mém.', key: 'mem', align: 'center', w: 48 },
-  { label: 'B. Autocall', key: 'bauto', w: 100 },
+  { label: 'B. Rappel', key: 'bauto', w: 100 },
   { label: 'B. Coupon', key: 'bcoupon', w: 96 },
   { label: 'PDI', key: 'pdi', w: 56 },
   { label: 'Client', key: 'client', w: 130 },
@@ -543,7 +554,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           <td key="isin" style={f.style} className={`pl-2 pr-0.5 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
             <span
               className={`inline-flex items-center gap-1.5 ${prob ? 'font-bold text-emerald-600' : ''}`}
-              title={prob ? 'Autocall probable à la prochaine observation' : undefined}
+              title={prob ? 'Rappel probable à la prochaine observation' : undefined}
             >
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
               {p.isin}
@@ -972,7 +983,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
                   <span>
                     ↑ <strong>Rappel probable</strong> : worst-of {r.niveauPct}% ≥ barrière
-                    d&apos;autocall {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
+                    de rappel {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
                     {formatDateFr(r.date)}.
                   </span>
                   <button

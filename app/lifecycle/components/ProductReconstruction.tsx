@@ -191,7 +191,7 @@ export default function ProductReconstruction({ product }: { product: Product })
       {degr && (
         <div>
           <div className="field-label mb-1">
-            Barème d&apos;autocall — dégressif {degr.depart}% → {degr.fin}%
+            Barème de rappel — dégressif {degr.depart}% → {degr.fin}%
             <span className="text-slate-400"> (−{degr.pas.toFixed(2)} pt / observation)</span>
           </div>
           <BarriereCurve niveaux={niveaux} />
@@ -309,7 +309,7 @@ function RatesReconstruction({ product, t }: { product: Product; t: RatesTerms }
   if (typeof t.barriereCouponTauxPct === 'number')
     chips.push(`Coupon si ${cmp} ${t.barriereCouponTauxPct.toFixed(2)}%`)
   if (typeof t.barriereRappelTauxPct === 'number')
-    chips.push(`Autocall si ${cmp} ${t.barriereRappelTauxPct.toFixed(2)}%`)
+    chips.push(`Rappel si ${cmp} ${t.barriereRappelTauxPct.toFixed(2)}%`)
   if (t.effetMemoire) chips.push('Effet mémoire')
   if (typeof t.couponGarantiPct === 'number') chips.push(`Coupon garanti ${t.couponGarantiPct}%`)
   if (t.capitalGaranti) chips.push('Capital garanti')

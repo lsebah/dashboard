@@ -182,7 +182,7 @@ export default function ProductSynopsis({
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-slate-600">
                 <span>
-                  Autocall si {ref} {cmp}{' '}
+                  Rappel si {ref} {cmp}{' '}
                   <span className="font-medium text-slate-800">
                     {nextObs.autocallActif !== false && typeof nextObs.niveauRappelPct === 'number'
                       ? fmt(nextObs.niveauRappelPct)

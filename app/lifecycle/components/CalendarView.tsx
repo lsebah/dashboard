@@ -182,7 +182,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   function aspect(e: Ev): { cls: string; icone: string; titre: string } {
     const passe = e.date < today
     if (e.maturite) return { cls: 'bg-amber-50 border-amber-300', icone: '⚑', titre: 'Maturité' }
-    if (estAutocallProbable(e)) return { cls: 'bg-emerald-50 border-emerald-300', icone: '↑', titre: 'Autocall probable' }
+    if (estAutocallProbable(e)) return { cls: 'bg-emerald-50 border-emerald-300', icone: '↑', titre: 'Rappel probable' }
     if (e.coupon) return { cls: 'bg-sky-50 border-sky-200', icone: '✓', titre: 'Paiement de coupon' }
     return { cls: passe ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-white border-slate-200', icone: '🕑', titre: 'Observation' }
   }
@@ -250,7 +250,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const FILTRES: { k: Filtre; label: string; icone: string }[] = [
     { k: 'toutes', label: 'Toutes les observations', icone: '◉' },
     { k: 'maturite', label: 'Arrivant à maturité', icone: '⚑' },
-    { k: 'autocall', label: 'Autocall probable', icone: '↑' },
+    { k: 'autocall', label: 'Rappel probable', icone: '↑' },
     { k: 'coupon', label: 'Paiement de coupon', icone: '✓' },
   ]
 
@@ -408,7 +408,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
 
       <p className="text-xs text-slate-400 mt-2 shrink-0">
         {enVue.length} observation{enVue.length > 1 ? 's' : ''} sur la période · navigation libre (passé / futur).
-        Autocall probable = worst-of courant (Yahoo) vs barrière de rappel ; indices propriétaires / taux non cotés → exclus du calcul.
+        Rappel probable = worst-of courant (Yahoo) vs barrière de rappel ; indices propriétaires / taux non cotés → exclus du calcul.
       </p>
 
       <Modal open={openDetail && !!selAug} onClose={() => setOpenDetail(false)} title={sel ? `${sel.nom} · ${sel.isin}` : ''}>
