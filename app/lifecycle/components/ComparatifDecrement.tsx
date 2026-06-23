@@ -48,6 +48,34 @@ const ISSUER_COLOR: Record<string, string> = {
   BBVA: 'text-indigo-600',
 }
 
+// Consolidation des secteurs : on regroupe la longue traîne (variantes, paniers
+// pays, mines…) dans des buckets canoniques pour réduire le sur-filtrage.
+const SECTEUR_CANON: Record<string, string> = {
+  'Transatlantique diversifié': 'Transatlantique',
+  'Transatlantique diversifié (60% US / 40% EZ)': 'Transatlantique',
+  'Zone Euro & US diversifié': 'Transatlantique',
+  'Énergie nucléaire': 'Energie / Oil & Gas',
+  'Hyperscalers (panier fixe)': 'AI / Tech / Digital',
+  'Gold Mining': 'Basic Resources',
+  'Métaux stratégiques (terres rares)': 'Basic Resources',
+  'Matières premières (panier fixe)': 'Basic Resources',
+  'Défense (panier fixe)': 'Defense / Aerospace',
+  'Souverainete / PAB': 'Souveraineté / PAB',
+  'Électrification (ex-VOLT 2.0)': 'Infrastructures',
+  'Infrastructures (panier fixe)': 'Infrastructures',
+  'Allemagne (panier fixe)': 'Régional / Pays',
+  'France (panier fixe)': 'Régional / Pays',
+  'Marchés émergents (panier fixe)': 'Régional / Pays',
+  'Sport / PE / Telecom / RE': 'Autres thématiques',
+}
+const canonSecteur = (s: string | null | undefined): string | null =>
+  s ? SECTEUR_CANON[s] ?? s : null
+
+// Structure : Athéna (incl. dégressif) vs Phoenix. Tolère les variantes d'accent.
+type Structure = 'athena' | 'phoenix'
+const matchStructure = (type: string, st: Structure): boolean =>
+  st === 'athena' ? /ath[ée]na/i.test(type) : /phoenix/i.test(type)
+
 // Commission CMF réintégrée à l'affichage UNIQUEMENT pour les upfronts issus
 // du PDF/Excel de départ (dans lesquels la commission broker avait été retirée).
 // Les upfronts venant d'un mail émetteur (ufFromMail) sont affichés tels quels.
@@ -88,6 +116,7 @@ function describe(r: Row): string {
 
 export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [secteur, setSecteur] = useState<string | null>(null)
+  const [structure, setStructure] = useState<Structure | null>(null)
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
@@ -97,7 +126,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   })
 
   const secteurs = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.secteur).filter(Boolean) as string[])),
+    () => Array.from(new Set(rows.map((r) => canonSecteur(r.secteur)).filter(Boolean) as string[])).sort(),
     [rows],
   )
   const emetteurs = useMemo(
@@ -109,14 +138,15 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     const needle = q.trim().toLowerCase()
     return rows.filter(
       (r) =>
-        (!secteur || r.secteur === secteur) &&
+        (!secteur || canonSecteur(r.secteur) === secteur) &&
+        (!structure || matchStructure(r.type, structure)) &&
         (!emetteur || r.emetteur === emetteur) &&
         (!needle ||
           r.ticker.toLowerCase().includes(needle) ||
           (r.secteur ?? '').toLowerCase().includes(needle) ||
           r.emetteur.toLowerCase().includes(needle)),
     )
-  }, [rows, secteur, emetteur, q])
+  }, [rows, secteur, structure, emetteur, q])
 
   const list = useMemo(() => {
     const m = sort.dir === 'asc' ? 1 : -1
@@ -225,8 +255,32 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
           </div>
         </div>
 
+        {/* Filtre structure : Athéna / Phoenix */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3">
+          <span className="text-[11px] uppercase tracking-wide text-slate-400 mr-1">Structure</span>
+          <button
+            onClick={() => setStructure(null)}
+            className={`rounded-full border px-2.5 py-1 text-xs ${
+              !structure ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            Toutes
+          </button>
+          {(['athena', 'phoenix'] as const).map((st) => (
+            <button
+              key={st}
+              onClick={() => setStructure(structure === st ? null : st)}
+              className={`rounded-full border px-2.5 py-1 text-xs capitalize ${
+                structure === st ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {st === 'athena' ? 'Athéna' : 'Phoenix'}
+            </button>
+          ))}
+        </div>
+
         {/* Filtres secteur (chips) */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1.5 mt-2">
           <button
             onClick={() => setSecteur(null)}
             className={`rounded-full border px-2.5 py-1 text-xs ${
