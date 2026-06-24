@@ -588,13 +588,15 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       case 'next': {
         const next = prochainEvenement(p)
         const o = prochaineObservation(p)
-        // Prochain événement = autocall/rappel → date en gras vert.
         const estAutocall = !!o && o.autocallActif !== false && typeof o.niveauRappelPct === 'number'
+        // Gras vert UNIQUEMENT si autocall PROBABLE : prochaine obs = autocall ET
+        // valo > 99 % (un prix ≥ pair → rappel anticipé probable).
+        const probable = estAutocall && typeof p.prixMarche === 'number' && p.prixMarche > 99
         return (
           <td
             key="next"
-            className={`px-2 py-1.5 whitespace-nowrap ${estAutocall ? 'font-bold text-emerald-600' : 'text-slate-600'}`}
-            title={estAutocall ? 'Prochaine observation : autocall / rappel possible' : undefined}
+            className={`px-2 py-1.5 whitespace-nowrap ${probable ? 'font-bold text-emerald-600' : 'text-slate-600'}`}
+            title={probable ? 'Autocall probable à la prochaine observation (valo > 99 %)' : undefined}
           >
             {next ? formatDateFr(next) : '—'}
           </td>
