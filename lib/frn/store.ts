@@ -1,13 +1,14 @@
 'use client'
 // ─────────────────────────────────────────────────────────────────────────
-//  Couche d'accès aux prix FRN. Phase 1 : seed versionné (data/frn-quotes.json)
-//  + saisies locales (localStorage, NON versionnées). À chaque (re)lecture, le
-//  run LE PLUS RÉCENT par couple (émetteur, devise, type, maturité) écrase les
-//  précédents. Abstraction prête à migrer vers KV/DB (phase 2).
+//  Couche d'accès aux prix FRN. Seed versionné (data/frn-quotes.json) + saisies
+//  persistées côté serveur (KV) quand il est configuré → mémorisées sur TOUS les
+//  appareils ; sinon dans le navigateur. À chaque (re)lecture, le run LE PLUS
+//  RÉCENT par couple (émetteur, devise, type, maturité) écrase les précédents.
 // ─────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useState } from 'react'
 import seedJson from '@/data/frn-quotes.json'
 import type { FrnQuote } from './types'
+import { loadSlot, saveSlot } from '@/lib/commissions-sync'
 
 export const SEED = seedJson as FrnQuote[]
 
@@ -51,6 +52,16 @@ export function useFrnStore() {
   const [local, setLocal] = useState<FrnQuote[]>([])
   useEffect(() => {
     setLocal(readLocal())
+    // Serveur (KV) sans rien perdre : fusion par run le plus récent, en relisant
+    // le localStorage au moment de la fusion, puis repush de la fusion.
+    void loadSlot<FrnQuote[]>('frn').then(({ configured, value }) => {
+      if (!configured) return
+      const server = Array.isArray(value) ? value : []
+      const merged = mergeLatest(server, readLocal())
+      setLocal(merged)
+      writeLocal(merged)
+      if (JSON.stringify(merged) !== JSON.stringify(server)) void saveSlot('frn', merged)
+    })
     const on = (e: StorageEvent) => {
       if (e.key === KEY) setLocal(readLocal())
     }
@@ -66,6 +77,7 @@ export function useFrnStore() {
     setLocal((prev) => {
       const next = mergeLatest(prev, qs)
       writeLocal(next)
+      void saveSlot('frn', next)
       return next
     })
   }
@@ -73,6 +85,7 @@ export function useFrnStore() {
     setLocal((prev) => {
       const next = prev.filter((q) => quoteKey(q) !== key)
       writeLocal(next)
+      void saveSlot('frn', next)
       return next
     })
   }
@@ -83,6 +96,7 @@ export function useFrnStore() {
     } catch {
       /* ignore */
     }
+    void saveSlot('frn', [])
   }
 
   return { quotes, local, upsert, remove, reset }
