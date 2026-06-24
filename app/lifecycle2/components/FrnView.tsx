@@ -197,10 +197,10 @@ export default function FrnView() {
                   const cls = cellStale ? 'text-slate-300' : isBest ? 'font-bold text-red-600' : infine ? 'text-amber-700' : 'text-slate-700'
                   return (
                     <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
-                        title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · duration non fournie'} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
+                        title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ` · duration estimée ${fmt2(d.sensiUsed)}`} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
                       <div className="leading-tight">{fmt2(d.value)}</div>
                       <div className="text-[9px] font-normal leading-none text-slate-400">
-                        {q.sensitivity != null ? `s ${q.sensitivity}` : `@${fmt2(q.baseReoffer)}`}
+                        {d.missingSensi ? `~${fmt2(d.sensiUsed)}` : `s ${q.sensitivity}`}
                       </div>
                     </td>
                   )
@@ -260,9 +260,10 @@ export default function FrnView() {
 
       <p className="text-xs text-slate-400">
         Coupons réels tirés des runs émetteurs (running annuel, au UF du run). Retraitement à 0 % UF /
-        reoffer {reoffer.toFixed(2)} % appliqué uniquement si la duration est fournie. Cellules grisées =
-        run &gt; {staleDays} j ouvrés. Meilleur coupon/maturité en rouge. Dernière MAJ {currency} :{' '}
-        {dateFr(lastUpdate)}.
+        reoffer {reoffer.toFixed(2)} % via la sensi : <span className="font-medium">s X</span> = duration
+        fournie par l&apos;émetteur, <span className="font-medium">~X</span> = duration estimée (proxy par/bullet)
+        quand le run ne la donne pas. Cellules grisées = run &gt; {staleDays} j ouvrés. Meilleur coupon/maturité
+        en rouge. Dernière MAJ {currency} : {dateFr(lastUpdate)}.
       </p>
 
       <FrnImportPanel open={importOpen} onClose={() => setImportOpen(false)} onSave={(qs) => upsert(qs)} defaultCurrency={currency} />

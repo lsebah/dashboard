@@ -26,22 +26,40 @@ export function couponAtReoffer(
 
 export interface DisplayResult {
   value: number // coupon affiché (%)
-  missingSensi: boolean // sensibilité absente ⇒ coupon brut, exclu du « meilleur prix »
+  missingSensi: boolean // sensi absente du run ⇒ duration ESTIMÉE (proxy)
+  sensiUsed: number // sensibilité retenue (fournie par le run, sinon estimée)
 }
 
 /**
- * Coupon affiché pour un reoffer donné. Si la sensibilité manque (null/0), on
- * renvoie le coupon brut avec le drapeau `missingSensi` (exclu du meilleur prix).
+ * Sensibilité (duration modifiée) estimée d'un FRN à coupon fixe coté ~au pair,
+ * quand le run ne fournit pas de sensi. Proxy par/bullet :
+ *   Macaulay = ((1+y)/y)·(1 − (1+y)^−n)   puis   D_mod = Macaulay / (1+y)
+ * (y ≈ coupon). Approximation — pour un callable la duration effective est plus
+ * courte, mais cela rend le retraitement au reoffer exploitable sur TOUTES les lignes.
+ */
+export function estimateSensitivity(maturityYears: number, coupon: number): number {
+  const y = Math.max(coupon / 100, 1e-4)
+  const n = Math.max(maturityYears, 0.5)
+  const macaulay = ((1 + y) / y) * (1 - Math.pow(1 + y, -n))
+  return round2(macaulay / (1 + y))
+}
+
+/**
+ * Coupon affiché pour un reoffer donné. Utilise la sensi du run si fournie ;
+ * sinon une duration ESTIMÉE (proxy) pour que le retraitement s'applique quand même.
  */
 export function displayedCoupon(
-  q: Pick<FrnQuote, 'coupon' | 'uf' | 'sensitivity' | 'baseReoffer'>,
+  q: Pick<FrnQuote, 'coupon' | 'uf' | 'sensitivity' | 'baseReoffer'> & Partial<Pick<FrnQuote, 'maturityYears'>>,
   reoffer: number,
 ): DisplayResult {
-  if (q.sensitivity == null || q.sensitivity === 0) {
-    return { value: q.coupon, missingSensi: true }
+  const provided = q.sensitivity != null && q.sensitivity > 0
+  const sensi = provided ? (q.sensitivity as number) : estimateSensitivity(q.maturityYears ?? 5, q.coupon)
+  const zero = couponZeroUF(q.coupon, q.uf, sensi)
+  return {
+    value: couponAtReoffer(zero, reoffer, sensi, q.baseReoffer ?? 100),
+    missingSensi: !provided,
+    sensiUsed: sensi,
   }
-  const zero = couponZeroUF(q.coupon, q.uf, q.sensitivity)
-  return { value: couponAtReoffer(zero, reoffer, q.sensitivity, q.baseReoffer ?? 100), missingSensi: false }
 }
 
 /** Meilleur coupon (max) par maturité, en ignorant les prix « sensi manquante ». */
