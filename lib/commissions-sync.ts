@@ -6,7 +6,7 @@
 //  tolérant aux pannes : en l'absence de KV, on retombe sur le navigateur.
 // ─────────────────────────────────────────────────────────────────────────
 
-export type Slot = 'ov' | 'local' | 'alloc' | 'statut' | 'noms'
+export type Slot = 'ov' | 'local' | 'alloc' | 'statut' | 'noms' | 'products'
 
 /** Lit un slot côté serveur. `configured:false` ⇒ KV absent (repli navigateur). */
 export async function loadSlot<T>(slot: Slot): Promise<{ configured: boolean; value: T | null }> {

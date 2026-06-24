@@ -11,7 +11,8 @@ export const runtime = 'nodejs'
 //   slot=local  → commissions créées via « Nouveau trade »
 //   slot=alloc  → allocations clients par produit (ISIN → [{client, montant}])
 //   slot=statut → statuts forcés par produit (Vendu / Rappelé…)
-//   slot=noms   → noms d'affichage renommés par produit
+//   slot=noms     → noms d'affichage renommés par produit
+//   slot=products → produits créés via « Nouveau produit » (brouillons)
 // Dégrade proprement : si le KV n'est pas configuré, l'API renvoie
 // `configured:false` et le client retombe sur le stockage navigateur.
 const SLOTS: Record<string, string> = {
@@ -20,6 +21,7 @@ const SLOTS: Record<string, string> = {
   alloc: 'cmf:lifecycle:alloc:v1',
   statut: 'cmf:lifecycle:statut:v1',
   noms: 'cmf:lifecycle:noms:v1',
+  products: 'cmf:lifecycle:products:v1',
 }
 
 export async function GET(req: Request) {
