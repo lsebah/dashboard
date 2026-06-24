@@ -47,6 +47,14 @@ export async function GET(req: Request) {
     ? (await kvGet<{ levels: Record<string, number> }>('levels:overlay'))?.levels ?? {}
     : {}
 
+  // Strikes (valeurs initiales) des indices décrément par ISIN produit (niveau de
+  // l'indice à la date de constatation initiale, récupéré par Bloomberg) — repli
+  // de strike quand niveauInitial absent et sous-jacent non coté Yahoo.
+  const strikes = kvConfigured()
+    ? (await kvGet<{ strikes: Record<string, { ticker?: string; value: number }> }>('decrement:strikes:overlay'))?.strikes ?? {}
+    : {}
+  const normTicker = (t?: string) => (t ?? '').replace(/\s+(Index|Equity|Comdty|Curncy)$/i, '').trim()
+
   const today = new Date().toISOString().slice(0, 10)
   const courant: Record<
     string,
@@ -59,11 +67,18 @@ export async function GET(req: Request) {
   for (const p of list) {
     // Par sous-jacent : barres Yahoo + strike (TS ou reconstruit à la constatation
     // initiale). Mutualisé avec le calcul du worst-of constaté ci-dessous.
+    const sEntry = strikes[p.isin]
     const cols = p.sousJacents.map((u) => {
       const s = yahooSymbol(u.bloomberg)
       const bars = s ? hist.get(s) ?? [] : []
+      // Strike : niveau initial décodé > clôture Yahoo à la constatation initiale >
+      // strike Bloomberg (overlay, indices décrément) pour les sous-jacents non cotés.
+      const strikeOverlay =
+        sEntry && (!sEntry.ticker || normTicker(sEntry.ticker) === normTicker(u.bloomberg))
+          ? sEntry.value
+          : undefined
       const strike =
-        u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close
+        u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close ?? strikeOverlay
       return { nom: u.nom, bars, strike, bbg: u.bloomberg?.trim() }
     })
 
