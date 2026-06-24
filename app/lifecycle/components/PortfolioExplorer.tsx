@@ -585,8 +585,21 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </td>
         )
       }
-      case 'next':
-        return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
+      case 'next': {
+        const next = prochainEvenement(p)
+        const o = prochaineObservation(p)
+        // Prochain événement = autocall/rappel → date en gras vert.
+        const estAutocall = !!o && o.autocallActif !== false && typeof o.niveauRappelPct === 'number'
+        return (
+          <td
+            key="next"
+            className={`px-2 py-1.5 whitespace-nowrap ${estAutocall ? 'font-bold text-emerald-600' : 'text-slate-600'}`}
+            title={estAutocall ? 'Prochaine observation : autocall / rappel possible' : undefined}
+          >
+            {next ? formatDateFr(next) : '—'}
+          </td>
+        )
+      }
       case 'cy':
         // Lisibilité devises : EUR en bleu (référence UE), toute autre en rouge.
         return <td key="cy" className={`px-2 py-1.5 font-medium ${p.devise === 'EUR' ? 'text-blue-700' : 'text-red-600'}`}>{p.devise}</td>
