@@ -6145,7 +6145,10 @@ const barclaysBnpAcaGle: Product = {
   productType: 'Phoenix',
   description: '5Y Phoenix Mémoire Dégressif Wof BNP + ACA + GLE',
   badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
-  termsheetFichier: 'TS - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
+  termsheetFichier: 'TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
+  // TS hors dossier « Termsheets » (rangée dans Deal Done) → lien direct SharePoint.
+  termsheetUrl:
+    'https://capitalmanagementfrance-my.sharepoint.com/personal/serveur_cmf_finance/Documents/TEAM/Deal Done/Laurent/2026-07-03_XS3401965978_Phoenix Mémoire BNP ACA SG/TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
 }
 
 // ── BIL — Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (CH1322027827) ───────

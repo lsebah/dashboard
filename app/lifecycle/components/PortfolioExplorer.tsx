@@ -19,7 +19,7 @@ import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocati
 import { useLocalProducts } from '@/lib/local-products'
 import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
-import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
+import { canonicalForProduct, termsheetFile, termsheetUrl } from '@/lib/termsheets'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
 // PDF de la TS déposé dans public/ts/<ISIN>.pdf (cf. scripts/index-ts-pdfs.mjs).
@@ -575,7 +575,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // PDF local prioritaire (ouverture directe, plus de détour par le cloud) ;
         // repli sur le lien OneDrive si le PDF n'est pas encore déposé.
         const local = TS_PDFS[p.isin]
-        const href = local ?? p.termsheetUrl
+        // Repli index pour TOUT produit (y compris les trades locaux) : si la TS
+        // est dans le dossier OneDrive Termsheets, le lien se résout par l'ISIN.
+        const href = local ?? p.termsheetUrl ?? termsheetUrl(p.isin)
         return (
           <td key="ts" style={f.style} className={`px-0.5 py-1.5 text-center ${f.cls}`}>
             {href ? (
