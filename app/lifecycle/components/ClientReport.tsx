@@ -2,7 +2,8 @@
 
 import type { Product } from '@/lib/types'
 import { issuerCode } from '@/lib/termsheets'
-import { couponsEncaissesPct } from '@/lib/lifecycle'
+import { couponsEncaissesPct, couponPa, pnlAvecCoupons } from '@/lib/lifecycle'
+import { productTypeLabel } from '@/lib/classification'
 
 // Reporting client mensuel (format CMF) — imprimable en PDF via le navigateur
 // OU rendu en PDF côté serveur (route /print + scripts/reporting_clients.mjs).
@@ -173,6 +174,50 @@ export function ReportSheet({
   )
 }
 
+// ── Export Excel (CSV) ───────────────────────────────────────────────────────
+// CSV « FR Excel » : séparateur « ; », décimales à la virgule, BOM UTF-8 pour
+// les accents. Une ligne par position du client.
+const num = (v: number | null | undefined, d = 2): string =>
+  typeof v === 'number' && Number.isFinite(v) ? v.toFixed(d).replace('.', ',') : ''
+const cell = (v: string | number | null | undefined): string => `"${String(v ?? '').replace(/"/g, '""')}"`
+
+function reportToCsv(client: string, rows: { p: Product; montant?: number }[]): string {
+  const head = [
+    'ISIN', 'Produit', 'Émetteur', 'Type', 'Devise', 'Montant investi',
+    'Prix marché', 'P&L %', 'Coupon p.a. %', 'Échéance', 'Sous-jacents',
+  ]
+  const lignes = rows.map(({ p, montant }) => {
+    const perfs = p.sousJacents?.map((u) => u.perf).filter((x): x is number => typeof x === 'number') ?? []
+    const worst = perfs.length ? Math.min(...perfs) : undefined
+    const sj = p.sousJacents?.map((u) => u.nom || u.bloomberg || '').filter(Boolean).join(' / ') ?? ''
+    return [
+      p.isin,
+      p.description ?? p.nom,
+      issuerCode(p.emetteur),
+      productTypeLabel(p),
+      p.devise ?? 'EUR',
+      typeof montant === 'number' ? String(Math.round(montant)) : '',
+      num(p.prixMarche),
+      num(pnlAvecCoupons(p) ?? p.pnlPct),
+      num(couponPa(p)),
+      dfr(p.dateEcheance),
+      worst != null ? `${sj} (worst ${num(worst)} %)` : sj,
+    ]
+  })
+  return [head, ...lignes].map((r) => r.map(cell).join(';')).join('\r\n')
+}
+
+function downloadCsv(client: string, rows: { p: Product; montant?: number }[]) {
+  const csv = '﻿' + reportToCsv(client, rows) // BOM pour Excel
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `Reporting_${client.replace(/[^\w-]+/g, '_')}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function ClientReport({
   client,
   rows,
@@ -190,6 +235,9 @@ export default function ClientReport({
         <div className="mb-3 flex justify-end gap-2 print:hidden">
           <button onClick={() => window.print()} className="rounded-md bg-cmf-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
             ⬇ Imprimer / Enregistrer en PDF
+          </button>
+          <button onClick={() => downloadCsv(client, rows)} className="rounded-md border border-cmf-blue bg-white px-4 py-2 text-sm font-medium text-cmf-blue hover:bg-blue-50">
+            ⬇ Excel (CSV)
           </button>
           <button onClick={onClose} className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
             Fermer
