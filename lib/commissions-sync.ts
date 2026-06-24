@@ -5,6 +5,7 @@
 //  chargement et mémorise chaque changement pour tous les appareils. Tout est
 //  tolérant aux pannes : en l'absence de KV, on retombe sur le navigateur.
 // ─────────────────────────────────────────────────────────────────────────
+import { reportSync } from './sync-status'
 
 export type Slot = 'ov' | 'local' | 'alloc' | 'statut' | 'noms' | 'products' | 'frn' | 'notifs'
 
@@ -25,6 +26,7 @@ export async function loadSlot<T>(slot: Slot): Promise<{ configured: boolean; va
  * perdre une saisie (date de paiement, n° de facture…).
  */
 export async function saveSlot(slot: Slot, value: unknown): Promise<boolean> {
+  reportSync('saving')
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await fetch('/api/commissions/store', {
@@ -33,13 +35,23 @@ export async function saveSlot(slot: Slot, value: unknown): Promise<boolean> {
         body: JSON.stringify({ slot, value }),
       })
       if (res.ok) {
-        const j = (await res.json()) as { ok?: boolean }
-        if (j.ok) return true
+        const j = (await res.json()) as { ok?: boolean; configured?: boolean }
+        if (j.ok) {
+          reportSync('ok')
+          return true
+        }
+        // KV non configuré : repli navigateur, ce n'est PAS une erreur.
+        if (j.configured === false) {
+          reportSync('idle')
+          return false
+        }
       }
     } catch {
       /* on réessaie */
     }
     if (attempt < 2) await new Promise((r) => setTimeout(r, 300 * (attempt + 1)))
   }
+  // KV configuré mais écriture impossible après réessais → vraie erreur.
+  reportSync('error')
   return false
 }
