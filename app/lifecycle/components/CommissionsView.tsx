@@ -69,11 +69,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
 
   // Ligne « calculée » : applique les surcharges locales (UF/Rétro saisis → on
   // recalcule Com. totale, Reversé CGP, Perçue CMF et P&L depuis le nominal ;
-  // date de paiement et marquage facturé manuels). Édition réservée à l'année
-  // courante (comptes des années précédentes clôturés).
+  // date de paiement et marquage facturé manuels). Édition ouverte à TOUTE ligne
+  // rattachée à l'année courante (anneeAttr) — y compris un report émis une année
+  // antérieure mais encaissé en 2026 —, quel que soit le filtre actif.
   const calc = (l: CommissionLigne) => {
     const o = ov[rowKey(l)] ?? {}
-    const editable = annee(l) === ANNEE_COURANTE
+    const editable = anneeAttr(l) === ANNEE_COURANTE
     const uf = editable ? o.uf ?? l.ufPct : l.ufPct
     const retro = editable ? o.retro ?? l.retroPct : l.retroPct
     const n = l.nominal
