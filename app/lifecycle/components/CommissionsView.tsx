@@ -316,7 +316,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           ))}
         </div>
         <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
-          {([['toutes', 'Toutes'], ['a_facturer', 'À facturer'], ['envoyee', 'Envoyée'], ['payee', 'Payée']] as [StatutFacture, string][]).map(([v, lab]) => (
+          {([['toutes', 'Toutes'], ['a_facturer', 'À facturer'], ['envoyee', 'En attente'], ['payee', 'Payée']] as [StatutFacture, string][]).map(([v, lab]) => (
             <button key={v} onClick={() => setStatut(v)} className={`px-3 py-1.5 ${statut === v ? 'bg-cmf-blue text-white' : 'bg-white text-slate-600'}`}>{lab}</button>
           ))}
         </div>
