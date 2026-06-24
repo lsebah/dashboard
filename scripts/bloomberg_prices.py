@@ -166,6 +166,19 @@ def fetch_levels(session, tickers, field="PX_LAST"):
     return out
 
 
+def fetch_index_levels(session, tickers, field="PX_LAST"):
+    """Niveau (PX_Last) des indices a decrement — yellow-key ' Index' force
+    (les codes type CNFSPT / GOLDM50 ne contiennent pas 'index')."""
+    secs = {t: (t if " index" in t.lower() else t + " Index") for t in tickers}
+    raw = bdp(session, list(dict.fromkeys(secs.values())), field)
+    out = {}
+    for t, sec in secs.items():
+        v = raw.get(sec)
+        if isinstance(v, (int, float)):
+            out[t] = round(v, 4)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_URL"))
@@ -174,6 +187,7 @@ def main():
     ap.add_argument("--bypass", default=os.environ.get("VERCEL_AUTOMATION_BYPASS_SECRET"))
     ap.add_argument("--dry-run", action="store_true", help="interroge Bloomberg, n'envoie rien")
     ap.add_argument("--no-levels", action="store_true", help="prix produits uniquement")
+    ap.add_argument("--no-decrement", action="store_true", help="ne pas pricer les indices a decrement")
     ap.add_argument("--field", default="PR005", help="champ de prix produit (def. PR005)")
     ap.add_argument("--level-field", default="PX_LAST", help="champ de niveau sous-jacent (def. PX_LAST)")
     ap.add_argument("--host", default="localhost")
@@ -192,6 +206,9 @@ def main():
     tickers = []
     if not args.no_levels:
         tickers = http_get_json(base + "/api/underlyings", bypass).get("underlyings", [])
+    decr_tickers = []
+    if not args.no_levels and not args.no_decrement:
+        decr_tickers = http_get_json(base + "/api/decrement/tickers", bypass).get("tickers", [])
 
     session = open_session(args.host, args.port)
 
@@ -211,6 +228,16 @@ def main():
         miss_l = [t for t in tickers if t not in levels]
         if miss_l:
             print("Sans niveau Bloomberg :", ", ".join(miss_l))
+
+    # Indices a decrement (CNFSPT, GOLDM50, …) → niveau courant, meme surcouche.
+    if decr_tickers:
+        print(f"{len(decr_tickers)} indices decrement - niveaux (champ {args.level_field})...")
+        decr_levels = fetch_index_levels(session, decr_tickers, args.level_field)
+        print(f"{len(decr_levels)} niveaux indices, {len(decr_tickers) - len(decr_levels)} sans niveau.")
+        miss_i = [t for t in decr_tickers if t not in decr_levels]
+        if miss_i:
+            print("Indices sans niveau Bloomberg :", ", ".join(miss_i))
+        levels.update(decr_levels)
 
     session.stop()
 

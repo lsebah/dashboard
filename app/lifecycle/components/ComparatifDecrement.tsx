@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import indicesRaw from '@/lib/decrement-indices.json'
 import Modal from './Modal'
 
@@ -209,9 +209,25 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const selInfo = sel ? ENRICH[sel.ticker] : null
 
 
-  // Niveau courant de l'indice : niveau du run de la ligne, sinon niveau seedé au
-  // catalogue (run le plus récent / Bloomberg quotidien). Source unique par indice.
-  const niveauOf = (r: Row): number | undefined => r.niveau ?? ENRICH[r.ticker]?.niveau
+  // Niveaux live (Bloomberg quotidien → KV levels:overlay, par ticker d'indice).
+  const [liveLevels, setLiveLevels] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let on = true
+    fetch('/api/levels', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { levels?: Record<string, number> }) => {
+        if (on && d?.levels) setLiveLevels(d.levels)
+      })
+      .catch(() => {})
+    return () => {
+      on = false
+    }
+  }, [])
+
+  // Niveau courant de l'indice : Bloomberg quotidien (live) en priorité, sinon
+  // niveau du run de la ligne, sinon niveau seedé au catalogue.
+  const niveauOf = (r: Row): number | undefined =>
+    liveLevels[r.ticker] ?? r.niveau ?? ENRICH[r.ticker]?.niveau
 
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
