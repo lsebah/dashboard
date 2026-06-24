@@ -66,11 +66,10 @@ export default function FrnView() {
       grid.get(q.issuer)!.set(q.maturityYears, q)
       if (!lastRun[q.issuer] || q.runDate > lastRun[q.issuer]) lastRun[q.issuer] = q.runDate
     }
-    // Meilleur coupon par maturité parmi les runs FRAIS (les coupons sont sur la
-    // même base — running annuel au UF du run).
+    // Meilleur coupon par maturité (tous les runs, même anciens — sinon plus rien
+    // n'est mis en avant dès que les runs dépassent la fenêtre de péremption).
     const best = new Map<number, number>()
     for (const q of rows) {
-      if (businessDaysAgo(q.runDate) > staleDays) continue
       const d = displayedCoupon(q, reoffer)
       const cur = best.get(q.maturityYears)
       if (cur === undefined || d.value > cur) best.set(q.maturityYears, d.value)
@@ -193,8 +192,10 @@ export default function FrnView() {
                   if (!q) return <td key={mat} className="px-2 py-1 text-right text-slate-300">—</td>
                   const d = displayedCoupon(q, reoffer)
                   const cellStale = businessDaysAgo(q.runDate) > staleDays
-                  const isBest = !cellStale && m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
-                  const cls = cellStale ? 'text-slate-300' : isBest ? 'font-bold text-red-600' : infine ? 'text-amber-700' : 'text-slate-700'
+                  // Le meilleur coupon/maturité est en rouge MÊME si le run est ancien
+                  // (le rouge prime sur le grisé de péremption).
+                  const isBest = m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
+                  const cls = isBest ? 'font-bold text-red-600' : cellStale ? 'text-slate-300' : infine ? 'text-amber-700' : 'text-slate-700'
                   return (
                     <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
                         title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ` · duration estimée ${fmt2(d.sensiUsed)}`} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
