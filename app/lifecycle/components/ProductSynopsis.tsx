@@ -38,10 +38,15 @@ export default function ProductSynopsis({
   const terms = product.terms
   const cpa = couponPa(product)
 
-  // Filigrane de statut : produit rappelé ⇒ CALLED, arrivé à maturité ⇒ MATURED.
-  // Gris clair, posé DERRIÈRE le texte (z négatif) ⇒ contenu parfaitement lisible.
+  // Filigrane de statut : produit rappelé ⇒ CALLED (vert), arrivé à maturité ⇒
+  // MATURED (gris). Tampon en diagonale posé EN SURIMPRESSION (semi-transparent,
+  // pointer-events-none) → bien visible tout en laissant le contenu lisible.
   const watermark =
-    product.statut === 'rappele' ? 'CALLED' : product.statut === 'echu' ? 'MATURED' : null
+    product.statut === 'rappele'
+      ? { txt: 'CALLED', cls: 'border-emerald-500/40 text-emerald-600/40' }
+      : product.statut === 'echu'
+        ? { txt: 'MATURED', cls: 'border-slate-400/40 text-slate-500/40' }
+        : null
 
   const protection =
     terms?.kind === 'autocall'
@@ -76,9 +81,11 @@ export default function ProductSynopsis({
       }`}
     >
       {watermark && (
-        <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center select-none">
-          <span className="-rotate-[18deg] whitespace-nowrap text-5xl font-extrabold tracking-[0.25em] text-slate-300">
-            {watermark}
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center select-none">
+          <span
+            className={`-rotate-[16deg] whitespace-nowrap rounded-2xl border-[6px] px-8 py-3 text-6xl font-black tracking-[0.15em] ${watermark.cls}`}
+          >
+            {watermark.txt}
           </span>
         </div>
       )}
