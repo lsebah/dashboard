@@ -96,7 +96,19 @@ function productTypeLabel(p: Product): string {
   // Autres familles : on retire un qualificatif « Airbag »/« Mémoire » du libellé
   // (ex. « Participation (Airbag) » → « Participation ») SANS forcer Athéna.
   const s = raw.replace(/\s*\(?\s*airbag\s*\)?/i, ' ').replace(/\s*m[ée]moire/i, ' ').replace(/\s+/g, ' ').trim()
-  return s || '—'
+  if (s) return s
+  // productType absent → on déduit le type du nom / de la description (évite « — »).
+  if (/autocall|ath[ée]na/i.test(hay)) return /reverse|inverse/i.test(hay) ? 'Athéna inverse' : 'Athéna'
+  if (/\bTARN\b/i.test(hay)) return 'TARN'
+  if (/\bCLN\b/i.test(hay)) return 'CLN'
+  if (/quartz/i.test(hay)) return 'Quartz'
+  if (/sphinx/i.test(hay)) return 'Sphinx'
+  if (/callable/i.test(hay)) return 'Callable'
+  if (/participation/i.test(hay)) return 'Participation'
+  if (/booster/i.test(hay)) return 'Booster'
+  if (/mini.?future/i.test(hay)) return 'Mini Future'
+  if (/dette\s+priv/i.test(hay)) return 'Dette Privée'
+  return '—'
 }
 
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
