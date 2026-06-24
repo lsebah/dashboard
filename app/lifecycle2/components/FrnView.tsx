@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useFrnStore } from '@/lib/frn/store'
 import { displayedCoupon, fmt2 } from '@/lib/frn/pricing'
 import { issuerInfo, ratingLine, issuerOrder } from '@/lib/frn/issuers'
-import type { Currency, CallType, FrnQuote } from '@/lib/frn/types'
+import type { Currency, FrnQuote } from '@/lib/frn/types'
 import FrnImportPanel from './FrnImportPanel'
 
-const MATURITIES = [3, 4, 5, 6, 7, 8, 9, 10, 12, 15]
+const MATURITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15]
 
 /** Nombre de jours OUVRÉS écoulés depuis une date ISO. */
 function businessDaysAgo(iso: string, now = new Date()): number {

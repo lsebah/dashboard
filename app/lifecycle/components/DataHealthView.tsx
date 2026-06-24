@@ -65,7 +65,6 @@ export default function DataHealthView({ products }: { products: Product[] }) {
   const h = useMemo(() => computeDataHealth(products), [products])
   const complet =
     h.sansCoupon.length + h.sansTS.length + h.airbagSansNiveau.length + h.deviseSuspecte.length + h.typeNonIdentifie.length
-  const ok = h.total - h.sansTS.length - h.sansCoupon.length // approximation lisible
 
   return (
     <div className="flex flex-col gap-4">
