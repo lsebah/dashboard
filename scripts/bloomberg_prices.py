@@ -179,6 +179,62 @@ def fetch_index_levels(session, tickers, field="PX_LAST"):
     return out
 
 
+def _index_security(t):
+    """Ajoute ' Index' sauf si le ticker porte deja un yellow-key."""
+    low = (t or "").strip().lower()
+    if any(s in low for s in (" index", " equity", " comdty", " curncy")):
+        return t.strip()
+    return t.strip() + " Index"
+
+
+def bdh_at(session, security, yyyymmdd, field="PX_LAST"):
+    """Niveau historique a UNE date (HistoricalDataRequest) -> float | None.
+    Remplit par la derniere valeur connue si la date est un jour non ouvre."""
+    refdata = session.getService("//blp/refdata")
+    req = refdata.createRequest("HistoricalDataRequest")
+    req.getElement("securities").appendValue(security)
+    req.getElement("fields").appendValue(field)
+    req.set("startDate", yyyymmdd)
+    req.set("endDate", yyyymmdd)
+    req.set("nonTradingDayFillOption", "ALL_CALENDAR_DAYS")
+    req.set("nonTradingDayFillMethod", "PREVIOUS_VALUE")
+    session.sendRequest(req)
+    val = None
+    while True:
+        ev = session.nextEvent(30000)
+        for msg in ev:
+            if not msg.hasElement("securityData"):
+                continue
+            sd = msg.getElement("securityData")
+            if sd.hasElement("fieldData"):
+                fd = sd.getElement("fieldData")
+                if fd.numValues() > 0:
+                    row = fd.getValueAsElement(fd.numValues() - 1)
+                    if row.hasElement(field):
+                        try:
+                            val = row.getElementAsFloat(field)
+                        except Exception:
+                            pass
+        if ev.eventType() == blpapi.Event.RESPONSE:
+            break
+    return val
+
+
+def fetch_strikes(session, needed, field="PX_LAST"):
+    """needed = [{isin, ticker, date 'YYYY-MM-DD'}] -> {isin: {ticker,date,value}}.
+    Niveau de l'indice a la date de constatation initiale (= strike)."""
+    out = {}
+    for r in needed:
+        sec = _index_security(r.get("ticker", ""))
+        d = (r.get("date") or "").replace("-", "")
+        if not sec or len(d) != 8:
+            continue
+        v = bdh_at(session, sec, d, field)
+        if isinstance(v, (int, float)):
+            out[r["isin"]] = {"ticker": r["ticker"], "date": r["date"], "value": round(v, 4)}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_URL"))
@@ -207,8 +263,10 @@ def main():
     if not args.no_levels:
         tickers = http_get_json(base + "/api/underlyings", bypass).get("underlyings", [])
     decr_tickers = []
+    strikes_needed = []
     if not args.no_levels and not args.no_decrement:
         decr_tickers = http_get_json(base + "/api/decrement/tickers", bypass).get("tickers", [])
+        strikes_needed = http_get_json(base + "/api/decrement/strikes-needed", bypass).get("strikes", [])
 
     session = open_session(args.host, args.port)
 
@@ -239,6 +297,13 @@ def main():
             print("Indices sans niveau Bloomberg :", ", ".join(miss_i))
         levels.update(decr_levels)
 
+    # Strikes (valeurs initiales) manquants → niveau de l'indice a la date de strike.
+    strikes = {}
+    if strikes_needed:
+        print(f"{len(strikes_needed)} strike(s) a recuperer (BDH historique)...")
+        strikes = fetch_strikes(session, strikes_needed, args.level_field)
+        print(f"{len(strikes)} strike(s) recuperes, {len(strikes_needed) - len(strikes)} sans valeur.")
+
     session.stop()
 
     if args.dry_run:
@@ -249,7 +314,7 @@ def main():
         print("\n[dry-run] rien envoye au dashboard.")
         return
 
-    if not got and not levels:
+    if not got and not levels and not strikes:
         print("Rien a envoyer (Bloomberg n'a renvoye aucune valeur) - POST ignore.")
         return
 
@@ -260,6 +325,8 @@ def main():
         payload["prices"] = got
     if levels:
         payload["levels"] = levels
+    if strikes:
+        payload["strikes"] = strikes
     res = http_post_json(
         base + "/api/prices/ingest",
         payload,
