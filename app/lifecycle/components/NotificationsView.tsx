@@ -115,7 +115,7 @@ export default function NotificationsView({ products }: { products: Product[] })
 
       <p className="text-[11px] text-slate-400">
         Les rappels déclenchent un email automatique vers L.sebah@cmf.finance (une fois par événement).
-        L'envoi nécessite la clé d'API mail configurée ; sinon la notification reste visible ici.
+        L&apos;envoi nécessite la clé d&apos;API mail configurée ; sinon la notification reste visible ici.
       </p>
     </div>
   )
