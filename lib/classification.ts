@@ -5,7 +5,7 @@
 //   - Autocall = Athéna (le terme « Autocall » ne doit plus apparaître) ;
 //   - « Airbag »/« Mémoire » implicites → retirés du libellé Type ;
 //   - Snowball → Athéna (Airbag) ;
-//   - Phoenix Mémoire Dégressif (à ticket) → « Phoenix Ticket Mémoire » ;
+//   - Phoenix (mémoire, dégressif, taux…) → « Phoenix » ;
 //   - tranche de crédit → « CLN Tranche ».
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
@@ -36,7 +36,7 @@ export function productTypeLabel(p: Product): string {
   const raw = (p.productType ?? '').trim()
   const hay = `${raw} ${p.nom ?? ''} ${p.description ?? ''}`
   if (/snowball/i.test(hay) || p.badges?.includes('Snowball')) return 'Athéna'
-  if (/phoenix/i.test(hay)) return /d[ée]gressif/i.test(hay) ? 'Phoenix Ticket Mémoire' : 'Phoenix'
+  if (/phoenix/i.test(hay)) return 'Phoenix'
   // Vrais autocalls (famille / terms / type explicite). Nature « inverse » préservée.
   if (t?.kind === 'autocall' || p.family === 'autocall' || /autocall|ath[ée]na/i.test(raw)) {
     const inverse = (t?.kind === 'autocall' && t.sens === 'inverse') || /reverse|inverse/i.test(raw)

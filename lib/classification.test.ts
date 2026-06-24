@@ -29,10 +29,10 @@ test('« Airbag » jamais affiché dans Type', () => {
   assert.equal(productTypeLabel(P({ productType: 'Participation (Airbag)', family: 'participation' })), 'Participation')
 })
 
-test('Phoenix : « Mémoire » implicite, variante dégressive nommée', () => {
+test('Phoenix : « Mémoire »/« Dégressif » implicites → « Phoenix »', () => {
   assert.equal(productTypeLabel(P({ productType: 'Phoenix Mémoire' })), 'Phoenix')
   assert.equal(productTypeLabel(P({ productType: 'Phoenix Memory' })), 'Phoenix')
-  assert.equal(productTypeLabel(P({ productType: 'Phoenix Mémoire Dégressif' })), 'Phoenix Ticket Mémoire')
+  assert.equal(productTypeLabel(P({ productType: 'Phoenix Mémoire Dégressif' })), 'Phoenix')
 })
 
 test('Snowball → Athéna', () => {
