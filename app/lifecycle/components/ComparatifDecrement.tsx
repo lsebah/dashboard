@@ -13,6 +13,9 @@ interface IndexInfo {
   source?: string
   fichePdf?: string // chemin local du PDF (téléchargé par le cron) → embarqué
   ficheUrl?: string // lien externe (banque) si la fiche est hébergée
+  niveau?: number // niveau courant de l'indice (run émetteur, sinon Bloomberg quotidien)
+  niveauDate?: string
+  niveauSource?: string
 }
 const ENRICH = indicesRaw as Record<string, IndexInfo>
 
@@ -32,6 +35,8 @@ interface Row {
   seuilInitial: string | null
   maturiteMax: string | null
   secteur: string | null
+  niveau?: number // niveau de l'indice indiqué dans le run
+  niveauDate?: string
   dateRun: string | null
   /** true = upfront issu d'un mail émetteur (affiché brut) ; absent/false =
    *  issu du PDF/Excel de départ (commission broker retirée → +1,5 % réintégrés). */
@@ -204,8 +209,13 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const selInfo = sel ? ENRICH[sel.ticker] : null
 
 
+  // Niveau courant de l'indice : niveau du run de la ligne, sinon niveau seedé au
+  // catalogue (run le plus récent / Bloomberg quotidien). Source unique par indice.
+  const niveauOf = (r: Row): number | undefined => r.niveau ?? ENRICH[r.ticker]?.niveau
+
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
+    { k: 'niveau', label: 'Niveau', align: 'right' },
     { k: 'emetteur', label: 'Émetteur' },
     { k: 'type', label: 'Type' },
     { k: 'secteur', label: 'Secteur' },
@@ -352,6 +362,12 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                       {ENRICH[r.ticker].nom}
                     </div>
                   )}
+                </td>
+                <td
+                  className="px-2 py-1.5 text-right tabular-nums text-slate-700 whitespace-nowrap"
+                  title={(() => { const d = r.niveauDate ?? ENRICH[r.ticker]?.niveauDate; const s = ENRICH[r.ticker]?.niveauSource; return d ? `Niveau ${s ?? ''} ${d}`.trim() : 'Niveau non disponible' })()}
+                >
+                  {(() => { const n = niveauOf(r); return typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) : '—' })()}
                 </td>
                 <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">{r.type}</td>
