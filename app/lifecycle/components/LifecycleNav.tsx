@@ -3,6 +3,8 @@
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import NouveauTrade from './NouveauTrade'
+import { products } from '@/lib/products'
+import { useNotifications } from '@/lib/use-notifications'
 
 const tabs = [
   { name: 'Portefeuille', href: '/lifecycle' },
@@ -17,6 +19,8 @@ const tabs = [
 export default function LifecycleNav() {
   const path = usePathname()
   const [showTrade, setShowTrade] = useState(false)
+  const { unread } = useNotifications(products)
+  const notifActive = path.startsWith('/lifecycle/notifications')
   return (
     <nav className="flex items-center gap-6 text-sm">
       {tabs.map((t) => {
@@ -36,6 +40,23 @@ export default function LifecycleNav() {
           </a>
         )
       })}
+      {/* Notifications avec badge « non lues » (cloche). */}
+      <a
+        href="/lifecycle/notifications"
+        aria-current={notifActive ? 'page' : undefined}
+        className={`relative inline-flex items-center gap-1 transition-colors border-b-2 pb-0.5 ${
+          notifActive ? 'text-white font-semibold border-cmf-blue' : 'text-slate-300 hover:text-white border-transparent'
+        }`}
+        title="Notifications"
+      >
+        <span aria-hidden>🔔</span>
+        <span>Notifications</span>
+        {unread > 0 && (
+          <span className="ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white tabular-nums">
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
+      </a>
       {/* « Nouveau trade » ouvre le pop-up de saisie (remplace l'ancienne page). */}
       <button
         onClick={() => setShowTrade(true)}

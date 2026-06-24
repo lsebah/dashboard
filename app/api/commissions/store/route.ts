@@ -14,6 +14,7 @@ export const runtime = 'nodejs'
 //   slot=noms     → noms d'affichage renommés par produit
 //   slot=products → produits créés via « Nouveau produit » (brouillons)
 //   slot=frn      → prix FRN saisis localement (runs)
+//   slot=notifs   → état des notifications (lues / archivées / emailées)
 // Dégrade proprement : si le KV n'est pas configuré, l'API renvoie
 // `configured:false` et le client retombe sur le stockage navigateur.
 const SLOTS: Record<string, string> = {
@@ -24,6 +25,7 @@ const SLOTS: Record<string, string> = {
   noms: 'cmf:lifecycle:noms:v1',
   products: 'cmf:lifecycle:products:v1',
   frn: 'cmf:frn:quotes:v1',
+  notifs: 'cmf:lifecycle:notifs:v1',
 }
 
 export async function GET(req: Request) {
