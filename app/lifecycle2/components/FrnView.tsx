@@ -54,8 +54,8 @@ export default function FrnView() {
 
   const byCurrency = useMemo(() => quotes.filter((q) => q.currency === currency), [quotes, currency])
 
-  const build = (callType: CallType): TableModel => {
-    const rows = byCurrency.filter((q) => q.callType === callType)
+  const build = (filter: (q: FrnQuote) => boolean): TableModel => {
+    const rows = byCurrency.filter(filter)
     const issuers = Array.from(new Set(rows.map((r) => r.issuer))).sort(
       (a, b) => issuerOrder(a) - issuerOrder(b) || a.localeCompare(b),
     )
@@ -79,9 +79,12 @@ export default function FrnView() {
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const tableNC = useMemo(() => build('NC'), [byCurrency, reoffer, staleDays])
+  const tableNC = useMemo(() => build((q) => q.callType === 'NC' && !q.inFine), [byCurrency, reoffer, staleDays])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const tableCALL = useMemo(() => build('CALLABLE'), [byCurrency, reoffer, staleDays])
+  const tableCALL = useMemo(() => build((q) => q.callType === 'CALLABLE' && !q.inFine), [byCurrency, reoffer, staleDays])
+  // Coupons IN FINE (sécurisés annuellement, versés à maturité) — tableau dédié.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tableInFine = useMemo(() => build((q) => !!q.inFine), [byCurrency, reoffer, staleDays])
 
   const lastUpdate = useMemo(() => {
     const ds = byCurrency.map((q) => q.runDate).filter(Boolean).sort()
@@ -117,6 +120,8 @@ export default function FrnView() {
       '',
       section(tableCALL, 'Callable (NC1)'),
       '',
+      section(tableInFine, 'Callable In Fine (coupons versés à maturité)'),
+      '',
       `MAJ ${new Date().toLocaleString('fr-FR')}`,
     ].join('\n')
   }
@@ -131,9 +136,18 @@ export default function FrnView() {
   }
 
   // ── Rendu d'un tableau ──────────────────────────────────────────────────────
-  const renderTable = (m: TableModel, title: string) => (
-    <div className="card overflow-auto">
-      <div className="px-3 pt-3 text-sm font-semibold text-cmf-navy">{title}</div>
+  // infine : thème ambre + badge (coupons versés à maturité), pour distinguer
+  // visuellement ces FRN « in fine » des FRN à coupon distribué annuellement.
+  const renderTable = (m: TableModel, title: string, infine = false) => (
+    <div className={`card overflow-auto ${infine ? 'ring-1 ring-amber-300' : ''}`}>
+      <div className={`flex items-center gap-2 px-3 pt-3 text-sm font-semibold ${infine ? 'text-amber-700' : 'text-cmf-navy'}`}>
+        {title}
+        {infine && (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+            In fine — coupons versés à maturité
+          </span>
+        )}
+      </div>
       <table className="mt-1.5 w-full table-fixed border-collapse text-[13px]">
         {/* Largeurs FIXES identiques dans les deux tableaux ⇒ les colonnes
             d'années s'alignent verticalement d'un tableau à l'autre. */}
@@ -180,7 +194,7 @@ export default function FrnView() {
                   const d = displayedCoupon(q, reoffer)
                   const cellStale = businessDaysAgo(q.runDate) > staleDays
                   const isBest = !cellStale && m.best.get(mat) !== undefined && Math.abs(m.best.get(mat)! - d.value) < 1e-9
-                  const cls = cellStale ? 'text-slate-300' : isBest ? 'font-bold text-red-600' : 'text-slate-700'
+                  const cls = cellStale ? 'text-slate-300' : isBest ? 'font-bold text-red-600' : infine ? 'text-amber-700' : 'text-slate-700'
                   return (
                     <td key={mat} className={`px-2 py-1 text-right tabular-nums ${cls}`}
                         title={`${q.issuer} ${q.maturityYears}Y · coupon ${fmt2(q.coupon)}% · UF ${fmt2(q.uf)}%${q.sensitivity != null ? ` · sensi ${q.sensitivity}` : ' · duration non fournie'} · run ${dateFr(q.runDate)}${q.source ? ' · ' + q.source : ''}`}>
@@ -242,6 +256,7 @@ export default function FrnView() {
 
       {renderTable(tableNC, 'Non Call')}
       {renderTable(tableCALL, 'Callable (NC1)')}
+      {renderTable(tableInFine, 'Callable In Fine', true)}
 
       <p className="text-xs text-slate-400">
         Coupons réels tirés des runs émetteurs (running annuel, au UF du run). Retraitement à 0 % UF /

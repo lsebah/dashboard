@@ -14,9 +14,11 @@ export const SEED = seedJson as FrnQuote[]
 
 const KEY = 'cmf.frn.quotes.local.v1'
 
-/** Clé d'unicité d'un prix : un nouveau run du même couple écrase l'ancien. */
-export const quoteKey = (q: Pick<FrnQuote, 'issuer' | 'currency' | 'callType' | 'maturityYears'>): string =>
-  `${q.issuer}|${q.currency}|${q.callType}|${q.maturityYears}`
+/** Clé d'unicité d'un prix : un nouveau run du même couple écrase l'ancien.
+ *  Annuel et IN FINE sont distincts (un produit peut être coté dans les deux). */
+export const quoteKey = (
+  q: Pick<FrnQuote, 'issuer' | 'currency' | 'callType' | 'maturityYears' | 'inFine'>,
+): string => `${q.issuer}|${q.currency}|${q.callType}|${q.maturityYears}|${q.inFine ? 'IF' : 'A'}`
 
 /** Fusionne plusieurs listes en gardant le run le plus récent (runDate) par clé. */
 export function mergeLatest(...lists: FrnQuote[][]): FrnQuote[] {
