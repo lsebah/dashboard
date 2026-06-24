@@ -10,6 +10,7 @@ const tabs = [
   { name: 'Décrément', href: '/lifecycle/comparatif' },
   { name: 'Commissions', href: '/lifecycle/commissions' },
   { name: 'Bloomberg', href: '/lifecycle/bloomberg' },
+  { name: 'Santé données', href: '/lifecycle/sante' },
 ]
 
 /** Onglet courant mis en évidence (gras + soulignement) selon l'URL. */

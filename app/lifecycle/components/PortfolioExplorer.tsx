@@ -20,6 +20,7 @@ import { useLocalProducts } from '@/lib/local-products'
 import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
 import { canonicalForProduct, termsheetFile, termsheetUrl } from '@/lib/termsheets'
+import { aAirbag, airbagNiveau, productTypeLabel } from '@/lib/classification'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
 // PDF de la TS déposé dans public/ts/<ISIN>.pdf (cf. scripts/index-ts-pdfs.mjs).
@@ -41,25 +42,6 @@ function ticker(s: string): string {
   return s.split(' ')[0]
 }
 
-// Présence d'un airbag : signal décodé de la TS (terms.airbag) ou badge explicite.
-// Un Snowball est reclassé Athéna Airbag → traité comme airbag ici aussi.
-function aAirbag(p: Product): boolean {
-  return (
-    (p.terms?.kind === 'autocall' && p.terms.airbag === true) ||
-    (p.badges?.includes('Airbag') ?? false) ||
-    (p.badges?.includes('Snowball') ?? false) ||
-    /snowball/i.test(p.productType ?? '')
-  )
-}
-
-// Niveau d'airbag (en %), dérivé de la TS : barrière sous laquelle le mécanisme
-// airbag s'enclenche = barrière de protection (PDI). Repli sur pdiPct.
-function airbagNiveau(p: Product): number | undefined {
-  const t = p.terms
-  if (t?.kind === 'autocall' && typeof t.protectionPct === 'number') return t.protectionPct
-  if (typeof p.pdiPct === 'number') return p.pdiPct
-  return undefined
-}
 // Warning de debug émis une seule fois par ISIN (TS sans niveau airbag identifiable).
 const airbagWarned = new Set<string>()
 function airbagNiveauOrWarn(p: Product): number | null {
@@ -70,45 +52,6 @@ function airbagNiveauOrWarn(p: Product): number | null {
     console.warn(`[B.Coupon] Niveau d'airbag introuvable (TS incomplète) — ${p.isin} · ${p.nom}`)
   }
   return n ?? null
-}
-
-// Libellé métier de la colonne « Type ». Règles :
-//  - tranche de crédit tirée → « CLN Tranche » ;
-//  - Autocall = Athéna (le terme « Autocall » ne doit plus apparaître) ;
-//  - « Airbag » n'est pas un type (le niveau s'affiche en B. Coupon) → Athéna ;
-//  - Snowball → Athéna (Airbag) ;
-//  - Phoenix : « Mémoire »/« Memory » implicites → « Phoenix » ; la variante
-//    dégressive (à ticket) est nommée « Phoenix Ticket Mémoire » ;
-//  - autres types (Booster, Participation, Callable, TARN, Quartz, CLN…) tels quels.
-function productTypeLabel(p: Product): string {
-  const t = p.terms
-  if (t?.kind === 'credit' && t.type === 'tranche') return 'CLN Tranche'
-  const raw = (p.productType ?? '').trim()
-  const hay = `${raw} ${p.nom ?? ''} ${p.description ?? ''}`
-  if (/snowball/i.test(hay) || p.badges?.includes('Snowball')) return 'Athéna'
-  if (/phoenix/i.test(hay)) return /d[ée]gressif/i.test(hay) ? 'Phoenix Ticket Mémoire' : 'Phoenix'
-  // Autocall = Athéna : seulement les vrais autocalls (famille / terms / type explicite).
-  // On préserve la nature « inverse » (reverse autocall) → « Athéna inverse ».
-  if (t?.kind === 'autocall' || p.family === 'autocall' || /autocall|ath[ée]na/i.test(raw)) {
-    const inverse = (t?.kind === 'autocall' && t.sens === 'inverse') || /reverse|inverse/i.test(raw)
-    return inverse ? 'Athéna inverse' : 'Athéna'
-  }
-  // Autres familles : on retire un qualificatif « Airbag »/« Mémoire » du libellé
-  // (ex. « Participation (Airbag) » → « Participation ») SANS forcer Athéna.
-  const s = raw.replace(/\s*\(?\s*airbag\s*\)?/i, ' ').replace(/\s*m[ée]moire/i, ' ').replace(/\s+/g, ' ').trim()
-  if (s) return s
-  // productType absent → on déduit le type du nom / de la description (évite « — »).
-  if (/autocall|ath[ée]na/i.test(hay)) return /reverse|inverse/i.test(hay) ? 'Athéna inverse' : 'Athéna'
-  if (/\bTARN\b/i.test(hay)) return 'TARN'
-  if (/\bCLN\b/i.test(hay)) return 'CLN'
-  if (/quartz/i.test(hay)) return 'Quartz'
-  if (/sphinx/i.test(hay)) return 'Sphinx'
-  if (/callable/i.test(hay)) return 'Callable'
-  if (/participation/i.test(hay)) return 'Participation'
-  if (/booster/i.test(hay)) return 'Booster'
-  if (/mini.?future/i.test(hay)) return 'Mini Future'
-  if (/dette\s+priv/i.test(hay)) return 'Dette Privée'
-  return '—'
 }
 
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
