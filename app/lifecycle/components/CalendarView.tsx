@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Product, Observation } from '@/lib/types'
-import { formatDateFr, formatPct, formatMontant } from '@/lib/lifecycle'
+import { formatDateFr, formatPct, formatMontant, rappelConstate } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import ProductSynopsis from './ProductSynopsis'
@@ -63,7 +63,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const [courant, setCourant] = useState<Record<string, number | null>>({})
 
   // Allocations clients (localStorage) → repli sur les allocations/clients du feed.
-  const { map } = useAllocations()
+  const { map, setStatut } = useAllocations()
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
   const clients = useMemo(
@@ -396,6 +396,25 @@ export default function CalendarView({ products }: { products: Product[] }) {
                 <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Synopsis produit</h2>
                 <button onClick={() => setOpenDetail(true)} className="text-xs text-cmf-blue hover:underline">Détail ↗</button>
               </div>
+              {/* Rappel détecté : worst-of constaté (Yahoo) ≥ barrière à une observation
+                  passée active → on propose de marquer le produit « rappelé ». */}
+              {(() => {
+                const r = selAug.statut !== 'rappele' ? rappelConstate(selAug) : undefined
+                if (!r) return null
+                return (
+                  <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
+                    <span>
+                      ↑ <strong>Rappelé</strong> le {formatDateFr(r.date)} — worst {r.niveauPct}% ≥ barrière de rappel {r.barrierePct}%.
+                    </span>
+                    <button
+                      onClick={() => setStatut(selAug.isin, 'rappele')}
+                      className="shrink-0 rounded bg-violet-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-violet-700"
+                    >
+                      Marquer rappelé
+                    </button>
+                  </div>
+                )
+              })()}
               <ProductSynopsis product={selAug} />
             </div>
           ) : (
