@@ -53,28 +53,129 @@ const ISSUER_COLOR: Record<string, string> = {
   BBVA: 'text-indigo-600',
 }
 
-// Consolidation des secteurs : on regroupe la longue traîne (variantes, paniers
-// pays, mines…) dans des buckets canoniques pour réduire le sur-filtrage.
-const SECTEUR_CANON: Record<string, string> = {
-  'Transatlantique diversifié': 'Transatlantique',
-  'Transatlantique diversifié (60% US / 40% EZ)': 'Transatlantique',
-  'Zone Euro & US diversifié': 'Transatlantique',
-  'Énergie nucléaire': 'Energie / Oil & Gas',
-  'Hyperscalers (panier fixe)': 'AI / Tech / Digital',
-  'Gold Mining': 'Basic Resources',
-  'Métaux stratégiques (terres rares)': 'Basic Resources',
-  'Matières premières (panier fixe)': 'Basic Resources',
-  'Défense (panier fixe)': 'Defense / Aerospace',
-  'Souverainete / PAB': 'Souveraineté / PAB',
-  'Électrification (ex-VOLT 2.0)': 'Infrastructures',
-  'Infrastructures (panier fixe)': 'Infrastructures',
-  'Allemagne (panier fixe)': 'Régional / Pays',
-  'France (panier fixe)': 'Régional / Pays',
-  'Marchés émergents (panier fixe)': 'Régional / Pays',
-  'Sport / PE / Telecom / RE': 'Autres thématiques',
+// Consolidation des secteurs : la source contient ~65 libellés (variantes de
+// casse/accents, paniers thématiques mono-produit, déclinaisons « Transat - X »…).
+// On les regroupe en ~15 secteurs canoniques pour les chips de filtre. Le libellé
+// BRUT reste affiché dans chaque ligne du tableau : aucune granularité n'est
+// perdue, seul le filtre est rationalisé.
+const stripSecteur = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // accents
+    .replace(/\s+/g, ' ')
+    .trim()
+
+// alias (forme normalisée, sans accent/casse) → secteur canonique
+const SECTEUR_ALIAS: Record<string, string> = {
+  // AI / Tech / Digital
+  'ai / tech / digital': 'AI / Tech / Digital',
+  'ai transat': 'AI / Tech / Digital',
+  'hyperscalers (panier fixe)': 'AI / Tech / Digital',
+  // Semiconducteurs
+  semiconducteurs: 'Semiconducteurs',
+  'semiconducteur, ai': 'Semiconducteurs',
+  'world semicond': 'Semiconducteurs',
+  // Banque
+  banque: 'Banque',
+  'em bank': 'Banque',
+  // Basic Resources (mines, métaux, matières premières)
+  'basic resources': 'Basic Resources',
+  'gold miners': 'Basic Resources',
+  'gold mining': 'Basic Resources',
+  'metaux strategiques (terres rares)': 'Basic Resources',
+  'matieres premieres (panier fixe)': 'Basic Resources',
+  // Énergie / Oil & Gas
+  'energie / oil & gas': 'Énergie / Oil & Gas',
+  energie: 'Énergie / Oil & Gas',
+  'energie capped': 'Énergie / Oil & Gas',
+  'energie nucleaire': 'Énergie / Oil & Gas',
+  // Defense / Aerospace
+  'defense / aerospace': 'Defense / Aerospace',
+  'defense (panier fixe)': 'Defense / Aerospace',
+  // Automobile
+  automobile: 'Automobile',
+  autos: 'Automobile',
+  'auto - basic resources - tech': 'Automobile',
+  // Healthcare / Pharma
+  'healthcare / pharma': 'Healthcare / Pharma',
+  'health care': 'Healthcare / Pharma',
+  // Luxe / Conso. Disc.
+  'luxe / conso. disc.': 'Luxe / Conso. Disc.',
+  'conso disc': 'Luxe / Conso. Disc.',
+  'conso disc cappe': 'Luxe / Conso. Disc.',
+  // Infrastructures (incl. électrification)
+  infrastructure: 'Infrastructures',
+  'infrastructures (panier fixe)': 'Infrastructures',
+  'electrification (ex-volt 2.0)': 'Infrastructures',
+  // Souveraineté / PAB (Paris-Aligned Benchmark)
+  'souverainete / pab': 'Souveraineté / PAB',
+  'eurozone - pab': 'Souveraineté / PAB',
+  'transat - pab': 'Souveraineté / PAB',
+  'transat pab': 'Souveraineté / PAB',
+  'pab / broad': 'Souveraineté / PAB',
+  // Transatlantique (toutes les déclinaisons « Transat - X »)
+  transatlantique: 'Transatlantique',
+  transat: 'Transatlantique',
+  'transatlantique diversifie': 'Transatlantique',
+  'transatlantique diversifie (60% us / 40% ez)': 'Transatlantique',
+  'zone euro & us diversifie': 'Transatlantique',
+  'transat - digital economy': 'Transatlantique',
+  'transat - electrification': 'Transatlantique',
+  'transat - electrification & ai enablers': 'Transatlantique',
+  'transat - gold miners': 'Transatlantique',
+  'transat - industry, finance, tech': 'Transatlantique',
+  'transat - robotics': 'Transatlantique',
+  'transat top industry': 'Transatlantique',
+  // Multi-Secteurs (diversifiés, ESG, EZ broad…)
+  'multi-secteurs': 'Multi-Secteurs',
+  'multi-secteur': 'Multi-Secteurs',
+  diversifie: 'Multi-Secteurs',
+  diversified: 'Multi-Secteurs',
+  'esg diversified sector': 'Multi-Secteurs',
+  'core sectors ez': 'Multi-Secteurs',
+  'eurozone quadsector': 'Multi-Secteurs',
+  'em multi': 'Multi-Secteurs',
+  // Régional / Pays
+  'allemagne (panier fixe)': 'Régional / Pays',
+  'france (panier fixe)': 'Régional / Pays',
+  'france cappe': 'Régional / Pays',
+  'marches emergents (panier fixe)': 'Régional / Pays',
+  // Autres thématiques (orphelins mono-produit)
+  'real estate': 'Autres thématiques',
+  'private equity world': 'Autres thématiques',
+  'sport world': 'Autres thématiques',
+  'europe telecoms': 'Autres thématiques',
 }
-const canonSecteur = (s: string | null | undefined): string | null =>
-  s ? SECTEUR_CANON[s] ?? s : null
+
+const canonSecteur = (s: string | null | undefined): string | null => {
+  if (!s) return null
+  return SECTEUR_ALIAS[stripSecteur(s)] ?? s.trim()
+}
+
+// Ordre d'affichage des chips (logique métier, « Autres » en dernier ; secteurs
+// inconnus rejetés en fin de liste par ordre alphabétique).
+const SECTEUR_ORDER = [
+  'Multi-Secteurs',
+  'Transatlantique',
+  'Banque',
+  'Defense / Aerospace',
+  'Énergie / Oil & Gas',
+  'Basic Resources',
+  'Healthcare / Pharma',
+  'Luxe / Conso. Disc.',
+  'Semiconducteurs',
+  'AI / Tech / Digital',
+  'Automobile',
+  'Infrastructures',
+  'Souveraineté / PAB',
+  'Régional / Pays',
+  'Autres thématiques',
+]
+const secteurRank = (s: string) => {
+  const i = SECTEUR_ORDER.indexOf(s)
+  return i === -1 ? SECTEUR_ORDER.length : i
+}
 
 // Structure : Athéna (incl. dégressif) vs Phoenix. Tolère les variantes d'accent.
 type Structure = 'athena' | 'phoenix'
@@ -131,7 +232,10 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   })
 
   const secteurs = useMemo(
-    () => Array.from(new Set(rows.map((r) => canonSecteur(r.secteur)).filter(Boolean) as string[])).sort(),
+    () =>
+      Array.from(new Set(rows.map((r) => canonSecteur(r.secteur)).filter(Boolean) as string[])).sort(
+        (a, b) => secteurRank(a) - secteurRank(b) || a.localeCompare(b),
+      ),
     [rows],
   )
   const emetteurs = useMemo(
