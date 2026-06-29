@@ -12,7 +12,9 @@ export const runtime = 'nodejs'
 //     NOTIF_EMAIL_FROM → expéditeur vérifié (défaut: notifications@cmf.finance)
 //     NOTIF_EMAIL_TO   → destinataire (défaut: L.sebah@cmf.finance)
 const TO = process.env.NOTIF_EMAIL_TO || 'L.sebah@cmf.finance'
-const FROM = process.env.NOTIF_EMAIL_FROM || 'notifications@cmf.finance'
+// Expéditeur = la boîte de Lolo : les réponses des clients arrivent ainsi
+// directement dans sa messagerie (cmf.finance est vérifié dans Resend).
+const FROM = process.env.NOTIF_EMAIL_FROM || 'l.sebah@cmf.finance'
 
 export async function POST(req: Request) {
   let body: { subject?: string; text?: string }

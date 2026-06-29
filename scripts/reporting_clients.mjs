@@ -52,7 +52,8 @@ const slug = (s) => s.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
 async function emailReports(files) {
   const key = process.env.RESEND_API_KEY
   const to = process.env.NOTIF_EMAIL_TO || 'L.sebah@cmf.finance'
-  const from = process.env.NOTIF_EMAIL_FROM || 'notifications@cmf.finance'
+  // Expéditeur = la boîte de Lolo (réponses clients → sa messagerie).
+  const from = process.env.NOTIF_EMAIL_FROM || 'l.sebah@cmf.finance'
   if (!key) {
     console.log('RESEND_API_KEY absent → email ignoré (PDF générés quand même).')
     return
