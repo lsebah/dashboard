@@ -59,7 +59,7 @@ export default function ProductSynopsis({
     terms?.kind === 'autocall'
       ? terms.degressif
         ? `Dégressif (≤ ${terms.barriereRappelPct ?? 100}%)`
-        : `${terms.barriereRappelPct ?? 100}% (${freqLabel(product.frequence)})`
+        : `${terms.sens === 'inverse' ? '≤ ' : ''}${terms.barriereRappelPct ?? 100}% (${freqLabel(product.frequence)})`
       : product.barriereAutocall ?? '—'
 
   const memoire =

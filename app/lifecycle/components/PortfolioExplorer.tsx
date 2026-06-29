@@ -388,6 +388,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     augmentProduct(p, { perfMap, niveauxMap, priceMap })
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap, priceMap])
+  // Map ISIN → produit augmenté (prix KV overlay + niveaux) pour tous les produits
+  // du portefeuille, pas seulement ceux du filtre courant — évite l'écart de prix
+  // entre la liste (augmentée) et la popup (qui rouvre le produit brut).
+  const augAllMap = useMemo(
+    () => new Map(productsO.map((p) => [p.id, augment(p)])),
+    [productsO, perfMap, niveauxMap, priceMap],
+  )
 
   // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
   // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
@@ -739,7 +746,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     className: `cursor-pointer ${hoverId === p.id ? 'bg-orange-50' : ''}`,
   })
 
-  const opened = openId ? productsO.find((p) => p.id === openId) ?? null : null
+  // Utilise augAllMap (prix KV overlay inclus) pour éviter l'écart liste / popup.
+  const opened = openId ? augAllMap.get(openId) ?? null : null
 
   // Produit ouvert augmenté des niveaux Yahoo : niveaux du worst-of constatés aux
   // observations passées (suivi des coupons + P&L coupons inclus) ET niveaux

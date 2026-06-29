@@ -325,11 +325,13 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     const conditionRemplie: boolean | undefined =
       enregistre !== undefined
         ? enregistre === 'paye'
-        : typeof niveau === 'number' && typeof barriere === 'number'
-          ? inverse
-            ? niveau <= barriere
-            : niveau >= barriere
-          : undefined
+        : t?.kind === 'autocall' && t.couponGaranti
+          ? true // coupon inconditionnel — toujours payé (pas de barrière)
+          : typeof niveau === 'number' && typeof barriere === 'number'
+            ? inverse
+              ? niveau <= barriere
+              : niveau >= barriere
+            : undefined
     let statut: CouponStatut
     if (!past) {
       statut = 'a_venir'

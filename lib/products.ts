@@ -1721,6 +1721,7 @@ const marexUsoInverse: Product = {
     effetMemoire: false,
     degressif: false,
     couponPa: 21.752,
+    couponGaranti: true,
     barriereRappelPct: 100,
     protectionPct: 150,
     protectionStyle: 'europeenne',

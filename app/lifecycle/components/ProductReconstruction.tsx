@@ -28,10 +28,14 @@ function CouponSuivi({ product }: { product: Product }) {
   const encaisses = lignes.filter((l) => l.statut !== 'a_venir')
   const aConstater = encaisses.some((l) => l.statut === 'a_constater')
   const cumul = encaisses.length ? encaisses[encaisses.length - 1].cumulPayePct : 0
+  const t = product.terms
+  // Coupons garantis (pas de barrière) → colonnes Barrière/Niveau inutiles.
+  const garanti = t?.kind === 'autocall' && !!t.couponGaranti
+  const hasBarre = !garanti && lignes.some((l) => typeof l.barriereCouponPct === 'number')
   return (
     <div>
       <div className="field-label mb-1 flex items-center justify-between">
-        <span>Suivi des coupons</span>
+        <span>Suivi des coupons{garanti ? ' (garantis)' : ''}</span>
         <span className="text-[12px] text-slate-500 normal-case">
           {aConstater
             ? 'coupons encaissés : à constater (niveaux des sous-jacents requis)'
@@ -45,8 +49,8 @@ function CouponSuivi({ product }: { product: Product }) {
               <th className="text-left font-medium px-2 py-1">#</th>
               <th className="text-left font-medium px-2 py-1">Observation</th>
               <th className="text-right font-medium px-2 py-1">Coupon</th>
-              <th className="text-right font-medium px-2 py-1">Barrière</th>
-              <th className="text-right font-medium px-2 py-1">Niveau Wof</th>
+              {hasBarre && <th className="text-right font-medium px-2 py-1">Barrière</th>}
+              {!garanti && <th className="text-right font-medium px-2 py-1">Niveau Wof</th>}
               <th className="text-left font-medium px-2 py-1">Statut</th>
             </tr>
           </thead>
@@ -58,12 +62,16 @@ function CouponSuivi({ product }: { product: Product }) {
                   <td className="px-2 py-1 tabular-nums">{l.n}</td>
                   <td className="px-2 py-1 whitespace-nowrap">{formatDateFr(l.date)}</td>
                   <td className="px-2 py-1 text-right tabular-nums">{l.couponPct}%</td>
-                  <td className="px-2 py-1 text-right tabular-nums">
-                    {typeof l.barriereCouponPct === 'number' ? `${l.barriereCouponPct}%` : '—'}
-                  </td>
-                  <td className="px-2 py-1 text-right tabular-nums">
-                    {typeof l.niveauConstatePct === 'number' ? `${l.niveauConstatePct}%` : '—'}
-                  </td>
+                  {hasBarre && (
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {typeof l.barriereCouponPct === 'number' ? `${l.barriereCouponPct}%` : '—'}
+                    </td>
+                  )}
+                  {!garanti && (
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {typeof l.niveauConstatePct === 'number' ? `${l.niveauConstatePct}%` : '—'}
+                    </td>
+                  )}
                   <td className={`px-2 py-1 whitespace-nowrap ${s.cls}`}>
                     {s.label}
                     {l.statut === 'manque' && l.enMemoirePct > 0 ? ` · ${l.enMemoirePct}%` : ''}
@@ -207,7 +215,9 @@ export default function ProductReconstruction({ product }: { product: Product })
               <tr>
                 <th className="text-left font-medium px-2 py-1">#</th>
                 <th className="text-left font-medium px-2 py-1">Observation</th>
-                <th className="text-right font-medium px-2 py-1">Niveau rappel</th>
+                <th className="text-right font-medium px-2 py-1">
+                  {t.sens === 'inverse' ? 'Rappel si ≤' : 'Niveau rappel'}
+                </th>
                 <th className="text-right font-medium px-2 py-1">Remb. si rappelé</th>
               </tr>
             </thead>
