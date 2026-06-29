@@ -17,6 +17,10 @@ on:
         description: 'Étiquette de cadence (sujet email)'
         required: false
         default: 'manuel'
+      email_to:
+        description: 'Destinataire (override ponctuel — sinon secret NOTIF_EMAIL_TO)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -69,7 +73,8 @@ jobs:
       - name: Générer + envoyer les PDF par email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          NOTIF_EMAIL_TO: ${{ secrets.NOTIF_EMAIL_TO }}
+          # Destinataire : override ponctuel (input) prioritaire sur le secret.
+          NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
           NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
         run: node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}"
 
