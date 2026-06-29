@@ -266,10 +266,19 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       {/* Cartes récap par année (chiffres officiels du classeur) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card p-4">
-          <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE}</div>
+          <div className="field-label">Commissions Nettes · YTD {ANNEE_COURANTE} <span className="text-emerald-600">(total)</span></div>
           <div className="text-2xl font-bold text-emerald-600">{EUR(netLoloYtd)}</div>
-          <div className="text-[11px] text-slate-400">
-            = somme des « Net Lolo » du tableau · classeur {EUR(ytdClasseur)}
+          <div
+            className="text-[11px] text-slate-400"
+            title={`Le TOTAL réel YTD ${ANNEE_COURANTE}, c'est ${EUR(netLoloYtd)} : la somme vivante des « Net Lolo » du tableau (inclut tes trades ajoutés et les commissions encaissées en ${ANNEE_COURANTE}). Le « classeur » (${EUR(ytdClasseur)}) est seulement le total figé de l'Excel de départ, gardé comme repère de contrôle — ce N'EST PAS un second total. Écart = trades hors classeur + encaissements ${ANNEE_COURANTE}.`}
+          >
+            réf. classeur Excel : {EUR(ytdClasseur)}
+            {Math.abs(netLoloYtd - ytdClasseur) >= 1 && (
+              <span className="text-slate-400">
+                {' '}({netLoloYtd >= ytdClasseur ? '+' : '−'}
+                {EUR(Math.abs(netLoloYtd - ytdClasseur))})
+              </span>
+            )}
           </div>
         </div>
         {['2025', '2024', '2023'].map((y) => (
