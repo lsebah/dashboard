@@ -5105,6 +5105,9 @@ const msLuxeBonus: Product = {
     protectionStyle: 'europeenne',
     bonusFinalPct: 100,
     decrement: '50 pts/an',
+    // Bonus/Snowball sans coupon périodique : prime de rappel +2,5 %/trim.
+    // (110 %→197,5 %), soit 10 %/an constant.
+    couponPa: 10,
   },
   observations: buildObservations(luxeObs, luxePay, {
     niveauRappelPct: (n) => (n <= 36 ? 100 : undefined),
@@ -5714,6 +5717,9 @@ const marexMstr: Product = {
     barriereRappelPct: 100,
     protectionPct: 50,
     protectionStyle: 'europeenne',
+    // Snowball sans coupon périodique : prime de rappel +1,125 %/mois
+    // (113,5 %→167,5 %), soit 13,5 %/an constant.
+    couponPa: 13.5,
   },
   observations: buildObservations(marexMstrObs, marexMstrPay, {
     niveauRappelPct: (n) => (n < 49 ? 100 : 50),
@@ -5764,6 +5770,9 @@ const marexMoncMcVsco: Product = {
     protectionPct: 50,           // KI / airbag (obs 49 = maturité)
     protectionStyle: 'europeenne',
     airbag: true,                // protection Airbag : capital × worst / 50 % si KI
+    // Snowball sans coupon périodique : la prime de rappel croît de 1,125 %/mois
+    // (113,5 %→167,5 %), soit 13,5 %/an constant — c'est le « coupon » indicatif.
+    couponPa: 13.5,
   },
   observations: buildObservations(marexMstrObs, marexMstrPay, {
     niveauRappelPct: (n) => (n < 49 ? 80 : 50),  // autocall 80 % ; maturité 50 %
