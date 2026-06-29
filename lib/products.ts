@@ -5728,7 +5728,12 @@ const marexMstr: Product = {
   termsheetFichier: '250715_5Y_Autocall Airbag MSTR_Mensuel_XS2925309945_MAREX.pdf',
 }
 
-// ── XS2925309275 — Marex MONC+MC+VSCO Classic Autocall (5Y mensuel, sans coupon)
+// ── XS2925309275 — Marex Classic Autocall Airbag Wof MONC+MC+VSCO (5Y mensuel)
+// Termsheet : "5Y Autocall Airbag Wof MONC + MC + VSCO Mensuel".
+// Structure : Snowball (montant de remboursement croissant 113,5 %→167,5 %) +
+// Airbag capital à la barrière basse (50 %). Autocall ≥ 80 % sur obs 1–48 ;
+// obs 49 (maturité) : remboursement Snowball max si worst ≥ 50 %, sinon airbag.
+// Pas de coupon périodique. Non-call première année : premier obs = mois 12.
 const marexMoncMcVsco: Product = {
   id: 'XS2925309275',
   nom: "Marex Classic Autocall Wof Moncler+LVMH+Victoria's Secret (5Y)",
@@ -5755,20 +5760,21 @@ const marexMoncMcVsco: Product = {
     kind: 'autocall',
     sens: 'standard',
     effetMemoire: false,
-    barriereRappelPct: 100,
-    protectionPct: 50,
+    barriereRappelPct: 80,       // barrière autocall principale (obs 1–48)
+    protectionPct: 50,           // KI / airbag (obs 49 = maturité)
     protectionStyle: 'europeenne',
+    airbag: true,                // protection Airbag : capital × worst / 50 % si KI
   },
   observations: buildObservations(marexMstrObs, marexMstrPay, {
-    niveauRappelPct: (n) => (n < 49 ? 80 : 50),
-    montantRemboursementPct: (n) => 113.5 + (n - 1) * 1.125,
+    niveauRappelPct: (n) => (n < 49 ? 80 : 50),  // autocall 80 % ; maturité 50 %
+    montantRemboursementPct: (n) => 113.5 + (n - 1) * 1.125,  // 113,5 %→167,5 %
     rappelActifAPartirDe: 1,
   }),
   rr: 'LS',
   productType: 'Autocall',
-  description: "5Y Classic Autocall Wof — Moncler + LVMH + Victoria's Secret · montant croissant 113,5%→167,5% · autocall 80% · KI 50% européenne · sans coupon périodique",
+  description: "5Y Classic Autocall Airbag Wof — Moncler + LVMH + Victoria's Secret · montant croissant 113,5 %→167,5 % · autocall ≥ 80 % · KI Airbag 50 % européenne · sans coupon périodique",
   clients: ['ALVES - 06001'],
-  badges: ['Worst-of', 'Snowball'],
+  badges: ['Worst-of', 'Snowball', 'Airbag'],
   termsheetFichier: '250715_5Y_Autocall Airbag Wof MONC + MC + VSCO_Mensuel_XS2925309275_MAREX.pdf',
 }
 
