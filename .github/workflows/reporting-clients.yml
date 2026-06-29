@@ -82,11 +82,15 @@ jobs:
           NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
           NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
           NOTIF_EMAIL_BCC: ${{ secrets.NOTIF_EMAIL_BCC }}
-        # send_to_clients = true (déclenchement MANUEL) → un PDF par client à son
-        # email. Sinon (cron hebdo/mensuel) → tout le lot à toi, pour relecture.
+        # Mode par client (un PDF → email respectif du client) si :
+        #  • déclenchement manuel avec send_to_clients = true, OU
+        #  • cron MENSUEL (1er du mois) → reporting client mensuel automatique.
+        # Le cron HEBDO (lundi) reste en mode lot vers toi (relecture interne).
         run: |
           PER=""
-          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ]; then PER="--per-client"; fi
+          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 6 1 * *" ]; then
+            PER="--per-client"
+          fi
           node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}" $PER
 
       # Filet de sécurité : les PDF restent téléchargeables depuis l'onglet Actions
