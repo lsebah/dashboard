@@ -159,11 +159,32 @@ const PERIODES_PAR_AN: Partial<Record<Frequency, number>> = {
 export function couponPaFromObservations(product: Product): number | undefined {
   const perAn = product.frequence ? PERIODES_PAR_AN[product.frequence] : undefined
   if (!perAn) return undefined
-  const o = (product.observations ?? []).find(
-    (x) => typeof x.couponPct === 'number' && x.couponPct > 0,
-  )
-  if (!o || typeof o.couponPct !== 'number') return undefined
-  return Math.round(o.couponPct * perAn * 100) / 100
+  const vals = (product.observations ?? [])
+    .map((x) => x.couponPct)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+  // Pas de coupon périodique : si autocall « Snowball » (montant de remboursement
+  // CROISSANT), tout le rendement passe par la prime de rappel. On l'annualise via
+  // l'incrément de remboursement entre deux observations (la 1re valeur inclut le
+  // lock-out, on ne l'utilise donc pas). Ex. « Leaders 7 % » : +7 %/an = 7 % p.a.
+  if (vals.length === 0) {
+    if (product.terms?.kind !== 'autocall') return undefined
+    const rembs = (product.observations ?? [])
+      .map((x) => x.montantRemboursementPct)
+      .filter((v): v is number => typeof v === 'number')
+    if (rembs.length < 2 || rembs[rembs.length - 1] <= rembs[0] + 0.01) return undefined
+    const stepR = rembs.slice(1).reduce((s, v, i) => s + (v - rembs[i]), 0) / (rembs.length - 1)
+    return Math.round(stepR * perAn * 100) / 100
+  }
+  // Coupon MÉMOIRE/CUMULATIF (couponPct croît à chaque observation : au rappel on
+  // touche le cumul depuis le départ, ex. Athéna 3,15 % × t) : le coupon DE PÉRIODE
+  // est l'INCRÉMENT entre deux observations, pas la valeur cumulée — sinon on
+  // annualiserait le cumul (ex. 12,6 % × 4 = 50,4 %, faux). Coupon de période
+  // constant ⇒ on annualise directement la 1re valeur (comportement historique).
+  const cumulatif = vals.length >= 2 && vals.every((v, i) => i === 0 || v > vals[i - 1] + 1e-9)
+  const parPeriode = cumulatif
+    ? vals.slice(1).reduce((s, v, i) => s + (v - vals[i]), 0) / (vals.length - 1)
+    : vals[0]
+  return Math.round(parPeriode * perAn * 100) / 100
 }
 
 /** Coupon annualisé indicatif, si défini (termsheet, sinon cellule Excel). */

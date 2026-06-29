@@ -5647,7 +5647,9 @@ const santanderBearishNdx: Product = {
     kind: 'autocall',
     sens: 'inverse',
     effetMemoire: false,
-    couponPa: 27,
+    // Coupon cumulatif 4,5 %→27 % (+0,75 %/mois) : 27 % est le TOTAL sur 3 ans,
+    // pas l'annuel. Coupon p.a. = 0,75 %/mois × 12 = 9 %/an.
+    couponPa: 9,
     barriereRappelPct: 100,
     protectionPct: 150,
     protectionStyle: 'europeenne',
@@ -6073,6 +6075,9 @@ const cibcMsftGoogl: Product = {
     kind: 'autocall',
     sens: 'standard',
     effetMemoire: false,
+    // Coupon cumulatif 3,15 % × t (couponPct ci-dessous) : 3,15 %/trim. = 12,6 %/an.
+    // couponPa explicite pour ne PAS annualiser le cumul (12,6 % à l'obs 4 → 50,4 %).
+    couponPa: 12.6,
     barriereCouponPct: 100,
     barriereRappelPct: 100,
     protectionPct: 70,
