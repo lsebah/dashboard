@@ -5070,6 +5070,38 @@ const sipChabanais: Product = {
   termsheetFichier: '231201_2Y_Dette Privée - SIP Chabanais_Semestriel_CH1271361060_SIP.pdf',
 }
 
+// ── FEI — Dette privée (3 tickets MACIF, ISIN « FEI » agrégé) ────────────────
+// Le feed contient 3 lignes au même ISIN « FEI » (≈ 10 M€ au total, toutes MACIF),
+// agrégées en un produit. Coupon 9 %/an, In Fine, émis 15/04/2025, maturité 10 ans
+// (→ 15/04/2035). Pas de termsheet (intermédiation), capital non protégé.
+const feiDettePrivee: Product = {
+  id: 'FEI',
+  nom: 'Dette Privée — FEI (10 ans)',
+  isin: 'FEI',
+  emetteur: 'FEI',
+  assetClass: 'credit',
+  family: 'other',
+  devise: 'EUR',
+  nominal: 10_000_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-04-15',
+  dateEmission: '2025-04-15',
+  dateConstatationFinale: '2035-04-15',
+  dateEcheance: '2035-04-15',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [],
+  couponPaPct: 9,
+  rr: 'LS',
+  productType: 'Dette Privée',
+  description:
+    'Dette privée FEI — coupon 9 %/an, In Fine, échéance 15/04/2035 (10 ans). ' +
+    '3 tickets (MACIF), capital non protégé.',
+  badges: ['Dette privée', 'Coupon fixe'],
+  clients: ['MACIF'],
+}
+
 // ── FRIP000014P8 — Morgan Stanley Autocall Bonus Luxe (MerQube décrément) ─────
 const luxeObs = ['2026-03-31','2026-06-30','2026-09-30','2027-01-04','2027-03-31','2027-06-30','2027-09-30','2028-01-03','2028-03-31','2028-06-30','2028-10-02','2029-01-02','2029-04-03','2029-07-02','2029-10-01','2030-01-02','2030-04-01','2030-07-01','2030-09-30','2031-01-02','2031-03-31','2031-06-30','2031-09-30','2032-01-02','2032-03-31','2032-06-30','2032-09-30','2033-01-03','2033-03-31','2033-06-30','2033-09-30','2034-01-02','2034-03-31','2034-06-30','2034-10-02','2035-01-02','2035-04-02']
 const luxePay = ['2026-04-09','2026-07-07','2026-10-07','2027-01-11','2027-04-07','2027-07-07','2027-10-07','2028-01-10','2028-04-07','2028-07-07','2028-10-09','2029-01-09','2029-04-10','2029-07-09','2029-10-08','2030-01-09','2030-04-08','2030-07-08','2030-10-07','2031-01-09','2031-04-07','2031-07-07','2031-10-07','2032-01-09','2032-04-07','2032-07-07','2032-10-07','2033-01-10','2033-04-07','2033-07-07','2033-10-07','2034-01-09','2034-04-11','2034-07-07','2034-10-09','2035-01-09','2035-04-09']
@@ -6299,7 +6331,7 @@ const detailed: Product[] = [
   msQuartz51, citiZcCallable,
   bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
   barclaysEngieNexansSchneider, bbvaMittalEssilor, bnpTec10Phoenix, barclaysSanofiDecrement,
-  bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, msLuxeBonus, bnpSphinx15,
+  bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, feiDettePrivee, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
   msMxeadt50, gsClnSgSub, efgChinaParticipation, efgWarrantSeniorLoans,
