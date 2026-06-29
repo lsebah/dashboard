@@ -593,6 +593,22 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         )
       }
       case 'next': {
+        // Rappel CONSTATÉ (worst-of a franchi la barrière à une obs passée) mais
+        // pas encore marqué « rappelé » → badge violet « à confirmer » directement
+        // dans la liste (sur produit augmenté des niveaux live).
+        const rc = p.statut !== 'rappele' ? rappelConstate(p) : undefined
+        if (rc) {
+          return (
+            <td key="next" className="px-2 py-1.5 whitespace-nowrap">
+              <span
+                className="inline-flex items-center gap-1 rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700"
+                title={`Rappel constaté le ${formatDateFr(rc.date)} (worst ${rc.niveauPct}% ≥ barrière ${rc.barrierePct}%) — à confirmer`}
+              >
+                ↑ rappelé ?
+              </span>
+            </td>
+          )
+        }
         const next = prochainEvenement(p)
         const o = prochaineObservation(p)
         const estAutocall = !!o && o.autocallActif !== false && typeof o.niveauRappelPct === 'number'

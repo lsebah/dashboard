@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { useNotifications } from '@/lib/use-notifications'
+import { useLiveProducts } from '@/lib/use-live-products'
 import { notifTypeLabel, type NotifType } from '@/lib/notifications'
 import { formatDateFr } from '@/lib/lifecycle'
 
@@ -26,7 +27,9 @@ const matchFiltre = (t: NotifType, f: Filtre) =>
   f === 'tous' || (f === 'maturite' ? t === 'maturite' || t === 'maturite_proche' : t === f)
 
 export default function NotificationsView({ products }: { products: Product[] }) {
-  const { notifs, unread, markRead, markAllRead, archive, unarchive } = useNotifications(products)
+  // Niveaux live → détecte les rappels survenus (Yahoo) en plus des statuts figés.
+  const live = useLiveProducts(products)
+  const { notifs, unread, markRead, markAllRead, archive, unarchive } = useNotifications(live)
   const [filtre, setFiltre] = useState<Filtre>('tous')
   const [q, setQ] = useState('')
   const [showArchived, setShowArchived] = useState(false)

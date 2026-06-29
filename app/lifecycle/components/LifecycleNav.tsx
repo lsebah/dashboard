@@ -5,6 +5,7 @@ import { useState } from 'react'
 import NouveauTrade from './NouveauTrade'
 import { products } from '@/lib/products'
 import { useNotifications } from '@/lib/use-notifications'
+import { useLiveProducts } from '@/lib/use-live-products'
 
 const tabs = [
   { name: 'Portefeuille', href: '/lifecycle' },
@@ -19,7 +20,10 @@ const tabs = [
 export default function LifecycleNav() {
   const path = usePathname()
   const [showTrade, setShowTrade] = useState(false)
-  const { unread } = useNotifications(products)
+  // Produits augmentés des niveaux live → le badge compte aussi les rappels
+  // détectés via Yahoo (et déclenche l'email), pas seulement les statuts figés.
+  const live = useLiveProducts(products)
+  const { unread } = useNotifications(live)
   const notifActive = path.startsWith('/lifecycle/notifications')
   return (
     <nav className="flex items-center gap-6 text-sm">
