@@ -114,7 +114,9 @@ async function emailPerClient(files) {
     return
   }
   const from = process.env.NOTIF_EMAIL_FROM || 'l.sebah@cmf.finance'
-  const bcc = process.env.NOTIF_EMAIL_BCC || from // copie pour archive/trace
+  // Lolo en copie (cachée) de CHAQUE email client → reçoit une copie de tout
+  // envoi dans sa boîte (l'envoi via Resend n'apparaît pas dans ses « envoyés »).
+  const bcc = process.env.NOTIF_EMAIL_BCC || 'L.sebah@cmf.finance'
   const emails = loadClientEmails()
   const sent = []
   const skipped = []
