@@ -18,6 +18,8 @@
  *   --base-url <url>   URL de l'app              (défaut http://localhost:3000)
  *   --client <code>    n'exporter qu'un client   (sinon : tous)
  *   --email            envoie les PDF en pièces jointes (Resend) après génération
+ *   --per-client       envoie à CHAQUE client son PDF, à son/ses email(s)
+ *                      (data/client-emails.json) ; sinon tout le lot à NOTIF_EMAIL_TO
  *   --label <texte>    étiquette de cadence dans le sujet (« hebdomadaire »…)
  *
  * Email (avec --email) — variables d'environnement :
@@ -42,10 +44,28 @@ const BASE = arg('base-url', 'http://localhost:3000').replace(/\/$/, '')
 const ONLY = arg('client', null)
 // Cadence : étiquette le sujet de l'email (« hebdomadaire » / « mensuel »).
 const LABEL = arg('label', null)
-// --email : après génération, envoie tous les PDF en pièces jointes via Resend.
+// --email : après génération, envoie les PDF en pièces jointes via Resend.
 const EMAIL = process.argv.includes('--email')
+// --per-client : envoie à CHAQUE client son propre PDF, à son/ses email(s)
+// (mapping data/client-emails.json). Sinon : tout le lot à NOTIF_EMAIL_TO (toi).
+const PER_CLIENT = process.argv.includes('--per-client')
 const DATE = new Date().toISOString().slice(0, 10)
 const slug = (s) => s.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+
+// Mapping CODE CLIENT → email(s) (data/client-emails.json). Une valeur peut être
+// une chaîne (un email, ou plusieurs séparés par « , » / « ; »), ou un tableau.
+function loadClientEmails() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data/client-emails.json'), 'utf8'))
+    return raw && typeof raw === 'object' ? raw : {}
+  } catch {
+    return {}
+  }
+}
+function parseEmails(value) {
+  const arr = Array.isArray(value) ? value : String(value ?? '').split(/[,;]/)
+  return arr.map((e) => e.trim()).filter((e) => e.includes('@'))
+}
 
 // Envoi des PDF en pièces jointes via l'API REST Resend (aucune dépendance npm).
 // Dégrade proprement si RESEND_API_KEY absent (génération OK, email ignoré).
@@ -82,6 +102,56 @@ async function emailReports(files) {
   })
   if (!res.ok) throw new Error(`Resend → HTTP ${res.status} : ${await res.text()}`)
   console.log(`✉  Email envoyé à ${to} (${files.length} PDF joints).`)
+}
+
+// Envoi PAR CLIENT : à chaque client, SON PDF, à son/ses email(s) (mapping). FROM =
+// boîte de Lolo (réponses → sa messagerie), BCC de Lolo pour archive. Les clients
+// sans email dans le mapping sont IGNORÉS (jamais d'envoi à l'aveugle).
+async function emailPerClient(files) {
+  const key = process.env.RESEND_API_KEY
+  if (!key) {
+    console.log('RESEND_API_KEY absent → envoi par client ignoré (PDF générés quand même).')
+    return
+  }
+  const from = process.env.NOTIF_EMAIL_FROM || 'l.sebah@cmf.finance'
+  const bcc = process.env.NOTIF_EMAIL_BCC || from // copie pour archive/trace
+  const emails = loadClientEmails()
+  const sent = []
+  const skipped = []
+  for (const [client, file] of files) {
+    const dest = parseEmails(emails[client])
+    if (dest.length === 0) {
+      skipped.push(client)
+      continue
+    }
+    const content = fs.readFileSync(path.join(OUT, file)).toString('base64')
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from,
+        to: dest,
+        bcc: [bcc],
+        reply_to: from,
+        subject: `Reporting de valorisation — ${DATE}`,
+        text:
+          'Bonjour,\n\n' +
+          'Veuillez trouver ci-joint le reporting de valorisation de vos positions ' +
+          `au ${DATE}.\n\n` +
+          'Je reste à votre disposition pour tout complément.\n\n' +
+          'Bien cordialement,\nLolo Sebah — CMF',
+        attachments: [{ filename: file, content }],
+      }),
+    })
+    if (res.ok) sent.push(`${client} → ${dest.join(', ')}`)
+    else {
+      skipped.push(`${client} (échec HTTP ${res.status})`)
+      console.error(`  ✗ ${client} : ${await res.text()}`.slice(0, 200))
+    }
+  }
+  console.log(`✉  Envoi par client : ${sent.length} envoyé(s), ${skipped.length} ignoré(s).`)
+  for (const s of sent) console.log(`   ✓ ${s}`)
+  if (skipped.length) console.log(`   — sans email (ignorés) : ${skipped.join(' · ')}`)
 }
 
 async function listClients() {
@@ -124,7 +194,7 @@ async function main() {
     await browser.close()
   }
   console.log(`OK — ${written.length} PDF générés dans : ${OUT}`)
-  if (EMAIL) await emailReports(written)
+  if (EMAIL) await (PER_CLIENT ? emailPerClient(written) : emailReports(written))
 }
 
 main().catch((e) => {

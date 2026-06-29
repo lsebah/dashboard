@@ -21,6 +21,11 @@ on:
         description: 'Destinataire (override ponctuel — sinon secret NOTIF_EMAIL_TO)'
         required: false
         default: ''
+      send_to_clients:
+        description: 'Envoyer à CHAQUE client son PDF (data/client-emails.json) au lieu du lot à toi'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -73,10 +78,16 @@ jobs:
       - name: Générer + envoyer les PDF par email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          # Destinataire : override ponctuel (input) prioritaire sur le secret.
+          # Destinataire (mode lot) : override ponctuel prioritaire sur le secret.
           NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
           NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
-        run: node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}"
+          NOTIF_EMAIL_BCC: ${{ secrets.NOTIF_EMAIL_BCC }}
+        # send_to_clients = true (déclenchement MANUEL) → un PDF par client à son
+        # email. Sinon (cron hebdo/mensuel) → tout le lot à toi, pour relecture.
+        run: |
+          PER=""
+          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ]; then PER="--per-client"; fi
+          node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}" $PER
 
       # Filet de sécurité : les PDF restent téléchargeables depuis l'onglet Actions
       # même si l'email n'est pas configuré (RESEND_API_KEY absent).
