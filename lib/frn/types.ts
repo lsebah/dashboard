@@ -15,6 +15,7 @@ export interface FrnQuote {
   uf: number // upfront fee en %
   sensitivity: number | null // duration (sensibilité)
   baseReoffer: number // reoffer de base, défaut 100
+  inFine?: boolean // coupons sécurisés annuellement mais versés IN FINE (à maturité)
   runDate: string // ISO (date du run)
   source?: string // ex. « email CACIB run 11/06 »
 }

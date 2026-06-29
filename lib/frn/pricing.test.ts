@@ -5,10 +5,29 @@ import {
   couponAtReoffer,
   displayedCoupon,
   bestByMaturity,
+  estimateSensitivity,
   round2,
 } from './pricing.ts'
 
 const near = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≈ ${b}`)
+
+test('estimateSensitivity : duration modifiée plausible (10Y @ 4% ≈ 8)', () => {
+  const d = estimateSensitivity(10, 4)
+  assert.ok(d > 7.5 && d < 8.5, `duration ${d}`)
+  // croît avec la maturité
+  assert.ok(estimateSensitivity(15, 4) > estimateSensitivity(8, 4))
+})
+
+test('displayedCoupon : sensi absente ⇒ duration estimée, le reoffer agit quand même', () => {
+  const q = { coupon: 4, uf: 0, sensitivity: null, baseReoffer: 100, maturityYears: 10 }
+  const at100 = displayedCoupon(q, 100)
+  const at99 = displayedCoupon(q, 99)
+  assert.equal(at100.missingSensi, true)
+  assert.ok(at100.sensiUsed > 0)
+  // le reoffer agit (convention de l'outil : reoffer ↓ ⇒ coupon ↓ de (100−R)/sensi)
+  assert.ok(Math.abs(at99.value - at100.value) > 1e-6, `${at99.value} vs ${at100.value}`)
+  near(at99.value, at100.value - 1 / at100.sensiUsed)
+})
 
 test('couponZeroUF : coupon + UF/sensibilité', () => {
   near(couponZeroUF(3.0, 0.3, 3.0), 3.1)
@@ -44,10 +63,12 @@ test('displayedCoupon : utilise baseReoffer du quote', () => {
   near(r.value, 3.76 + 2.5 / 6.21)
 })
 
-test('displayedCoupon : sensibilité manquante ⇒ brut + flag', () => {
-  const r = displayedCoupon({ coupon: 4.2, uf: 0.4, sensitivity: null }, 99)
+test('displayedCoupon : sensibilité manquante ⇒ duration estimée (flag missingSensi)', () => {
+  const r = displayedCoupon({ coupon: 4.2, uf: 0.4, sensitivity: null, maturityYears: 10 }, 99)
   assert.equal(r.missingSensi, true)
-  near(r.value, 4.2)
+  assert.ok(r.sensiUsed > 0) // duration estimée utilisée
+  // retraitement appliqué (≠ coupon brut), via UF puis reoffer
+  assert.ok(Math.abs(r.value - 4.2) > 1e-6)
 })
 
 test('bestByMaturity : max par maturité, ignore sensi manquante', () => {

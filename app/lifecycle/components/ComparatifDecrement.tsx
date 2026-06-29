@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import indicesRaw from '@/lib/decrement-indices.json'
 import Modal from './Modal'
 
@@ -13,6 +13,9 @@ interface IndexInfo {
   source?: string
   fichePdf?: string // chemin local du PDF (téléchargé par le cron) → embarqué
   ficheUrl?: string // lien externe (banque) si la fiche est hébergée
+  niveau?: number // niveau courant de l'indice (run émetteur, sinon Bloomberg quotidien)
+  niveauDate?: string
+  niveauSource?: string
 }
 const ENRICH = indicesRaw as Record<string, IndexInfo>
 
@@ -32,6 +35,8 @@ interface Row {
   seuilInitial: string | null
   maturiteMax: string | null
   secteur: string | null
+  niveau?: number // niveau de l'indice indiqué dans le run
+  niveauDate?: string
   dateRun: string | null
   /** true = upfront issu d'un mail émetteur (affiché brut) ; absent/false =
    *  issu du PDF/Excel de départ (commission broker retirée → +1,5 % réintégrés). */
@@ -47,6 +52,135 @@ const ISSUER_COLOR: Record<string, string> = {
   Citi: 'text-sky-600',
   BBVA: 'text-indigo-600',
 }
+
+// Consolidation des secteurs : la source contient ~65 libellés (variantes de
+// casse/accents, paniers thématiques mono-produit, déclinaisons « Transat - X »…).
+// On les regroupe en ~15 secteurs canoniques pour les chips de filtre. Le libellé
+// BRUT reste affiché dans chaque ligne du tableau : aucune granularité n'est
+// perdue, seul le filtre est rationalisé.
+const stripSecteur = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // accents
+    .replace(/\s+/g, ' ')
+    .trim()
+
+// alias (forme normalisée, sans accent/casse) → secteur canonique
+const SECTEUR_ALIAS: Record<string, string> = {
+  // AI / Tech / Digital
+  'ai / tech / digital': 'AI / Tech / Digital',
+  'ai transat': 'AI / Tech / Digital',
+  'hyperscalers (panier fixe)': 'AI / Tech / Digital',
+  // Semiconducteurs
+  semiconducteurs: 'Semiconducteurs',
+  'semiconducteur, ai': 'Semiconducteurs',
+  'world semicond': 'Semiconducteurs',
+  // Banque
+  banque: 'Banque',
+  'em bank': 'Banque',
+  // Basic Resources (mines, métaux, matières premières)
+  'basic resources': 'Basic Resources',
+  'gold miners': 'Basic Resources',
+  'gold mining': 'Basic Resources',
+  'metaux strategiques (terres rares)': 'Basic Resources',
+  'matieres premieres (panier fixe)': 'Basic Resources',
+  // Énergie / Oil & Gas
+  'energie / oil & gas': 'Énergie / Oil & Gas',
+  energie: 'Énergie / Oil & Gas',
+  'energie capped': 'Énergie / Oil & Gas',
+  'energie nucleaire': 'Énergie / Oil & Gas',
+  // Defense / Aerospace
+  'defense / aerospace': 'Defense / Aerospace',
+  'defense (panier fixe)': 'Defense / Aerospace',
+  // Automobile
+  automobile: 'Automobile',
+  autos: 'Automobile',
+  'auto - basic resources - tech': 'Automobile',
+  // Healthcare / Pharma
+  'healthcare / pharma': 'Healthcare / Pharma',
+  'health care': 'Healthcare / Pharma',
+  // Luxe / Conso. Disc.
+  'luxe / conso. disc.': 'Luxe / Conso. Disc.',
+  'conso disc': 'Luxe / Conso. Disc.',
+  'conso disc cappe': 'Luxe / Conso. Disc.',
+  // Infrastructures (incl. électrification)
+  infrastructure: 'Infrastructures',
+  'infrastructures (panier fixe)': 'Infrastructures',
+  'electrification (ex-volt 2.0)': 'Infrastructures',
+  // Souveraineté / PAB (Paris-Aligned Benchmark)
+  'souverainete / pab': 'Souveraineté / PAB',
+  'eurozone - pab': 'Souveraineté / PAB',
+  'transat - pab': 'Souveraineté / PAB',
+  'transat pab': 'Souveraineté / PAB',
+  'pab / broad': 'Souveraineté / PAB',
+  // Transatlantique (toutes les déclinaisons « Transat - X »)
+  transatlantique: 'Transatlantique',
+  transat: 'Transatlantique',
+  'transatlantique diversifie': 'Transatlantique',
+  'transatlantique diversifie (60% us / 40% ez)': 'Transatlantique',
+  'zone euro & us diversifie': 'Transatlantique',
+  'transat - digital economy': 'Transatlantique',
+  'transat - electrification': 'Transatlantique',
+  'transat - electrification & ai enablers': 'Transatlantique',
+  'transat - gold miners': 'Transatlantique',
+  'transat - industry, finance, tech': 'Transatlantique',
+  'transat - robotics': 'Transatlantique',
+  'transat top industry': 'Transatlantique',
+  // Multi-Secteurs (diversifiés, ESG, EZ broad…)
+  'multi-secteurs': 'Multi-Secteurs',
+  'multi-secteur': 'Multi-Secteurs',
+  diversifie: 'Multi-Secteurs',
+  diversified: 'Multi-Secteurs',
+  'esg diversified sector': 'Multi-Secteurs',
+  'core sectors ez': 'Multi-Secteurs',
+  'eurozone quadsector': 'Multi-Secteurs',
+  'em multi': 'Multi-Secteurs',
+  // Régional / Pays
+  'allemagne (panier fixe)': 'Régional / Pays',
+  'france (panier fixe)': 'Régional / Pays',
+  'france cappe': 'Régional / Pays',
+  'marches emergents (panier fixe)': 'Régional / Pays',
+  // Autres thématiques (orphelins mono-produit)
+  'real estate': 'Autres thématiques',
+  'private equity world': 'Autres thématiques',
+  'sport world': 'Autres thématiques',
+  'europe telecoms': 'Autres thématiques',
+}
+
+const canonSecteur = (s: string | null | undefined): string | null => {
+  if (!s) return null
+  return SECTEUR_ALIAS[stripSecteur(s)] ?? s.trim()
+}
+
+// Ordre d'affichage des chips (logique métier, « Autres » en dernier ; secteurs
+// inconnus rejetés en fin de liste par ordre alphabétique).
+const SECTEUR_ORDER = [
+  'Multi-Secteurs',
+  'Transatlantique',
+  'Banque',
+  'Defense / Aerospace',
+  'Énergie / Oil & Gas',
+  'Basic Resources',
+  'Healthcare / Pharma',
+  'Luxe / Conso. Disc.',
+  'Semiconducteurs',
+  'AI / Tech / Digital',
+  'Automobile',
+  'Infrastructures',
+  'Souveraineté / PAB',
+  'Régional / Pays',
+  'Autres thématiques',
+]
+const secteurRank = (s: string) => {
+  const i = SECTEUR_ORDER.indexOf(s)
+  return i === -1 ? SECTEUR_ORDER.length : i
+}
+
+// Structure : Athéna (incl. dégressif) vs Phoenix. Tolère les variantes d'accent.
+type Structure = 'athena' | 'phoenix'
+const matchStructure = (type: string, st: Structure): boolean =>
+  st === 'athena' ? /ath[ée]na/i.test(type) : /phoenix/i.test(type)
 
 // Commission CMF réintégrée à l'affichage UNIQUEMENT pour les upfronts issus
 // du PDF/Excel de départ (dans lesquels la commission broker avait été retirée).
@@ -88,6 +222,7 @@ function describe(r: Row): string {
 
 export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [secteur, setSecteur] = useState<string | null>(null)
+  const [structure, setStructure] = useState<Structure | null>(null)
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
@@ -97,7 +232,10 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   })
 
   const secteurs = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.secteur).filter(Boolean) as string[])),
+    () =>
+      Array.from(new Set(rows.map((r) => canonSecteur(r.secteur)).filter(Boolean) as string[])).sort(
+        (a, b) => secteurRank(a) - secteurRank(b) || a.localeCompare(b),
+      ),
     [rows],
   )
   const emetteurs = useMemo(
@@ -109,14 +247,15 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     const needle = q.trim().toLowerCase()
     return rows.filter(
       (r) =>
-        (!secteur || r.secteur === secteur) &&
+        (!secteur || canonSecteur(r.secteur) === secteur) &&
+        (!structure || matchStructure(r.type, structure)) &&
         (!emetteur || r.emetteur === emetteur) &&
         (!needle ||
           r.ticker.toLowerCase().includes(needle) ||
           (r.secteur ?? '').toLowerCase().includes(needle) ||
           r.emetteur.toLowerCase().includes(needle)),
     )
-  }, [rows, secteur, emetteur, q])
+  }, [rows, secteur, structure, emetteur, q])
 
   const list = useMemo(() => {
     const m = sort.dir === 'asc' ? 1 : -1
@@ -174,8 +313,29 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const selInfo = sel ? ENRICH[sel.ticker] : null
 
 
+  // Niveaux live (Bloomberg quotidien → KV levels:overlay, par ticker d'indice).
+  const [liveLevels, setLiveLevels] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let on = true
+    fetch('/api/levels', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { levels?: Record<string, number> }) => {
+        if (on && d?.levels) setLiveLevels(d.levels)
+      })
+      .catch(() => {})
+    return () => {
+      on = false
+    }
+  }, [])
+
+  // Niveau courant de l'indice : Bloomberg quotidien (live) en priorité, sinon
+  // niveau du run de la ligne, sinon niveau seedé au catalogue.
+  const niveauOf = (r: Row): number | undefined =>
+    liveLevels[r.ticker] ?? r.niveau ?? ENRICH[r.ticker]?.niveau
+
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
+    { k: 'niveau', label: 'Niveau', align: 'right' },
     { k: 'emetteur', label: 'Émetteur' },
     { k: 'type', label: 'Type' },
     { k: 'secteur', label: 'Secteur' },
@@ -225,8 +385,32 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
           </div>
         </div>
 
+        {/* Filtre structure : Athéna / Phoenix */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3">
+          <span className="text-[11px] uppercase tracking-wide text-slate-400 mr-1">Structure</span>
+          <button
+            onClick={() => setStructure(null)}
+            className={`rounded-full border px-2.5 py-1 text-xs ${
+              !structure ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            Toutes
+          </button>
+          {(['athena', 'phoenix'] as const).map((st) => (
+            <button
+              key={st}
+              onClick={() => setStructure(structure === st ? null : st)}
+              className={`rounded-full border px-2.5 py-1 text-xs capitalize ${
+                structure === st ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy' : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {st === 'athena' ? 'Athéna' : 'Phoenix'}
+            </button>
+          ))}
+        </div>
+
         {/* Filtres secteur (chips) */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1.5 mt-2">
           <button
             onClick={() => setSecteur(null)}
             className={`rounded-full border px-2.5 py-1 text-xs ${
@@ -298,6 +482,12 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                       {ENRICH[r.ticker].nom}
                     </div>
                   )}
+                </td>
+                <td
+                  className="px-2 py-1.5 text-right tabular-nums text-slate-700 whitespace-nowrap"
+                  title={(() => { const d = r.niveauDate ?? ENRICH[r.ticker]?.niveauDate; const s = ENRICH[r.ticker]?.niveauSource; return d ? `Niveau ${s ?? ''} ${d}`.trim() : 'Niveau non disponible' })()}
+                >
+                  {(() => { const n = niveauOf(r); return typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) : '—' })()}
                 </td>
                 <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">{r.type}</td>

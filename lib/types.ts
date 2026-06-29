@@ -109,6 +109,7 @@ export interface AutocallTerms {
   oxygene?: boolean
   oxygenePct?: number // niveau Oxygène, en % de l'initial (si feature présente)
   couponPa?: number // coupon annualisé indicatif, en %
+  couponGaranti?: boolean // coupon inconditionnel (pas de barrière) — ex. Reverse Autocall garanti
   barriereCouponPct?: number // barrière de coupon, en % de l'initial
   barriereRappelPct?: number // niveau de rappel de base, en % de l'initial
   degressif?: boolean // barrière de rappel décroissante (step-down)

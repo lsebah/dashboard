@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import LifecycleNav from './components/LifecycleNav'
+import SyncIndicator from './components/SyncIndicator'
 
 export const metadata: Metadata = {
   title: 'Lifecycle CMF — Suivi des produits structurés',
@@ -26,6 +27,7 @@ export default function LifecycleLayout({
             <span className="text-xs text-slate-300 uppercase tracking-widest">
               Lifecycle
             </span>
+            <SyncIndicator />
           </div>
           <LifecycleNav />
         </div>

@@ -69,7 +69,7 @@ export default function ClientAssign({
     <div className="card p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-cmf-navy text-sm">Allocation client</h3>
-        <span className="text-[11px] text-slate-400">local — non versionné</span>
+        <span className="text-[11px] text-slate-400">synchronisé (tous appareils)</span>
       </div>
 
       {/* Renommage manuel du produit (nom d'affichage, local) */}

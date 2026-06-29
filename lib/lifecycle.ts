@@ -4,7 +4,7 @@
 //  qu'au futur moteur de monitoring (prochaine observation, statut, distances
 //  aux barrières…).
 // ─────────────────────────────────────────────────────────────────────────
-import type { Product, Observation, Underlying } from './types'
+import type { Product, Observation, Underlying, Frequency } from './types'
 import { couponLedger } from './coupons-ledger'
 
 /** Construit un calendrier d'observations à partir de listes de dates. */
@@ -141,6 +141,52 @@ export function situation(product: Product): Situation {
   return 'sans_stress'
 }
 
+// Nombre de périodes de coupon par an, par fréquence (pour annualiser un coupon
+// de période reconstruit depuis le calendrier). « in_fine »/« autre » exclus :
+// le coupon n'y est pas périodique, on n'extrapole pas.
+const PERIODES_PAR_AN: Partial<Record<Frequency, number>> = {
+  mensuel: 12,
+  trimestriel: 4,
+  semestriel: 2,
+  annuel: 1,
+}
+
+/**
+ * Repli : reconstruit un coupon annuel depuis le calendrier décodé de la TS
+ * (observations) quand aucun coupon p.a. explicite n'est renseigné. On prend le
+ * coupon de période (couponPct) et on l'annualise selon la fréquence.
+ */
+export function couponPaFromObservations(product: Product): number | undefined {
+  const perAn = product.frequence ? PERIODES_PAR_AN[product.frequence] : undefined
+  if (!perAn) return undefined
+  const vals = (product.observations ?? [])
+    .map((x) => x.couponPct)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+  // Pas de coupon périodique : si autocall « Snowball » (montant de remboursement
+  // CROISSANT), tout le rendement passe par la prime de rappel. On l'annualise via
+  // l'incrément de remboursement entre deux observations (la 1re valeur inclut le
+  // lock-out, on ne l'utilise donc pas). Ex. « Leaders 7 % » : +7 %/an = 7 % p.a.
+  if (vals.length === 0) {
+    if (product.terms?.kind !== 'autocall') return undefined
+    const rembs = (product.observations ?? [])
+      .map((x) => x.montantRemboursementPct)
+      .filter((v): v is number => typeof v === 'number')
+    if (rembs.length < 2 || rembs[rembs.length - 1] <= rembs[0] + 0.01) return undefined
+    const stepR = rembs.slice(1).reduce((s, v, i) => s + (v - rembs[i]), 0) / (rembs.length - 1)
+    return Math.round(stepR * perAn * 100) / 100
+  }
+  // Coupon MÉMOIRE/CUMULATIF (couponPct croît à chaque observation : au rappel on
+  // touche le cumul depuis le départ, ex. Athéna 3,15 % × t) : le coupon DE PÉRIODE
+  // est l'INCRÉMENT entre deux observations, pas la valeur cumulée — sinon on
+  // annualiserait le cumul (ex. 12,6 % × 4 = 50,4 %, faux). Coupon de période
+  // constant ⇒ on annualise directement la 1re valeur (comportement historique).
+  const cumulatif = vals.length >= 2 && vals.every((v, i) => i === 0 || v > vals[i - 1] + 1e-9)
+  const parPeriode = cumulatif
+    ? vals.slice(1).reduce((s, v, i) => s + (v - vals[i]), 0) / (vals.length - 1)
+    : vals[0]
+  return Math.round(parPeriode * perAn * 100) / 100
+}
+
 /** Coupon annualisé indicatif, si défini (termsheet, sinon cellule Excel). */
 export function couponPa(product: Product): number | undefined {
   const t = product.terms
@@ -148,7 +194,9 @@ export function couponPa(product: Product): number | undefined {
   if (t?.kind === 'rates' && typeof t.couponConditionnelPa === 'number')
     return t.couponConditionnelPa
   if (t?.kind === 'credit' && typeof t.couponPa === 'number') return t.couponPa
-  return product.couponPaPct
+  if (typeof product.couponPaPct === 'number') return product.couponPaPct
+  // Champ coupon vide → on le dérive du calendrier décodé de la TS.
+  return couponPaFromObservations(product)
 }
 
 /** Scénarios de dénouement pour un produit de taux (Phoenix Bearish CMS, etc.). */
@@ -276,6 +324,11 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
   const t = product.terms
   const memoire =
     (t?.kind === 'autocall' && t.effetMemoire) || (t?.kind === 'rates' && !!t.effetMemoire)
+  // Produit INVERSE (bearish) : le coupon tombe quand le sous-jacent est SOUS la
+  // barrière (la hausse est défavorable) ⇒ condition en miroir du cas standard.
+  const inverse =
+    (t?.kind === 'autocall' && t.sens === 'inverse') ||
+    (t?.kind === 'rates' && t.sens === 'bearish')
   const today = now.toISOString().slice(0, 10)
   let mem = 0
   let cumul = 0
@@ -288,14 +341,18 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     const niveau = o.niveauConstatePct
     // Condition du coupon : le REGISTRE (write-once) fait foi pour les dates déjà
     // constatées ; sinon on la dérive du niveau worst-of constaté vs la barrière
-    // (actions) ; sinon « à constater » tant qu'on n'a pas l'info.
+    // (actions ; inversée pour un produit bearish) ; sinon « à constater ».
     const enregistre = couponLedger(product.isin, o.dateObservation)
     const conditionRemplie: boolean | undefined =
       enregistre !== undefined
         ? enregistre === 'paye'
-        : typeof niveau === 'number' && typeof barriere === 'number'
-          ? niveau >= barriere
-          : undefined
+        : t?.kind === 'autocall' && t.couponGaranti
+          ? true // coupon inconditionnel — toujours payé (pas de barrière)
+          : typeof niveau === 'number' && typeof barriere === 'number'
+            ? inverse
+              ? niveau <= barriere
+              : niveau >= barriere
+            : undefined
     let statut: CouponStatut
     if (!past) {
       statut = 'a_venir'
@@ -394,13 +451,23 @@ export function rappelConstate(
   now: Date = new Date(),
 ): { n: number; date: string; niveauPct: number; barrierePct: number } | undefined {
   const today = now.toISOString().slice(0, 10)
+  // Inverse (bearish) : l'autocall se déclenche quand le sous-jacent passe SOUS la
+  // barrière de rappel (≤), et non au-dessus (≥) comme un autocall standard.
+  const t = product.terms
+  const inverse =
+    (t?.kind === 'autocall' && t.sens === 'inverse') ||
+    (t?.kind === 'rates' && t.sens === 'bearish')
   for (const o of product.observations ?? []) {
     if (o.autocallActif === false) continue // période non-call (lock-out)
     if (o.dateObservation > today) continue // observation future
     const barriere = o.niveauRappelPct
     const niveau = o.niveauConstatePct
-    if (typeof barriere === 'number' && typeof niveau === 'number' && niveau >= barriere)
-      return { n: o.n, date: o.dateObservation, niveauPct: niveau, barrierePct: barriere }
+    const declenche =
+      typeof barriere === 'number' &&
+      typeof niveau === 'number' &&
+      (inverse ? niveau <= barriere : niveau >= barriere)
+    if (declenche)
+      return { n: o.n, date: o.dateObservation, niveauPct: niveau!, barrierePct: barriere! }
   }
   return undefined
 }

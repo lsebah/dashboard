@@ -17,8 +17,10 @@ import {
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useLocalProducts } from '@/lib/local-products'
+import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
-import { canonicalForProduct, termsheetFile } from '@/lib/termsheets'
+import { canonicalForProduct, termsheetFile, termsheetUrl } from '@/lib/termsheets'
+import { aAirbag, airbagNiveau, productTypeLabel } from '@/lib/classification'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
 // PDF de la TS déposé dans public/ts/<ISIN>.pdf (cf. scripts/index-ts-pdfs.mjs).
@@ -38,6 +40,32 @@ function annees(p: Product): number | null {
 
 function ticker(s: string): string {
   return s.split(' ')[0]
+}
+
+// Warning de debug émis une seule fois par ISIN (TS sans niveau airbag identifiable).
+const airbagWarned = new Set<string>()
+function airbagNiveauOrWarn(p: Product): number | null {
+  const n = airbagNiveau(p)
+  if (n == null && !airbagWarned.has(p.isin)) {
+    airbagWarned.add(p.isin)
+    // eslint-disable-next-line no-console
+    console.warn(`[B.Coupon] Niveau d'airbag introuvable (TS incomplète) — ${p.isin} · ${p.nom}`)
+  }
+  return n ?? null
+}
+
+// Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
+function formatHorodatage(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Paris',
+  })
 }
 
 // Produit "en cours" : ni rappelé, ni vendu, ni arrivé à maturité.
@@ -134,8 +162,8 @@ const COLUMNS: Col[] = [
   { label: 'Eq/Cr', key: 'asset', w: 64 },
   { label: 'Type', key: 'type', w: 120 },
   { label: 'Mém.', key: 'mem', align: 'center', w: 48 },
-  { label: 'B. Autocall', key: 'bauto', w: 100 },
-  { label: 'B. Coupon', key: 'bcoupon', w: 96 },
+  { label: 'B. Rappel', key: 'bauto', w: 100 },
+  { label: 'B. Coupon / Airbag', key: 'bcoupon', w: 118 },
   { label: 'PDI', key: 'pdi', w: 56 },
   { label: 'Client', key: 'client', w: 130 },
   { label: 'Sous-jacents', key: 'sj', w: 240 },
@@ -214,7 +242,13 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       productsAll.map((p) => {
         const s = statutMap[p.isin]
         const n = noms[p.isin]
-        return s || n ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom } : p
+        // Le renommage manuel est le « nom affiché » : il prime à la fois sur le
+        // nom ET sur la description (colonne affichée dans le tableau), sinon un
+        // produit ayant déjà une description du feed n'afficherait jamais le
+        // nouveau libellé.
+        return s || n
+          ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom, description: n ?? p.description }
+          : p
       }),
     [productsAll, statutMap, noms],
   )
@@ -304,12 +338,16 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   // Surcouche de prix (Vercel KV, alimentée depuis Bloomberg via /api/prices/ingest)
   // appliquée par-dessus le prix du feed : prix le plus récent gagne.
   const [priceMap, setPriceMap] = useState<Record<string, number>>({})
+  // Horodatage du dernier update des prix (asof de la surcouche KV Bloomberg).
+  const [priceAsof, setPriceAsof] = useState<string | null>(null)
   useEffect(() => {
     let annule = false
     fetch('/api/prices')
       .then((r) => r.json())
       .then((d) => {
-        if (!annule && d?.prices && typeof d.prices === 'object') setPriceMap(d.prices)
+        if (annule) return
+        if (d?.prices && typeof d.prices === 'object') setPriceMap(d.prices)
+        if (typeof d?.asof === 'string') setPriceAsof(d.asof)
       })
       .catch(() => {})
     return () => {
@@ -345,51 +383,23 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     }
   }, [products])
 
-  const augment = (p: Product): Product => {
-    const pm = perfMap[p.isin]
-    const nv = niveauxMap[p.isin]
-    const px = priceMap[p.isin]
-    if (!pm && !nv && typeof px !== 'number') return p
-    const prixMarche = typeof px === 'number' ? px : p.prixMarche
-    const sousJacents = pm
-      ? p.sousJacents.map((u) =>
-          typeof pm[u.nom] === 'number'
-            ? { ...u, perf: Math.round((pm[u.nom] - 100) * 100) / 100 }
-            : u,
-        )
-      : p.sousJacents
-    // Niveau worst-of constaté aux observations passées → suivi des coupons (P&L
-    // coupons inclus). Même source (Yahoo) que la fiche, donc valeurs cohérentes.
-    const observations =
-      nv && p.observations
-        ? p.observations.map((o) =>
-            typeof nv[o.dateObservation] === 'number'
-              ? { ...o, niveauConstatePct: nv[o.dateObservation] }
-              : o,
-          )
-        : p.observations
-    return { ...p, prixMarche, sousJacents, observations }
-  }
+  // Niveaux courants + surcouche prix + niveaux constatés (cf. lib/client-report).
+  const augment = (p: Product): Product =>
+    augmentProduct(p, { perfMap, niveauxMap, priceMap })
 
   const listAug = useMemo(() => list.map(augment), [list, perfMap, niveauxMap, priceMap])
+  // Map ISIN → produit augmenté (prix KV overlay + niveaux) pour tous les produits
+  // du portefeuille, pas seulement ceux du filtre courant — évite l'écart de prix
+  // entre la liste (augmentée) et la popup (qui rouvre le produit brut).
+  const augAllMap = useMemo(
+    () => new Map(productsO.map((p) => [p.id, augment(p)])),
+    [productsO, perfMap, niveauxMap, priceMap],
+  )
 
   // Positions du client sélectionné → reporting : uniquement celles AVEC un prix
   // (valorisation) et VIVANTES (on exclut rappelé / vendu / échu).
   const reportRows = useMemo(
-    () =>
-      client
-        ? productsO
-            .filter((p) => allocsOf(p).some((a) => a.client === client))
-            .filter(
-              (p) =>
-                (typeof p.prixMarche === 'number' || typeof priceMap[p.isin] === 'number') &&
-                p.statut !== 'rappele' &&
-                p.statut !== 'vendu' &&
-                p.statut !== 'echu',
-            )
-            .map((p) => ({ p: augment(p), montant: allocsOf(p).find((a) => a.client === client)?.montant }))
-        : [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => clientReportRows(productsO, client, { perfMap, niveauxMap, priceMap }, allocsOf),
     [client, productsO, allocsOf, perfMap, niveauxMap, priceMap],
   )
 
@@ -514,7 +524,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           <td key="isin" style={f.style} className={`pl-2 pr-0.5 py-1.5 font-mono whitespace-nowrap ${f.cls}`}>
             <span
               className={`inline-flex items-center gap-1.5 ${prob ? 'font-bold text-emerald-600' : ''}`}
-              title={prob ? 'Autocall probable à la prochaine observation' : undefined}
+              title={prob ? 'Rappel probable à la prochaine observation' : undefined}
             >
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
               {p.isin}
@@ -527,7 +537,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         // PDF local prioritaire (ouverture directe, plus de détour par le cloud) ;
         // repli sur le lien OneDrive si le PDF n'est pas encore déposé.
         const local = TS_PDFS[p.isin]
-        const href = local ?? p.termsheetUrl
+        // Repli index pour TOUT produit (y compris les trades locaux) : si la TS
+        // est dans le dossier OneDrive Termsheets, le lien se résout par l'ISIN.
+        const href = local ?? p.termsheetUrl ?? termsheetUrl(p.isin)
         return (
           <td key="ts" style={f.style} className={`px-0.5 py-1.5 text-center ${f.cls}`}>
             {href ? (
@@ -580,10 +592,42 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           </td>
         )
       }
-      case 'next':
-        return <td key="next" className="px-2 py-1.5 whitespace-nowrap text-slate-600">{prochainEvenement(p) ? formatDateFr(prochainEvenement(p)) : '—'}</td>
+      case 'next': {
+        // Rappel CONSTATÉ (worst-of a franchi la barrière à une obs passée) mais
+        // pas encore marqué « rappelé » → badge violet « à confirmer » directement
+        // dans la liste (sur produit augmenté des niveaux live).
+        const rc = p.statut !== 'rappele' ? rappelConstate(p) : undefined
+        if (rc) {
+          return (
+            <td key="next" className="px-2 py-1.5 whitespace-nowrap">
+              <span
+                className="inline-flex items-center gap-1 rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700"
+                title={`Rappel constaté le ${formatDateFr(rc.date)} (worst ${rc.niveauPct}% ≥ barrière ${rc.barrierePct}%) — à confirmer`}
+              >
+                ↑ rappelé ?
+              </span>
+            </td>
+          )
+        }
+        const next = prochainEvenement(p)
+        const o = prochaineObservation(p)
+        const estAutocall = !!o && o.autocallActif !== false && typeof o.niveauRappelPct === 'number'
+        // Gras vert UNIQUEMENT si autocall PROBABLE : prochaine obs = autocall ET
+        // valo > 99 % (un prix ≥ pair → rappel anticipé probable).
+        const probable = estAutocall && typeof p.prixMarche === 'number' && p.prixMarche > 99
+        return (
+          <td
+            key="next"
+            className={`px-2 py-1.5 whitespace-nowrap ${probable ? 'font-bold text-emerald-600' : 'text-slate-600'}`}
+            title={probable ? 'Autocall probable à la prochaine observation (valo > 99 %)' : undefined}
+          >
+            {next ? formatDateFr(next) : '—'}
+          </td>
+        )
+      }
       case 'cy':
-        return <td key="cy" className="px-2 py-1.5 text-slate-500">{p.devise}</td>
+        // Lisibilité devises : EUR en bleu (référence UE), toute autre en rouge.
+        return <td key="cy" className={`px-2 py-1.5 font-medium ${p.devise === 'EUR' ? 'text-blue-700' : 'text-red-600'}`}>{p.devise}</td>
       case 'amount': {
         // Par compte : montant du compte ÉDITABLE en place (clic → saisie, commit
         // à la sortie / Entrée). Sinon (agrégé) : total en lecture seule.
@@ -622,8 +666,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         return <td key="desc" className="px-2 py-1.5 max-w-[260px] truncate" title={p.description ?? p.nom}>{p.description ?? p.nom}</td>
       case 'asset':
         return <td key="asset" className={`px-2 py-1.5 font-medium ${ASSET_COLOR[p.assetClass] ?? 'text-slate-500'}`}>{assetLabel(p.assetClass)}</td>
-      case 'type':
-        return <td key="type" className="pl-2 pr-1 py-1.5 max-w-[120px] truncate" title={p.productType ?? undefined}>{p.productType ?? '—'}</td>
+      case 'type': {
+        const label = productTypeLabel(p)
+        return <td key="type" className="pl-2 pr-1 py-1.5 max-w-[120px] truncate" title={label}>{label}</td>
+      }
       case 'mem':
         return <td key="mem" className="px-1 py-1.5 text-center">{(t?.kind === 'autocall' && t.effetMemoire) || /[ée]moire/i.test(p.description ?? '') ? '✓' : ''}</td>
       case 'cpn':
@@ -638,14 +684,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 t?.kind === 'autocall' && typeof t.barriereCouponPct === 'number'
                   ? `${t.barriereCouponPct}%`
                   : p.barriereCoupon
-              const air = t?.kind === 'autocall' && t.airbag
-              if (air)
-                return (
-                  <span>
-                    <span className="text-amber-600">Airbag</span>
-                    {cb ? ` · ${cb}` : ''}
-                  </span>
-                )
+              // Produit airbag : on affiche le NIVEAU d'airbag (%) extrait de la TS,
+              // jamais le texte « Airbag ». TS incomplète → « N/A » + warning debug.
+              if (aAirbag(p)) {
+                const n = airbagNiveauOrWarn(p)
+                return n == null ? <span className="text-slate-400">N/A</span> : `${n}%`
+              }
               return cb ?? '—'
             })()}
           </td>
@@ -718,7 +762,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     className: `cursor-pointer ${hoverId === p.id ? 'bg-orange-50' : ''}`,
   })
 
-  const opened = openId ? productsO.find((p) => p.id === openId) ?? null : null
+  // Utilise augAllMap (prix KV overlay inclus) pour éviter l'écart liste / popup.
+  const opened = openId ? augAllMap.get(openId) ?? null : null
 
   // Produit ouvert augmenté des niveaux Yahoo : niveaux du worst-of constatés aux
   // observations passées (suivi des coupons + P&L coupons inclus) ET niveaux
@@ -743,6 +788,14 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               {Math.round(synthese.total / 1_000_000).toLocaleString('fr-FR')} M
             </div>
             <div className="text-xs text-slate-500">Nominal total (toutes devises)</div>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-cmf-navy tabular-nums">
+              {priceAsof ? formatHorodatage(priceAsof) : '—'}
+            </div>
+            <div className="text-xs text-slate-500">
+              Prix mis à jour{priceAsof ? ' (Bloomberg)' : ' — feed'}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(SITUATION_LABEL) as Situation[]).map((s) => {
@@ -934,7 +987,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
                 <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
                   <span>
                     ↑ <strong>Rappel probable</strong> : worst-of {r.niveauPct}% ≥ barrière
-                    d&apos;autocall {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
+                    de rappel {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
                     {formatDateFr(r.date)}.
                   </span>
                   <button

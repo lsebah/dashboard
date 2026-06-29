@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Product, Observation } from '@/lib/types'
-import { formatDateFr, formatPct, formatMontant } from '@/lib/lifecycle'
+import { formatDateFr, formatPct, formatMontant, rappelConstate } from '@/lib/lifecycle'
+import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
@@ -56,9 +57,26 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const [mode, setMode] = useState<'hebdo' | 'mensuel'>('hebdo')
   const [ancre, setAncre] = useState<Date>(() => lundi(new Date()))
   const [filtre, setFiltre] = useState<Filtre>('toutes')
+  const [clientsSel, setClientsSel] = useState<Set<string>>(new Set())
   const [selId, setSelId] = useState<string | null>(null)
   const [openDetail, setOpenDetail] = useState(false)
   const [courant, setCourant] = useState<Record<string, number | null>>({})
+
+  // Allocations clients (localStorage) → repli sur les allocations/clients du feed.
+  const { map, setStatut } = useAllocations()
+  const allocsOf = (p: Product): ClientAlloc[] =>
+    map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
+  const clients = useMemo(
+    () => tousLesClients(map, products.flatMap((p) => p.clients ?? [])),
+    [map, products],
+  )
+  const toggleClient = (c: string) =>
+    setClientsSel((prev) => {
+      const next = new Set(prev)
+      if (next.has(c)) next.delete(c)
+      else next.add(c)
+      return next
+    })
 
   // Tous les événements (toutes dates, passées ET futures) issus des calendriers décodés.
   const events = useMemo<Ev[]>(() => {
@@ -128,19 +146,29 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const fInt = J(fin)
   const enVue = useMemo(() => events.filter((e) => e.date >= dInt && e.date <= fInt), [events, dInt, fInt])
 
+  // Filtre client (multi-sélection) : ne garde que les produits alloués à l'un
+  // des clients cochés. Vide ⇒ pas de filtrage client.
+  const matchClient = (e: Ev): boolean =>
+    clientsSel.size === 0 || allocsOf(e.product).some((a) => clientsSel.has(a.client))
+
   const matche = (e: Ev): boolean => {
+    if (!matchClient(e)) return false
     if (filtre === 'maturite') return e.maturite
     if (filtre === 'autocall') return estAutocallProbable(e)
     if (filtre === 'coupon') return e.coupon
     return true
   }
   const compte = (f: Filtre) =>
-    enVue.filter((e) => (f === 'maturite' ? e.maturite : f === 'autocall' ? estAutocallProbable(e) : f === 'coupon' ? e.coupon : true)).length
+    enVue.filter(
+      (e) =>
+        matchClient(e) &&
+        (f === 'maturite' ? e.maturite : f === 'autocall' ? estAutocallProbable(e) : f === 'coupon' ? e.coupon : true),
+    ).length
 
   const affiches = useMemo(
     () => enVue.filter(matche).sort((a, b) => a.date.localeCompare(b.date)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [enVue, filtre, courant],
+    [enVue, filtre, clientsSel, map, courant],
   )
 
   // Sélection produit pour le synopsis (auto : 1er événement visible).
@@ -154,7 +182,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   function aspect(e: Ev): { cls: string; icone: string; titre: string } {
     const passe = e.date < today
     if (e.maturite) return { cls: 'bg-amber-50 border-amber-300', icone: '⚑', titre: 'Maturité' }
-    if (estAutocallProbable(e)) return { cls: 'bg-emerald-50 border-emerald-300', icone: '↑', titre: 'Autocall probable' }
+    if (estAutocallProbable(e)) return { cls: 'bg-emerald-50 border-emerald-300', icone: '↑', titre: 'Rappel probable' }
     if (e.coupon) return { cls: 'bg-sky-50 border-sky-200', icone: '✓', titre: 'Paiement de coupon' }
     return { cls: passe ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-white border-slate-200', icone: '🕑', titre: 'Observation' }
   }
@@ -163,7 +191,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
     const a = aspect(e)
     const p = e.product
     const emet = (p.emetteur ?? '').split(' ')[0]
-    const clients = p.clients?.join(', ') ?? p.allocations?.map((x) => x.client).join(', ') ?? ''
+    const clients = allocsOf(p).map((x) => x.client).join(', ')
     return (
       <button
         onClick={() => setSelId(p.id)}
@@ -222,7 +250,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const FILTRES: { k: Filtre; label: string; icone: string }[] = [
     { k: 'toutes', label: 'Toutes les observations', icone: '◉' },
     { k: 'maturite', label: 'Arrivant à maturité', icone: '⚑' },
-    { k: 'autocall', label: 'Autocall probable', icone: '↑' },
+    { k: 'autocall', label: 'Rappel probable', icone: '↑' },
     { k: 'coupon', label: 'Paiement de coupon', icone: '✓' },
   ]
 
@@ -268,6 +296,33 @@ export default function CalendarView({ products }: { products: Product[] }) {
                 <div className="text-[11px] uppercase tracking-wide text-slate-500 mt-0.5 leading-tight">{f.label}</div>
               </button>
             ))}
+
+            {/* Filtre client (multi-sélection) */}
+            {clients.length > 0 && (
+              <div className="mt-1 border-t border-slate-100 pt-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] uppercase tracking-wide text-slate-500">Client</span>
+                  {clientsSel.size > 0 && (
+                    <button onClick={() => setClientsSel(new Set())} className="text-[11px] text-cmf-blue hover:underline">
+                      Effacer ({clientsSel.size})
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 max-h-[260px] overflow-y-auto pr-1">
+                  {clients.map((c) => (
+                    <label key={c} className="flex items-center gap-2 text-[12px] text-slate-600 cursor-pointer hover:text-cmf-navy">
+                      <input
+                        type="checkbox"
+                        checked={clientsSel.has(c)}
+                        onChange={() => toggleClient(c)}
+                        className="accent-cmf-blue"
+                      />
+                      <span className="truncate" title={c}>{c}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </aside>
 
           {/* Jours */}
@@ -341,6 +396,25 @@ export default function CalendarView({ products }: { products: Product[] }) {
                 <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Synopsis produit</h2>
                 <button onClick={() => setOpenDetail(true)} className="text-xs text-cmf-blue hover:underline">Détail ↗</button>
               </div>
+              {/* Rappel détecté : worst-of constaté (Yahoo) ≥ barrière à une observation
+                  passée active → on propose de marquer le produit « rappelé ». */}
+              {(() => {
+                const r = selAug.statut !== 'rappele' ? rappelConstate(selAug) : undefined
+                if (!r) return null
+                return (
+                  <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
+                    <span>
+                      ↑ <strong>Rappelé</strong> le {formatDateFr(r.date)} — worst {r.niveauPct}% ≥ barrière de rappel {r.barrierePct}%.
+                    </span>
+                    <button
+                      onClick={() => setStatut(selAug.isin, 'rappele')}
+                      className="shrink-0 rounded bg-violet-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-violet-700"
+                    >
+                      Marquer rappelé
+                    </button>
+                  </div>
+                )
+              })()}
               <ProductSynopsis product={selAug} />
             </div>
           ) : (
@@ -353,7 +427,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
 
       <p className="text-xs text-slate-400 mt-2 shrink-0">
         {enVue.length} observation{enVue.length > 1 ? 's' : ''} sur la période · navigation libre (passé / futur).
-        Autocall probable = worst-of courant (Yahoo) vs barrière de rappel ; indices propriétaires / taux non cotés → exclus du calcul.
+        Rappel probable = worst-of courant (Yahoo) vs barrière de rappel ; indices propriétaires / taux non cotés → exclus du calcul.
       </p>
 
       <Modal open={openDetail && !!selAug} onClose={() => setOpenDetail(false)} title={sel ? `${sel.nom} · ${sel.isin}` : ''}>

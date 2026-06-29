@@ -1,16 +1,16 @@
 {
- "majLe": "2026-06-15",
+ "majLe": "2026-06-19",
  "commissionsNettesParAnnee": {
-  "2026": 258449.76,
-  "2025": 481903.5,
+  "2023": 27995,
   "2024": 203212.47,
-  "2023": 27995
+  "2025": 481903.5,
+  "2026": 258449.76
  },
  "dealsParAnnee": {
-  "2026": 27,
-  "2025": 27,
+  "2023": 5,
   "2024": 15,
-  "2023": 5
+  "2025": 27,
+  "2026": 27
  },
  "trimestre2026": {
   "Q1": 120793,
@@ -68,7 +68,7 @@
    "ufPct": 0.06,
    "comCmf": 8000,
    "retroPct": 0.039999999999999994,
-   "comClient": 16000.0,
+   "comClient": 16000,
    "comTotal": 24000,
    "facture": "2026-189",
    "sent": "2026-06-10",
@@ -140,17 +140,17 @@
    "emetteur": "BNP",
    "description": "Athena Mémoire sur Novo Nordisk",
    "devise": "EUR",
-   "nominal": 656000,
+   "nominal": 663000,
    "ufPct": 0.06,
-   "comCmf": 19680,
+   "comCmf": 19890,
    "retroPct": 0.03,
-   "comClient": 19680,
-   "comTotal": 39360,
+   "comClient": 19890,
+   "comTotal": 39780,
    "facture": "2026-149",
    "sent": "2026-05-29",
    "credited": null,
    "split": 1,
-   "net": 19680
+   "net": 19890
   },
   {
    "isin": "XS3292036624",
@@ -182,7 +182,7 @@
    "ufPct": 0.05,
    "comCmf": 1400,
    "retroPct": 0.036000000000000004,
-   "comClient": 3600.0,
+   "comClient": 3600,
    "comTotal": 5000,
    "facture": "2026-130",
    "sent": "2026-05-05",
@@ -256,15 +256,15 @@
    "devise": "EUR",
    "nominal": 300000,
    "ufPct": 0.051,
-   "comCmf": 15300.0,
+   "comCmf": 15300,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 15300.0,
+   "comTotal": 15300,
    "facture": "2026-104",
    "sent": null,
    "credited": "2026-04-21",
    "split": 1,
-   "net": 15300.0
+   "net": 15300
   },
   {
    "isin": "XS3317870197",
@@ -429,7 +429,7 @@
    "ufPct": 0.06,
    "comCmf": 6000,
    "retroPct": 0.039999999999999994,
-   "comClient": 12000.0,
+   "comClient": 12000,
    "comTotal": 18000,
    "facture": "2026-056",
    "sent": "2026-02-13",
@@ -543,7 +543,7 @@
    "ufPct": 0.0525,
    "comCmf": 19260,
    "retroPct": 0.042499999999999996,
-   "comClient": 81855.0,
+   "comClient": 81855,
    "comTotal": 101115,
    "facture": "2026-001",
    "sent": "2025-12-16",
@@ -566,7 +566,7 @@
    "comTotal": 9500,
    "facture": "2025-277",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 9500
   },
@@ -695,7 +695,7 @@
    "ufPct": 0.075,
    "comCmf": 13040,
    "retroPct": 0.039999999999999994,
-   "comClient": 22400.0,
+   "comClient": 22400,
    "comTotal": 32775,
    "facture": "2025-170",
    "sent": "2025-09-10",
@@ -712,7 +712,7 @@
    "devise": "EUR",
    "nominal": 400000,
    "ufPct": 0.0475,
-   "comCmf": 7000.0,
+   "comCmf": 7000,
    "retroPct": 0.03,
    "comClient": 12000,
    "comTotal": 19000,
@@ -720,7 +720,7 @@
    "sent": "2025-07-25",
    "credited": "2025-07-25",
    "split": 1,
-   "net": 7000.0
+   "net": 7000
   },
   {
    "isin": "FRIP00001NZ9",
@@ -790,11 +790,11 @@
    "ufPct": 0.06,
    "comCmf": 4500,
    "retroPct": 0.041999999999999996,
-   "comClient": 10500.0,
+   "comClient": 10500,
    "comTotal": 15000,
    "facture": "2025-128",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 4500
   },
@@ -826,15 +826,15 @@
    "devise": "EUR",
    "nominal": 200000,
    "ufPct": 0.07,
-   "comCmf": 14000.0,
+   "comCmf": 14000,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 14000.0,
+   "comTotal": 14000,
    "facture": "2025-105",
    "sent": "2025-04-25",
    "credited": "2025-04-25",
    "split": 1,
-   "net": 14000.0
+   "net": 14000
   },
   {
    "isin": "XS2955900761",
@@ -851,7 +851,7 @@
    "comTotal": 10000,
    "facture": "2025-067",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 10000
   },
@@ -864,7 +864,7 @@
    "devise": "EUR",
    "nominal": 1950000,
    "ufPct": 0.036,
-   "comCmf": 31200.0,
+   "comCmf": 31200,
    "retroPct": 0.02,
    "comClient": 39000,
    "comTotal": 70200,
@@ -872,7 +872,7 @@
    "sent": "2025-03-13",
    "credited": "2025-03-13",
    "split": 1,
-   "net": 31200.0
+   "net": 31200
   },
   {
    "isin": "XS2975786000",
@@ -904,7 +904,7 @@
    "ufPct": 0.041,
    "comCmf": 16100,
    "retroPct": 0.027000000000000003,
-   "comClient": 31050.0,
+   "comClient": 31050,
    "comTotal": 47150,
    "facture": "2025-044",
    "sent": "2025-03-06",
@@ -927,7 +927,7 @@
    "comTotal": 15000,
    "facture": "2025-015",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 15000
   },
@@ -946,7 +946,7 @@
    "comTotal": 15900,
    "facture": "2025-003",
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 15900
   },
@@ -978,15 +978,15 @@
    "devise": "USD",
    "nominal": 500000,
    "ufPct": 0.0315,
-   "comCmf": 13634.0,
+   "comCmf": 13634,
    "retroPct": 0,
    "comClient": 0,
    "comTotal": 15750,
    "facture": "2024-327",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
-   "net": 13634.0
+   "net": 13634
   },
   {
    "isin": "XS2769371209",
@@ -997,15 +997,15 @@
    "devise": "EUR",
    "nominal": 980000,
    "ufPct": 0.0489,
-   "comCmf": 12642.0,
+   "comCmf": 12642,
    "retroPct": 0.036,
    "comClient": 35280,
    "comTotal": 47922,
    "facture": "2024-301",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
-   "net": 12642.0
+   "net": 12642
   },
   {
    "isin": "XS2886439467",
@@ -1016,7 +1016,7 @@
    "devise": "EUR",
    "nominal": 100000,
    "ufPct": 0.0515,
-   "comCmf": 1545.0,
+   "comCmf": 1545,
    "retroPct": 0.03605,
    "comClient": 3605,
    "comTotal": 5150,
@@ -1024,7 +1024,7 @@
    "sent": "2024-11-08",
    "credited": "2024-11-08",
    "split": 1,
-   "net": 1545.0
+   "net": 1545
   },
   {
    "isin": "XS2862503435",
@@ -1060,7 +1060,7 @@
    "comTotal": 4000,
    "facture": "2024-202",
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 1,
    "net": 3462.6
   },
@@ -1092,15 +1092,15 @@
    "devise": "EUR",
    "nominal": 130000,
    "ufPct": 0.02,
-   "comCmf": 780.0,
+   "comCmf": 780,
    "retroPct": 0.013999999999999999,
-   "comClient": 1820.0,
+   "comClient": 1820,
    "comTotal": 2600,
    "facture": "2024-133",
    "sent": "2024-06-10",
    "credited": "2024-06-10",
    "split": 1,
-   "net": 780.0
+   "net": 780
   },
   {
    "isin": "FR001400PLW8",
@@ -1111,15 +1111,15 @@
    "devise": "EUR",
    "nominal": 1500000,
    "ufPct": 0.0175,
-   "comCmf": 26250.0,
+   "comCmf": 26250,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 26250.0,
+   "comTotal": 26250,
    "facture": "2024-091",
    "sent": "2024-04-15",
    "credited": "2024-04-15",
    "split": 1,
-   "net": 26250.0
+   "net": 26250
   },
   {
    "isin": "XS0461619396",
@@ -1269,7 +1269,7 @@
    "comTotal": 25625,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 9225
   },
@@ -1288,7 +1288,7 @@
    "comTotal": 18125,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1307,7 +1307,7 @@
    "comTotal": 26000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1326,7 +1326,7 @@
    "comTotal": 42000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1345,7 +1345,7 @@
    "comTotal": 15000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1364,7 +1364,7 @@
    "comTotal": 10000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1383,7 +1383,7 @@
    "comTotal": 9000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 0,
    "net": null
   },
@@ -1396,15 +1396,15 @@
    "devise": "EUR",
    "nominal": 200000,
    "ufPct": 0.0245,
-   "comCmf": 900.0,
+   "comCmf": 900,
    "retroPct": 0.02,
    "comClient": 4000,
    "comTotal": 4900,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
-   "net": 900.0
+   "net": 900
   },
   {
    "isin": "XS2863761933",
@@ -1421,7 +1421,7 @@
    "comTotal": 50000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1440,7 +1440,7 @@
    "comTotal": 20000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1459,7 +1459,7 @@
    "comTotal": 25000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1478,7 +1478,7 @@
    "comTotal": 25000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1497,7 +1497,7 @@
    "comTotal": 19527.5,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1510,13 +1510,13 @@
    "devise": "EUR",
    "nominal": 400000,
    "ufPct": 0.07,
-   "comCmf": 28000.0,
+   "comCmf": 28000,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 28000.0,
+   "comTotal": 28000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1535,7 +1535,7 @@
    "comTotal": 18000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1554,7 +1554,7 @@
    "comTotal": 90000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1573,7 +1573,7 @@
    "comTotal": 4062.5,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
    "net": 2031.25
   },
@@ -1586,13 +1586,13 @@
    "devise": "EUR",
    "nominal": 1250000,
    "ufPct": 0.035,
-   "comCmf": 43750.0,
+   "comCmf": 43750,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 43750.0,
+   "comTotal": 43750,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1605,13 +1605,13 @@
    "devise": "EUR",
    "nominal": 1330000,
    "ufPct": 0.035,
-   "comCmf": 46550.0,
+   "comCmf": 46550,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 46550.0,
+   "comTotal": 46550,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1624,15 +1624,15 @@
    "devise": "EUR",
    "nominal": 300000,
    "ufPct": 0.0396,
-   "comCmf": 11880.0,
+   "comCmf": 11880,
    "retroPct": 0,
    "comClient": 0,
-   "comTotal": 11880.0,
+   "comTotal": 11880,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
-   "net": 5940.0
+   "net": 5940
   },
   {
    "isin": "XS2759191286",
@@ -1649,7 +1649,7 @@
    "comTotal": 12780,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0.5,
    "net": 6390
   },
@@ -1668,7 +1668,7 @@
    "comTotal": 77500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1681,13 +1681,13 @@
    "devise": "EUR",
    "nominal": 2000000,
    "ufPct": 0.0225,
-   "comCmf": 5000.0,
+   "comCmf": 5000,
    "retroPct": 0.02,
    "comClient": 40000,
    "comTotal": 45000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1706,7 +1706,7 @@
    "comTotal": 45100,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1725,7 +1725,7 @@
    "comTotal": 11250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1744,7 +1744,7 @@
    "comTotal": 4000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1763,7 +1763,7 @@
    "comTotal": 14490,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1776,13 +1776,13 @@
    "devise": "GBP",
    "nominal": 630000,
    "ufPct": 0.025,
-   "comCmf": 1000.0,
+   "comCmf": 1000,
    "retroPct": 0.02,
    "comClient": 12600,
    "comTotal": 15750,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1795,13 +1795,13 @@
    "devise": "EUR",
    "nominal": 500000,
    "ufPct": 0.0385,
-   "comCmf": 14250.0,
+   "comCmf": 14250,
    "retroPct": 0.010000000000000002,
-   "comClient": 5000.0,
+   "comClient": 5000,
    "comTotal": 19250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2024-12-31",
    "split": 0,
    "net": null
   },
@@ -1820,7 +1820,7 @@
    "comTotal": 14040,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0.5,
    "net": 7020
   },
@@ -1839,7 +1839,7 @@
    "comTotal": 5000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1852,13 +1852,13 @@
    "devise": "EUR",
    "nominal": 300000,
    "ufPct": 0.035,
-   "comCmf": 3900.0,
+   "comCmf": 3900,
    "retroPct": 0.022,
    "comClient": 6600,
-   "comTotal": 10500.0,
+   "comTotal": 10500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1877,7 +1877,7 @@
    "comTotal": 92500,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1896,7 +1896,7 @@
    "comTotal": 6000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0.5,
    "net": 3000
   },
@@ -1915,7 +1915,7 @@
    "comTotal": 12000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2023-12-31",
    "split": 0,
    "net": null
   },
@@ -1934,7 +1934,7 @@
    "comTotal": 16250,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -1953,7 +1953,7 @@
    "comTotal": 10800,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -1972,7 +1972,7 @@
    "comTotal": 54000,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2022-12-31",
    "split": 0,
    "net": null
   },
@@ -2010,7 +2010,7 @@
    "comTotal": 10567,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 10567
   },
@@ -2029,9 +2029,28 @@
    "comTotal": 21400,
    "facture": null,
    "sent": null,
-   "credited": null,
+   "credited": "2025-12-31",
    "split": 1,
    "net": 21400
+  },
+  {
+   "isin": "XS3401965978",
+   "issue": "2026-07-03",
+   "client": "ABACUS - 05268",
+   "emetteur": "BARCLAYS",
+   "description": "Phoenix BNP Paribas, Crédit Agricole, Société Générale",
+   "devise": "EUR",
+   "nominal": 200000,
+   "ufPct": 0.0565,
+   "comCmf": 3300,
+   "retroPct": 0.04,
+   "comClient": 8000,
+   "comTotal": 11300,
+   "facture": "2026-200",
+   "sent": "2026-06-26",
+   "credited": null,
+   "split": 1,
+   "net": 3300
   }
  ],
  "mailing": {

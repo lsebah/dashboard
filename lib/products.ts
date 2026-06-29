@@ -1721,6 +1721,7 @@ const marexUsoInverse: Product = {
     effetMemoire: false,
     degressif: false,
     couponPa: 21.752,
+    couponGaranti: true,
     barriereRappelPct: 100,
     protectionPct: 150,
     protectionStyle: 'europeenne',
@@ -2662,7 +2663,7 @@ const sgPhoenixCms10: Product = {
   description: '12Y Phoenix Bearish EUR CMS 10Y — coupon 3,75%/sem. si ≤ 3,20%, autocall si ≤ 2,30%, capital garanti',
   badges: ['Taux', 'Bearish CMS10', 'Capital garanti', 'Effet mémoire'],
   termsheetFichier:
-    '240630_12Y_Phoenix Memory sur Taux en Juin 2024 -  2.30%3.20% (ADEQUITY)_Semestriel_FR001400OZR1_.pdf',
+    '240404_12Y_Phoenix Bearish CMS10 7.5%_Semestriel_FR001400OZR1_SOCGEN.pdf',
 }
 
 // ── Helper : produit Phoenix Bearish sur taux (capital garanti) ──────────────
@@ -3912,50 +3913,6 @@ function metaProduct(p: {
 }
 
 const metaProducts: Product[] = [
-  // Lus sur termsheet (run 02/26) : coupon mémoire trimestriel, autocall dégressif
-  // (−1,5 %/T, observable à partir de T+1Y), barrière finale (PDI) européenne 50 %.
-  metaProduct({
-    isin: 'XS3266613416',
-    nom: 'Phoenix Mémoire Réarmement Europe',
-    emetteur: 'BNP Paribas Issuance B.V.',
-    productType: 'Phoenix',
-    dateEmission: '2026-02-26',
-    dureeAnnees: 5,
-    frequence: 'trimestriel',
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Leonardo SpA', bloomberg: 'LDO IM' },
-      { nom: 'Rheinmetall AG', bloomberg: 'RHM GY' },
-      { nom: 'Safran SA', bloomberg: 'SAF FP' },
-    ],
-    couponPaPct: 9.8,
-    barriereAutocall: '89 % dégr. −1,5 %/T',
-    barriereCoupon: '65 %',
-    pdiPct: 50,
-    description: '5Y Phoenix Mémoire Wof — Réarmement Europe (Leonardo / Rheinmetall / Safran)',
-    badges: ['Worst-of', 'Effet mémoire'],
-  }),
-  metaProduct({
-    isin: 'XS3266613333',
-    nom: 'Phoenix Mémoire Ferroviaires + Infrastructures',
-    emetteur: 'BNP Paribas Issuance B.V.',
-    productType: 'Phoenix',
-    dateEmission: '2026-02-26',
-    dureeAnnees: 5,
-    frequence: 'trimestriel',
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Alstom SA', bloomberg: 'ALO FP' },
-      { nom: 'Siemens AG', bloomberg: 'SIE GY' },
-      { nom: 'Thales SA', bloomberg: 'HO FP' },
-    ],
-    couponPaPct: 10.2,
-    barriereAutocall: '94 % dégr. −1,5 %/T',
-    barriereCoupon: '70 %',
-    pdiPct: 50,
-    description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infra (Alstom / Siemens / Thales)',
-    badges: ['Worst-of', 'Effet mémoire'],
-  }),
   metaProduct({
     isin: 'XS3251223155',
     nom: 'Callable 90 % sur CSI Smallcap 500',
@@ -3983,54 +3940,6 @@ const metaProducts: Product[] = [
     sousJacents: [{ nom: 'Sanofi (décrément 3,76)', marche: 'Euronext Paris' }],
     description: '10Y Athena Airbag — Sanofi à décrément 3,76',
     badges: ['Single', 'Airbag', 'Décrément', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2769472221',
-    nom: 'Autocall Équipondéré Veolia + Eramet + LVMH',
-    emetteur: 'Goldman Sachs International',
-    productType: 'Autocall',
-    dateEmission: '2025-06-13',
-    dureeAnnees: 5,
-    basket: 'equipondere',
-    sousJacents: [
-      { nom: 'Veolia Environnement', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris' },
-      { nom: 'Eramet SA', bloomberg: 'ERA FP', isin: 'FR0000131757', marche: 'Euronext Paris' },
-      { nom: 'LVMH', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH',
-    badges: ['Équipondéré', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2925309275',
-    nom: 'Autocall Airbag Wof Moncler + LVMH + Victoria’s Secret',
-    emetteur: 'Marex Financial',
-    productType: 'Autocall Airbag',
-    dateEmission: '2025-07-15',
-    dureeAnnees: 5,
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Moncler SpA', bloomberg: 'MONC IM', isin: 'IT0004965148', marche: 'Borsa Italiana' },
-      { nom: 'LVMH', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris' },
-      { nom: 'Victoria’s Secret & Co', bloomberg: 'VSCO UN', isin: 'US9263871095', marche: 'NYSE' },
-    ],
-    description: '5Y Autocall Airbag Wof — Moncler + LVMH + Victoria’s Secret',
-    badges: ['Worst-of', 'Airbag', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS3149213053',
-    nom: 'Athena Airbag Dégressif ASML + Saint-Gobain + TotalEnergies',
-    emetteur: 'Banco Santander S.A.',
-    productType: 'Athena Airbag',
-    dateEmission: '2025-10-22',
-    dureeAnnees: 5,
-    basket: 'worst_of',
-    sousJacents: [
-      { nom: 'ASML Holding NV', bloomberg: 'ASML NA', isin: 'NL0010273215', marche: 'Euronext Amsterdam' },
-      { nom: 'Saint-Gobain', bloomberg: 'SGO FP', isin: 'FR0000125007', marche: 'Euronext Paris' },
-      { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', isin: 'FR0000120271', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Athena Airbag dégressif Wof — ASML + Saint-Gobain + TotalEnergies',
-    badges: ['Worst-of', 'Airbag', 'Dégressif', 'TS à fournir'],
   }),
 ]
 
@@ -4112,21 +4021,6 @@ const metaProducts2: Product[] = [
     sousJacents: [{ nom: 'Banco Bilbao Vizcaya Argentaria', bloomberg: 'BBVA SM', marche: 'BME' }],
     description: '6Y Athena Airbag — BBVA', badges: ['Airbag', 'TS à fournir'],
   }),
-  metaProduct({
-    isin: 'XS2953818841', nom: 'Athena Wof Microsoft + Alphabet', emetteur: 'CIBC',
-    productType: 'Athena', dateEmission: '2025-02-19', dureeAnnees: 3, basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Microsoft Corp', bloomberg: 'MSFT US', marche: 'NASDAQ' },
-      { nom: 'Alphabet Inc (Google)', bloomberg: 'GOOGL US', marche: 'NASDAQ' },
-    ],
-    description: '3Y Athena Wof — Microsoft + Alphabet', badges: ['Worst-of', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS2922143750', nom: 'Athena Bearish Nasdaq-100', emetteur: 'Banco Santander',
-    productType: 'Athena (bearish)', dateEmission: '2024-11-06', dureeAnnees: 5, basket: 'single',
-    sousJacents: [{ nom: 'Nasdaq-100', bloomberg: 'NDX Index' }],
-    description: '5Y Athena Bearish (inverse) sur Nasdaq-100', badges: ['Single', 'Bearish', 'TS à fournir'],
-  }),
   // Lu sur termsheet : produit de TAUX à capital garanti (pas un autocall actions).
   // Coupon 8 %/an années 1-3, puis 5 × (pente CMS 30Y−5Y) plancher 0 % ; call
   // émetteur semestriel à 100 % (du 30/09/2026 au 30/09/2036) ; capital 100 % garanti.
@@ -4144,22 +4038,7 @@ const metaProducts2: Product[] = [
     description: 'SPHINX 15 — pente CMS 30Y−5Y · coupon 8 % (an 1-3) puis 5× pente · capital garanti',
     badges: ['Taux', 'Capital garanti', 'Call émetteur'],
   }),
-  metaProduct({
-    isin: 'CH1322036596', nom: 'Phoenix Mémoire Porsche', emetteur: 'Banque Internationale à Luxembourg',
-    productType: 'Phoenix', dateEmission: '2024-04-26', dureeAnnees: 5, basket: 'single',
-    sousJacents: [{ nom: 'Porsche AG', bloomberg: 'P911 GY', marche: 'XETRA' }],
-    description: '5Y Phoenix Mémoire — Porsche AG (ticker à confirmer : AG vs SE)', badges: ['Single', 'Effet mémoire', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'CH1322027827', nom: 'Phoenix Mémoire Wof Moderna + Pfizer + Sanofi', emetteur: 'Banque Internationale à Luxembourg',
-    productType: 'Phoenix', dateEmission: '2024-02-02', dureeAnnees: 5, basket: 'worst_of',
-    sousJacents: [
-      { nom: 'Moderna Inc', bloomberg: 'MRNA US', marche: 'NASDAQ' },
-      { nom: 'Pfizer Inc', bloomberg: 'PFE US', marche: 'NYSE' },
-      { nom: 'Sanofi SA', bloomberg: 'SAN FP', marche: 'Euronext Paris' },
-    ],
-    description: '5Y Phoenix Mémoire Wof — Moderna + Pfizer + Sanofi', badges: ['Worst-of', 'Effet mémoire', 'TS à fournir'],
-  }),
+  // CH1322027827 décodé en définition complète plus bas (bilModernaPfizerSanofi).
   metaProduct({
     isin: 'FR001400GV92', nom: 'Phoenix Mémoire Wof Porsche + Volkswagen', emetteur: 'Morgan Stanley',
     productType: 'Phoenix', dateEmission: '2023-04-04', dureeAnnees: 5, basket: 'worst_of',
@@ -4171,25 +4050,11 @@ const metaProducts2: Product[] = [
   }),
   // — Actions : autocall sur indice à décrément (« Quartz ») —
   metaProduct({
-    isin: 'FR1459ABB977', nom: 'Quartz 53 — Crédit Agricole décrément 1,1', emetteur: 'Goldman Sachs International',
-    productType: 'Autocall décrément', family: 'participation',
-    dateEmission: '2026-01-20', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'Crédit Agricole SA (décrément 1,1)', bloomberg: 'ACA FP', marche: 'Euronext Paris' }],
-    description: '12Y Autocall « Quartz 53 » — Crédit Agricole à décrément 1,1', badges: ['Single', 'Décrément', 'TS à fournir'],
-  }),
-  metaProduct({
     isin: 'FRIP00001UV3', nom: 'Quartz 51 — BNP décrément 4,2', emetteur: 'Morgan Stanley',
     productType: 'Autocall décrément', family: 'participation',
     dateEmission: '2025-11-11', dureeAnnees: 12, basket: 'single',
     sousJacents: [{ nom: 'BNP Paribas (décrément 4,2)', bloomberg: 'BNP FP', marche: 'Euronext Paris' }],
     description: '12Y Autocall « Quartz 51 » — BNP Paribas à décrément 4,2', badges: ['Single', 'Décrément', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'FRIP00001G19', nom: 'Quartz 45 — Eni décrément 0,96', emetteur: 'Morgan Stanley',
-    productType: 'Autocall décrément', family: 'participation',
-    dateEmission: '2025-04-25', dureeAnnees: 12, basket: 'single',
-    sousJacents: [{ nom: 'Eni SpA (décrément 0,96 pts)', bloomberg: 'ENI IM', marche: 'Borsa Italiana' }],
-    description: '12Y Autocall « Quartz 45 » — Eni à décrément 0,96 pt', badges: ['Single', 'Décrément', 'TS à fournir'],
   }),
 ]
 
@@ -4468,7 +4333,7 @@ const cicBearishTec10: Product = {
     couponConditionnelPa: 6.3,
     barriereCouponTauxPct: 3.15,
     barriereRappelTauxPct: 2.35,
-    capitalGaranti: false,
+    capitalGaranti: true,
   },
   observations: buildObservations(
     [
@@ -4492,8 +4357,8 @@ const cicBearishTec10: Product = {
   rr: 'LS',
   productType: 'Phoenix Taux',
   description:
-    '12Y Phoenix Bearish TEC 10 (CIC) — coupon 6,30 % p.a. si TEC < 3,15 %, autocall si < 2,35 % ; capital NON garanti (amorti si TEC ≥ 3,15 % à l’échéance)',
-  badges: ['Taux', 'Bearish TEC10', 'Capital non garanti'],
+    '12Y Phoenix Bearish TEC 10 (CIC) — coupon 6,30 % p.a. si TEC < 3,15 %, autocall si < 2,35 % ; capital garanti à 100 % à l’échéance',
+  badges: ['Taux', 'Bearish TEC10', 'Capital garanti'],
   termsheetFichier: 'TS_2024-10-02_CIC_PhoenixTEC_FR001400SDV1.pdf',
 }
 
@@ -4803,6 +4668,23 @@ const quartz54Sanofi: Product = {
 // Produits décodés finement depuis leur termsheet (calendriers + mécanique complète).
 // ── Barclays — Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal ──────
 //    (TS XS3395348454, décodée depuis la termsheet/KID Barclays du 12/06/2026)
+const essMtObs = [
+  '2026-09-14', '2026-12-14', '2027-03-12', '2027-06-14', '2027-09-13',
+  '2027-12-13', '2028-03-13', '2028-06-12', '2028-09-12', '2028-12-12',
+  '2029-03-12', '2029-06-12', '2029-09-12', '2029-12-12', '2030-03-12',
+  '2030-06-12', '2030-09-12', '2030-12-12', '2031-03-12', '2031-06-12',
+]
+const essMtPay = [
+  '2026-09-28', '2026-12-29', '2027-03-30', '2027-06-28', '2027-09-27',
+  '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-26', '2028-12-28',
+  '2029-03-26', '2029-06-26', '2029-09-26', '2029-12-28', '2030-03-26',
+  '2030-06-26', '2030-09-26', '2030-12-30', '2031-03-26', '2031-06-26',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const essMtAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 96, 95, 94, 93, 92, 91, 90,
+  89, 88, 87, 86, 85, 84, 83, 82, 81, undefined,
+]
 const barclaysEssMt: Product = {
   id: 'XS3395348454',
   nom: 'Phoenix Mémoire worst-of EssilorLuxottica + ArcelorMittal',
@@ -4831,12 +4713,18 @@ const barclaysEssMt: Product = {
     effetMemoire: true,
     couponPa: 10.65, // 26,63 € / trimestre sur 1 000 € = 2,663 %/T ≈ 10,65 % p.a.
     barriereCouponPct: 50,
-    barriereRappelPct: 96, // niveau de rappel initial, dégressif jusqu'à 80 %
+    barriereRappelPct: 96, // niveau de rappel initial, dégressif jusqu'à 81 %
     degressif: true,
     protectionPct: 50,
     protectionStyle: 'europeenne',
   },
-  observations: [],
+  observations: buildObservations(essMtObs, essMtPay, {
+    niveauRappelPct: (n) => essMtAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.6625,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
   statut: 'vivant',
   rr: 'LS',
   productType: 'Phoenix Mémoire',
@@ -5179,7 +5067,7 @@ const sipChabanais: Product = {
   productType: 'Dette Privée',
   description: 'Dette privée senior (prêt Holding du 6 rue Chabanais) — coupon 10,25 %/an semestriel, capital non protégé, échéance 12/06/2025',
   badges: ['Dette privée', 'Coupon fixe'],
-  termsheetFichier: '231201_2Y_Dette Privée - SIP Chabanais_Semestriel_CH1271361060_.pdf',
+  termsheetFichier: '231201_2Y_Dette Privée - SIP Chabanais_Semestriel_CH1271361060_SIP.pdf',
 }
 
 // ── FRIP000014P8 — Morgan Stanley Autocall Bonus Luxe (MerQube décrément) ─────
@@ -5217,6 +5105,9 @@ const msLuxeBonus: Product = {
     protectionStyle: 'europeenne',
     bonusFinalPct: 100,
     decrement: '50 pts/an',
+    // Bonus/Snowball sans coupon périodique : prime de rappel +2,5 %/trim.
+    // (110 %→197,5 %), soit 10 %/an constant.
+    couponPa: 10,
   },
   observations: buildObservations(luxeObs, luxePay, {
     niveauRappelPct: (n) => (n <= 36 ? 100 : undefined),
@@ -5355,11 +5246,1058 @@ const citiZcCallable: Product = {
   productType: 'Callable Zéro Coupon',
   description: '15Y Note Citigroup callable zéro coupon — aucun coupon, remboursement 180,25 % à l’échéance (TRI ~5,35 % an 1), call émetteur annuel dès févr. 2027 (116,05 %→174,90 %)',
   badges: ['Taux', 'Zéro coupon', 'Callable'],
-  termsheetFichier: 'LIR006986_XS2110091449_termsheet_Prelim_EN.pdf',
+  termsheetFichier: '240223_15Y_Note Callable Zéro Coupon Citigroup_In Fine_XS2110091449_CITI.pdf',
+}
+
+// ══════ Termsheets décodés — Batches B & C (2026-06) ══════
+
+// ── CH1322036596 — BIL Phoenix Mémoire Porsche AG (5Y trimestriel) ───────────
+const bilPorscheObs = [
+  '2024-07-19', '2024-10-21', '2025-01-20', '2025-04-22', '2025-07-21', '2025-10-20',
+  '2026-01-19', '2026-04-20', '2026-07-20', '2026-10-19', '2027-01-19', '2027-04-19',
+  '2027-07-19', '2027-10-19', '2028-01-19', '2028-04-19', '2028-07-19', '2028-10-19',
+  '2029-01-19', '2029-04-19',
+]
+const bilPorschePay = [
+  '2024-07-26', '2024-10-28', '2025-01-27', '2025-04-29', '2025-07-28', '2025-10-27',
+  '2026-01-26', '2026-04-27', '2026-07-27', '2026-10-26', '2027-01-26', '2027-04-26',
+  '2027-07-26', '2027-10-26', '2028-01-26', '2028-04-26', '2028-07-26', '2028-10-26',
+  '2029-01-26', '2029-04-26',
+]
+const bilPorsche: Product = {
+  id: 'CH1322036596',
+  nom: 'BIL Phoenix Mémoire Porsche AG (5Y)',
+  isin: 'CH1322036596',
+  valor: '132203659',
+  emetteur: 'Banque Internationale à Luxembourg (BIL)',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 250_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2024-04-19',
+  dateEmission: '2024-04-26',
+  dateConstatationFinale: '2029-04-19',
+  dateEcheance: '2029-04-26',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Porsche AG', bloomberg: 'P911 GY', marche: 'XETRA', niveauInitial: 89.92 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 10.62,
+    barriereCouponPct: 80,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bilPorscheObs, bilPorschePay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: 100,
+    couponPct: 2.655,
+    niveauCouponPct: 80,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire — Porsche AG · coupon 2,655 %/trim. (10,62 % p.a.) · mémoire · barrière 80 % · KI 60 % européenne',
+  clients: ['ALVES - 06001'],
+  badges: ['Single', 'Effet mémoire'],
+  termsheetFichier: '240426_5Y_Phoenix Memory Porsche_Trimestriel_CH1322036596_BIL.pdf',
+}
+
+// ── FR1459ABB977 — GS Quartz 53 CA Décrement 1,10 pt (12Y trimestriel) ───────
+const gsQuartz53Obs = [
+  '2027-05-17', '2027-08-16', '2027-11-15', '2028-02-15', '2028-05-15', '2028-08-15',
+  '2028-11-15', '2029-02-15', '2029-05-15', '2029-08-15', '2029-11-15', '2030-02-15',
+  '2030-05-15', '2030-08-15', '2030-11-15', '2031-02-17', '2031-05-15', '2031-08-15',
+  '2031-11-17', '2032-02-16', '2032-05-17', '2032-08-16', '2032-11-15', '2033-02-15',
+  '2033-05-16', '2033-08-15', '2033-11-15', '2034-02-15', '2034-05-15', '2034-08-15',
+  '2034-11-15', '2035-02-15', '2035-05-15', '2035-08-15', '2035-11-15', '2036-02-15',
+  '2036-05-15', '2036-08-15', '2036-11-17', '2037-02-16', '2037-05-15', '2037-08-17',
+  '2037-11-16', '2038-02-15', '2038-05-17',
+]
+const gsQuartz53Pay = [
+  '2027-05-31', '2027-08-30', '2027-11-29', '2028-02-29', '2028-05-29', '2028-08-29',
+  '2028-11-29', '2029-03-01', '2029-05-29', '2029-08-29', '2029-11-29', '2030-03-01',
+  '2030-05-29', '2030-08-29', '2030-11-29', '2031-03-03', '2031-05-29', '2031-08-29',
+  '2031-12-01', '2032-03-01', '2032-05-31', '2032-08-30', '2032-11-29', '2033-03-01',
+  '2033-05-30', '2033-08-29', '2033-11-29', '2034-03-01', '2034-05-29', '2034-08-29',
+  '2034-11-29', '2035-03-01', '2035-05-29', '2035-08-29', '2035-11-29', '2036-02-29',
+  '2036-05-29', '2036-08-29', '2036-12-01', '2037-03-02', '2037-05-29', '2037-08-31',
+  '2037-11-30', '2038-03-01', '2038-05-31',
+]
+const gsQuartz53: Product = {
+  id: 'FR1459ABB977',
+  nom: 'GS Quartz 53 — CA Décrement 1,10 pt (12Y)',
+  isin: 'FR1459ABB977',
+  valor: '149051828',
+  emetteur: 'Goldman Sachs Finance Corp International Ltd',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: "Moody's A2 / S&P BBB+ / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-05-15',
+  dateEmission: '2026-01-20',
+  dateConstatationFinale: '2038-05-17',
+  dateEcheance: '2038-05-31',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'SGACA110 Index (CA décrément 1,10 pt/an)', bloomberg: 'SGACA110 Index' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    protectionPct: 40,
+    protectionStyle: 'europeenne',
+    decrement: 'Décrément 1,10 pt/an',
+  },
+  observations: buildObservations(gsQuartz53Obs, gsQuartz53Pay, {
+    niveauRappelPct: (n) => (n < 45 ? 100 : 60),
+    montantRemboursementPct: (n) => 114.5 + (n - 1) * 3.625,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall décrément',
+  description: '12Y Autocall Quartz 53 — CA décrément 1,10 pt · montant croissant 114,5%→274% · KI 40% européenne',
+  badges: ['Single', 'Décrément'],
+  termsheetFichier: '260120_12Y_Quartz 53 CA Decrement 1.1 pts_Trimestriel_FR1459ABB977_GS.pdf',
+}
+
+// ── FRIP00001G19 — MSCO Quartz 45 ENI Décrement 0,96 pt (12Y trimestriel) ────
+const msQuartz45Obs = [
+  '2026-08-14', '2026-11-16', '2027-02-15', '2027-05-14', '2027-08-16', '2027-11-15',
+  '2028-02-14', '2028-05-15', '2028-08-14', '2028-11-14', '2029-02-14', '2029-05-14',
+  '2029-08-14', '2029-11-14', '2030-02-14', '2030-05-14', '2030-08-14', '2030-11-14',
+  '2031-02-14', '2031-05-14', '2031-08-14', '2031-11-14', '2032-02-16', '2032-05-14',
+  '2032-08-16', '2032-11-15', '2033-02-14', '2033-05-16', '2033-08-16', '2033-11-14',
+  '2034-02-14', '2034-05-15', '2034-08-14', '2034-11-14', '2035-02-14', '2035-05-14',
+  '2035-08-14', '2035-11-14', '2036-02-14', '2036-05-14', '2036-08-14', '2036-11-14',
+  '2037-02-16', '2037-05-14',
+]
+const msQuartz45Pay = [
+  '2026-08-21', '2026-11-23', '2027-02-22', '2027-05-21', '2027-08-23', '2027-11-22',
+  '2028-02-21', '2028-05-22', '2028-08-21', '2028-11-21', '2029-02-21', '2029-05-21',
+  '2029-08-21', '2029-11-21', '2030-02-21', '2030-05-21', '2030-08-21', '2030-11-21',
+  '2031-02-21', '2031-05-21', '2031-08-21', '2031-11-21', '2032-02-23', '2032-05-21',
+  '2032-08-23', '2032-11-22', '2033-02-21', '2033-05-23', '2033-08-23', '2033-11-21',
+  '2034-02-21', '2034-05-22', '2034-08-21', '2034-11-21', '2035-02-21', '2035-05-21',
+  '2035-08-21', '2035-11-21', '2036-02-21', '2036-05-21', '2036-08-21', '2036-11-21',
+  '2037-02-23', '2037-05-21',
+]
+const msQuartz45: Product = {
+  id: 'FRIP00001G19',
+  nom: 'MSCO Quartz 45 — ENI Décrement 0,96 pt (12Y)',
+  isin: 'FRIP00001G19',
+  emetteur: 'Morgan Stanley & Co. International plc',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-08-14',
+  dateEmission: '2025-04-25',
+  dateConstatationFinale: '2037-08-14',
+  dateEcheance: '2037-08-21',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'Solactive ENI AR 0.96 Index', bloomberg: 'SOENI096 Index' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    protectionPct: 40,
+    protectionStyle: 'europeenne',
+    decrement: 'Décrément 0,96 pt/an',
+  },
+  observations: buildObservations(msQuartz45Obs, msQuartz45Pay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => 119 + (n - 1) * 4.75,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall décrément',
+  description: '12Y Autocall Quartz 45 ENI — décrément 0,96 pt · montant croissant 119%→323,25% · KI 40% européenne',
+  badges: ['Single', 'Décrément'],
+  termsheetFichier: '250425_12Y_Quartz 45 ENI Decrement 0.96 pts_Trimestriel_FRIP00001G19_MSCO.pdf',
+}
+
+// ── FR1459ABG521 — GS Phoenix Mémoire Basket 50 Points DIV (12Y mensuel) ─────
+const gsBasket50DivObs = [
+  '2026-10-21', '2026-11-23', '2026-12-21', '2027-01-21', '2027-02-22', '2027-03-22',
+  '2027-04-21', '2027-05-21', '2027-06-21', '2027-07-21', '2027-08-23', '2027-09-21',
+]
+const gsBasket50DivPay = [
+  '2026-11-04', '2026-12-07', '2027-01-06', '2027-02-04', '2027-03-08', '2027-04-07',
+  '2027-05-05', '2027-06-04', '2027-07-05', '2027-08-04', '2027-09-06', '2027-10-05',
+]
+const gsBasket50Div: Product = {
+  id: 'FR1459ABG521',
+  nom: 'GS Phoenix Mémoire MXCPFB50 — Basket 50 Pts DIV (12Y)',
+  isin: 'FR1459ABG521',
+  valor: '156026129',
+  emetteur: 'Goldman Sachs Finance Corp International Ltd',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: "Moody's A2 / S&P BBB+ / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-06-15',
+  dateEmission: '2026-06-11',
+  dateConstatationFinale: '2038-09-21',
+  dateEcheance: '2038-10-05',
+  frequence: 'mensuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'MSCI ACWI IMI Copper & Power 20 Fixed Basket 50 Pts DIV EUR', bloomberg: 'MXCPFB50 Index' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 8.0004,
+    barriereCouponPct: 70,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    decrement: 'Décrément 50 pts/an',
+  },
+  observations: buildObservations(gsBasket50DivObs, gsBasket50DivPay, {
+    niveauRappelPct: (n) => (n < 12 ? undefined : 100),
+    montantRemboursementPct: 100,
+    couponPct: 0.6667,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 12,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '12Y Phoenix Mémoire MXCPFB50 — décrément 50 pts · coupon 0,6667 %/mois (8 % p.a.) · mémoire · barrière coupon 70 % · autocall dégressif 100→70 % · KI 50 % européenne',
+  clients: ['RENAUD GESTION PRIVEE'],
+  badges: ['Single', 'Décrément', 'Dégressif', 'Effet mémoire', 'Mensuel'],
+  termsheetFichier: '260611_12Y_Phoenix Mémoire Basket 50 Points DIV EUR_Mensuel_FR1459ABG521_GS.pdf',
+}
+
+// ── XS3149199807 — Santander Athena Airbag Dégressif BNP+Intesa+CA (5Y mensuel)
+const santanderAirbagObs49 = [
+  '2026-10-08', '2026-11-09', '2026-12-08', '2027-01-08', '2027-02-08', '2027-03-08',
+  '2027-04-08', '2027-05-10', '2027-06-08', '2027-07-08', '2027-08-09', '2027-09-08',
+  '2027-10-08', '2027-11-08', '2027-12-08', '2028-01-10', '2028-02-08', '2028-03-08',
+  '2028-04-10', '2028-05-08', '2028-06-08', '2028-07-10', '2028-08-08', '2028-09-08',
+  '2028-10-09', '2028-11-08', '2028-12-08', '2029-01-08', '2029-02-08', '2029-03-08',
+  '2029-04-09', '2029-05-08', '2029-06-08', '2029-07-09', '2029-08-08', '2029-09-10',
+  '2029-10-08', '2029-11-08', '2029-12-10', '2030-01-08', '2030-02-08', '2030-03-08',
+  '2030-04-08', '2030-05-08', '2030-06-10', '2030-07-08', '2030-08-08', '2030-09-09',
+  '2030-10-08',
+]
+const santanderAirbagPay49 = [
+  '2026-10-21', '2026-11-23', '2026-12-21', '2027-01-21', '2027-02-22', '2027-03-22',
+  '2027-04-21', '2027-05-21', '2027-06-21', '2027-07-21', '2027-08-23', '2027-09-21',
+  '2027-10-21', '2027-11-22', '2027-12-21', '2028-01-21', '2028-02-21', '2028-03-21',
+  '2028-04-21', '2028-05-22', '2028-06-21', '2028-07-21', '2028-08-21', '2028-09-21',
+  '2028-10-23', '2028-11-21', '2028-12-21', '2029-01-22', '2029-02-21', '2029-03-21',
+  '2029-04-23', '2029-05-21', '2029-06-21', '2029-07-23', '2029-08-21', '2029-09-21',
+  '2029-10-22', '2029-11-21', '2029-12-21', '2030-01-21', '2030-02-21', '2030-03-21',
+  '2030-04-23', '2030-05-21', '2030-06-21', '2030-07-22', '2030-08-21', '2030-09-23',
+  '2030-10-21',
+]
+const santanderAirbagBnpIntesaCa: Product = {
+  id: 'XS3149199807',
+  nom: 'Santander Athena Airbag Dégressif BNP+Intesa+CA (5Y)',
+  isin: 'XS3149199807',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-10-08',
+  dateEmission: '2025-10-22',
+  dateConstatationFinale: '2030-10-08',
+  dateEcheance: '2030-10-21',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', niveauInitial: 16.48 },
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', niveauInitial: 75.2 },
+    { nom: 'Intesa Sanpaolo SpA', bloomberg: 'ISP IM', niveauInitial: 5.542 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    airbag: true,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(santanderAirbagObs49, santanderAirbagPay49, {
+    niveauRappelPct: (n) => (n < 49 ? Math.max(50, 100.5 - n * 0.5) : 50),
+    montantRemboursementPct: (n) => 100 + (n + 11) * 0.875,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena Airbag',
+  description: '5Y Athena Airbag Dégressif Wof BNP+Intesa+CA — 49 obs mensuelles · montant cumulatif 0,875%/mois · AER dégressif 100→50% · airbag 50% européen',
+  clients: ['ALVES - 06001'],
+  badges: ['Worst-of', 'Airbag', 'Dégressif', 'Mensuel'],
+  termsheetFichier: '251022_5Y_Athena Airbag Dégressif BNP + Intesa + Crédit Agricole_Mensuel_XS3149199807_SANTANDER.pdf',
+}
+
+// ── XS3149213053 — Santander Athena Airbag Dégressif ASML+SGO+TTE (5Y mensuel)
+const santanderAirbagAsmlSgoTte: Product = {
+  id: 'XS3149213053',
+  nom: 'Santander Athena Airbag Dégressif ASML+SGO+TTE (5Y)',
+  isin: 'XS3149213053',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-10-08',
+  dateEmission: '2025-10-22',
+  dateConstatationFinale: '2030-10-08',
+  dateEcheance: '2030-10-21',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'ASML Holding NV', bloomberg: 'ASML NA', niveauInitial: 851.8 },
+    { nom: 'Compagnie de Saint-Gobain', bloomberg: 'SGO FP', niveauInitial: 89.78 },
+    { nom: 'TotalEnergies SE', bloomberg: 'TTE FP', niveauInitial: 51.12 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    airbag: true,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(santanderAirbagObs49, santanderAirbagPay49, {
+    niveauRappelPct: (n) => (n < 49 ? Math.max(50, 100.5 - n * 0.5) : 50),
+    montantRemboursementPct: (n) => 100 + (n + 11) * (10.7004 / 12),
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena Airbag',
+  description: '5Y Athena Airbag Dégressif Wof ASML+Saint-Gobain+TTE — montant cumulatif 10,70%/an · AER dégressif 100→50% · airbag 50% européen',
+  clients: ['ALVES - 06001'],
+  badges: ['Worst-of', 'Airbag', 'Dégressif', 'Mensuel'],
+  termsheetFichier: '251022_5Y_Athena Airbag Dégressif ASML + Saint-Gobain + TotalEnergies_Mensuel_XS3149213053_SANTANDER.pdf',
+}
+
+// ── XS2922143750 — Santander Athena Bearish NDX100 (3Y mensuel, inverse) ──────
+const santanderBearishNdxObs = [
+  '2025-05-22', '2025-06-23', '2025-07-22', '2025-08-22', '2025-09-22', '2025-10-22',
+  '2025-11-24', '2025-12-22', '2026-01-22', '2026-02-23', '2026-03-23', '2026-04-22',
+  '2026-05-22', '2026-06-22', '2026-07-22', '2026-08-24', '2026-09-22', '2026-10-22',
+  '2026-11-23', '2026-12-22', '2027-01-22', '2027-02-22', '2027-03-22', '2027-04-22',
+  '2027-05-24', '2027-06-22', '2027-07-22', '2027-08-23', '2027-09-22', '2027-10-22',
+  '2027-11-22',
+]
+const santanderBearishNdxPay = [
+  '2025-05-29', '2025-06-30', '2025-07-29', '2025-08-29', '2025-09-29', '2025-10-29',
+  '2025-11-28', '2025-12-29', '2026-01-29', '2026-02-27', '2026-03-30', '2026-04-29',
+  '2026-05-29', '2026-06-29', '2026-07-29', '2026-08-31', '2026-09-29', '2026-10-29',
+  '2026-11-30', '2026-12-29', '2027-01-29', '2027-02-26', '2027-03-30', '2027-04-29',
+  '2027-05-31', '2027-06-29', '2027-07-29', '2027-08-30', '2027-09-29', '2027-10-29',
+  '2027-11-29',
+]
+const santanderBearishNdx: Product = {
+  id: 'XS2922143750',
+  nom: 'Santander Athena Bearish NASDAQ-100 (3Y)',
+  isin: 'XS2922143750',
+  emetteur: 'Santander International Products Plc',
+  garant: 'Banco Santander S.A.',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 270_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2024-11-22',
+  dateEmission: '2024-11-06',
+  dateConstatationFinale: '2027-11-22',
+  dateEcheance: '2027-11-29',
+  frequence: 'mensuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'NASDAQ-100 Index', bloomberg: 'NDX Index', niveauInitial: 20383.65 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'inverse',
+    effetMemoire: false,
+    // Coupon cumulatif 4,5 %→27 % (+0,75 %/mois) : 27 % est le TOTAL sur 3 ans,
+    // pas l'annuel. Coupon p.a. = 0,75 %/mois × 12 = 9 %/an.
+    couponPa: 9,
+    barriereRappelPct: 100,
+    protectionPct: 150,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(santanderBearishNdxObs, santanderBearishNdxPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: 100,
+    couponPct: (n) => 4.5 + (n - 1) * 0.75,
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena Bearish',
+  description: "3Y Athena Bearish (inverse) — NASDAQ-100 · coupon 4,5%→27% (×0,75%/mois) · autocall si NDX ≤ 100% · capital à risque si NDX > 150%",
+  clients: ['WEALTHOF - 06005'],
+  badges: ['Single', 'Inverse', 'Bearish'],
+  termsheetFichier: '241106_5Y_Athéna Bearish NDX100_Mensuel_XS2922143750_SANTANDER.pdf',
+}
+
+// ── XS2925309945 — Marex MSTR Classic Autocall (5Y mensuel, sans coupon) ──────
+const marexMstrObs = [
+  '2026-06-30', '2026-07-30', '2026-08-31', '2026-09-30', '2026-10-30', '2026-11-30',
+  '2026-12-30', '2027-02-01', '2027-03-01', '2027-03-30', '2027-04-30', '2027-06-01',
+  '2027-06-30', '2027-07-30', '2027-08-30', '2027-09-30', '2027-11-01', '2027-11-30',
+  '2027-12-30', '2028-01-31', '2028-02-29', '2028-03-30', '2028-05-01', '2028-05-30',
+  '2028-06-30', '2028-07-31', '2028-08-30', '2028-10-02', '2028-10-30', '2028-11-30',
+  '2029-01-02', '2029-01-30', '2029-02-28', '2029-04-02', '2029-04-30', '2029-05-30',
+  '2029-07-02', '2029-07-30', '2029-08-30', '2029-10-01', '2029-10-30', '2029-11-30',
+  '2029-12-31', '2030-01-30', '2030-02-28', '2030-04-01', '2030-04-30', '2030-05-30',
+  '2030-07-01',
+]
+const marexMstrPay = [
+  '2026-07-08', '2026-08-06', '2026-09-08', '2026-10-07', '2026-11-06', '2026-12-07',
+  '2027-01-07', '2027-02-08', '2027-03-08', '2027-04-06', '2027-05-07', '2027-06-08',
+  '2027-07-08', '2027-08-06', '2027-09-07', '2027-10-07', '2027-11-08', '2027-12-07',
+  '2028-01-06', '2028-02-07', '2028-03-07', '2028-04-06', '2028-05-08', '2028-06-06',
+  '2028-07-10', '2028-08-07', '2028-09-07', '2028-10-10', '2028-11-06', '2028-12-07',
+  '2029-01-09', '2029-02-06', '2029-03-07', '2029-04-09', '2029-05-07', '2029-06-06',
+  '2029-07-10', '2029-08-06', '2029-09-07', '2029-10-09', '2029-11-06', '2029-12-07',
+  '2030-01-08', '2030-02-06', '2030-03-07', '2030-04-08', '2030-05-07', '2030-06-06',
+  '2030-07-09',
+]
+const marexMstr: Product = {
+  id: 'XS2925309945',
+  nom: 'Marex Classic Autocall MicroStrategy (5Y)',
+  isin: 'XS2925309945',
+  notationEmetteur: 'BBB (S&P)',
+  emetteur: 'Marex Financial Products plc',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-06-30',
+  dateEmission: '2025-07-15',
+  dateConstatationFinale: '2030-07-01',
+  dateEcheance: '2030-07-09',
+  frequence: 'mensuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'MicroStrategy Inc.', bloomberg: 'MSTR UW', marche: 'NASDAQ', niveauInitial: 404.23 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    // Snowball sans coupon périodique : prime de rappel +1,125 %/mois
+    // (113,5 %→167,5 %), soit 13,5 %/an constant.
+    couponPa: 13.5,
+  },
+  observations: buildObservations(marexMstrObs, marexMstrPay, {
+    niveauRappelPct: (n) => (n < 49 ? 100 : 50),
+    montantRemboursementPct: (n) => 113.5 + (n - 1) * 1.125,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: "5Y Classic Autocall (Barrier Express) — MicroStrategy · montant croissant 113,5%→167,5% · autocall 100% · KI 50% européenne · sans coupon périodique",
+  clients: ['ALVES - 06001'],
+  badges: ['Single', 'Snowball'],
+  termsheetFichier: '250715_5Y_Autocall Airbag MSTR_Mensuel_XS2925309945_MAREX.pdf',
+}
+
+// ── XS2925309275 — Marex Classic Autocall Airbag Wof MONC+MC+VSCO (5Y mensuel)
+// Termsheet : "5Y Autocall Airbag Wof MONC + MC + VSCO Mensuel".
+// Structure : Snowball (montant de remboursement croissant 113,5 %→167,5 %) +
+// Airbag capital à la barrière basse (50 %). Autocall ≥ 80 % sur obs 1–48 ;
+// obs 49 (maturité) : remboursement Snowball max si worst ≥ 50 %, sinon airbag.
+// Pas de coupon périodique. Non-call première année : premier obs = mois 12.
+const marexMoncMcVsco: Product = {
+  id: 'XS2925309275',
+  nom: "Marex Classic Autocall Wof Moncler+LVMH+Victoria's Secret (5Y)",
+  isin: 'XS2925309275',
+  notationEmetteur: 'BBB (S&P)',
+  emetteur: 'Marex Financial Products plc',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-06-30',
+  dateEmission: '2025-07-15',
+  dateConstatationFinale: '2030-07-01',
+  dateEcheance: '2030-07-09',
+  frequence: 'mensuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Moncler SpA', bloomberg: 'MONC IM', marche: 'Borsa Italiana', niveauInitial: 48.39 },
+    { nom: 'LVMH Moët Hennessy Louis Vuitton', bloomberg: 'MC FP', marche: 'Euronext Paris', niveauInitial: 444.60 },
+    { nom: "Victoria's Secret & Company", bloomberg: 'VSCO UN', marche: 'NYSE', niveauInitial: 18.52 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 80,       // barrière autocall principale (obs 1–48)
+    protectionPct: 50,           // KI / airbag (obs 49 = maturité)
+    protectionStyle: 'europeenne',
+    airbag: true,                // protection Airbag : capital × worst / 50 % si KI
+    // Snowball sans coupon périodique : la prime de rappel croît de 1,125 %/mois
+    // (113,5 %→167,5 %), soit 13,5 %/an constant — c'est le « coupon » indicatif.
+    couponPa: 13.5,
+  },
+  observations: buildObservations(marexMstrObs, marexMstrPay, {
+    niveauRappelPct: (n) => (n < 49 ? 80 : 50),  // autocall 80 % ; maturité 50 %
+    montantRemboursementPct: (n) => 113.5 + (n - 1) * 1.125,  // 113,5 %→167,5 %
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: "5Y Classic Autocall Airbag Wof — Moncler + LVMH + Victoria's Secret · montant croissant 113,5 %→167,5 % · autocall ≥ 80 % · KI Airbag 50 % européenne · sans coupon périodique",
+  clients: ['ALVES - 06001'],
+  badges: ['Worst-of', 'Snowball', 'Airbag'],
+  termsheetFichier: '250715_5Y_Autocall Airbag Wof MONC + MC + VSCO_Mensuel_XS2925309275_MAREX.pdf',
+}
+
+// ── XS3266613416 — BNP Phoenix Snowball Wof "Réarmement Europe" (5Y trim.) ────
+// Réf. CE8664MDY. Strike/Trade 12/02/2026, Emission 26/02/2026, Constatation
+// finale 12/02/2031. Coupon mémoire 2,45 %/trim. (×(1+T)), barrière coupon 65 %.
+// Autocall dégressif : 89 % à T+1Y (obs 4) puis −1,5 %/trim. jusqu'à 66,5 %
+// (obs 19) ; pas d'autocall sur obs 1-3 ni sur l'observation finale (obs 20).
+// KI finale (PDI) 50 % européenne.
+const bnpRearmementObs = [
+  '2026-05-12', '2026-08-12', '2026-11-12', '2027-02-12', '2027-05-12', '2027-08-12',
+  '2027-11-12', '2028-02-14', '2028-05-12', '2028-08-14', '2028-11-13', '2029-02-12',
+  '2029-05-14', '2029-08-13', '2029-11-12', '2030-02-12', '2030-05-13', '2030-08-12',
+  '2030-11-12', '2031-02-12',
+]
+const bnpRearmementPay = [
+  '2026-05-26', '2026-08-26', '2026-11-26', '2027-02-26', '2027-05-26', '2027-08-26',
+  '2027-11-26', '2028-02-28', '2028-05-26', '2028-08-28', '2028-11-27', '2029-02-26',
+  '2029-05-28', '2029-08-27', '2029-11-26', '2030-02-26', '2030-05-27', '2030-08-26',
+  '2030-11-26', '2031-02-26',
+]
+const bnpRearmement: Product = {
+  id: 'XS3266613416',
+  nom: 'BNP Phoenix Mémoire Wof "Réarmement Europe" (5Y)',
+  isin: 'XS3266613416',
+  valor: '153203534',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-02-12',
+  dateEmission: '2026-02-26',
+  dateConstatationFinale: '2031-02-12',
+  dateEcheance: '2031-02-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Leonardo SpA', bloomberg: 'LDO IM', niveauInitial: 53.26 },
+    { nom: 'Rheinmetall AG', bloomberg: 'RHM GY', niveauInitial: 1579.50 },
+    { nom: 'Safran SA', bloomberg: 'SAF FP', niveauInitial: 307.30 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 9.8,
+    barriereCouponPct: 65,
+    barriereRappelPct: 89,
+    degressif: true,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bnpRearmementObs, bnpRearmementPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 19 ? 89 - (n - 4) * 1.5 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 19 ? 100 : undefined),
+    couponPct: 2.45,
+    niveauCouponPct: 65,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof — Réarmement Europe (Leonardo / Rheinmetall / Safran) · coupon 2,45 %/trim. (9,8 % p.a.) · mémoire · barrière coupon 65 % · autocall 89 % dégr. −1,5 %/T (dès T+1Y) · KI 50 % européenne',
+  clients: ['SAMY - 01674'],
+  badges: ['Worst-of', 'Effet mémoire', 'Dégressif'],
+  termsheetFichier: '260226_5Y_Phoenix Rearmement Europe_Trimestriel_XS3266613416_BNP.pdf',
+}
+
+// ── XS3266613333 — BNP Phoenix Snowball Wof "Ferroviaires + Infra" (5Y trim.) ─
+// Réf. CE8663MDY. Strike/Trade 12/02/2026, Emission 26/02/2026, Constatation
+// finale 12/02/2031. Coupon mémoire 2,55 %/trim. (×(1+T)), barrière coupon 70 %.
+// Autocall dégressif : 94 % à T+1Y (obs 4) puis −1,5 %/trim. jusqu'à 71,5 %
+// (obs 19) ; pas d'autocall sur obs 1-3 ni sur l'observation finale (obs 20).
+// KI finale (PDI) 50 % européenne.
+const bnpFerroviairesObs = bnpRearmementObs
+const bnpFerroviairesPay = bnpRearmementPay
+const bnpFerroviaires: Product = {
+  id: 'XS3266613333',
+  nom: 'BNP Phoenix Mémoire Wof "Ferroviaires + Infrastructures" (5Y)',
+  isin: 'XS3266613333',
+  valor: '153203533',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2026-02-12',
+  dateEmission: '2026-02-26',
+  dateConstatationFinale: '2031-02-12',
+  dateEcheance: '2031-02-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Alstom SA', bloomberg: 'ALO FP', niveauInitial: 29.24 },
+    { nom: 'Siemens AG-REG', bloomberg: 'SIE GY', niveauInitial: 257.00 },
+    { nom: 'Thales SA', bloomberg: 'HO FP', niveauInitial: 246.70 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    couponPa: 10.2,
+    barriereCouponPct: 70,
+    barriereRappelPct: 94,
+    degressif: true,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bnpFerroviairesObs, bnpFerroviairesPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 19 ? 94 - (n - 4) * 1.5 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 19 ? 100 : undefined),
+    couponPct: 2.55,
+    niveauCouponPct: 70,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Wof — Ferroviaires + Infra (Alstom / Siemens / Thales) · coupon 2,55 %/trim. (10,2 % p.a.) · mémoire · barrière coupon 70 % · autocall 94 % dégr. −1,5 %/T (dès T+1Y) · KI 50 % européenne',
+  clients: ['SAMY - 01674'],
+  badges: ['Worst-of', 'Effet mémoire', 'Dégressif'],
+  termsheetFichier: '260226_5Y_Phoenix Ferroviaires + Infra_Trimestriel_XS3266613333_BNP.pdf',
+}
+
+// ── XS2769472221 — GS "Leaders 7%" Autocall équipondéré Veolia/Eramet/LVMH ────
+// (5Y annuel). EUSIPA 1260 (BRC à coupon conditionnel — ici sans coupon, payoff
+// snowball : Early Redemption Value croissante 107 %→135 %). Initial Fixing
+// 09/07/2025, Emission 13/06/2025, Final Fixing 09/07/2030, Remb. 23/07/2030.
+// Trigger dégressif 100 %→94 %, autocall dès T+1Y (5 observations annuelles).
+// Barrière finale (PDI) 65 % européenne.
+const gsVeoliaErametLvmhObs = [
+  '2026-07-09', '2027-07-09', '2028-07-10', '2029-07-09', '2030-07-09',
+]
+const gsVeoliaErametLvmhPay = [
+  '2026-07-23', '2027-07-23', '2028-07-24', '2029-07-23', '2030-07-23',
+]
+const gsVeoliaErametLvmh: Product = {
+  id: 'XS2769472221',
+  nom: 'GS "Leaders 7%" Autocall équipondéré Veolia + Eramet + LVMH (5Y)',
+  isin: 'XS2769472221',
+  valor: '134740114',
+  emetteur: 'Goldman Sachs Finance Corp International Ltd',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: "Moody's A2 / S&P BBB+ / Fitch A",
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260',
+  devise: 'EUR',
+  nominal: 30_000_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-07-09',
+  dateEmission: '2025-06-13',
+  dateConstatationFinale: '2030-07-09',
+  dateEcheance: '2030-07-23',
+  frequence: 'annuel',
+  basket: 'equipondere',
+  sousJacents: [
+    { nom: 'Eramet SA', bloomberg: 'ERA FP', isin: 'FR0000131757', marche: 'Euronext Paris', niveauInitial: 47.7 },
+    { nom: 'LVMH Moët Hennessy Louis Vuitton SE', bloomberg: 'MC FP', isin: 'FR0000121014', marche: 'Euronext Paris', niveauInitial: 487.85 },
+    { nom: 'Veolia Environnement S.A.', bloomberg: 'VIE FP', isin: 'FR0000124141', marche: 'Euronext Paris', niveauInitial: 30.61 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    degressif: true,
+    protectionPct: 65,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(gsVeoliaErametLvmhObs, gsVeoliaErametLvmhPay, {
+    niveauRappelPct: (n) => [100, 98.5, 97, 95.5, 94][n - 1],
+    montantRemboursementPct: (n) => [107, 114, 121, 128, 135][n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH (GS "Leaders 7%") · montant croissant 107 %→135 % · trigger 100 % dégr. → 94 % · KI 65 % européenne · sans coupon périodique',
+  clients: ['SPG - 05774'],
+  badges: ['Équipondéré', 'Snowball', 'Dégressif'],
+  termsheetFichier: '250613_5Y_Autocall Equipondéré Veolia + Eramet + LVMH_Annuel_XS2769472221_GS.pdf',
+}
+
+// ── FR0014013N00 — BNP Autocall équipondéré Schneider/Siemens Energy/Bouygues ─
+// (6Y semestriel). Réf. EI2565MDY. Négociation 15/10/2025, Emission 27/10/2025,
+// Constatation initiale 28/11/2025, Constatation finale 28/11/2031, Remb. final
+// 12/12/2031. Autocall semestriel à 100 % (10 obs dès T+1Y), montant croissant
+// 107 %→138,5 % (N×[103,5 % + n×3,5 %]). Remb. final : 142 % si panier ≥ 100 %,
+// 100 % si entre la barrière 60 % et 100 %, sinon perte (KI 60 % européenne).
+// Sans coupon périodique.
+const bnpSchneiderEnrBouyObs = [
+  '2026-11-30', '2027-05-28', '2027-11-29', '2028-05-29', '2028-11-28',
+  '2029-05-28', '2029-11-28', '2030-05-28', '2030-11-28', '2031-05-28',
+]
+const bnpSchneiderEnrBouyPay = [
+  '2026-12-14', '2027-06-11', '2027-12-13', '2028-06-12', '2028-12-12',
+  '2029-06-11', '2029-12-12', '2030-06-11', '2030-12-12', '2031-06-11',
+]
+const bnpSchneiderEnrBouy: Product = {
+  id: 'FR0014013N00',
+  nom: 'BNP Autocall équipondéré Schneider + Siemens Energy + Bouygues (6Y)',
+  isin: 'FR0014013N00',
+  valor: '149445133',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: "S&P A+ / Moody's A1 / Fitch AA-",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 650_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-11-28',
+  dateEmission: '2025-10-27',
+  dateConstatationFinale: '2031-11-28',
+  dateEcheance: '2031-12-12',
+  frequence: 'semestriel',
+  basket: 'equipondere',
+  sousJacents: [
+    { nom: 'Schneider Electric SE', bloomberg: 'SU FP', niveauInitial: 231.00 },
+    { nom: 'Bouygues SA', bloomberg: 'EN FP', niveauInitial: 43.02 },
+    { nom: 'Siemens Energy AG', bloomberg: 'ENR GY', niveauInitial: 115.30 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 142,
+  },
+  observations: buildObservations(bnpSchneiderEnrBouyObs, bnpSchneiderEnrBouyPay, {
+    niveauRappelPct: 100,
+    montantRemboursementPct: (n) => 103.5 + n * 3.5,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Autocall',
+  description: '6Y Autocall équipondéré — Schneider + Siemens Energy + Bouygues · autocall 100 % semestriel · montant croissant 107 %→138,5 % · remb. final 142 % si panier ≥ 100 % · KI 60 % européenne · sans coupon périodique',
+  clients: ['SPG - 05774'],
+  badges: ['Équipondéré', 'Snowball'],
+  termsheetFichier: '251027_6Y_Autocall Equipondéré Schneider + Siemens Energy + Bouygues_Semestriel_FR0014013N00_BNP.pdf',
+}
+
+// ── XS2953818841 — CIBC Athena Wof Microsoft + Alphabet (3Y trim.) ────────────
+// Réf. SN7651DB. Strike/Trade 05/02/2025, Emission 19/02/2025, Valuation
+// 07/02/2028, Maturité 21/02/2028. 12 obs trimestrielles. Coupon 3,15 % × t
+// (t = numéro de période, obs 4 à 12), barrière coupon 100 %.
+// Autocall 100 % à partir de l'obs 4 (T+1Y) ; obs 1-3 sans rappel ni coupon.
+// KI finale 70 % européenne. Sous-jacents en USD (note en EUR, FX final).
+const cibcMsftGooglObs = [
+  '2025-05-05', '2025-08-05', '2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05',
+  '2026-11-05', '2027-02-05', '2027-05-05', '2027-08-05', '2027-11-05', '2028-02-07',
+]
+const cibcMsftGooglPay = [
+  '2025-05-19', '2025-08-19', '2025-11-19', '2026-02-19', '2026-05-19', '2026-08-19',
+  '2026-11-19', '2027-02-19', '2027-05-19', '2027-08-19', '2027-11-19', '2028-02-21',
+]
+const cibcMsftGoogl: Product = {
+  id: 'XS2953818841',
+  nom: 'CIBC Athena Wof Microsoft + Alphabet (3Y)',
+  isin: 'XS2953818841',
+  valor: '117039154',
+  emetteur: 'Canadian Imperial Bank of Commerce',
+  notationEmetteur: "Moody's Aa2 / S&P A+ / Fitch AA",
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 1000,
+  dateConstatationInitiale: '2025-02-05',
+  dateEmission: '2025-02-19',
+  dateConstatationFinale: '2028-02-07',
+  dateEcheance: '2028-02-21',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Microsoft Corp', bloomberg: 'MSFT UW', devise: 'USD', niveauInitial: 413.2900 },
+    { nom: 'Alphabet Inc', bloomberg: 'GOOGL UW', devise: 'USD', niveauInitial: 191.3300 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    // Coupon cumulatif 3,15 % × t (couponPct ci-dessous) : 3,15 %/trim. = 12,6 %/an.
+    // couponPa explicite pour ne PAS annualiser le cumul (12,6 % à l'obs 4 → 50,4 %).
+    couponPa: 12.6,
+    barriereCouponPct: 100,
+    barriereRappelPct: 100,
+    protectionPct: 70,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(cibcMsftGooglObs, cibcMsftGooglPay, {
+    niveauRappelPct: (n) => (n >= 4 && n <= 11 ? 100 : undefined),
+    montantRemboursementPct: (n) => (n >= 4 && n <= 11 ? 100 : undefined),
+    couponPct: (n) => (n >= 4 ? 3.15 * n : undefined),
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description: '3Y Athena Wof — Microsoft + Alphabet (CIBC) · coupon 3,15 % × t (dès T+1Y) · barrière coupon/autocall 100 % · autocall dès T+1Y · KI 70 % européenne',
+  badges: ['Worst-of', 'Athena'],
+  termsheetFichier: '250219_3Y_Athena Wof MSFT + GOOGL_Trimestriel_XS2953818841_CIBC.pdf',
+}
+
+// ── Barclays — Phoenix Mémoire Dégressif Bancaires FR (Wof BNP + ACA + GLE) ──
+//    Décodé de la termsheet indicative (19/06/2026, Série NX00600160 / Tr.1).
+//    20 constatations trimestrielles, non-call 1 an (autocall dès obs 4),
+//    autocall dégressif 100 → 62,5 % (−2,5 %/trim.), coupon 2,275 %/trim. à
+//    mémoire (9,10 % p.a.), barrière coupon 60 %, protection KI 50 % européenne.
+const barclaysBnpAcaGleObs = [
+  '2026-09-21', '2026-12-21', '2027-03-19', '2027-06-21', '2027-09-20',
+  '2027-12-20', '2028-03-20', '2028-06-19', '2028-09-19', '2028-12-19',
+  '2029-03-19', '2029-06-19', '2029-09-19', '2029-12-19', '2030-03-19',
+  '2030-06-19', '2030-09-19', '2030-12-19', '2031-03-19', '2031-06-19',
+]
+const barclaysBnpAcaGlePay = [
+  '2026-09-28', '2026-12-29', '2027-03-30', '2027-06-28', '2027-09-27',
+  '2027-12-27', '2028-03-27', '2028-06-26', '2028-09-26', '2028-12-28',
+  '2029-03-26', '2029-06-26', '2029-09-26', '2029-12-28', '2030-03-26',
+  '2030-06-26', '2030-09-26', '2030-12-30', '2031-03-26', '2031-06-26',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const barclaysBnpAcaGleAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85,
+  82.5, 80, 77.5, 75, 72.5, 70, 67.5, 65, 62.5, undefined,
+]
+
+const barclaysBnpAcaGle: Product = {
+  id: 'XS3401965978',
+  nom: 'Phoenix Mémoire Dégressif BNP + ACA + GLE',
+  isin: 'XS3401965978',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-19',
+  dateEmission: '2026-07-03',
+  dateConstatationFinale: '2031-06-19',
+  dateEcheance: '2031-06-26',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris', devise: 'EUR' },
+    { nom: 'Crédit Agricole SA', bloomberg: 'ACA FP', isin: 'FR0000045072', marche: 'Euronext Paris', devise: 'EUR' },
+    { nom: 'Société Générale SA', bloomberg: 'GLE FP', isin: 'FR0000130809', marche: 'Euronext Paris', devise: 'EUR' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 9.1,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(barclaysBnpAcaGleObs, barclaysBnpAcaGlePay, {
+    niveauRappelPct: (n) => barclaysBnpAcaGleAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.275,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire Dégressif Wof BNP + ACA + GLE',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier: 'TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
+  // TS hors dossier « Termsheets » (rangée dans Deal Done) → lien direct SharePoint.
+  termsheetUrl:
+    'https://capitalmanagementfrance-my.sharepoint.com/personal/serveur_cmf_finance/Documents/TEAM/Deal Done/Laurent/2026-07-03_XS3401965978_Phoenix Mémoire BNP ACA SG/TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
+}
+
+// ── BIL — Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (CH1322027827) ───────
+//    Décodé de la TS BIL (indicative 26/01/2024, EUR Quanto). 20 constatations
+//    trimestrielles, coupon 2,475 %/T à mémoire (9,90 % p.a.), barrière coupon
+//    60 %, autocall 100 % constant (non dégressif) dès la 4e obs (non-call 1 an),
+//    protection KI 60 % européenne.
+const bilMrnaObs = [
+  '2024-04-26', '2024-07-26', '2024-10-28', '2025-01-27', '2025-04-28',
+  '2025-07-28', '2025-10-27', '2026-01-26', '2026-04-27', '2026-07-27',
+  '2026-10-26', '2027-01-26', '2027-04-26', '2027-07-26', '2027-10-26',
+  '2028-01-26', '2028-04-26', '2028-07-26', '2028-10-26', '2029-01-26',
+]
+const bilMrnaPay = [
+  '2024-05-06', '2024-08-02', '2024-11-04', '2025-02-03', '2025-05-06',
+  '2025-08-04', '2025-11-03', '2026-02-02', '2026-05-05', '2026-08-03',
+  '2026-11-02', '2027-02-02', '2027-05-03', '2027-08-02', '2027-11-02',
+  '2028-02-02', '2028-05-04', '2028-08-02', '2028-11-02', '2029-02-02',
+]
+const bilModernaPfizerSanofi: Product = {
+  id: 'CH1322027827',
+  nom: 'Phoenix Mémoire Wof Moderna + Pfizer + Sanofi',
+  isin: 'CH1322027827',
+  emetteur: 'Banque Internationale à Luxembourg',
+  notationEmetteur: 'S&P A- / Moody’s A2',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2024-01-26',
+  dateEmission: '2024-02-02',
+  dateConstatationFinale: '2029-01-26',
+  dateEcheance: '2029-02-02',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'Moderna Inc', bloomberg: 'MRNA US', marche: 'NASDAQ', devise: 'USD' },
+    { nom: 'Pfizer Inc', bloomberg: 'PFE US', marche: 'NYSE', devise: 'USD' },
+    { nom: 'Sanofi SA', bloomberg: 'SAN FP', marche: 'Euronext Paris', devise: 'EUR' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: false,
+    couponPa: 9.9,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bilMrnaObs, bilMrnaPay, {
+    niveauRappelPct: (n) => (n >= 4 ? 100 : undefined),
+    montantRemboursementPct: 100,
+    couponPct: 2.475,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix Mémoire',
+  description: '5Y Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (EUR Quanto)',
+  badges: ['Worst-of', 'Effet mémoire', 'Quanto EUR'],
+  termsheetFichier: '240202_5Y_Phoenix Memory MRNA + PFE + Sanofi_Trimestriel_CH1322027827_BIL.pdf',
+}
+
+// ── BNP — Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500 (XS3153607810) ──────
+//    Décodé de la TS BNP (5Y Athena Wof, EUR Quanto). Rappel annuel (4 dates),
+//    prime de rappel n × 8,15 % (max avec la perf worst-of), pas de coupon
+//    courant, protection KI 60 % européenne. Niveaux initiaux fixés au 14/10/2025.
+const bnpIndicesObs = ['2026-10-14', '2027-10-14', '2028-10-16', '2029-10-15', '2030-10-15']
+const bnpIndicesPay = ['2026-10-28', '2027-10-28', '2028-10-30', '2029-10-29', '2030-10-29']
+const bnpAthenaIndices: Product = {
+  id: 'XS3153607810',
+  nom: 'Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500',
+  isin: 'XS3153607810',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 510_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2025-10-14',
+  dateEmission: '2025-10-28',
+  dateConstatationFinale: '2030-10-15',
+  dateEcheance: '2030-10-29',
+  frequence: 'annuel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'EURO STOXX 50', bloomberg: 'SX5E Index', marche: 'STOXX', devise: 'EUR' },
+    { nom: 'Nikkei 225', bloomberg: 'NKY Index', marche: 'Osaka', devise: 'JPY' },
+    { nom: 'S&P 500', bloomberg: 'SPX Index', marche: 'CBOE', devise: 'USD' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 8.15,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 40.75,
+  },
+  observations: buildObservations(bnpIndicesObs, bnpIndicesPay, {
+    niveauRappelPct: (n) => (n <= 4 ? 100 : undefined),
+    montantRemboursementPct: 100,
+    couponPct: (n) => Math.round(8.15 * n * 100) / 100,
+    niveauCouponPct: 100,
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  productType: 'Athena',
+  description:
+    '5Y Athena Wof EuroStoxx 50 + Nikkei 225 + S&P 500 (EUR Quanto) — prime de rappel n×8,15 % (max perf worst-of), annuel, protection 60 % européenne',
+  badges: ['Worst-of', 'Athena', 'Quanto EUR'],
+  termsheetFichier: 'TS - Athena SX5E NKY SPX - XS3153607810.PDF',
 }
 
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
+  bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
   barclaysEngieNexansSchneider, bbvaMittalEssilor, bnpTec10Phoenix, barclaysSanofiDecrement,
   bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,
@@ -5386,6 +6324,10 @@ const detailed: Product[] = [
   dbBearishCms10_315, bnpBearishCms10_315, cicBearishTec10,
   athenaKering, bbvaSanofiBnpTte, bofaTteShellEni, gsOrangeDecrement,
   quartz54Sanofi,
+  bilPorsche, gsQuartz53, msQuartz45, gsBasket50Div,
+  santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
+  marexMstr, marexMoncMcVsco,
+  barclaysBnpAcaGle, bilModernaPfizerSanofi, bnpAthenaIndices,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).

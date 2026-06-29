@@ -1,0 +1,94 @@
+name: Reporting clients (PDF par email)
+
+# Génère un PDF de valorisation par client (rendu identique à « Imprimer » dans
+# l'app : route /print via Puppeteer) puis l'envoie en pièce jointe par email
+# (Resend). Deux cadences automatiques + déclenchement manuel :
+#   • tous les lundis             → reporting hebdomadaire
+#   • le 1er de chaque mois       → reporting mensuel
+# L'app est buildée et lancée dans le job (localhost:3000) ; les prix live
+# viennent de Vercel KV (secrets) et les niveaux de Yahoo (fetch sortant).
+on:
+  schedule:
+    - cron: '0 6 * * 1' # lundi 06:00 UTC (~08:00 Paris) — hebdomadaire
+    - cron: '0 6 1 * *' # 1er du mois 06:00 UTC — mensuel
+  workflow_dispatch:
+    inputs:
+      label:
+        description: 'Étiquette de cadence (sujet email)'
+        required: false
+        default: 'manuel'
+      email_to:
+        description: 'Destinataire (override ponctuel — sinon secret NOTIF_EMAIL_TO)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Installer Puppeteer (Chromium)
+        run: npm install --no-save puppeteer
+
+      # Étiquette de cadence selon le déclencheur (cron hebdo / mensuel / manuel).
+      - name: Déterminer la cadence
+        id: cadence
+        run: |
+          if [ "${{ github.event.schedule }}" = "0 6 1 * *" ]; then
+            echo "label=mensuel" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 6 * * 1" ]; then
+            echo "label=hebdomadaire" >> "$GITHUB_OUTPUT"
+          else
+            echo "label=${{ github.event.inputs.label || 'manuel' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build de l'app
+        run: npm run build
+        env:
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+
+      - name: Lancer l'app et attendre qu'elle réponde
+        env:
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+        run: |
+          npm run start &
+          echo "APP_PID=$!" >> "$GITHUB_ENV"
+          npx --yes wait-on -t 120000 http://localhost:3000/api/clients
+
+      - name: Générer + envoyer les PDF par email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Destinataire : override ponctuel (input) prioritaire sur le secret.
+          NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
+          NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
+        run: node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}"
+
+      # Filet de sécurité : les PDF restent téléchargeables depuis l'onglet Actions
+      # même si l'email n'est pas configuré (RESEND_API_KEY absent).
+      - name: Archiver les PDF (backup)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporting-clients-${{ steps.cadence.outputs.label }}
+          path: reporting_clients/*.pdf
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Arrêter l'app
+        if: always()
+        run: kill "$APP_PID" 2>/dev/null || true

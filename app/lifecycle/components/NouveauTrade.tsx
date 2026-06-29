@@ -4,7 +4,9 @@ import { useMemo, useState } from 'react'
 import type { Frequency, Product } from '@/lib/types'
 import { canonicalTermsheetName, issuerCode } from '@/lib/termsheets'
 import { addLocalProduct } from '@/lib/local-products'
-import { setLocalAllocations } from '@/lib/allocations'
+import { setLocalAllocations, useAllocations, tousLesClients } from '@/lib/allocations'
+import { addLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
+import { commissions } from '@/lib/commissions'
 
 // Modale « Nouveau trade » : saisie d'un trade (TS à renommer + déposer dans le
 // dossier Termsheets), répartition multi-clients, commissions (UF / Rétro)
@@ -42,8 +44,20 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
   const [frequence, setFrequence] = useState<Frequency>('trimestriel')
   const [tsFile, setTsFile] = useState<string>('')
   const [allocs, setAllocs] = useState<Alloc[]>([{ client: '', montant: '', uf: '', retro: '' }])
-  const [gabrielle, setGabrielle] = useState('')
+  const [gabrielle, setGabrielle] = useState('office@cmf.finance')
   const [copied, setCopied] = useState('')
+  const [saved, setSaved] = useState('') // message de confirmation après enregistrement
+
+  // Liste des clients connus (carnet) pour la saisie en liste déroulante :
+  // allocations du portefeuille ∪ clients des commissions ∪ carnet d'adresses.
+  // L'input reste libre → taper un nom absent « crée » un nouveau client.
+  const { map: allocMap } = useAllocations()
+  const clientOptions = useMemo(() => {
+    const set = new Set<string>(tousLesClients(allocMap))
+    for (const l of commissions.lignes) if (l.client) set.add(l.client)
+    for (const k of Object.keys(commissions.mailing ?? {})) set.add(k)
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'))
+  }, [allocMap])
 
   const setA = (i: number, k: keyof Alloc, v: string) =>
     setAllocs((a) => a.map((row, j) => (j === i ? { ...row, [k]: v } : row)))
@@ -157,13 +171,15 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
     }
   }
 
-  // Sauve le trade en local (localStorage) → il apparaît aussitôt au portefeuille
-  // avec son/ses compte(s). Le décodage fin de la TS se fait ensuite.
-  const save = () => {
+  // Enregistre le trade en local (localStorage) : produit + allocations (→
+  // portefeuille) ET les lignes de commission (→ onglet Commissions, où elles
+  // sont éditables/supprimables). Idempotent : ré-enregistrer le même ISIN met à
+  // jour les lignes au lieu de les dupliquer. Renvoie false si l'ISIN manque.
+  const persist = (): boolean => {
     const code = isin.trim().toUpperCase()
     if (!code) {
-      alert('Renseigne au moins l’ISIN avant de sauver.')
-      return
+      alert('Renseigne au moins l’ISIN avant d’enregistrer.')
+      return false
     }
     const years = Math.max(1, Math.round(num(duree) || 1))
     let ech = ''
@@ -200,11 +216,54 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
     }
     addLocalProduct(product)
     setLocalAllocations(code, allocations)
-    onClose()
+
+    // Une ligne de commission par client renseigné (montants déjà calculés).
+    const now = new Date().toISOString()
+    const stamp = new Date().toLocaleString('fr-FR')
+    const emetteurCode = issuerCode(emetteur)
+    const r2 = (n: number) => Math.round(n * 100) / 100
+    const r6 = (n: number) => Math.round(n * 1e6) / 1e6
+    const commissions: LocalCommission[] = rows
+      .filter((r) => r.client.trim())
+      .map((r) => ({
+        isin: code,
+        issue: dateEmission || null,
+        client: r.client.trim(),
+        emetteur: emetteurCode,
+        description: nom || null,
+        devise,
+        nominal: r.montant,
+        ufPct: r6(r.ufPct),
+        comCmf: r2(r.comCmf),
+        retroPct: r6(r.retroPct),
+        comClient: r2(r.comClient),
+        comTotal: r2(r.comTotal),
+        facture: null,
+        sent: null,
+        credited: null,
+        split: 1,
+        net: r2(r.comCmf),
+        statutFacture: 'en_attente',
+        genereLe: now,
+        envoyeLe: null,
+        histo: [{ action: 'Créé via Nouveau trade', date: stamp, user: 'Laurent' }],
+      }))
+    addLocalCommissions(commissions)
+    return true
   }
 
-  // Ouvre un brouillon dans le nouvel Outlook (objet + corps pré-remplis).
+  // « Sauver » : enregistre puis ferme la modale.
+  const save = () => {
+    if (persist()) onClose()
+  }
+
+  // Ouvre un brouillon dans le nouvel Outlook (objet + corps pré-remplis) — et
+  // enregistre au passage le trade + les commissions, pour que « envoyer » comme
+  // « sauver » alimentent l'onglet Commissions.
   const sendOutlook = () => {
+    if (!persist()) return
+    setSaved('Trade enregistré + commissions créées ✓')
+    setTimeout(() => setSaved(''), 2600)
     const subject = `Nouveau trade ${isin || ''} — ${emetteur || ''}`.trim()
     const url =
       'https://outlook.office.com/mail/deeplink/compose' +
@@ -315,10 +374,17 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                 {allocs.map((a, i) => (
                   <tr key={i}>
                     <td className={cell}>
-                      <input value={a.client} onChange={(e) => setA(i, 'client', e.target.value)} className="w-full bg-transparent outline-none" placeholder="NOM - 00000" />
+                      <input
+                        value={a.client}
+                        onChange={(e) => setA(i, 'client', e.target.value)}
+                        list="nt-clients"
+                        className="w-full bg-transparent outline-none"
+                        placeholder="Choisir ou créer un client…"
+                        title="Choisis un client existant, ou tape un nouveau nom pour le créer"
+                      />
                     </td>
                     <td className={cell}>
-                      <input value={a.montant} onChange={(e) => setA(i, 'montant', e.target.value)} inputMode="numeric" className="w-full bg-transparent text-right tabular-nums outline-none" placeholder="200000" />
+                      <input value={a.montant} onChange={(e) => setA(i, 'montant', e.target.value)} inputMode="numeric" className={`w-full bg-transparent text-right tabular-nums outline-none ${!a.montant.trim() && (a.uf.trim() || a.retro.trim()) ? 'ring-1 ring-red-300 rounded' : ''}`} placeholder="ex. 200000" />
                     </td>
                     <td className={cell}>
                       <input value={a.uf} onChange={(e) => setA(i, 'uf', e.target.value)} inputMode="decimal" className="w-16 bg-transparent text-right tabular-nums outline-none" placeholder="5" />
@@ -348,7 +414,15 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                 </tr>
               </tfoot>
             </table>
+            {/* Liste des clients connus (partagée par toutes les lignes). L'input
+                reste libre : un nom absent de la liste crée un nouveau client. */}
+            <datalist id="nt-clients">
+              {clientOptions.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
             <p className="mt-1 text-[10px] text-slate-400">
+              Saisis d&apos;abord le <strong>Montant</strong> (sans lui, Com. CMF et totaux restent à 0).
               Com. totale = Montant × UF · Rétro client = Montant × Rétro · Com. CMF (net) = UF − Rétro.
             </p>
           </div>
@@ -379,22 +453,24 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
           {/* Données à intégrer */}
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="field-label">Données à intégrer (feed + commissions)</label>
+              <label className="field-label">Données intégrées (feed + commissions)</label>
               <button onClick={() => copy('json', dataJson)} className="rounded-md border border-slate-300 px-2.5 py-0.5 text-xs text-slate-700 hover:bg-slate-50">
                 {copied === 'json' ? '✓ Copié' : 'Copier le JSON'}
               </button>
             </div>
             <textarea readOnly value={dataJson} rows={8} className="w-full rounded-md border border-slate-200 bg-slate-50 p-2 font-mono text-[11px] leading-snug text-slate-700" />
             <p className="mt-1 text-[10px] text-slate-400">
-              En attendant l&apos;automatisation : renomme la TS comme indiqué, dépose-la dans le dossier Termsheets,
-              copie-moi ce JSON (je l&apos;ajoute au portefeuille et je décode la TS) et envoie l&apos;email à Gabrielle.
+              « Sauver » (ou « Envoyer via Outlook ») crée automatiquement le produit au portefeuille
+              <strong> et</strong> les lignes de commission dans l&apos;onglet Commissions (modifiables / supprimables là-bas).
+              Le JSON ci-dessus reste disponible si tu veux le copier ; pense aussi à renommer la TS comme indiqué et à la déposer dans le dossier Termsheets.
             </p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 rounded-b-lg border-t border-slate-200 px-5 py-3">
+        <div className="flex items-center justify-end gap-3 rounded-b-lg border-t border-slate-200 px-5 py-3">
+          {saved && <span className="mr-auto text-xs font-medium text-emerald-600">{saved}</span>}
           <button onClick={save} className="rounded-md bg-cmf-navy px-5 py-1.5 text-sm font-semibold text-white hover:bg-[#0b1d36]">
-            Sauver
+            Sauver &amp; créer la commission
           </button>
         </div>
       </div>

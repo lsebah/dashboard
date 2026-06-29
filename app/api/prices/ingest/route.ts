@@ -18,6 +18,16 @@ export const runtime = 'nodejs'
 // feed.json côté portefeuille (le plus récent gagne).
 const PRICES_KEY = 'prices:overlay'
 const LEVELS_KEY = 'levels:overlay'
+const STRIKES_KEY = 'decrement:strikes:overlay'
+interface StrikeEntry {
+  ticker?: string
+  date?: string
+  value: number
+}
+interface StrikesOverlay {
+  asof: string
+  strikes: Record<string, StrikeEntry>
+}
 interface PricesOverlay {
   asof: string
   prices: Record<string, number>
@@ -84,6 +94,28 @@ export async function POST(req: Request) {
     }
   }
 
+  // — Strikes (valeurs initiales) des indices décrément, par ISIN produit —
+  //   { strikes: { "ISIN": { ticker, date, value } } }
+  const incomingStrikes: Record<string, StrikeEntry> = {}
+  let hasStrikes = false
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    const s = (body as { strikes?: unknown }).strikes
+    if (s && typeof s === 'object') {
+      for (const [isin, v] of Object.entries(s)) {
+        const e = v as { ticker?: unknown; date?: unknown; value?: unknown }
+        const n = num(e?.value)
+        if (n !== null) {
+          hasStrikes = true
+          incomingStrikes[isin] = {
+            value: n,
+            ...(typeof e.ticker === 'string' ? { ticker: e.ticker } : {}),
+            ...(typeof e.date === 'string' ? { date: e.date } : {}),
+          }
+        }
+      }
+    }
+  }
+
   // — Purge de clés du surcouche prix —
   const removeKeys: string[] = []
   if (body && typeof body === 'object' && !Array.isArray(body)) {
@@ -91,9 +123,9 @@ export async function POST(req: Request) {
     if (Array.isArray(r)) for (const k of r) if (typeof k === 'string') removeKeys.push(k)
   }
 
-  if (!hasPrices && !hasLevels && removeKeys.length === 0) {
+  if (!hasPrices && !hasLevels && !hasStrikes && removeKeys.length === 0) {
     return NextResponse.json(
-      { error: 'Rien à ingérer. Attendu { prices }, { levels } et/ou { remove }.' },
+      { error: 'Rien à ingérer. Attendu { prices }, { levels }, { strikes } et/ou { remove }.' },
       { status: 400 },
     )
   }
@@ -120,6 +152,14 @@ export async function POST(req: Request) {
     const ok = await kvSet(LEVELS_KEY, { asof, levels })
     out.persisted = (out.persisted as boolean) && ok
     out.levels = { accepted: Object.keys(incomingLevels).length, total: Object.keys(levels).length }
+  }
+
+  if (hasStrikes) {
+    const prev = (await kvGet<StrikesOverlay>(STRIKES_KEY)) ?? { asof: '', strikes: {} }
+    const strikes = { ...prev.strikes, ...incomingStrikes }
+    const ok = await kvSet(STRIKES_KEY, { asof, strikes })
+    out.persisted = (out.persisted as boolean) && ok
+    out.strikes = { accepted: Object.keys(incomingStrikes).length, total: Object.keys(strikes).length }
   }
 
   return NextResponse.json(out)

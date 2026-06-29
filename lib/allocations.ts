@@ -1,11 +1,13 @@
 'use client'
 // ─────────────────────────────────────────────────────────────────────────
-//  Allocations clients — stockées dans le navigateur (localStorage), JAMAIS
-//  versionnées. Permet d'affecter un (ou plusieurs) client + montant à chaque
-//  produit, sans faire entrer l'identité des clients dans le dépôt git.
+//  Allocations clients, statuts forcés et renommages — persistés côté serveur
+//  (KV) quand il est configuré → mémorisés sur TOUS les appareils ; sinon dans
+//  le navigateur uniquement. localStorage sert de cache instantané. Même schéma
+//  anti-perte que les commissions : la saisie locale prime, jamais écrasée.
 // ─────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useState } from 'react'
 import type { ClientAlloc, ProductStatus } from './types'
+import { loadSlot, saveSlot, type Slot } from './commissions-sync'
 
 export type { ClientAlloc }
 
@@ -40,16 +42,58 @@ function readJson<T>(key: string): T {
   }
 }
 
+// Écrit une map (navigateur + serveur KV, fire-and-forget avec réessais).
+function persist(key: string, slot: Slot, value: Record<string, unknown>) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* quota / mode privé : on ignore */
+  }
+  void saveSlot(slot, value)
+}
+
+// Fusionne le serveur (autres appareils) avec le navigateur (saisies locales qui
+// PRIMENT), relit le localStorage AU MOMENT de la fusion pour ne pas écraser une
+// saisie faite entre le montage et la réponse KV, puis repousse la fusion.
+function hydrateMerge<T extends Record<string, unknown>>(
+  key: string,
+  slot: Slot,
+  apply: (merged: T) => void,
+) {
+  void loadSlot<T>(slot).then(({ configured, value }) => {
+    if (!configured) return
+    const server = value && typeof value === 'object' ? value : ({} as T)
+    let local: T = {} as T
+    try {
+      const raw = window.localStorage.getItem(key)
+      if (raw) local = JSON.parse(raw) as T
+    } catch {
+      /* ignore */
+    }
+    const merged = { ...server, ...local } as T
+    apply(merged)
+    try {
+      window.localStorage.setItem(key, JSON.stringify(merged))
+    } catch {
+      /* ignore */
+    }
+    if (JSON.stringify(merged) !== JSON.stringify(server)) void saveSlot(slot, merged)
+  })
+}
+
 export function useAllocations() {
   const [map, setMap] = useState<AllocMap>({})
   const [statut, setStatutMap] = useState<StatutMap>({})
   const [noms, setNomsMap] = useState<NomMap>({})
 
-  // Chargement initial (au montage uniquement).
+  // Chargement : cache navigateur (instantané) puis serveur (fusion anti-perte).
   useEffect(() => {
     setMap(read())
     setStatutMap(readJson<StatutMap>(KEY_STATUT))
     setNomsMap(readJson<NomMap>(KEY_NOM))
+    hydrateMerge<AllocMap>(KEY, 'alloc', setMap)
+    hydrateMerge<StatutMap>(KEY_STATUT, 'statut', setStatutMap)
+    hydrateMerge<NomMap>(KEY_NOM, 'noms', setNomsMap)
   }, [])
 
   const setClients = useCallback((isin: string, allocs: ClientAlloc[]) => {
@@ -57,42 +101,30 @@ export function useAllocations() {
       const next = { ...prev }
       if (allocs.length === 0) delete next[isin]
       else next[isin] = allocs
-      try {
-        window.localStorage.setItem(KEY, JSON.stringify(next))
-      } catch {
-        /* quota / mode privé : on ignore */
-      }
+      persist(KEY, 'alloc', next)
       return next
     })
   }, [])
 
-  // Force (ou efface, si undefined) le statut d'un produit, localement.
+  // Force (ou efface, si undefined) le statut d'un produit.
   const setStatut = useCallback((isin: string, s: ProductStatus | undefined) => {
     setStatutMap((prev) => {
       const next = { ...prev }
       if (!s) delete next[isin]
       else next[isin] = s
-      try {
-        window.localStorage.setItem(KEY_STATUT, JSON.stringify(next))
-      } catch {
-        /* ignore */
-      }
+      persist(KEY_STATUT, 'statut', next)
       return next
     })
   }, [])
 
-  // Renomme (ou réinitialise si vide) le nom d'affichage d'un produit, localement.
+  // Renomme (ou réinitialise si vide) le nom d'affichage d'un produit.
   const setNom = useCallback((isin: string, nom: string) => {
     setNomsMap((prev) => {
       const next = { ...prev }
       const v = nom.trim()
       if (!v) delete next[isin]
       else next[isin] = v
-      try {
-        window.localStorage.setItem(KEY_NOM, JSON.stringify(next))
-      } catch {
-        /* ignore */
-      }
+      persist(KEY_NOM, 'noms', next)
       return next
     })
   }, [])
@@ -109,6 +141,7 @@ export function setLocalAllocations(isin: string, allocs: ClientAlloc[]) {
     else next[isin] = allocs
     window.localStorage.setItem(KEY, JSON.stringify(next))
     window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+    void saveSlot('alloc', next) // serveur (tous appareils)
   } catch {
     /* ignore */
   }

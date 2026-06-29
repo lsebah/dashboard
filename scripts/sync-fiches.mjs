@@ -84,10 +84,9 @@ function matchTicker(name, idx) {
 }
 
 async function main() {
-  // Secrets Graph absents (repo pas encore configuré) : skip propre (exit 0)
-  // au lieu de planter → plus d'email « Run failed » à chaque exécution.
-  if (!process.env.GRAPH_CLIENT_ID || !process.env.GRAPH_CLIENT_SECRET || !process.env.GRAPH_TENANT_ID) {
-    console.log('⏭️  Microsoft Graph non configuré (secrets GRAPH_* absents) — synchro ignorée.')
+  // Secrets Graph absents : SKIP propre (exit 0) → pas d'email « Run failed ».
+  if (!GRAPH_CLIENT_ID || !GRAPH_CLIENT_SECRET || !GRAPH_TENANT_ID) {
+    console.log('⏭️  Microsoft Graph non configuré (secrets GRAPH_* absents) — fiches ignorées.')
     return
   }
   const tok = await token()
