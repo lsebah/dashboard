@@ -17,7 +17,15 @@
  *   --out <dir>        dossier de sortie         (défaut ./reporting_clients)
  *   --base-url <url>   URL de l'app              (défaut http://localhost:3000)
  *   --client <code>    n'exporter qu'un client   (sinon : tous)
+ *   --email            envoie les PDF en pièces jointes (Resend) après génération
+ *   --label <texte>    étiquette de cadence dans le sujet (« hebdomadaire »…)
  *
+ * Email (avec --email) — variables d'environnement :
+ *   RESEND_API_KEY     clé API Resend (sinon email ignoré, PDF générés quand même)
+ *   NOTIF_EMAIL_TO     destinataire    (défaut L.sebah@cmf.finance)
+ *   NOTIF_EMAIL_FROM   expéditeur vérifié (défaut notifications@cmf.finance)
+ *
+ * Automatisé via .github/workflows/reporting-clients.yml (lundi + 1er du mois).
  * Dépend de puppeteer :  npm i -D puppeteer
  */
 import fs from 'node:fs'
@@ -32,8 +40,48 @@ function arg(name, def) {
 const OUT = path.resolve(arg('out', path.join(process.cwd(), 'reporting_clients')))
 const BASE = arg('base-url', 'http://localhost:3000').replace(/\/$/, '')
 const ONLY = arg('client', null)
+// Cadence : étiquette le sujet de l'email (« hebdomadaire » / « mensuel »).
+const LABEL = arg('label', null)
+// --email : après génération, envoie tous les PDF en pièces jointes via Resend.
+const EMAIL = process.argv.includes('--email')
 const DATE = new Date().toISOString().slice(0, 10)
 const slug = (s) => s.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+
+// Envoi des PDF en pièces jointes via l'API REST Resend (aucune dépendance npm).
+// Dégrade proprement si RESEND_API_KEY absent (génération OK, email ignoré).
+async function emailReports(files) {
+  const key = process.env.RESEND_API_KEY
+  const to = process.env.NOTIF_EMAIL_TO || 'L.sebah@cmf.finance'
+  const from = process.env.NOTIF_EMAIL_FROM || 'notifications@cmf.finance'
+  if (!key) {
+    console.log('RESEND_API_KEY absent → email ignoré (PDF générés quand même).')
+    return
+  }
+  if (files.length === 0) {
+    console.log('Aucun PDF à envoyer.')
+    return
+  }
+  const cadence = LABEL ? `${LABEL} ` : ''
+  const subject = `Reporting clients ${cadence}— ${DATE} (${files.length} client${files.length > 1 ? 's' : ''})`
+  const lignes = files.map(([client]) => `• ${client}`).join('\n')
+  const attachments = files.map(([, file]) => ({
+    filename: file,
+    content: fs.readFileSync(path.join(OUT, file)).toString('base64'),
+  }))
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text: `Reporting de valorisation ${cadence}au ${DATE}.\n\n${files.length} fiche(s) client jointes :\n${lignes}\n\n— Dashboard CMF`,
+      attachments,
+    }),
+  })
+  if (!res.ok) throw new Error(`Resend → HTTP ${res.status} : ${await res.text()}`)
+  console.log(`✉  Email envoyé à ${to} (${files.length} PDF joints).`)
+}
 
 async function listClients() {
   if (ONLY) return [ONLY]
@@ -75,6 +123,7 @@ async function main() {
     await browser.close()
   }
   console.log(`OK — ${written.length} PDF générés dans : ${OUT}`)
+  if (EMAIL) await emailReports(written)
 }
 
 main().catch((e) => {
