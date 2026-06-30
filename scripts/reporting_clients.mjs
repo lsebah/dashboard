@@ -67,6 +67,15 @@ function parseEmails(value) {
   return arr.map((e) => e.trim()).filter((e) => e.includes('@'))
 }
 
+// Titre (sujet) du relevé selon la cadence : « CMF | Relevé Mensuel » /
+// « CMF | Relevé Hebdomadaire » (sinon générique pour un run manuel/test).
+function releveTitle() {
+  const l = (LABEL || '').toLowerCase()
+  if (l.includes('mensuel')) return 'CMF | Relevé Mensuel'
+  if (l.includes('hebdo')) return 'CMF | Relevé Hebdomadaire'
+  return 'CMF | Relevé'
+}
+
 // Envoi des PDF en pièces jointes via l'API REST Resend (aucune dépendance npm).
 // Dégrade proprement si RESEND_API_KEY absent (génération OK, email ignoré).
 async function emailReports(files) {
@@ -83,7 +92,7 @@ async function emailReports(files) {
     return
   }
   const cadence = LABEL ? `${LABEL} ` : ''
-  const subject = `Reporting clients ${cadence}— ${DATE} (${files.length} client${files.length > 1 ? 's' : ''})`
+  const subject = releveTitle()
   const lignes = files.map(([client]) => `• ${client}`).join('\n')
   const attachments = files.map(([, file]) => ({
     filename: file,
@@ -135,7 +144,7 @@ async function emailPerClient(files) {
         to: dest,
         bcc: [bcc],
         reply_to: from,
-        subject: `Reporting de valorisation — ${DATE}`,
+        subject: releveTitle(),
         text:
           'Bonjour,\n\n' +
           'Veuillez trouver ci-joint le reporting de valorisation de vos positions ' +
