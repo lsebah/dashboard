@@ -150,7 +150,7 @@ async function emailPerClient(files) {
           'Veuillez trouver ci-joint le reporting de valorisation de vos positions ' +
           `au ${DATE}.\n\n` +
           'Je reste à votre disposition pour tout complément.\n\n' +
-          'Bien cordialement,\nLolo Sebah — CMF',
+          'Bien cordialement,\nLaurent Sebah — CMF',
         attachments: [{ filename: file, content }],
       }),
     })

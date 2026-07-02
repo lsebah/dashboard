@@ -1010,6 +1010,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               onNom={(s) => setNom(opened.isin, s)}
               tsCible={canonicalForProduct(opened)}
               tsActuel={termsheetFile(opened.isin)}
+              connus={clients}
             />
             <ProductReconstruction product={openedAug} />
           </div>

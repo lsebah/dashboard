@@ -120,6 +120,11 @@ export function situation(product: Product): Situation {
       : (product.pdiPct ?? undefined)
   const niveau = 100 + perf // niveau du sous-jacent en % de l'initial
 
+  // P&L coupons inclus positif (cash déjà acquis + valorisation) : le rendement
+  // réel encaissé prime sur le niveau brut, quel que soit le sens du produit.
+  const pnl = pnlAvecCoupons(product)
+  if (typeof pnl === 'number' && pnl > 0) return 'positive'
+
   // Produit INVERSE (bearish) : on joue à la BAISSE, la barrière de protection
   // est HAUTE ⇒ tout est en miroir du cas standard (la hausse est défavorable).
   const inverse =
@@ -131,6 +136,18 @@ export function situation(product: Product): Situation {
     if (niveau >= protectionPct) return 'sous_protection' // barrière haute franchie
     if (protectionPct - niveau <= 10) return 'proche_protection'
     return 'sans_stress'
+  }
+
+  // Worst-of à 3 sous-jacents proche d'un rappel anticipé : niveau courant ≥ 95 %
+  // de la PROCHAINE barrière d'autocall (pas du niveau initial 100 %) — pertinent
+  // pour les barrières dégressives (souvent < 100 %), où être proche du rappel
+  // est positif même si le niveau brut est sous 100 %.
+  const prochaine = prochaineObservation(product)
+  const barriereProchaine =
+    prochaine?.autocallActif !== false ? prochaine?.niveauRappelPct : undefined
+  const wofTrois = product.basket === 'worst_of' && product.sousJacents.length === 3
+  if (wofTrois && typeof barriereProchaine === 'number' && niveau >= 0.95 * barriereProchaine) {
+    return 'positive'
   }
 
   if (perf >= 0) return 'positive'

@@ -9,8 +9,10 @@ name: Reporting clients (PDF par email)
 # viennent de Vercel KV (secrets) et les niveaux de Yahoo (fetch sortant).
 on:
   schedule:
-    - cron: '0 6 * * 1' # lundi 06:00 UTC (~08:00 Paris) — hebdomadaire
-    - cron: '0 6 1 * *' # 1er du mois 06:00 UTC — mensuel
+    # 06:15 (pas 06:00 pile) : évite la minute la plus congestionnée de GitHub
+    # Actions, où des millions de crons se déclenchent en même temps.
+    - cron: '15 6 * * 1' # lundi 06:15 UTC (~08:15 Paris) — hebdomadaire
+    - cron: '15 6 1 * *' # 1er du mois 06:15 UTC — mensuel
   workflow_dispatch:
     inputs:
       label:
@@ -50,9 +52,9 @@ jobs:
       - name: Déterminer la cadence
         id: cadence
         run: |
-          if [ "${{ github.event.schedule }}" = "0 6 1 * *" ]; then
+          if [ "${{ github.event.schedule }}" = "15 6 1 * *" ]; then
             echo "label=mensuel" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "0 6 * * 1" ]; then
+          elif [ "${{ github.event.schedule }}" = "15 6 * * 1" ]; then
             echo "label=hebdomadaire" >> "$GITHUB_OUTPUT"
           else
             echo "label=${{ github.event.inputs.label || 'manuel' }}" >> "$GITHUB_OUTPUT"
@@ -88,7 +90,7 @@ jobs:
         # Le cron HEBDO (lundi) reste en mode lot vers toi (relecture interne).
         run: |
           PER=""
-          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 6 1 * *" ]; then
+          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ] || [ "${{ github.event.schedule }}" = "15 6 1 * *" ]; then
             PER="--per-client"
           fi
           node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}" $PER
