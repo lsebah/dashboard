@@ -1451,5 +1451,12 @@
   "devise": "EUR",
   "amount": 200000,
   "description": "Phoenix BNP Paribas, Crédit Agricole, Société Générale"
+ },
+ {
+  "isin": "XS3401975936",
+  "client": "ABACUS - 05268",
+  "devise": "EUR",
+  "amount": 200000,
+  "description": "Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore"
  }
 ]

@@ -6314,7 +6314,7 @@ const bbvaSpacex: Product = {
 //    barrière coupon à 60 %, knock-in à 50 % (européenne, constatée à la seule
 //    date de valorisation finale). Rappel dégressif de 100 % à 62,5 %, non-call
 //    sur les 3 premières observations. Nominal CMF = 200 000 EUR (ticket sur une
-//    émission totale de 2 200 000 EUR). Client non renseigné à date (à assigner).
+//    émission totale de 2 200 000 EUR). Client : ABACUS - 05268.
 const barclaysBhpFcxGlenObs = [
   '2026-09-22', '2026-12-22', '2027-03-22', '2027-06-22', '2027-09-22',
   '2027-12-22', '2028-03-22', '2028-06-22', '2028-09-22', '2028-12-22',
@@ -6376,6 +6376,7 @@ const barclaysBhpFcxGlen: Product = {
     rappelActifAPartirDe: 4,
   }),
   rr: 'LS',
+  clients: ['ABACUS - 05268'],
   productType: 'Phoenix',
   description: '5Y Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore',
   badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
