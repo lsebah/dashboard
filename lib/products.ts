@@ -3637,6 +3637,14 @@ const bnpCallableCsi500: Product = {
   ],
   pdiPct: 90,
   pdiText: '90 % (européenne)',
+  terms: {
+    kind: 'rates',
+    type: 'callable',
+    capitalGaranti: false,
+    floorPct: 90,
+    callable: true,
+    inFine: true,
+  },
   observations: buildObservations(csiObs, csiPay, {
     montantRemboursementPct: (n) => csiBooster[n - 1],
   }),
@@ -3783,6 +3791,14 @@ const efgChinaParticipation: Product = {
   ],
   pdiPct: 80,
   pdiText: '80 % (airbag ×1,25)',
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    airbag: true,
+    protectionPct: 80,
+    protectionStyle: 'europeenne',
+  },
   rr: 'LS',
   productType: 'Participation (Airbag)',
   description:
@@ -3812,6 +3828,13 @@ const efgWarrantSeniorLoans: Product = {
   sousJacents: [
     { nom: 'Leonteq European Senior Loans Fund 3%RC Index', bloomberg: 'LEONIES3 Index' },
   ],
+  terms: {
+    kind: 'rates',
+    type: 'autre',
+    capitalGaranti: false,
+    floorPct: 0,
+    inFine: true,
+  },
   rr: 'LS',
   productType: 'Warrant Call',
   description:
@@ -3913,22 +3936,6 @@ function metaProduct(p: {
 }
 
 const metaProducts: Product[] = [
-  metaProduct({
-    isin: 'XS3251223155',
-    nom: 'Callable 90 % sur CSI Smallcap 500',
-    emetteur: 'BNP Paribas',
-    productType: 'Callable (capital protégé 90 %)',
-    family: 'participation',
-    dateEmission: '2026-02-06',
-    dureeAnnees: 3,
-    frequence: 'trimestriel',
-    basket: 'single',
-    pdiPct: 90,
-    pdiText: '90 % (européenne)',
-    sousJacents: [{ nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'Shanghai' }],
-    description: '3Y Callable émetteur — CSI Smallcap 500, protection 90 % (indicatif, TS à fournir)',
-    badges: ['Single', 'Callable', '90 % protégé', 'TS à fournir'],
-  }),
   metaProduct({
     isin: 'XS3256693576',
     nom: 'Athena Airbag Sanofi (décrément 3,76)',
@@ -5000,6 +5007,14 @@ const bnpGoldCallSpread: Product = {
   frequence: 'in_fine',
   basket: 'single',
   sousJacents: [{ nom: 'Or (LBMA Gold PM, USD/once)', bloomberg: 'GOLDLNPM Cmdty' }],
+  terms: {
+    kind: 'rates',
+    type: 'autre',
+    capitalGaranti: true,
+    capPct: 117.5,
+    floorPct: 100,
+    inFine: true,
+  },
   rr: 'LS',
   productType: 'Bond + Call Spread',
   description: '3Y Bond + Call Spread sur l’Or (USD) — capital garanti 100 %, participation 100 % de 100 % à 117,5 % (cap)',
@@ -5063,6 +5078,15 @@ const sipChabanais: Product = {
   basket: 'single',
   sousJacents: [],
   couponPaPct: 10.25,
+  terms: {
+    kind: 'credit',
+    type: 'single_name',
+    entitesReference: ['Holding du 6 rue Chabanais Paris'],
+    couponPa: 10.25,
+    couponGaranti: true,
+    inFine: false,
+    protectionCapital: false,
+  },
   rr: 'LS',
   productType: 'Dette Privée',
   description: 'Dette privée senior (prêt Holding du 6 rue Chabanais) — coupon 10,25 %/an semestriel, capital non protégé, échéance 12/06/2025',
@@ -5093,6 +5117,15 @@ const feiDettePrivee: Product = {
   basket: 'single',
   sousJacents: [],
   couponPaPct: 9,
+  terms: {
+    kind: 'credit',
+    type: 'single_name',
+    entitesReference: ['FEI'],
+    couponPa: 9,
+    couponGaranti: true,
+    inFine: true,
+    protectionCapital: false,
+  },
   rr: 'LS',
   productType: 'Dette Privée',
   description:
@@ -6204,6 +6237,241 @@ const barclaysBnpAcaGle: Product = {
     'https://capitalmanagementfrance-my.sharepoint.com/personal/serveur_cmf_finance/Documents/TEAM/Deal Done/Laurent/2026-07-03_XS3401965978_Phoenix Mémoire BNP ACA SG/TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
 }
 
+// ── BBVA — Phoenix Memory on Share SpaceX (XS3379913869) ────────────────────
+//    Décodé de la TS BBVA (Series 49680, Trade Date 24/06/2026). 12 constatations
+//    trimestrielles, coupon 3,8 %/T à mémoire (15,2 % p.a.), barrière coupon et
+//    knock-in à 50 % (européenne, constatée à la seule date de valorisation
+//    finale). Rappel dégressif de 100 % à 82,5 %, non-call sur les 3 premières
+//    observations. Nominal CMF = nominal d'émission (200 000 EUR, ticket unique).
+const bbvaSpacexObs = [
+  '2026-09-24', '2026-12-24', '2027-03-24', '2027-06-24', '2027-09-24',
+  '2027-12-27', '2028-03-24', '2028-06-26', '2028-09-25', '2028-12-26',
+  '2029-03-26', '2029-06-25',
+]
+const bbvaSpacexPay = [
+  '2026-10-01', '2027-01-04', '2027-04-02', '2027-07-01', '2027-10-01',
+  '2028-01-03', '2028-03-31', '2028-07-03', '2028-10-02', '2029-01-03',
+  '2029-04-04', '2029-07-02',
+]
+// Barème d'autocall dégressif (obs 4 → 11 ; non-call sur 1-3, maturité en 12).
+const bbvaSpacexAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85, 82.5, undefined,
+]
+
+const bbvaSpacex: Product = {
+  id: 'XS3379913869',
+  nom: 'Phoenix Memory SpaceX',
+  isin: 'XS3379913869',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'Moody’s A2 / S&P A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-24',
+  dateEmission: '2026-07-08',
+  dateConstatationFinale: '2029-06-25',
+  dateEcheance: '2029-07-02',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'SpaceX (Space Exploration Technologies)', bloomberg: 'SPCX UW', isin: 'US84615Q1031', marche: 'Nasdaq', devise: 'USD', niveauInitial: 154.54 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 15.2,
+    barriereCouponPct: 50,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bbvaSpacexObs, bbvaSpacexPay, {
+    niveauRappelPct: (n) => bbvaSpacexAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.8,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  clients: ['APPN - 05277'],
+  productType: 'Phoenix',
+  description: '3Y Phoenix Memory on Share SpaceX',
+  badges: ['Dégressif', 'Effet mémoire'],
+  termsheetFichier: '260624_3Y_Phoenix Memory SpaceX_Trimestriel_XS3379913869_BBVA.pdf',
+}
+
+// ── Barclays — Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore
+//    (XS3401975936) ──────────────────────────────────────────────────────────
+//    Décodé de la TS indicative Barclays (22/06/2026, Series NX00600264). 20
+//    constatations trimestrielles, coupon 2,825 %/T à mémoire (11,3 % p.a.),
+//    barrière coupon à 60 %, knock-in à 50 % (européenne, constatée à la seule
+//    date de valorisation finale). Rappel dégressif de 100 % à 62,5 %, non-call
+//    sur les 3 premières observations. Nominal CMF = 200 000 EUR (ticket sur une
+//    émission totale de 2 200 000 EUR). Client non renseigné à date (à assigner).
+const barclaysBhpFcxGlenObs = [
+  '2026-09-22', '2026-12-22', '2027-03-22', '2027-06-22', '2027-09-22',
+  '2027-12-22', '2028-03-22', '2028-06-22', '2028-09-22', '2028-12-22',
+  '2029-03-22', '2029-06-22', '2029-09-24', '2029-12-24', '2030-03-22',
+  '2030-06-24', '2030-09-23', '2030-12-23', '2031-03-24', '2031-06-23',
+]
+const barclaysBhpFcxGlenPay = [
+  '2026-09-29', '2026-12-30', '2027-03-31', '2027-06-29', '2027-09-29',
+  '2027-12-29', '2028-03-29', '2028-06-29', '2028-09-29', '2029-01-03',
+  '2029-03-29', '2029-06-29', '2029-10-01', '2030-01-03', '2030-03-29',
+  '2030-07-01', '2030-09-30', '2031-01-02', '2031-03-31', '2031-06-30',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const barclaysBhpFcxGlenAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85,
+  82.5, 80, 77.5, 75, 72.5, 70, 67.5, 65, 62.5, undefined,
+]
+
+const barclaysBhpFcxGlen: Product = {
+  id: 'XS3401975936',
+  nom: 'Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore',
+  isin: 'XS3401975936',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-22',
+  dateEmission: '2026-07-06',
+  dateConstatationFinale: '2031-06-23',
+  dateEcheance: '2031-06-30',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BHP Group Ltd', bloomberg: 'BHP LN', isin: 'AU000000BHP4', marche: 'London Stock Exchange', devise: 'GBP' },
+    { nom: 'Freeport-McMoRan Inc', bloomberg: 'FCX UN', isin: 'US35671D8570', marche: 'New York Stock Exchange', devise: 'USD' },
+    { nom: 'Glencore plc', bloomberg: 'GLEN LN', isin: 'JE00B4T3BW64', marche: 'London Stock Exchange', devise: 'GBP' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 11.3,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(barclaysBhpFcxGlenObs, barclaysBhpFcxGlenPay, {
+    niveauRappelPct: (n) => barclaysBhpFcxGlenAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.825,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier: '260706_5Y_Phoenix Mémoire worst-of BHP + Freeport + Glencore_Trimestriel_XS3401975936_BARCLAYS.pdf',
+}
+
+// ── BNP — Callable Booster sur CSI Smallcap 500 (XS3251223155) ──────────────
+//    Même structure que XS3214893623 (TS BNP réf. CE7453MDY, 23/01/2026).
+const bnpCallableBoosterCsi3251: Product = {
+  id: 'XS3251223155',
+  nom: 'Callable Booster CSI Smallcap 500',
+  isin: 'XS3251223155',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'rates_structured',
+  eusipa: '1230 — Callable',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-01-23',
+  dateEmission: '2026-02-06',
+  dateConstatationFinale: '2029-01-23',
+  dateEcheance: '2029-02-06',
+  frequence: 'autre',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'China', devise: 'EUR', niveauInitial: 8590.1659 },
+  ],
+  terms: {
+    kind: 'rates',
+    type: 'callable',
+    capitalGaranti: false,
+    floorPct: 90,
+    callable: true,
+    inFine: true,
+  },
+  rr: 'LS',
+  clients: ['APPN - 05277'],
+  productType: 'Callable',
+  description:
+    '3Y Callable Booster sur CSI Smallcap 500 — rappel à l’initiative de BNP à 10 dates trimestrielles (prime 108 % → 144 %) ; à défaut de rappel, capital protégé à 90 % à maturité (100 % si l’indice ≥ 90 % du niveau initial).',
+  badges: ['Capital protégé 90%', 'Callable émetteur'],
+  termsheetFichier: '260206_3Y_Callable 90% KG sur CSI 500_Trimestriel_XS3251223155_BNP.pdf',
+}
+
+// ── BNP — CLN iTraxx Main Balloon (XS2576621366) ────────────────────────────
+//    Décodé du KID BNP (réf. CE14213EAG, 11/08/2023). Certificat de crédit
+//    zero-recovery sur iTraxx Europe Series 39 : les 3 premiers événements de
+//    crédit sont absorbés sans impact (franchise), puis chaque événement
+//    suivant réduit le notional courant de 25 % (donc épuisement total après 7
+//    défauts cumulés). Paiement UNIQUE (« balloon ») à l'échéance : 51,25 % du
+//    notional courant, pas de coupon périodique.
+const bnpClnItraxxBalloon: Product = {
+  id: 'XS2576621366',
+  nom: 'CLN iTraxx Main Balloon',
+  isin: 'XS2576621366',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  assetClass: 'credit',
+  family: 'credit_linked',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 50_000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2023-06-12',
+  dateEmission: '2023-09-08',
+  dateConstatationFinale: '2028-06-20',
+  dateEcheance: '2028-07-04',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [],
+  terms: {
+    kind: 'credit',
+    type: 'index',
+    indexReference: 'iTraxx Europe Series 39',
+    zeroRecovery: true,
+    recouvrementPct: 0,
+    nbDefautsBuffer: 3,
+    nbDefautsWipe: 7,
+    couponPa: 10.25,
+    couponGaranti: false,
+    prixEmissionPct: 100,
+    inFine: true,
+    protectionCapital: false,
+  },
+  rr: 'DS',
+  clients: ['SCALA - 05722'],
+  productType: 'CLN',
+  description: '5Y CLN iTraxx Main Balloon — 3 défauts absorbés en franchise puis -25% de notional par défaut supplémentaire (zero-recovery), paiement unique de 51,25% à l’échéance.',
+  badges: ['Zero-recovery', 'Paiement unique'],
+  termsheetFichier: '230908_5Y_CLN iTraxx Main Balloon_In Fine_XS2576621366_BNP_KID.pdf',
+}
+
 // ── BIL — Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (CH1322027827) ───────
 //    Décodé de la TS BIL (indicative 26/01/2024, EUR Quanto). 20 constatations
 //    trimestrielles, coupon 2,475 %/T à mémoire (9,90 % p.a.), barrière coupon
@@ -6360,6 +6628,8 @@ const detailed: Product[] = [
   santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
   marexMstr, marexMoncMcVsco,
   barclaysBnpAcaGle, bilModernaPfizerSanofi, bnpAthenaIndices,
+  bbvaSpacex, barclaysBhpFcxGlen,
+  bnpCallableBoosterCsi3251, bnpClnItraxxBalloon,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).
