@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/decrement",
       "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/decrement",
+      "schedule": "0 8 * * 1"
     }
   ]
 }

@@ -84,6 +84,10 @@ jobs:
           NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
           NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
           NOTIF_EMAIL_BCC: ${{ secrets.NOTIF_EMAIL_BCC }}
+          # Verrou KV anti-double-envoi : un déclenchement manuel PUIS un cron
+          # en retard le même jour n'envoient qu'une fois aux clients.
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
         # Mode par client (un PDF → email respectif du client) si :
         #  • déclenchement manuel avec send_to_clients = true, OU
         #  • cron MENSUEL (1er du mois) → reporting client mensuel automatique.
