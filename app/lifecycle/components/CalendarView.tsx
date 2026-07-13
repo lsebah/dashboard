@@ -63,12 +63,26 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const [courant, setCourant] = useState<Record<string, number | null>>({})
 
   // Allocations clients (localStorage) → repli sur les allocations/clients du feed.
-  const { map, setStatut } = useAllocations()
+  const { map, statut: statutMap, noms, setStatut } = useAllocations()
+  // Produits AVEC la surcharge locale (statut « rappelé/vendu… » + renommage)
+  // appliquée : sinon un « Marquer rappelé » cliqué ici ne se reflèterait jamais
+  // dans le synopsis (qui lisait le produit statique). Miroir de PortfolioExplorer.
+  const prods = useMemo(
+    () =>
+      products.map((p) => {
+        const s = statutMap[p.isin]
+        const n = noms[p.isin]
+        return s || n
+          ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom, description: n ?? p.description }
+          : p
+      }),
+    [products, statutMap, noms],
+  )
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
   const clients = useMemo(
-    () => tousLesClients(map, products.flatMap((p) => p.clients ?? [])),
-    [map, products],
+    () => tousLesClients(map, prods.flatMap((p) => p.clients ?? [])),
+    [map, prods],
   )
   const toggleClient = (c: string) =>
     setClientsSel((prev) => {
@@ -81,7 +95,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   // Tous les événements (toutes dates, passées ET futures) issus des calendriers décodés.
   const events = useMemo<Ev[]>(() => {
     const out: Ev[] = []
-    for (const p of products) {
+    for (const p of prods) {
       const obs = p.observations ?? []
       const lastN = obs.reduce((m, o) => Math.max(m, o.n), 0)
       for (const o of obs) {
@@ -97,11 +111,11 @@ export default function CalendarView({ products }: { products: Product[] }) {
       }
     }
     return out
-  }, [products])
+  }, [prods])
 
   // Niveaux courants (worst-of) — un seul appel batché pour tous les produits.
   useEffect(() => {
-    const isins = Array.from(new Set(products.map((p) => p.isin)))
+    const isins = Array.from(new Set(prods.map((p) => p.isin)))
     if (isins.length === 0) return
     let annule = false
     fetch(`/api/lifecycle/courant?isins=${encodeURIComponent(isins.join(','))}`)
@@ -117,7 +131,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
     return () => {
       annule = true
     }
-  }, [products])
+  }, [prods])
 
   // Autocall probable : worst-of courant vs barrière de rappel (inverse-aware).
   const estAutocallProbable = (e: Ev): boolean => {
@@ -175,7 +189,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   useEffect(() => {
     if (affiches.length && !affiches.some((e) => e.product.id === selId)) setSelId(affiches[0].product.id)
   }, [affiches, selId])
-  const sel = selId ? products.find((p) => p.id === selId) ?? null : null
+  const sel = selId ? prods.find((p) => p.id === selId) ?? null : null
   const selAug = useAugmentedProduct(sel)
 
   // Couleur / icône d'un événement.
