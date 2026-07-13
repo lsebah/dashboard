@@ -11,6 +11,9 @@ export interface MonitoringState {
   frequence: string
   dossier: string | null
   lastCheck: string | null
+  /** Horodatage de la dernière tentative EN ÉCHEC (lastCheck reste inchangé
+   *  pour ne pas perdre la fenêtre de mails non lue). */
+  lastError?: string | null
   statut: string // 'ok' | 'erreur' | 'à configurer'
   nouveaux: number
   majs: number
