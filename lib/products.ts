@@ -1161,7 +1161,7 @@ const msIEdgeAi: Product = {
   frequence: 'trimestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'iEdge Transatlantic Artificial Intelligence 10 Decrement 50pts GTR', bloomberg: 'IETAI10', marche: 'Indice' },
+    { nom: 'iEdge Transatlantic Artificial Intelligence 10 Decrement 50pts GTR', bloomberg: 'IETAI10 Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
@@ -1523,7 +1523,7 @@ const bbvaHealthcareBonus: Product = {
   frequence: 'semestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'Bloomberg Europe Health Care Select Multi Factor Decrement 50pts GR', bloomberg: 'EURHGPT', marche: 'Indice' },
+    { nom: 'Bloomberg Europe Health Care Select Multi Factor Decrement 50pts GR', bloomberg: 'EURHGPT Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
@@ -2564,7 +2564,7 @@ const msMerqubeTtef: Product = {
   frequence: 'trimestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'MerQube TTEF 2.96 Index Points Decrement (EUR) Index', bloomberg: 'MQDTT296', marche: 'Indice' },
+    { nom: 'MerQube TTEF 2.96 Index Points Decrement (EUR) Index', bloomberg: 'MQDTT296 Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
