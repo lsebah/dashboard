@@ -80,6 +80,17 @@ export default function CalendarView({ products }: { products: Product[] }) {
   )
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
+
+  // Marque « rappelé » ET notifie L.sebah@cmf.finance (ISIN, payoff, client).
+  // L'endpoint est idempotent (dédup KV) : pas de double email si re-cliqué.
+  const marquerRappele = (isin: string) => {
+    setStatut(isin, 'rappele')
+    void fetch('/api/notifications/rappel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isin }),
+    }).catch(() => {})
+  }
   const clients = useMemo(
     () => tousLesClients(map, prods.flatMap((p) => p.clients ?? [])),
     [map, prods],
@@ -93,13 +104,19 @@ export default function CalendarView({ products }: { products: Product[] }) {
     })
 
   // Tous les événements (toutes dates, passées ET futures) issus des calendriers décodés.
+  // Un produit CLÔTURÉ (rappelé / vendu / échu) n'a plus d'observation à venir :
+  // on masque ses observations FUTURES, sinon il pollue le calendrier prospectif
+  // (ex. un produit rappelé apparaîtrait « à venir » avec le tampon CALLED).
   const events = useMemo<Ev[]>(() => {
+    const CLOS = new Set(['rappele', 'vendu', 'echu'])
     const out: Ev[] = []
     for (const p of prods) {
+      const clos = CLOS.has(p.statut ?? '')
       const obs = p.observations ?? []
       const lastN = obs.reduce((m, o) => Math.max(m, o.n), 0)
       for (const o of obs) {
         if (!o.dateObservation) continue
+        if (clos && o.dateObservation > today) continue // clôturé : pas d'observation future
         out.push({
           product: p,
           obs: o,
@@ -421,7 +438,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
                       ↑ <strong>Rappelé</strong> le {formatDateFr(r.date)} — worst {r.niveauPct}% ≥ barrière de rappel {r.barrierePct}%.
                     </span>
                     <button
-                      onClick={() => setStatut(selAug.isin, 'rappele')}
+                      onClick={() => marquerRappele(selAug.isin)}
                       className="shrink-0 rounded bg-violet-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-violet-700"
                     >
                       Marquer rappelé

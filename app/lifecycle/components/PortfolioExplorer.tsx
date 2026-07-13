@@ -229,6 +229,17 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const { map, setClients, statut: statutMap, setStatut, noms, setNom } = useAllocations()
 
+  // Marque « rappelé » + notifie L.sebah@cmf.finance (ISIN, payoff, client).
+  // Endpoint idempotent (dédup KV) : re-cliquer n'envoie pas de second email.
+  const marquerRappele = (isin: string) => {
+    setStatut(isin, 'rappele')
+    void fetch('/api/notifications/rappel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isin }),
+    }).catch(() => {})
+  }
+
   // Produits créés/importés localement (masque « Nouveau produit ») → fusionnés
   // au feed pour une mise à jour instantanée du portefeuille.
   const localProducts = useLocalProducts()
@@ -989,12 +1000,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               return (
                 <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
                   <span>
-                    ↑ <strong>Rappel probable</strong> : worst-of {r.niveauPct}% ≥ barrière
+                    ↑ <strong>Rappelé (constaté)</strong> : worst-of {r.niveauPct}% ≥ barrière
                     de rappel {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
                     {formatDateFr(r.date)}.
                   </span>
                   <button
-                    onClick={() => setStatut(opened.isin, 'rappele')}
+                    onClick={() => marquerRappele(opened.isin)}
                     className="shrink-0 rounded bg-violet-600 px-2 py-1 font-medium text-white hover:bg-violet-700"
                   >
                     Marquer rappelé

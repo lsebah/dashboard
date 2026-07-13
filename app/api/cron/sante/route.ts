@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server'
 import { products } from '@/lib/products'
 import { computeDataHealth } from '@/lib/data-health'
 import { computeCoherence, type CommissionLine } from '@/lib/coherence'
+import { messageRappel } from '@/lib/rappel'
 import { yahooSymbol } from '@/lib/underlyings'
 import commissions from '@/lib/commissions.json'
-import { kvConfigured, kvGet } from '@/lib/kv'
+import { kvConfigured, kvGet, kvSet } from '@/lib/kv'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -33,6 +34,41 @@ export async function GET(req: Request) {
 
   const vivants = products.filter((p) => !CLOSED.has(p.statut ?? ''))
 
+  // 0) Rappels (autocall) NON encore notifiés : email dédié par produit
+  // (ISIN, payoff, client) → L.sebah@cmf.finance. Dédup KV (idempotent).
+  const rappelKey = 'cmf:rappels:notifies:v1'
+  const stored = kvConfigured() ? await kvGet<string[]>(rappelKey) : null
+  const rappeles = products.filter((p) => p.statut === 'rappele')
+  const dejaNotifies = stored ?? []
+  const notifiesApres = [...dejaNotifies]
+  const resendKey = process.env.RESEND_API_KEY
+
+  if (stored === null && rappeles.length) {
+    // AMORÇAGE : première exécution → on enregistre le backlog des rappels DÉJÀ
+    // présents (feed) SANS envoyer d'email. Seuls les rappels FUTURS déclencheront
+    // une notification. Évite un envoi massif du stock initial.
+    if (kvConfigured()) await kvSet(rappelKey, rappeles.map((p) => p.isin))
+  } else if (resendKey) {
+    const nouveauxRappels = rappeles.filter((p) => !dejaNotifies.includes(p.isin))
+    const from = process.env.NOTIF_EMAIL_FROM || 'l.sebah@cmf.finance'
+    const to = process.env.NOTIF_EMAIL_TO || 'L.sebah@cmf.finance'
+    for (const p of nouveauxRappels) {
+      const { subject, text } = messageRappel(p)
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from, to: [to], subject, text }),
+        })
+        if (res.ok) notifiesApres.push(p.isin)
+      } catch {
+        /* on réessaiera au prochain passage (pas ajouté à la liste) */
+      }
+    }
+    if (kvConfigured() && notifiesApres.length !== dejaNotifies.length)
+      await kvSet(rappelKey, notifiesApres)
+  }
+
   // 1) Santé des données (TS manquante, coupon/airbag non décodé…).
   const health = computeDataHealth(vivants)
 
@@ -55,6 +91,7 @@ export async function GET(req: Request) {
 
   const resume = {
     asof: new Date().toISOString(),
+    rappelsNotifies: notifiesApres.length - dejaNotifies.length,
     sansTS: health.sansTS.length,
     sansCoupon: health.sansCoupon.length,
     airbagSansNiveau: health.airbagSansNiveau.length,
