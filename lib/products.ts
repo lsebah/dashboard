@@ -3935,20 +3935,9 @@ function metaProduct(p: {
   }
 }
 
-const metaProducts: Product[] = [
-  metaProduct({
-    isin: 'XS3256693576',
-    nom: 'Athena Airbag Sanofi (décrément 3,76)',
-    emetteur: 'Barclays Bank PLC',
-    productType: 'Athena Airbag',
-    dateEmission: '2026-03-16',
-    dureeAnnees: 10,
-    basket: 'single',
-    sousJacents: [{ nom: 'Sanofi (décrément 3,76)', marche: 'Euronext Paris' }],
-    description: '10Y Athena Airbag — Sanofi à décrément 3,76',
-    badges: ['Single', 'Airbag', 'Décrément', 'TS à fournir'],
-  }),
-]
+// (XS3256693576 : ancien placeholder retiré — définition complète décodée de la
+//  TS plus bas, `barclaysSanofiDecrement`, qui prime dans defByIsin.)
+const metaProducts: Product[] = []
 
 // Identité depuis le reporting mensuel — fournée 2026-06 (suite). Pour les taux
 // le coupon p.a. et la référence (CMS/TEC) viennent du libellé ; les barrières de
@@ -4901,8 +4890,76 @@ const bnpTec10Phoenix: Product = {
 }
 
 // ── XS3256693576 — Barclays Athena Snowball FTSE Sanofi Décrément 3,76 ────────
-//    Indice propriétaire (SSDSAN04) non mappable Yahoo : on décode les termes,
-//    sans le calendrier mensuel (109 obs.) qui ne pourrait pas être constaté.
+//    Indice propriétaire (SSDSAN04) pricé par le programme Bloomberg (PX_Last +
+//    strike historique) — calendrier mensuel complet décodé de la TS.
+// Calendrier TS (Final Term Sheet 17/03/2026, Series NX00563069) : 108 observations
+// mensuelles autocallables (barrière dégressive 100 % − 2 %/an, prime de rappel 100 %,
+// non-call 12 mois) + constatation finale 17/03/2036 dont la barrière de coupon est
+// abaissée à 70 %. Coupon snowball N × 0,8084 % du nominal, N = n + 11 (N = 12 → 120).
+const barclaysSanofiObs = [
+  '2027-03-16', '2027-04-16', '2027-05-17', '2027-06-16', '2027-07-16',
+  '2027-08-16', '2027-09-16', '2027-10-18', '2027-11-16', '2027-12-16',
+  '2028-01-17', '2028-02-16', '2028-03-16', '2028-04-18', '2028-05-16',
+  '2028-06-16', '2028-07-17', '2028-08-16', '2028-09-18', '2028-10-16',
+  '2028-11-16', '2028-12-18', '2029-01-16', '2029-02-16', '2029-03-16',
+  '2029-04-16', '2029-05-16', '2029-06-18', '2029-07-16', '2029-08-16',
+  '2029-09-17', '2029-10-16', '2029-11-16', '2029-12-17', '2030-01-16',
+  '2030-02-18', '2030-03-18', '2030-04-16', '2030-05-16', '2030-06-17',
+  '2030-07-16', '2030-08-16', '2030-09-16', '2030-10-16', '2030-11-18',
+  '2030-12-16', '2031-01-16', '2031-02-17', '2031-03-17', '2031-04-16',
+  '2031-05-16', '2031-06-16', '2031-07-16', '2031-08-18', '2031-09-16',
+  '2031-10-16', '2031-11-17', '2031-12-16', '2032-01-16', '2032-02-16',
+  '2032-03-16', '2032-04-16', '2032-05-17', '2032-06-16', '2032-07-16',
+  '2032-08-16', '2032-09-16', '2032-10-18', '2032-11-16', '2032-12-16',
+  '2033-01-17', '2033-02-16', '2033-03-16', '2033-04-19', '2033-05-16',
+  '2033-06-16', '2033-07-18', '2033-08-16', '2033-09-16', '2033-10-17',
+  '2033-11-16', '2033-12-16', '2034-01-16', '2034-02-16', '2034-03-16',
+  '2034-04-17', '2034-05-16', '2034-06-16', '2034-07-17', '2034-08-16',
+  '2034-09-18', '2034-10-16', '2034-11-16', '2034-12-18', '2035-01-16',
+  '2035-02-16', '2035-03-16', '2035-04-16', '2035-05-16', '2035-06-18',
+  '2035-07-16', '2035-08-16', '2035-09-17', '2035-10-16', '2035-11-16',
+  '2035-12-17', '2036-01-16', '2036-02-18', '2036-03-17',
+]
+const barclaysSanofiPay = [
+  '2027-04-01', '2027-04-30', '2027-05-31', '2027-06-30', '2027-07-30',
+  '2027-08-30', '2027-09-30', '2027-11-01', '2027-11-30', '2027-12-30',
+  '2028-01-31', '2028-03-01', '2028-03-30', '2028-05-03', '2028-05-30',
+  '2028-06-30', '2028-07-31', '2028-08-30', '2028-10-02', '2028-10-30',
+  '2028-11-30', '2029-01-04', '2029-01-30', '2029-03-02', '2029-04-03',
+  '2029-04-30', '2029-05-30', '2029-07-02', '2029-07-30', '2029-08-30',
+  '2029-10-01', '2029-10-30', '2029-11-30', '2030-01-03', '2030-01-30',
+  '2030-03-04', '2030-04-01', '2030-05-03', '2030-05-30', '2030-07-01',
+  '2030-07-30', '2030-08-30', '2030-09-30', '2030-10-30', '2030-12-02',
+  '2031-01-02', '2031-01-30', '2031-03-03', '2031-03-31', '2031-04-30',
+  '2031-05-30', '2031-06-30', '2031-07-30', '2031-09-01', '2031-09-30',
+  '2031-10-30', '2031-12-01', '2032-01-02', '2032-01-30', '2032-03-01',
+  '2032-04-01', '2032-04-30', '2032-05-31', '2032-06-30', '2032-07-30',
+  '2032-08-30', '2032-09-30', '2032-11-01', '2032-11-30', '2032-12-30',
+  '2033-01-31', '2033-03-02', '2033-03-30', '2033-05-03', '2033-05-30',
+  '2033-06-30', '2033-08-01', '2033-08-30', '2033-09-30', '2033-10-31',
+  '2033-11-30', '2034-01-02', '2034-01-30', '2034-03-02', '2034-03-30',
+  '2034-05-02', '2034-05-30', '2034-06-30', '2034-07-31', '2034-08-30',
+  '2034-10-02', '2034-10-30', '2034-11-30', '2035-01-04', '2035-01-30',
+  '2035-03-02', '2035-04-03', '2035-04-30', '2035-05-30', '2035-07-02',
+  '2035-07-30', '2035-08-30', '2035-10-01', '2035-10-30', '2035-11-30',
+  '2036-01-03', '2036-01-30', '2036-03-03', '2036-03-31',
+]
+const barclaysSanofiObservations = barclaysSanofiObs.map((dateObservation, idx) => {
+  const n = idx + 1
+  const finale = n === 109
+  const barriere = finale ? 70 : 100 - 2 * Math.floor((n - 1) / 12)
+  return {
+    n,
+    dateObservation,
+    datePaiement: barclaysSanofiPay[idx],
+    autocallActif: !finale,
+    niveauRappelPct: finale ? undefined : barriere,
+    montantRemboursementPct: finale ? undefined : 100,
+    couponPct: Math.round((n + 11) * 0.8084 * 10000) / 10000,
+    niveauCouponPct: barriere,
+  }
+})
+
 const barclaysSanofiDecrement: Product = {
   id: 'XS3256693576',
   nom: 'Athena Snowball FTSE Sanofi Décrément 3,76',
@@ -4937,9 +4994,10 @@ const barclaysSanofiDecrement: Product = {
     protectionStyle: 'europeenne',
     decrement: '3,76 pts/an',
   },
+  observations: barclaysSanofiObservations,
   rr: 'LS',
   productType: 'Athena',
-  description: '10Y Athena Snowball Sanofi (indice décrément 3,76 pts) — coupon mémoire 0,8084 %/mois (~9,70 % p.a.), KI 50 % européen, autocall dégressif mensuel (non-call 12 mois)',
+  description: '10Y Athena Snowball Sanofi (indice décrément 3,76 pts) — coupon snowball 0,8084 %/mois (~9,70 % p.a.), KI 50 % européen, autocall dégressif mensuel (non-call 12 mois)',
   badges: ['Décrément', 'Snowball', 'Effet mémoire'],
   termsheetFichier: '260316_10Y_Athena Airbag Sanofi D 3.76_Mensuel_XS3256693576_BARCLAYS.pdf',
 }
