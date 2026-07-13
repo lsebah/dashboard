@@ -217,13 +217,17 @@ async function xlsxAttachment(tok, user, messageId) {
 }
 
 // ── Construction d'un FrnQuote normalisé ────────────────────────────────────
-function toQuote(p, issuer, runDate, source) {
+// `inFine` : les taux fixes « in fine » (coupon capitalisé, versé au dénouement)
+// sont distincts des annuels — id ET clé de fusion doivent les séparer, sinon
+// un run in fine écrase le prix annuel du même couple (et inversement).
+function toQuote(p, issuer, runDate, source, mailInFine = false) {
   const iss = (p.issuer && detectIssuer(p.issuer)) || issuer
   const ccy = p.currency || 'EUR'
   const callType = p.callType || 'NC'
   const maturityYears = Number(p.maturityYears)
+  const inFine = p.inFine ?? mailInFine
   return {
-    id: `${iss}-${ccy}-${callType}-${maturityYears}`,
+    id: `${iss}-${ccy}-${callType}-${maturityYears}${inFine ? '-IF' : ''}`,
     issuer: iss,
     currency: ccy,
     callType,
@@ -233,11 +237,16 @@ function toQuote(p, issuer, runDate, source) {
     uf: typeof p.uf === 'number' ? p.uf : 0,
     sensitivity: typeof p.sensitivity === 'number' ? p.sensitivity : null,
     baseReoffer: 100,
+    ...(inFine ? { inFine: true } : {}),
     runDate,
     source,
   }
 }
-const quoteKey = (q) => `${q.issuer}|${q.currency}|${q.callType}|${q.maturityYears}`
+// Clé d'unicité — DOIT rester alignée sur lib/frn/store.ts:quoteKey. Annuel et
+// IN FINE sont distincts : sans le suffixe IF/A, une quote in fine écraserait sa
+// jumelle annuelle du même couple au sync (et inversement).
+const quoteKey = (q) =>
+  `${q.issuer}|${q.currency}|${q.callType}|${q.maturityYears}|${q.inFine ? 'IF' : 'A'}`
 function mergeLatest(...lists) {
   const m = new Map()
   for (const list of lists)
@@ -276,7 +285,10 @@ async function main() {
     const headerTxt = `${m.subject || ''}\n${m.bodyPreview || ''}`
     const issuer = detectIssuer(headerTxt) || detectIssuer(m.body?.content || '') || 'Inconnu'
     const ccy = detectCurrency(headerTxt) || detectCurrency(m.body?.content || '') || 'EUR'
-    const src = `email ${issuer} ${ddfr} — run FRN`
+    // « In Fine » signalé dans le sujet / corps du mail → distingue ces runs des
+    // taux fixes annuels (clé de fusion + id).
+    const mailInFine = /in[\s-]?fine/i.test(`${headerTxt}\n${m.body?.content || ''}`)
+    const src = `email ${issuer} ${ddfr} — run FRN${mailInFine ? ' in fine' : ''}`
 
     let rows = []
     if (m.hasAttachments) {
@@ -292,7 +304,7 @@ async function main() {
       const txt = (m.body?.content || m.bodyPreview || '').replace(/<[^>]+>/g, ' ')
       rows = parseBody(txt, ccy)
     }
-    for (const r of rows) if (r.maturityYears && r.coupon != null) parsed.push(toQuote(r, issuer, dd, src))
+    for (const r of rows) if (r.maturityYears && r.coupon != null) parsed.push(toQuote(r, issuer, dd, src, mailInFine))
     console.log(`« ${(m.subject || '').slice(0, 50)} » (${dd}) → ${rows.length} ligne(s), émetteur ${issuer}.`)
   }
 
