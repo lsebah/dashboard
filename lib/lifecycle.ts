@@ -4,7 +4,7 @@
 //  qu'au futur moteur de monitoring (prochaine observation, statut, distances
 //  aux barrières…).
 // ─────────────────────────────────────────────────────────────────────────
-import type { Product, Observation, Underlying, Frequency } from './types'
+import type { Product, Observation, Underlying, Frequency, BasketType } from './types'
 import { couponLedger } from './coupons-ledger'
 
 /** Construit un calendrier d'observations à partir de listes de dates. */
@@ -50,6 +50,39 @@ export function worstOf(product: Product): Underlying | undefined {
   const withPerf = product.sousJacents.filter((u) => typeof u.perf === 'number')
   if (withPerf.length === 0) return product.sousJacents[0]
   return withPerf.reduce((a, b) => ((a.perf ?? 0) <= (b.perf ?? 0) ? a : b))
+}
+
+/**
+ * Agrège une liste de niveaux/performances de sous-jacents selon le TYPE de
+ * panier — c'est ce chiffre qui pilote rappel et protection :
+ *   • worst_of / single  → le plus BAS (min) ;
+ *   • best_of            → le plus HAUT (max) ;
+ *   • equipondere / panier → la MOYENNE arithmétique.
+ * (Pour min/max/moyenne, agréger les perfs ou les niveaux 100+perf est
+ *  équivalent — la transformation est affine.)
+ */
+export function aggregateBasket(values: number[], basket: BasketType): number {
+  if (values.length === 0) return NaN
+  if (basket === 'best_of') return Math.max(...values)
+  if (basket === 'equipondere' || basket === 'panier')
+    return values.reduce((a, b) => a + b, 0) / values.length
+  return Math.min(...values) // worst_of / single
+}
+
+/**
+ * Performance du panier (en % vs initial) qui pilote la classification. Respecte
+ * le type de panier. Pour une moyenne (equipondere/panier) on EXIGE tous les
+ * sous-jacents (une moyenne partielle serait fausse) ; pour un worst-of/best-of,
+ * l'agrégat sur les valeurs disponibles reste une borne exploitable.
+ */
+export function basketPerf(product: Product): number | undefined {
+  const all = product.sousJacents
+  if (all.length === 0) return undefined
+  const perfs = all.map((u) => u.perf).filter((p): p is number => typeof p === 'number')
+  if (perfs.length === 0) return undefined
+  const moyenne = product.basket === 'equipondere' || product.basket === 'panier'
+  if (moyenne && perfs.length !== all.length) return undefined // moyenne partielle interdite
+  return aggregateBasket(perfs, product.basket)
 }
 
 /** Prochaine observation à venir (>= aujourd'hui). */
@@ -102,8 +135,9 @@ export type Situation =
   | 'non_classe'
 
 export function situation(product: Product): Situation {
-  const wo = worstOf(product)
-  const perf = wo?.perf
+  // Perf qui pilote rappel/protection : worst-of pour un panier worst-of,
+  // MOYENNE pour un équipondéré, etc. (respecte product.basket).
+  const perf = basketPerf(product)
   if (typeof perf !== 'number') {
     // Sans niveau de sous-jacent courant : un produit de taux à capital garanti
     // ne subit aucun stress sur sa barrière de protection ⇒ « sans stress ».

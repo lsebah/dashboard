@@ -6089,6 +6089,7 @@ const gsVeoliaErametLvmh: Product = {
     montantRemboursementPct: (n) => [107, 114, 121, 128, 135][n - 1],
     rappelActifAPartirDe: 1,
   }),
+  statut: 'rappele', // rappelé par anticipation (autocall déclenché) — confirmé Laurent
   rr: 'LS',
   productType: 'Autocall',
   description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH (GS "Leaders 7%") · montant croissant 107 %→135 % · trigger 100 % dégr. → 94 % · KI 65 % européenne · sans coupon périodique',

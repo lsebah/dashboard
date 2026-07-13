@@ -3,6 +3,7 @@ import { products } from '@/lib/products'
 import { yahooSymbol } from '@/lib/underlyings'
 import { fetchHistory, closeAt, lastClose, type Bar } from '@/lib/yahoo'
 import { kvConfigured, kvGet } from '@/lib/kv'
+import { aggregateBasket } from '@/lib/lifecycle'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -92,28 +93,31 @@ export async function GET(req: Request) {
           : null
       return { nom: c.nom, pct }
     })
+    // Niveau du panier qui pilote rappel/protection : worst-of pour un worst-of,
+    // MOYENNE arithmétique pour un équipondéré/panier, best-of pour un best-of.
     const worstOf = sj.some((x) => x.pct === null)
       ? null
-      : Math.min(...sj.map((x) => x.pct as number))
+      : aggregateBasket(sj.map((x) => x.pct as number), p.basket)
 
-    // Worst-of CONSTATÉ aux observations passées (suivi des coupons → P&L coupons
-    // inclus dans la colonne, comme la fiche). Nécessite TOUS les sous-jacents.
+    // Niveau CONSTATÉ du panier aux observations passées (suivi des coupons →
+    // P&L coupons inclus dans la colonne, comme la fiche). Tous les sous-jacents.
     const niveaux: Record<string, number> = {}
     const complet = cols.every((c) => typeof c.strike === 'number' && c.bars.length > 0)
     if (complet) {
       for (const o of p.observations ?? []) {
         if (o.dateObservation > today) continue
-        let worst: number | undefined
+        const perfs: number[] = []
+        let manquant = false
         for (const c of cols) {
           const cl = closeAt(c.bars, o.dateObservation)
           if (typeof cl !== 'number') {
-            worst = undefined
+            manquant = true
             break
           }
-          const perf = (cl / (c.strike as number)) * 100
-          worst = worst === undefined ? perf : Math.min(worst, perf)
+          perfs.push((cl / (c.strike as number)) * 100)
         }
-        if (typeof worst === 'number') niveaux[o.dateObservation] = Math.round(worst * 100) / 100
+        if (!manquant && perfs.length)
+          niveaux[o.dateObservation] = Math.round(aggregateBasket(perfs, p.basket) * 100) / 100
       }
     }
 
