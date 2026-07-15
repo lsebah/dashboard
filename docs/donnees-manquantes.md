@@ -42,10 +42,38 @@ Le programme `scripts/bloomberg_prices.py` price :
 - **les niveaux des sous-jacents** non cotés Yahoo (`PX_Last`), via
   `/api/underlyings` et `/api/decrement/tickers`.
 
-### 2a. Indices à décrément / propriétaires — **couverts** (ticker connu)
+### 2a. Indices à décrément — strike & niveau (fiche produit)
 
-Ces tickers sont déjà envoyés au programme et pricés (PX_Last + strike historique
-BDH). Rien à faire côté opérateur, sinon vérifier que Bloomberg renvoie une valeur.
+Chaque produit à indice décrément affiche, dans sa fiche, **le ticker Bloomberg**
+et **le niveau du sous-jacent** (en % du strike), comme un produit action. Cela
+nécessite deux valeurs Bloomberg par indice :
+- **le strike** = clôture officielle à la date de constatation initiale
+  (récupéré par BDH historique, endpoint `/api/decrement/strikes-needed`) ;
+- **le niveau courant** (PX_Last, endpoint `/api/underlyings`).
+
+Une fois les deux présents, la fiche calcule le niveau % et le badge
+« autocall probable » (niveau courant ≥ prochaine barrière de rappel).
+
+État des strikes des 11 produits décrément vivants (au dernier point) :
+
+| ISIN | Ticker | Date strike | Strike |
+| --- | --- | --- | --- |
+| FRIP00001NZ9 | MXEADT50 Index | 24/07/2025 | **1022,02** ✅ |
+| XS3291617812 | BEU50CFC Index | 05/03/2026 | **1580,26** ✅ |
+| XS3256693576 | SSDSAN04 Index | 16/03/2026 | **72,77** ✅ |
+| XS3204634086 | EURHGPT Index | 13/03/2026 | à récupérer (BDH) |
+| FR1459ABB977 | SGACA110 Index | 15/05/2026 | à récupérer (BDH) |
+| FRIP00001UV3 | MQDBN420 Index | 19/02/2026 | à récupérer (BDH) |
+| FRIP00001IZ9 | MQDTT296 Index | 19/09/2025 | à récupérer (BDH) |
+| FRIP00001I09 | IETAI10 Index | 29/04/2025 | à récupérer (BDH) |
+| FRIP00001G19 | SOENI096 Index | 14/08/2025 | à récupérer (BDH) |
+| FRIP000014P8 | MQDZC50P Index | 23/12/2024 | à récupérer (BDH) |
+| FR1459ABG521 | MXCPFB50 Index | 15/06/2026 | à récupérer (BDH) |
+
+Les 8 « à récupérer » sont **déjà dans `/api/decrement/strikes-needed`** : lancer
+`scripts/bloomberg_prices.py` sur le PC Bloomberg les remplit automatiquement
+(strike BDH + niveau courant). Rien à saisir à la main ; ne jamais inventer un
+strike — si Bloomberg ne renvoie rien, le niveau reste « — ».
 
 `SSDSAN04 Index` (Sanofi décr.), `MXEADT50 Index`, `MXCPFB50 Index`,
 `SGACA110 Index`, `MQDBN420 Index`, `MQDTT296 Index`, `MQDZC50P Index`,

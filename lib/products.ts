@@ -3699,6 +3699,10 @@ const msMxeadt50: Product = {
     {
       nom: 'MSCI Europe Aerospace & Defense Top 10 Select 50 Points Decrement EUR',
       bloomberg: 'MXEADT50 Index',
+      // Strike = clôture officielle à la Date d'Exercice 24/07/2025 (source :
+      // niveau Bloomberg fourni par Laurent ; la TS ne donne que « clôture à la
+      // date d'exercice », sans chiffre absolu).
+      niveauInitial: 1022.02,
     },
   ],
   terms: {

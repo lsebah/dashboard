@@ -262,10 +262,15 @@ export default function ProductSynopsis({
                   )
                 })()
               : product.sousJacents.slice(0, 3).map((u) => (
-                  <li key={u.nom} className="flex gap-3">
-                    <span className="text-slate-700 truncate max-w-[150px]">{u.nom}</span>
+                  <li key={u.nom} className="flex items-baseline gap-3">
+                    <span className="min-w-0">
+                      <span className="text-slate-700 truncate block max-w-[170px]">{u.nom}</span>
+                      {u.bloomberg && (
+                        <span className="text-[10px] font-mono text-slate-400">{u.bloomberg}</span>
+                      )}
+                    </span>
                     <span
-                      className={`ml-auto tabular-nums ${
+                      className={`ml-auto tabular-nums shrink-0 ${
                         typeof u.perf === 'number'
                           ? u.perf >= 0
                             ? 'text-emerald-600'
