@@ -21,7 +21,14 @@ interface Ev {
 }
 
 // ─── Helpers dates ───────────────────────────────────────────────────────
-const J = (d: Date) => d.toISOString().slice(0, 10)
+// Date calendaire LOCALE (pas UTC) : les colonnes-jour sont construites à minuit
+// LOCAL (lundi()/addJours() via setHours/setDate), tandis que les observations
+// sont des chaînes « YYYY-MM-DD » pures. Utiliser toISOString() (UTC) décalerait
+// d'un jour en fuseau à offset positif (Europe l'été) → les cases n'affichaient
+// plus leurs événements alors que les compteurs les comptaient. On formate donc
+// la date locale pour que clés de cases et dates d'observation coïncident.
+const J = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 function lundi(d: Date): Date {
   const x = new Date(d)
   const j = (x.getDay() + 6) % 7 // 0 = lundi
@@ -255,8 +262,11 @@ export default function CalendarView({ products }: { products: Product[] }) {
     for (const e of affiches) {
       // Les observations ne tombent jamais le week-end : un événement daté
       // samedi/dimanche est rattaché au vendredi précédent (jour ouvré).
+      // Date construite en LOCAL (année/mois/jour) pour rester cohérent avec les
+      // colonnes-jour (pas de décalage UTC).
       let key = e.date
-      const dd = new Date(e.date)
+      const [y, mo, da] = e.date.split('-').map(Number)
+      const dd = new Date(y, mo - 1, da)
       const j = (dd.getDay() + 6) % 7
       if (j > 4) key = J(addJours(dd, -(j - 4)))
       ;(m.get(key) ?? m.set(key, []).get(key)!).push(e)
