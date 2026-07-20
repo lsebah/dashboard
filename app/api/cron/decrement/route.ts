@@ -39,7 +39,11 @@ export async function GET(req: Request) {
   try {
     mails = await listFolderMessages({ since, top: 50 })
   } catch (e) {
-    const errState: MonitoringState = { ...prev, lastCheck: new Date().toISOString(), statut: 'erreur' }
+    // NE PAS avancer lastCheck en cas d'échec : sinon la fenêtre `since` du
+    // prochain run démarrerait après les mails non lus → perte silencieuse.
+    // On garde le lastCheck précédent ; seuls le statut et l'horodatage de
+    // tentative changent (champ dédié pour l'affichage).
+    const errState: MonitoringState = { ...prev, statut: 'erreur', lastError: new Date().toISOString() }
     if (kvConfigured()) await kvSet(KV_KEY, errState)
     return NextResponse.json({ error: `Lecture Graph échouée : ${String(e)}` }, { status: 502 })
   }

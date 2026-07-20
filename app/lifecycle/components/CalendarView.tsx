@@ -21,7 +21,14 @@ interface Ev {
 }
 
 // ─── Helpers dates ───────────────────────────────────────────────────────
-const J = (d: Date) => d.toISOString().slice(0, 10)
+// Date calendaire LOCALE (pas UTC) : les colonnes-jour sont construites à minuit
+// LOCAL (lundi()/addJours() via setHours/setDate), tandis que les observations
+// sont des chaînes « YYYY-MM-DD » pures. Utiliser toISOString() (UTC) décalerait
+// d'un jour en fuseau à offset positif (Europe l'été) → les cases n'affichaient
+// plus leurs événements alors que les compteurs les comptaient. On formate donc
+// la date locale pour que clés de cases et dates d'observation coïncident.
+const J = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 function lundi(d: Date): Date {
   const x = new Date(d)
   const j = (x.getDay() + 6) % 7 // 0 = lundi
@@ -63,12 +70,37 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const [courant, setCourant] = useState<Record<string, number | null>>({})
 
   // Allocations clients (localStorage) → repli sur les allocations/clients du feed.
-  const { map, setStatut } = useAllocations()
+  const { map, statut: statutMap, noms, setStatut } = useAllocations()
+  // Produits AVEC la surcharge locale (statut « rappelé/vendu… » + renommage)
+  // appliquée : sinon un « Marquer rappelé » cliqué ici ne se reflèterait jamais
+  // dans le synopsis (qui lisait le produit statique). Miroir de PortfolioExplorer.
+  const prods = useMemo(
+    () =>
+      products.map((p) => {
+        const s = statutMap[p.isin]
+        const n = noms[p.isin]
+        return s || n
+          ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom, description: n ?? p.description }
+          : p
+      }),
+    [products, statutMap, noms],
+  )
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
+
+  // Marque « rappelé » ET notifie L.sebah@cmf.finance (ISIN, payoff, client).
+  // L'endpoint est idempotent (dédup KV) : pas de double email si re-cliqué.
+  const marquerRappele = (isin: string) => {
+    setStatut(isin, 'rappele')
+    void fetch('/api/notifications/rappel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isin }),
+    }).catch(() => {})
+  }
   const clients = useMemo(
-    () => tousLesClients(map, products.flatMap((p) => p.clients ?? [])),
-    [map, products],
+    () => tousLesClients(map, prods.flatMap((p) => p.clients ?? [])),
+    [map, prods],
   )
   const toggleClient = (c: string) =>
     setClientsSel((prev) => {
@@ -79,13 +111,19 @@ export default function CalendarView({ products }: { products: Product[] }) {
     })
 
   // Tous les événements (toutes dates, passées ET futures) issus des calendriers décodés.
+  // Un produit CLÔTURÉ (rappelé / vendu / échu) n'a plus d'observation à venir :
+  // on masque ses observations FUTURES, sinon il pollue le calendrier prospectif
+  // (ex. un produit rappelé apparaîtrait « à venir » avec le tampon CALLED).
   const events = useMemo<Ev[]>(() => {
+    const CLOS = new Set(['rappele', 'vendu', 'echu'])
     const out: Ev[] = []
-    for (const p of products) {
+    for (const p of prods) {
+      const clos = CLOS.has(p.statut ?? '')
       const obs = p.observations ?? []
       const lastN = obs.reduce((m, o) => Math.max(m, o.n), 0)
       for (const o of obs) {
         if (!o.dateObservation) continue
+        if (clos && o.dateObservation > today) continue // clôturé : pas d'observation future
         out.push({
           product: p,
           obs: o,
@@ -97,11 +135,11 @@ export default function CalendarView({ products }: { products: Product[] }) {
       }
     }
     return out
-  }, [products])
+  }, [prods])
 
   // Niveaux courants (worst-of) — un seul appel batché pour tous les produits.
   useEffect(() => {
-    const isins = Array.from(new Set(products.map((p) => p.isin)))
+    const isins = Array.from(new Set(prods.map((p) => p.isin)))
     if (isins.length === 0) return
     let annule = false
     fetch(`/api/lifecycle/courant?isins=${encodeURIComponent(isins.join(','))}`)
@@ -117,7 +155,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
     return () => {
       annule = true
     }
-  }, [products])
+  }, [prods])
 
   // Autocall probable : worst-of courant vs barrière de rappel (inverse-aware).
   const estAutocallProbable = (e: Ev): boolean => {
@@ -175,7 +213,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
   useEffect(() => {
     if (affiches.length && !affiches.some((e) => e.product.id === selId)) setSelId(affiches[0].product.id)
   }, [affiches, selId])
-  const sel = selId ? products.find((p) => p.id === selId) ?? null : null
+  const sel = selId ? prods.find((p) => p.id === selId) ?? null : null
   const selAug = useAugmentedProduct(sel)
 
   // Couleur / icône d'un événement.
@@ -224,8 +262,11 @@ export default function CalendarView({ products }: { products: Product[] }) {
     for (const e of affiches) {
       // Les observations ne tombent jamais le week-end : un événement daté
       // samedi/dimanche est rattaché au vendredi précédent (jour ouvré).
+      // Date construite en LOCAL (année/mois/jour) pour rester cohérent avec les
+      // colonnes-jour (pas de décalage UTC).
       let key = e.date
-      const dd = new Date(e.date)
+      const [y, mo, da] = e.date.split('-').map(Number)
+      const dd = new Date(y, mo - 1, da)
       const j = (dd.getDay() + 6) % 7
       if (j > 4) key = J(addJours(dd, -(j - 4)))
       ;(m.get(key) ?? m.set(key, []).get(key)!).push(e)
@@ -407,7 +448,7 @@ export default function CalendarView({ products }: { products: Product[] }) {
                       ↑ <strong>Rappelé</strong> le {formatDateFr(r.date)} — worst {r.niveauPct}% ≥ barrière de rappel {r.barrierePct}%.
                     </span>
                     <button
-                      onClick={() => setStatut(selAug.isin, 'rappele')}
+                      onClick={() => marquerRappele(selAug.isin)}
                       className="shrink-0 rounded bg-violet-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-violet-700"
                     >
                       Marquer rappelé

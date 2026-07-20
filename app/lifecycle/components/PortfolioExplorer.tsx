@@ -12,6 +12,7 @@ import {
   couponsEncaissesPct,
   pnlAvecCoupons,
   rappelConstate,
+  aggregateBasket,
   formatDateFr,
   formatPct,
 } from '@/lib/lifecycle'
@@ -83,9 +84,11 @@ function autocallProbable(p: Product): boolean {
     .map((u) => u.perf)
     .filter((x): x is number => typeof x === 'number')
   if (perfs.length === 0) return false
-  const worst = 100 + Math.min(...perfs)
+  // Niveau du panier selon son TYPE (worst-of, moyenne équipondérée, best-of),
+  // pas un worst-of forcé.
+  const niveau = 100 + aggregateBasket(perfs, p.basket)
   const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
-  return inverse ? worst <= obs.niveauRappelPct : worst >= obs.niveauRappelPct
+  return inverse ? niveau <= obs.niveauRappelPct : niveau >= obs.niveauRappelPct
 }
 
 function lastLabel(p: Product): { text: string; cls: string } {
@@ -225,6 +228,17 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
   })
 
   const { map, setClients, statut: statutMap, setStatut, noms, setNom } = useAllocations()
+
+  // Marque « rappelé » + notifie L.sebah@cmf.finance (ISIN, payoff, client).
+  // Endpoint idempotent (dédup KV) : re-cliquer n'envoie pas de second email.
+  const marquerRappele = (isin: string) => {
+    setStatut(isin, 'rappele')
+    void fetch('/api/notifications/rappel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isin }),
+    }).catch(() => {})
+  }
 
   // Produits créés/importés localement (masque « Nouveau produit ») → fusionnés
   // au feed pour une mise à jour instantanée du portefeuille.
@@ -986,12 +1000,12 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               return (
                 <div className="rounded-md border border-violet-200 bg-violet-50 p-2.5 text-[12px] text-violet-800 flex items-center justify-between gap-2">
                   <span>
-                    ↑ <strong>Rappel probable</strong> : worst-of {r.niveauPct}% ≥ barrière
+                    ↑ <strong>Rappelé (constaté)</strong> : worst-of {r.niveauPct}% ≥ barrière
                     de rappel {r.barrierePct}% à l&apos;observation #{r.n} du{' '}
                     {formatDateFr(r.date)}.
                   </span>
                   <button
-                    onClick={() => setStatut(opened.isin, 'rappele')}
+                    onClick={() => marquerRappele(opened.isin)}
                     className="shrink-0 rounded bg-violet-600 px-2 py-1 font-medium text-white hover:bg-violet-700"
                   >
                     Marquer rappelé
@@ -1010,6 +1024,7 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               onNom={(s) => setNom(opened.isin, s)}
               tsCible={canonicalForProduct(opened)}
               tsActuel={termsheetFile(opened.isin)}
+              connus={clients}
             />
             <ProductReconstruction product={openedAug} />
           </div>

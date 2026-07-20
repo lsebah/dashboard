@@ -26,7 +26,16 @@ export async function GET(req: Request) {
   const t = Math.floor(new Date(p.dateConstatationInitiale).getTime() / 1000)
   const period1 = Number.isFinite(t) ? t : Math.floor(Date.now() / 1000) - 5 * 365 * 86400
 
-  // Par sous-jacent : symbole Yahoo, historique, strike (TS ou reconstruit).
+  // Strikes Bloomberg (BDH à la date de constatation initiale) par ISIN produit —
+  // pour les indices à décrément non cotés Yahoo dont le strike n'est pas figé
+  // dans la termsheet. Même overlay que l'onglet Décrément (`decrement:strikes`).
+  const strikesOverlay = kvConfigured()
+    ? (await kvGet<{ strikes: Record<string, { ticker?: string; value: number }> }>('decrement:strikes:overlay'))?.strikes ?? {}
+    : {}
+  const normTicker = (x?: string) => (x ?? '').replace(/\s+(Index|Equity|Comdty|Curncy)$/i, '').trim()
+
+  // Par sous-jacent : symbole Yahoo, historique, strike (TS > Yahoo à la
+  // constatation > overlay Bloomberg BDH).
   const cols = await Promise.all(
     p.sousJacents.map(async (u) => {
       const sym = yahooSymbol(u.bloomberg)
@@ -38,8 +47,13 @@ export async function GET(req: Request) {
           bars = []
         }
       }
+      const sEntry = strikesOverlay[p.isin]
+      const strikeBbg =
+        sEntry && (!sEntry.ticker || normTicker(sEntry.ticker) === normTicker(u.bloomberg))
+          ? sEntry.value
+          : undefined
       const strike =
-        u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close
+        u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close ?? strikeBbg
       return { nom: u.nom, sym, bars, strike, bbg: u.bloomberg?.trim() }
     }),
   )

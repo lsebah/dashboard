@@ -102,25 +102,61 @@ async function main() {
   let files = await listFolder(tok)
   console.log(`Dossier Termsheets : ${files.length} fichiers.`)
 
-  // Renommage optionnel vers la nomenclature (noms cibles fournis par l'app).
+  // Renommage vers la nomenclature — PILOTÉ PAR FICHIER (gère les nouveaux docs
+  // déposés, et TS/KID/TM/Brochure d'un même ISIN sans collision) :
+  //  1. l'ISIN est lu dans le nom du fichier (regex ISO 6166) ;
+  //  2. le suffixe de type de doc (_KID / _TM / _Brochure) est détecté et PRÉSERVÉ ;
+  //  3. le nom canonique de base vient de l'app (par ISIN) ;
+  //  4. cible = <base sans .pdf> + suffixe + .pdf, renommée si différente.
+  // Un fichier sans ISIN lisible dans son nom, ou sans cible canonique valide,
+  // n'est PAS renommé (signalé pour contrôle manuel — jamais de nom inventé).
+  // Pas de \b : « _ » est un caractère « mot » en regex, donc _ISIN_ n'aurait pas
+  // de frontière. Le motif ISO 6166 (2 lettres + 9 alphanum + 1 chiffre) est
+  // suffisamment spécifique pour être repéré sans ancrage.
+  const ISIN_RE = /[A-Z]{2}[A-Z0-9]{9}[0-9]/
+  // Cible canonique valide = commence par YYMMDD_<n>Y_ (métadonnées produit présentes).
+  const CIBLE_VALIDE = /^\d{6}_\d+(?:\.\d+)?Y_/
+  const docSuffixe = (name) => {
+    const s = name.replace(/\.pdf$/i, '')
+    if (/[_ -]kid$/i.test(s) || /[_ -]kid[_ -]/i.test(s)) return '_KID'
+    if (/[_ -](tm|target[_ -]?market)$/i.test(s)) return '_TM'
+    if (/[_ -]brochure$/i.test(s)) return '_Brochure'
+    return ''
+  }
+  const nonRenommes = []
   if (SYNC_RENAME === 'true' && APP_URL) {
     const r = await fetch(`${APP_URL.replace(/\/$/, '')}/api/lifecycle/termsheet-targets`)
     if (r.ok) {
       const { items } = await r.json()
-      const byCurrent = new Map(items.filter((i) => i.aRenommer).map((i) => [i.current, i.target]))
+      // ISIN → nom canonique de base (fiable seulement si la cible est conforme).
+      const byIsin = new Map(
+        items.filter((i) => i.isin && CIBLE_VALIDE.test(i.target || '')).map((i) => [i.isin, i.target]),
+      )
       for (const f of files) {
-        const target = byCurrent.get(f.name)
-        if (target && target !== f.name) {
+        if (!/\.pdf$/i.test(f.name)) continue
+        const isin = (f.name.match(ISIN_RE) || [])[1]
+        const base = isin ? byIsin.get(isin) : undefined
+        if (!base) {
+          nonRenommes.push(f.name)
+          continue
+        }
+        const target = base.replace(/\.pdf$/i, '') + docSuffixe(f.name) + '.pdf'
+        if (target !== f.name) {
           try {
             await rename(tok, f.id, target)
             console.log(`Renommé : ${f.name} → ${target}`)
             f.name = target
           } catch (e) {
-            console.error(String(e))
+            console.error(`Échec renommage ${f.name} : ${String(e)}`)
           }
         }
       }
       files = await listFolder(tok) // relecture après renommages
+      if (nonRenommes.length) {
+        console.log(
+          `::warning::${nonRenommes.length} fichier(s) non renommé(s) (ISIN absent du nom ou cible canonique indisponible) : ${nonRenommes.slice(0, 10).join(' · ')}`,
+        )
+      }
     } else {
       console.error(`API termsheet-targets indisponible (${r.status}) — renommage ignoré.`)
     }

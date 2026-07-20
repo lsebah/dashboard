@@ -23,6 +23,7 @@ export default function ClientAssign({
   onNom,
   tsCible,
   tsActuel,
+  connus,
 }: {
   allocs: ClientAlloc[]
   devise: string
@@ -33,6 +34,10 @@ export default function ClientAssign({
   onNom?: (s: string) => void
   tsCible?: string
   tsActuel?: string
+  // Codes clients déjà connus (ex. « ABACUS - 05268 ») — proposés en
+  // autocomplétion pour éviter de saisir une variante sans le code (« ABACUS »
+  // seul), qui créerait une identité client fantôme distincte de la bonne.
+  connus?: string[]
 }) {
   const [client, setClient] = useState('')
   const [montant, setMontant] = useState('')
@@ -192,7 +197,15 @@ export default function ClientAssign({
             onChange={(e) => setClient(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && add()}
             placeholder="ex. APPN - 05277"
+            list="clients-connus"
           />
+          {connus && connus.length > 0 && (
+            <datalist id="clients-connus">
+              {connus.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          )}
         </div>
         <div className="w-32">
           <label className="field-label">Montant ({devise})</label>

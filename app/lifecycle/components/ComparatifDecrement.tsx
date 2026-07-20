@@ -554,7 +554,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               {typeof selInfo?.nbComposants === 'number' && (
                 <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Composants</dt><dd>{selInfo.nbComposants}</dd></div>
               )}
-              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Décrément</dt><dd>{selInfo?.decrement ?? '50 pts (std.)'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Décrément</dt><dd>{selInfo?.decrement ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? `${sel.couponPa.toFixed(2)} %` : '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Effet mémoire</dt><dd>{sel.memoire ? 'Oui' : 'Non'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Barrière coupon</dt><dd>{sel.barriereCoupon ?? '—'}</dd></div>

@@ -49,8 +49,50 @@ const EMAIL = process.argv.includes('--email')
 // --per-client : envoie à CHAQUE client son propre PDF, à son/ses email(s)
 // (mapping data/client-emails.json). Sinon : tout le lot à NOTIF_EMAIL_TO (toi).
 const PER_CLIENT = process.argv.includes('--per-client')
+// --force-send : ignore le verrou anti-double-envoi (renvoi volontaire).
+const FORCE_SEND = process.argv.includes('--force-send')
 const DATE = new Date().toISOString().slice(0, 10)
 const slug = (s) => s.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+
+// ── Verrou anti-double-envoi (KV REST Vercel/Upstash) ───────────────────────
+// Incident du 1er juillet 2026 : déclenchement manuel le matin + cron GitHub en
+// retard à 09:28 → les clients ont reçu le relevé mensuel DEUX fois. Le verrou
+// (clé par date + mode) garantit un seul envoi par jour et par mode ; un renvoi
+// volontaire reste possible avec --force-send. Sans KV configuré : pas de
+// verrou (on log), l'envoi n'est jamais bloqué à tort.
+const KV_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
+const KV_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
+const lockKey = (mode) => `cmf:reporting:envoi:${DATE}:${mode}`
+
+async function dejaEnvoye(mode) {
+  if (FORCE_SEND || !KV_URL || !KV_TOKEN) {
+    if (!KV_URL || !KV_TOKEN) console.log('Verrou KV non configuré — pas de garde anti-double-envoi.')
+    return false
+  }
+  try {
+    const r = await fetch(`${KV_URL}/get/${encodeURIComponent(lockKey(mode))}`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+    })
+    if (!r.ok) return false
+    const j = await r.json()
+    return j.result != null
+  } catch {
+    return false // KV injoignable → on n'empêche pas l'envoi
+  }
+}
+
+async function marquerEnvoye(mode, info) {
+  if (!KV_URL || !KV_TOKEN) return
+  try {
+    await fetch(`${KV_URL}/set/${encodeURIComponent(lockKey(mode))}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ at: new Date().toISOString(), ...info }),
+    })
+  } catch {
+    /* le verrou est un garde-fou, pas un point de défaillance */
+  }
+}
 
 // Mapping CODE CLIENT → email(s) (data/client-emails.json). Une valeur peut être
 // une chaîne (un email, ou plusieurs séparés par « , » / « ; »), ou un tableau.
@@ -150,7 +192,7 @@ async function emailPerClient(files) {
           'Veuillez trouver ci-joint le reporting de valorisation de vos positions ' +
           `au ${DATE}.\n\n` +
           'Je reste à votre disposition pour tout complément.\n\n' +
-          'Bien cordialement,\nLolo Sebah — CMF',
+          'Bien cordialement,\nLaurent Sebah — CMF',
         attachments: [{ filename: file, content }],
       }),
     })
@@ -205,7 +247,18 @@ async function main() {
     await browser.close()
   }
   console.log(`OK — ${written.length} PDF générés dans : ${OUT}`)
-  if (EMAIL) await (PER_CLIENT ? emailPerClient(written) : emailReports(written))
+  if (EMAIL) {
+    const mode = PER_CLIENT ? 'clients' : 'lot'
+    if (await dejaEnvoye(mode)) {
+      console.log(
+        `⛔ Envoi « ${mode} » déjà effectué aujourd'hui (verrou ${lockKey(mode)}) — envoi ignoré. ` +
+          'Renvoi volontaire : relancer avec --force-send.',
+      )
+      return
+    }
+    await (PER_CLIENT ? emailPerClient(written) : emailReports(written))
+    await marquerEnvoye(mode, { label: LABEL, fichiers: written.length })
+  }
 }
 
 main().catch((e) => {

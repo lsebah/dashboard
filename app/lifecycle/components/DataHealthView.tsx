@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { computeDataHealth, type HealthItem } from '@/lib/data-health'
+import { computeCoherence, type CoherenceIssue, type CommissionLine } from '@/lib/coherence'
+import commissions from '@/lib/commissions.json'
 
 // Couleur d'une section selon sa criticité (vert si vide).
 function tone(n: number, critique: boolean): string {
@@ -60,11 +62,60 @@ function Section({
   )
 }
 
+// Section « cohérence commissions ↔ produits » (schéma différent de HealthItem).
+function CoherenceSection({ issues }: { issues: CoherenceIssue[] }) {
+  const [open, setOpen] = useState(false)
+  const critique = issues.length > 0
+  return (
+    <div className={`rounded-lg border ${tone(issues.length, false)}`}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+        disabled={issues.length === 0}
+      >
+        <div>
+          <div className="font-semibold text-cmf-navy">Cohérence commissions ↔ produits</div>
+          <div className="text-[12px] text-slate-500">
+            Client renommé non répercuté, date d’émission divergente, ligne orpheline.
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`tabular-nums text-2xl font-bold ${issues.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {issues.length}
+          </span>
+          {critique && <span className="text-slate-400 text-xs">{open ? '▲' : '▼'}</span>}
+        </div>
+      </button>
+      {open && issues.length > 0 && (
+        <div className="border-t border-white/60 max-h-[340px] overflow-auto">
+          <table className="w-full text-[12px]">
+            <tbody>
+              {issues.map((it, i) => (
+                <tr key={`${it.isin}-${it.type}-${i}`} className="border-b border-white/60 last:border-0">
+                  <td className="px-4 py-1.5 font-mono whitespace-nowrap">{it.isin}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{it.type}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    {it.classeur}
+                    {it.produit ? <span className="text-slate-400"> → {it.produit}</span> : null}
+                  </td>
+                  <td className="px-4 py-1.5 text-slate-400">{it.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** Tableau de bord « santé des données » : trous du portefeuille en temps réel. */
 export default function DataHealthView({ products }: { products: Product[] }) {
   const h = useMemo(() => computeDataHealth(products), [products])
+  const lignes = (commissions as { lignes: CommissionLine[] }).lignes ?? []
+  const coherence = useMemo(() => computeCoherence(lignes, products), [lignes, products])
   const complet =
-    h.sansCoupon.length + h.sansTS.length + h.airbagSansNiveau.length + h.deviseSuspecte.length + h.typeNonIdentifie.length
+    h.sansCoupon.length + h.sansTS.length + h.airbagSansNiveau.length + h.deviseSuspecte.length + h.typeNonIdentifie.length + coherence.length
 
   return (
     <div className="flex flex-col gap-4">
@@ -106,6 +157,7 @@ export default function DataHealthView({ products }: { products: Product[] }) {
           desc="Aucun type déductible du nom ni de la définition."
           items={h.typeNonIdentifie}
         />
+        <CoherenceSection issues={coherence} />
       </div>
 
       <p className="text-[11px] text-slate-400">

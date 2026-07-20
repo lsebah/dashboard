@@ -1161,7 +1161,7 @@ const msIEdgeAi: Product = {
   frequence: 'trimestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'iEdge Transatlantic Artificial Intelligence 10 Decrement 50pts GTR', bloomberg: 'IETAI10', marche: 'Indice' },
+    { nom: 'iEdge Transatlantic Artificial Intelligence 10 Decrement 50pts GTR', bloomberg: 'IETAI10 Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
@@ -1523,7 +1523,7 @@ const bbvaHealthcareBonus: Product = {
   frequence: 'semestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'Bloomberg Europe Health Care Select Multi Factor Decrement 50pts GR', bloomberg: 'EURHGPT', marche: 'Indice' },
+    { nom: 'Bloomberg Europe Health Care Select Multi Factor Decrement 50pts GR', bloomberg: 'EURHGPT Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
@@ -2564,7 +2564,7 @@ const msMerqubeTtef: Product = {
   frequence: 'trimestriel',
   basket: 'single',
   sousJacents: [
-    { nom: 'MerQube TTEF 2.96 Index Points Decrement (EUR) Index', bloomberg: 'MQDTT296', marche: 'Indice' },
+    { nom: 'MerQube TTEF 2.96 Index Points Decrement (EUR) Index', bloomberg: 'MQDTT296 Index', marche: 'Indice' },
   ],
   terms: {
     kind: 'autocall',
@@ -3637,6 +3637,14 @@ const bnpCallableCsi500: Product = {
   ],
   pdiPct: 90,
   pdiText: '90 % (européenne)',
+  terms: {
+    kind: 'rates',
+    type: 'callable',
+    capitalGaranti: false,
+    floorPct: 90,
+    callable: true,
+    inFine: true,
+  },
   observations: buildObservations(csiObs, csiPay, {
     montantRemboursementPct: (n) => csiBooster[n - 1],
   }),
@@ -3691,6 +3699,10 @@ const msMxeadt50: Product = {
     {
       nom: 'MSCI Europe Aerospace & Defense Top 10 Select 50 Points Decrement EUR',
       bloomberg: 'MXEADT50 Index',
+      // Strike = clôture officielle à la Date d'Exercice 24/07/2025 (source :
+      // niveau Bloomberg fourni par Laurent ; la TS ne donne que « clôture à la
+      // date d'exercice », sans chiffre absolu).
+      niveauInitial: 1022.02,
     },
   ],
   terms: {
@@ -3783,6 +3795,14 @@ const efgChinaParticipation: Product = {
   ],
   pdiPct: 80,
   pdiText: '80 % (airbag ×1,25)',
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    airbag: true,
+    protectionPct: 80,
+    protectionStyle: 'europeenne',
+  },
   rr: 'LS',
   productType: 'Participation (Airbag)',
   description:
@@ -3812,6 +3832,13 @@ const efgWarrantSeniorLoans: Product = {
   sousJacents: [
     { nom: 'Leonteq European Senior Loans Fund 3%RC Index', bloomberg: 'LEONIES3 Index' },
   ],
+  terms: {
+    kind: 'rates',
+    type: 'autre',
+    capitalGaranti: false,
+    floorPct: 0,
+    inFine: true,
+  },
   rr: 'LS',
   productType: 'Warrant Call',
   description:
@@ -3912,36 +3939,9 @@ function metaProduct(p: {
   }
 }
 
-const metaProducts: Product[] = [
-  metaProduct({
-    isin: 'XS3251223155',
-    nom: 'Callable 90 % sur CSI Smallcap 500',
-    emetteur: 'BNP Paribas',
-    productType: 'Callable (capital protégé 90 %)',
-    family: 'participation',
-    dateEmission: '2026-02-06',
-    dureeAnnees: 3,
-    frequence: 'trimestriel',
-    basket: 'single',
-    pdiPct: 90,
-    pdiText: '90 % (européenne)',
-    sousJacents: [{ nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'Shanghai' }],
-    description: '3Y Callable émetteur — CSI Smallcap 500, protection 90 % (indicatif, TS à fournir)',
-    badges: ['Single', 'Callable', '90 % protégé', 'TS à fournir'],
-  }),
-  metaProduct({
-    isin: 'XS3256693576',
-    nom: 'Athena Airbag Sanofi (décrément 3,76)',
-    emetteur: 'Barclays Bank PLC',
-    productType: 'Athena Airbag',
-    dateEmission: '2026-03-16',
-    dureeAnnees: 10,
-    basket: 'single',
-    sousJacents: [{ nom: 'Sanofi (décrément 3,76)', marche: 'Euronext Paris' }],
-    description: '10Y Athena Airbag — Sanofi à décrément 3,76',
-    badges: ['Single', 'Airbag', 'Décrément', 'TS à fournir'],
-  }),
-]
+// (XS3256693576 : ancien placeholder retiré — définition complète décodée de la
+//  TS plus bas, `barclaysSanofiDecrement`, qui prime dans defByIsin.)
+const metaProducts: Product[] = []
 
 // Identité depuis le reporting mensuel — fournée 2026-06 (suite). Pour les taux
 // le coupon p.a. et la référence (CMS/TEC) viennent du libellé ; les barrières de
@@ -4015,12 +4015,9 @@ const metaProducts2: Product[] = [
     badges: ['Crédit', 'Tranche', 'Zero-recovery', 'TS à fournir'],
   }),
   // — Actions : Athena / Phoenix (identité) —
-  metaProduct({
-    isin: 'XS3287495306', nom: 'Athena Airbag BBVA', emetteur: 'BNP Paribas',
-    productType: 'Athena Airbag', dateEmission: '2026-04-13', dureeAnnees: 6, basket: 'single',
-    sousJacents: [{ nom: 'Banco Bilbao Vizcaya Argentaria', bloomberg: 'BBVA SM', marche: 'BME' }],
-    description: '6Y Athena Airbag — BBVA', badges: ['Airbag', 'TS à fournir'],
-  }),
+  // (XS3287495306 : ancien placeholder retiré — émetteur/sous-jacent étaient
+  //  inversés et le PDF déposé pointait vers un autre produit. Définition
+  //  complète décodée de la vraie TS BBVA Series 42575, plus bas : bbvaBnpAthena.)
   // Lu sur termsheet : produit de TAUX à capital garanti (pas un autocall actions).
   // Coupon 8 %/an années 1-3, puis 5 × (pente CMS 30Y−5Y) plancher 0 % ; call
   // émetteur semestriel à 100 % (du 30/09/2026 au 30/09/2036) ; capital 100 % garanti.
@@ -4894,8 +4891,76 @@ const bnpTec10Phoenix: Product = {
 }
 
 // ── XS3256693576 — Barclays Athena Snowball FTSE Sanofi Décrément 3,76 ────────
-//    Indice propriétaire (SSDSAN04) non mappable Yahoo : on décode les termes,
-//    sans le calendrier mensuel (109 obs.) qui ne pourrait pas être constaté.
+//    Indice propriétaire (SSDSAN04) pricé par le programme Bloomberg (PX_Last +
+//    strike historique) — calendrier mensuel complet décodé de la TS.
+// Calendrier TS (Final Term Sheet 17/03/2026, Series NX00563069) : 108 observations
+// mensuelles autocallables (barrière dégressive 100 % − 2 %/an, prime de rappel 100 %,
+// non-call 12 mois) + constatation finale 17/03/2036 dont la barrière de coupon est
+// abaissée à 70 %. Coupon snowball N × 0,8084 % du nominal, N = n + 11 (N = 12 → 120).
+const barclaysSanofiObs = [
+  '2027-03-16', '2027-04-16', '2027-05-17', '2027-06-16', '2027-07-16',
+  '2027-08-16', '2027-09-16', '2027-10-18', '2027-11-16', '2027-12-16',
+  '2028-01-17', '2028-02-16', '2028-03-16', '2028-04-18', '2028-05-16',
+  '2028-06-16', '2028-07-17', '2028-08-16', '2028-09-18', '2028-10-16',
+  '2028-11-16', '2028-12-18', '2029-01-16', '2029-02-16', '2029-03-16',
+  '2029-04-16', '2029-05-16', '2029-06-18', '2029-07-16', '2029-08-16',
+  '2029-09-17', '2029-10-16', '2029-11-16', '2029-12-17', '2030-01-16',
+  '2030-02-18', '2030-03-18', '2030-04-16', '2030-05-16', '2030-06-17',
+  '2030-07-16', '2030-08-16', '2030-09-16', '2030-10-16', '2030-11-18',
+  '2030-12-16', '2031-01-16', '2031-02-17', '2031-03-17', '2031-04-16',
+  '2031-05-16', '2031-06-16', '2031-07-16', '2031-08-18', '2031-09-16',
+  '2031-10-16', '2031-11-17', '2031-12-16', '2032-01-16', '2032-02-16',
+  '2032-03-16', '2032-04-16', '2032-05-17', '2032-06-16', '2032-07-16',
+  '2032-08-16', '2032-09-16', '2032-10-18', '2032-11-16', '2032-12-16',
+  '2033-01-17', '2033-02-16', '2033-03-16', '2033-04-19', '2033-05-16',
+  '2033-06-16', '2033-07-18', '2033-08-16', '2033-09-16', '2033-10-17',
+  '2033-11-16', '2033-12-16', '2034-01-16', '2034-02-16', '2034-03-16',
+  '2034-04-17', '2034-05-16', '2034-06-16', '2034-07-17', '2034-08-16',
+  '2034-09-18', '2034-10-16', '2034-11-16', '2034-12-18', '2035-01-16',
+  '2035-02-16', '2035-03-16', '2035-04-16', '2035-05-16', '2035-06-18',
+  '2035-07-16', '2035-08-16', '2035-09-17', '2035-10-16', '2035-11-16',
+  '2035-12-17', '2036-01-16', '2036-02-18', '2036-03-17',
+]
+const barclaysSanofiPay = [
+  '2027-04-01', '2027-04-30', '2027-05-31', '2027-06-30', '2027-07-30',
+  '2027-08-30', '2027-09-30', '2027-11-01', '2027-11-30', '2027-12-30',
+  '2028-01-31', '2028-03-01', '2028-03-30', '2028-05-03', '2028-05-30',
+  '2028-06-30', '2028-07-31', '2028-08-30', '2028-10-02', '2028-10-30',
+  '2028-11-30', '2029-01-04', '2029-01-30', '2029-03-02', '2029-04-03',
+  '2029-04-30', '2029-05-30', '2029-07-02', '2029-07-30', '2029-08-30',
+  '2029-10-01', '2029-10-30', '2029-11-30', '2030-01-03', '2030-01-30',
+  '2030-03-04', '2030-04-01', '2030-05-03', '2030-05-30', '2030-07-01',
+  '2030-07-30', '2030-08-30', '2030-09-30', '2030-10-30', '2030-12-02',
+  '2031-01-02', '2031-01-30', '2031-03-03', '2031-03-31', '2031-04-30',
+  '2031-05-30', '2031-06-30', '2031-07-30', '2031-09-01', '2031-09-30',
+  '2031-10-30', '2031-12-01', '2032-01-02', '2032-01-30', '2032-03-01',
+  '2032-04-01', '2032-04-30', '2032-05-31', '2032-06-30', '2032-07-30',
+  '2032-08-30', '2032-09-30', '2032-11-01', '2032-11-30', '2032-12-30',
+  '2033-01-31', '2033-03-02', '2033-03-30', '2033-05-03', '2033-05-30',
+  '2033-06-30', '2033-08-01', '2033-08-30', '2033-09-30', '2033-10-31',
+  '2033-11-30', '2034-01-02', '2034-01-30', '2034-03-02', '2034-03-30',
+  '2034-05-02', '2034-05-30', '2034-06-30', '2034-07-31', '2034-08-30',
+  '2034-10-02', '2034-10-30', '2034-11-30', '2035-01-04', '2035-01-30',
+  '2035-03-02', '2035-04-03', '2035-04-30', '2035-05-30', '2035-07-02',
+  '2035-07-30', '2035-08-30', '2035-10-01', '2035-10-30', '2035-11-30',
+  '2036-01-03', '2036-01-30', '2036-03-03', '2036-03-31',
+]
+const barclaysSanofiObservations = barclaysSanofiObs.map((dateObservation, idx) => {
+  const n = idx + 1
+  const finale = n === 109
+  const barriere = finale ? 70 : 100 - 2 * Math.floor((n - 1) / 12)
+  return {
+    n,
+    dateObservation,
+    datePaiement: barclaysSanofiPay[idx],
+    autocallActif: !finale,
+    niveauRappelPct: finale ? undefined : barriere,
+    montantRemboursementPct: finale ? undefined : 100,
+    couponPct: Math.round((n + 11) * 0.8084 * 10000) / 10000,
+    niveauCouponPct: barriere,
+  }
+})
+
 const barclaysSanofiDecrement: Product = {
   id: 'XS3256693576',
   nom: 'Athena Snowball FTSE Sanofi Décrément 3,76',
@@ -4930,9 +4995,10 @@ const barclaysSanofiDecrement: Product = {
     protectionStyle: 'europeenne',
     decrement: '3,76 pts/an',
   },
+  observations: barclaysSanofiObservations,
   rr: 'LS',
   productType: 'Athena',
-  description: '10Y Athena Snowball Sanofi (indice décrément 3,76 pts) — coupon mémoire 0,8084 %/mois (~9,70 % p.a.), KI 50 % européen, autocall dégressif mensuel (non-call 12 mois)',
+  description: '10Y Athena Snowball Sanofi (indice décrément 3,76 pts) — coupon snowball 0,8084 %/mois (~9,70 % p.a.), KI 50 % européen, autocall dégressif mensuel (non-call 12 mois)',
   badges: ['Décrément', 'Snowball', 'Effet mémoire'],
   termsheetFichier: '260316_10Y_Athena Airbag Sanofi D 3.76_Mensuel_XS3256693576_BARCLAYS.pdf',
 }
@@ -5000,6 +5066,14 @@ const bnpGoldCallSpread: Product = {
   frequence: 'in_fine',
   basket: 'single',
   sousJacents: [{ nom: 'Or (LBMA Gold PM, USD/once)', bloomberg: 'GOLDLNPM Cmdty' }],
+  terms: {
+    kind: 'rates',
+    type: 'autre',
+    capitalGaranti: true,
+    capPct: 117.5,
+    floorPct: 100,
+    inFine: true,
+  },
   rr: 'LS',
   productType: 'Bond + Call Spread',
   description: '3Y Bond + Call Spread sur l’Or (USD) — capital garanti 100 %, participation 100 % de 100 % à 117,5 % (cap)',
@@ -5063,6 +5137,15 @@ const sipChabanais: Product = {
   basket: 'single',
   sousJacents: [],
   couponPaPct: 10.25,
+  terms: {
+    kind: 'credit',
+    type: 'single_name',
+    entitesReference: ['Holding du 6 rue Chabanais Paris'],
+    couponPa: 10.25,
+    couponGaranti: true,
+    inFine: false,
+    protectionCapital: false,
+  },
   rr: 'LS',
   productType: 'Dette Privée',
   description: 'Dette privée senior (prêt Holding du 6 rue Chabanais) — coupon 10,25 %/an semestriel, capital non protégé, échéance 12/06/2025',
@@ -5093,6 +5176,15 @@ const feiDettePrivee: Product = {
   basket: 'single',
   sousJacents: [],
   couponPaPct: 9,
+  terms: {
+    kind: 'credit',
+    type: 'single_name',
+    entitesReference: ['FEI'],
+    couponPa: 9,
+    couponGaranti: true,
+    inFine: true,
+    protectionCapital: false,
+  },
   rr: 'LS',
   productType: 'Dette Privée',
   description:
@@ -5998,6 +6090,7 @@ const gsVeoliaErametLvmh: Product = {
     montantRemboursementPct: (n) => [107, 114, 121, 128, 135][n - 1],
     rappelActifAPartirDe: 1,
   }),
+  statut: 'rappele', // rappelé par anticipation (autocall déclenché) — confirmé Laurent
   rr: 'LS',
   productType: 'Autocall',
   description: '5Y Autocall équipondéré — Veolia + Eramet + LVMH (GS "Leaders 7%") · montant croissant 107 %→135 % · trigger 100 % dégr. → 94 % · KI 65 % européenne · sans coupon périodique',
@@ -6204,6 +6297,242 @@ const barclaysBnpAcaGle: Product = {
     'https://capitalmanagementfrance-my.sharepoint.com/personal/serveur_cmf_finance/Documents/TEAM/Deal Done/Laurent/2026-07-03_XS3401965978_Phoenix Mémoire BNP ACA SG/TS FR - Phoenix Mémoire BNP ACA SG - XS3401965978.pdf',
 }
 
+// ── BBVA — Phoenix Memory on Share SpaceX (XS3379913869) ────────────────────
+//    Décodé de la TS BBVA (Series 49680, Trade Date 24/06/2026). 12 constatations
+//    trimestrielles, coupon 3,8 %/T à mémoire (15,2 % p.a.), barrière coupon et
+//    knock-in à 50 % (européenne, constatée à la seule date de valorisation
+//    finale). Rappel dégressif de 100 % à 82,5 %, non-call sur les 3 premières
+//    observations. Nominal CMF = nominal d'émission (200 000 EUR, ticket unique).
+const bbvaSpacexObs = [
+  '2026-09-24', '2026-12-24', '2027-03-24', '2027-06-24', '2027-09-24',
+  '2027-12-27', '2028-03-24', '2028-06-26', '2028-09-25', '2028-12-26',
+  '2029-03-26', '2029-06-25',
+]
+const bbvaSpacexPay = [
+  '2026-10-01', '2027-01-04', '2027-04-02', '2027-07-01', '2027-10-01',
+  '2028-01-03', '2028-03-31', '2028-07-03', '2028-10-02', '2029-01-03',
+  '2029-04-04', '2029-07-02',
+]
+// Barème d'autocall dégressif (obs 4 → 11 ; non-call sur 1-3, maturité en 12).
+const bbvaSpacexAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85, 82.5, undefined,
+]
+
+const bbvaSpacex: Product = {
+  id: 'XS3379913869',
+  nom: 'Phoenix Memory SpaceX',
+  isin: 'XS3379913869',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'Moody’s A2 / S&P A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-24',
+  dateEmission: '2026-07-08',
+  dateConstatationFinale: '2029-06-25',
+  dateEcheance: '2029-07-02',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'SpaceX (Space Exploration Technologies)', bloomberg: 'SPCX UW', isin: 'US84615Q1031', marche: 'Nasdaq', devise: 'USD', niveauInitial: 154.54 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 15.2,
+    barriereCouponPct: 50,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bbvaSpacexObs, bbvaSpacexPay, {
+    niveauRappelPct: (n) => bbvaSpacexAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 3.8,
+    niveauCouponPct: 50,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  clients: ['APPN - 05277'],
+  productType: 'Phoenix',
+  description: '3Y Phoenix Memory on Share SpaceX',
+  badges: ['Dégressif', 'Effet mémoire'],
+  termsheetFichier: '260624_3Y_Phoenix Memory SpaceX_Trimestriel_XS3379913869_BBVA.pdf',
+}
+
+// ── Barclays — Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore
+//    (XS3401975936) ──────────────────────────────────────────────────────────
+//    Décodé de la TS indicative Barclays (22/06/2026, Series NX00600264). 20
+//    constatations trimestrielles, coupon 2,825 %/T à mémoire (11,3 % p.a.),
+//    barrière coupon à 60 %, knock-in à 50 % (européenne, constatée à la seule
+//    date de valorisation finale). Rappel dégressif de 100 % à 62,5 %, non-call
+//    sur les 3 premières observations. Nominal CMF = 200 000 EUR (ticket sur une
+//    émission totale de 2 200 000 EUR). Client : ABACUS - 05268.
+const barclaysBhpFcxGlenObs = [
+  '2026-09-22', '2026-12-22', '2027-03-22', '2027-06-22', '2027-09-22',
+  '2027-12-22', '2028-03-22', '2028-06-22', '2028-09-22', '2028-12-22',
+  '2029-03-22', '2029-06-22', '2029-09-24', '2029-12-24', '2030-03-22',
+  '2030-06-24', '2030-09-23', '2030-12-23', '2031-03-24', '2031-06-23',
+]
+const barclaysBhpFcxGlenPay = [
+  '2026-09-29', '2026-12-30', '2027-03-31', '2027-06-29', '2027-09-29',
+  '2027-12-29', '2028-03-29', '2028-06-29', '2028-09-29', '2029-01-03',
+  '2029-03-29', '2029-06-29', '2029-10-01', '2030-01-03', '2030-03-29',
+  '2030-07-01', '2030-09-30', '2031-01-02', '2031-03-31', '2031-06-30',
+]
+// Barème d'autocall dégressif (obs 4 → 19 ; non-call sur 1-3, maturité en 20).
+const barclaysBhpFcxGlenAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 100, 97.5, 95, 92.5, 90, 87.5, 85,
+  82.5, 80, 77.5, 75, 72.5, 70, 67.5, 65, 62.5, undefined,
+]
+
+const barclaysBhpFcxGlen: Product = {
+  id: 'XS3401975936',
+  nom: 'Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore',
+  isin: 'XS3401975936',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'Moody’s A1 / S&P A+ / Fitch AA-',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-06-22',
+  dateEmission: '2026-07-06',
+  dateConstatationFinale: '2031-06-23',
+  dateEcheance: '2031-06-30',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BHP Group Ltd', bloomberg: 'BHP LN', isin: 'AU000000BHP4', marche: 'London Stock Exchange', devise: 'GBP' },
+    { nom: 'Freeport-McMoRan Inc', bloomberg: 'FCX UN', isin: 'US35671D8570', marche: 'New York Stock Exchange', devise: 'USD' },
+    { nom: 'Glencore plc', bloomberg: 'GLEN LN', isin: 'JE00B4T3BW64', marche: 'London Stock Exchange', devise: 'GBP' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 11.3,
+    barriereCouponPct: 60,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(barclaysBhpFcxGlenObs, barclaysBhpFcxGlenPay, {
+    niveauRappelPct: (n) => barclaysBhpFcxGlenAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.825,
+    niveauCouponPct: 60,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  clients: ['ABACUS - 05268'],
+  productType: 'Phoenix',
+  description: '5Y Phoenix Mémoire worst-of BHP + Freeport-McMoRan + Glencore',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  termsheetFichier: '260706_5Y_Phoenix Mémoire worst-of BHP + Freeport + Glencore_Trimestriel_XS3401975936_BARCLAYS.pdf',
+}
+
+// ── BNP — Callable Booster sur CSI Smallcap 500 (XS3251223155) ──────────────
+//    Même structure que XS3214893623 (TS BNP réf. CE7453MDY, 23/01/2026).
+const bnpCallableBoosterCsi3251: Product = {
+  id: 'XS3251223155',
+  nom: 'Callable Booster CSI Smallcap 500',
+  isin: 'XS3251223155',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'S&P A+ / Moody’s A1 / Fitch AA-',
+  assetClass: 'equity',
+  family: 'rates_structured',
+  eusipa: '1230 — Callable',
+  devise: 'EUR',
+  nominal: 200_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-01-23',
+  dateEmission: '2026-02-06',
+  dateConstatationFinale: '2029-01-23',
+  dateEcheance: '2029-02-06',
+  frequence: 'autre',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'CSI Smallcap 500 Index', bloomberg: 'SH000905 Index', marche: 'China', devise: 'EUR', niveauInitial: 8590.1659 },
+  ],
+  terms: {
+    kind: 'rates',
+    type: 'callable',
+    capitalGaranti: false,
+    floorPct: 90,
+    callable: true,
+    inFine: true,
+  },
+  rr: 'LS',
+  clients: ['APPN - 05277'],
+  productType: 'Callable',
+  description:
+    '3Y Callable Booster sur CSI Smallcap 500 — rappel à l’initiative de BNP à 10 dates trimestrielles (prime 108 % → 144 %) ; à défaut de rappel, capital protégé à 90 % à maturité (100 % si l’indice ≥ 90 % du niveau initial).',
+  badges: ['Capital protégé 90%', 'Callable émetteur'],
+  termsheetFichier: '260206_3Y_Callable 90% KG sur CSI 500_Trimestriel_XS3251223155_BNP.pdf',
+}
+
+// ── BNP — CLN iTraxx Main Balloon (XS2576621366) ────────────────────────────
+//    Décodé du KID BNP (réf. CE14213EAG, 11/08/2023). Certificat de crédit
+//    zero-recovery sur iTraxx Europe Series 39 : les 3 premiers événements de
+//    crédit sont absorbés sans impact (franchise), puis chaque événement
+//    suivant réduit le notional courant de 25 % (donc épuisement total après 7
+//    défauts cumulés). Paiement UNIQUE (« balloon ») à l'échéance : 51,25 % du
+//    notional courant, pas de coupon périodique.
+const bnpClnItraxxBalloon: Product = {
+  id: 'XS2576621366',
+  nom: 'CLN iTraxx Main Balloon',
+  isin: 'XS2576621366',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  assetClass: 'credit',
+  family: 'credit_linked',
+  devise: 'EUR',
+  nominal: 500_000,
+  valeurNominale: 50_000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2023-06-12',
+  dateEmission: '2023-09-08',
+  dateConstatationFinale: '2028-06-20',
+  dateEcheance: '2028-07-04',
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [],
+  terms: {
+    kind: 'credit',
+    type: 'index',
+    indexReference: 'iTraxx Europe Series 39',
+    zeroRecovery: true,
+    recouvrementPct: 0,
+    nbDefautsBuffer: 3,
+    nbDefautsWipe: 7,
+    couponPa: 10.25,
+    couponGaranti: false,
+    prixEmissionPct: 100,
+    inFine: true,
+    protectionCapital: false,
+  },
+  rr: 'DS',
+  clients: ['SCALA - 05722'],
+  productType: 'CLN',
+  description: '5Y CLN iTraxx Main Balloon — 3 défauts absorbés en franchise puis -25% de notional par défaut supplémentaire (zero-recovery), paiement unique de 51,25% à l’échéance.',
+  badges: ['Zero-recovery', 'Paiement unique'],
+  termsheetFichier: '230908_5Y_CLN iTraxx Main Balloon_In Fine_XS2576621366_BNP_KID.pdf',
+}
+
 // ── BIL — Phoenix Mémoire Wof Moderna + Pfizer + Sanofi (CH1322027827) ───────
 //    Décodé de la TS BIL (indicative 26/01/2024, EUR Quanto). 20 constatations
 //    trimestrielles, coupon 2,475 %/T à mémoire (9,90 % p.a.), barrière coupon
@@ -6327,6 +6656,121 @@ const bnpAthenaIndices: Product = {
   termsheetFichier: 'TS - Athena SX5E NKY SPX - XS3153607810.PDF',
 }
 
+// ── XS3287495306 — BBVA « Sweet Autocallable » / Athena sur BNP Paribas ──────
+//    Décodé de la vraie TS BBVA (Series 42575, ST-269940, TS strikée 02/03→13/04/2026,
+//    reçue par email — le PDF « …_XS3287495306_BBVA.pdf » du dossier contenait par
+//    erreur la TS d'un autre produit, Micron). Single sur BNP Paribas, strike =
+//    plus bas close des 2 strike days (89,77). 60 observations mensuelles
+//    autocallables (non-call 12 mois : 1re le 13/04/2027), trigger dégressif
+//    100 %→92 % (−2 %/an), montant de rappel « snowball » croissant 110,00 %→
+//    159,17 % (+0,8334 %/mois ≈ 10 % p.a.). À maturité (13/04/2032) : 160,0048 %
+//    si BNP ≥ 70 % ; 100 % si 50 %–70 % ; sinon (KI < 50 %, européen) niveau final.
+const bbvaBnpAthenaObs = [
+  '2027-04-13', '2027-05-13', '2027-06-14', '2027-07-13', '2027-08-13',
+  '2027-09-13', '2027-10-13', '2027-11-15', '2027-12-13', '2028-01-13',
+  '2028-02-14', '2028-03-13', '2028-04-13', '2028-05-15', '2028-06-13',
+  '2028-07-13', '2028-08-14', '2028-09-13', '2028-10-13', '2028-11-13',
+  '2028-12-13', '2029-01-15', '2029-02-13', '2029-03-13', '2029-04-13',
+  '2029-05-14', '2029-06-13', '2029-07-13', '2029-08-13', '2029-09-13',
+  '2029-10-15', '2029-11-13', '2029-12-13', '2030-01-14', '2030-02-13',
+  '2030-03-13', '2030-04-15', '2030-05-13', '2030-06-13', '2030-07-15',
+  '2030-08-13', '2030-09-13', '2030-10-14', '2030-11-13', '2030-12-13',
+  '2031-01-13', '2031-02-13', '2031-03-13', '2031-04-15', '2031-05-13',
+  '2031-06-13', '2031-07-14', '2031-08-13', '2031-09-15', '2031-10-13',
+  '2031-11-13', '2031-12-15', '2032-01-13', '2032-02-13', '2032-03-15',
+]
+const bbvaBnpAthenaPay = [
+  '2027-04-20', '2027-05-20', '2027-06-21', '2027-07-20', '2027-08-20',
+  '2027-09-20', '2027-10-20', '2027-11-22', '2027-12-20', '2028-01-20',
+  '2028-02-21', '2028-03-20', '2028-04-24', '2028-05-22', '2028-06-20',
+  '2028-07-20', '2028-08-21', '2028-09-20', '2028-10-20', '2028-11-20',
+  '2028-12-20', '2029-01-22', '2029-02-20', '2029-03-20', '2029-04-20',
+  '2029-05-21', '2029-06-20', '2029-07-20', '2029-08-20', '2029-09-20',
+  '2029-10-22', '2029-11-20', '2029-12-20', '2030-01-21', '2030-02-20',
+  '2030-03-20', '2030-04-24', '2030-05-20', '2030-06-20', '2030-07-22',
+  '2030-08-20', '2030-09-20', '2030-10-21', '2030-11-20', '2030-12-20',
+  '2031-01-20', '2031-02-20', '2031-03-20', '2031-04-22', '2031-05-20',
+  '2031-06-20', '2031-07-21', '2031-08-20', '2031-09-22', '2031-10-20',
+  '2031-11-20', '2031-12-22', '2032-01-20', '2032-02-20', '2032-03-22',
+]
+const bbvaBnpAthenaTrig = [
+  100, 100, 100, 100, 100,
+  100, 100, 100, 100, 100,
+  100, 100, 98, 98, 98,
+  98, 98, 98, 98, 98,
+  98, 98, 98, 98, 96,
+  96, 96, 96, 96, 96,
+  96, 96, 96, 96, 96,
+  96, 94, 94, 94, 94,
+  94, 94, 94, 94, 94,
+  94, 94, 94, 92, 92,
+  92, 92, 92, 92, 92,
+  92, 92, 92, 92, 92,
+]
+const bbvaBnpAthenaAer = [
+  110.0008, 110.8342, 111.6676, 112.501, 113.3344,
+  114.1678, 115.0012, 115.8346, 116.668, 117.5014,
+  118.3348, 119.1682, 120.0016, 120.835, 121.6684,
+  122.5018, 123.3352, 124.1686, 125.002, 125.8354,
+  126.6688, 127.5022, 128.3356, 129.169, 130.0024,
+  130.8358, 131.6692, 132.5026, 133.336, 134.1694,
+  135.0028, 135.8362, 136.6696, 137.503, 138.3364,
+  139.1698, 140.0032, 140.8366, 141.67, 142.5034,
+  143.3368, 144.1702, 145.0036, 145.837, 146.6704,
+  147.5038, 148.3372, 149.1706, 150.004, 150.8374,
+  151.6708, 152.5042, 153.3376, 154.171, 155.0044,
+  155.8378, 156.6712, 157.5046, 158.338, 159.1714,
+]
+const bbvaBnpAthena: Product = {
+  id: 'XS3287495306',
+  nom: 'Athena Airbag BNP Paribas',
+  isin: 'XS3287495306',
+  valor: '148075469',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'Moody’s A2 / S&P A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-04-13',
+  dateEmission: '2026-04-13',
+  dateConstatationFinale: '2032-04-13',
+  dateEcheance: '2032-04-20',
+  frequence: 'mensuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris', devise: 'EUR', niveauInitial: 89.77 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    couponPa: 10.0,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 160.0048,
+  },
+  observations: buildObservations(bbvaBnpAthenaObs, bbvaBnpAthenaPay, {
+    niveauRappelPct: (n) => bbvaBnpAthenaTrig[n - 1],
+    montantRemboursementPct: (n) => bbvaBnpAthenaAer[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  clients: ['CURNILLON - 01223'],
+  productType: 'Athena',
+  description:
+    '6Y Athena/Sweet Autocallable BNP Paribas — 60 obs. mensuelles, trigger dégressif 100 %→92 %, montant snowball 110,00 %→159,17 %, final 160,00 % si BNP ≥ 70 %, protégé 100 % jusqu’à 50 %, KI 50 % européenne.',
+  badges: ['Single', 'Snowball', 'Dégressif'],
+  termsheetFichier: 'TS_XS3287495306_42575.pdf',
+}
+
+
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
   bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
@@ -6360,6 +6804,8 @@ const detailed: Product[] = [
   santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
   marexMstr, marexMoncMcVsco,
   barclaysBnpAcaGle, bilModernaPfizerSanofi, bnpAthenaIndices,
+  bbvaSpacex, barclaysBhpFcxGlen, bbvaBnpAthena,
+  bnpCallableBoosterCsi3251, bnpClnItraxxBalloon,
 ]
 
 // Définitions disponibles par ISIN (termsheet décodée finement ou import catalogue).

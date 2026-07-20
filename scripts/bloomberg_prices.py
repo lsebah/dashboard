@@ -144,14 +144,24 @@ def fetch_prices(session, isins, field):
 
 
 def bbg_security(ticker):
-    """Reproduit ta formule Excel : ajoute le yellow-key si absent.
-    Deja ' Index'/' Equity'/' Comdty'/' Curncy' -> tel quel ;
-    sinon contient 'Index' -> ' Index' ; sinon -> ' Equity'."""
+    """Ajoute le yellow-key Bloomberg si absent.
+    - Deja ' Index'/' Equity'/' Comdty'/' Curncy' -> tel quel.
+    - Contient le mot 'index' -> ' Index'.
+    - Jeton UNIQUE sans espace (ex. 'EURHGPT', 'MQDTT296', 'IETAI10') -> ' Index' :
+      une action a TOUJOURS un code place ('SAF FP', 'MU UW'), donc un jeton seul
+      est forcement un indice proprietaire/decrement. Evite de mal qualifier ces
+      indices en ' Equity' (aucun prix renvoye).
+    - Sinon (jeton multi-mots type 'FORECEC LX') -> ' Equity'."""
     t = (ticker or "").strip()
     low = t.lower()
-    if any(s in low for s in (" index", " equity", " comdty", " curncy")):
+    # Yellow-key deja present (les deux graphies 'Comdty'/'Cmdty' acceptees).
+    if any(s in low for s in (" index", " equity", " comdty", " cmdty", " curncy")):
         return t
-    return t + (" Index" if "index" in low else " Equity")
+    if "index" in low:
+        return t + " Index"
+    if " " not in t:  # jeton unique -> indice (jamais une action)
+        return t + " Index"
+    return t + " Equity"
 
 
 def fetch_levels(session, tickers, field="PX_LAST"):
