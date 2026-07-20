@@ -4015,12 +4015,9 @@ const metaProducts2: Product[] = [
     badges: ['Crédit', 'Tranche', 'Zero-recovery', 'TS à fournir'],
   }),
   // — Actions : Athena / Phoenix (identité) —
-  metaProduct({
-    isin: 'XS3287495306', nom: 'Athena Airbag BBVA', emetteur: 'BNP Paribas',
-    productType: 'Athena Airbag', dateEmission: '2026-04-13', dureeAnnees: 6, basket: 'single',
-    sousJacents: [{ nom: 'Banco Bilbao Vizcaya Argentaria', bloomberg: 'BBVA SM', marche: 'BME' }],
-    description: '6Y Athena Airbag — BBVA', badges: ['Airbag', 'TS à fournir'],
-  }),
+  // (XS3287495306 : ancien placeholder retiré — émetteur/sous-jacent étaient
+  //  inversés et le PDF déposé pointait vers un autre produit. Définition
+  //  complète décodée de la vraie TS BBVA Series 42575, plus bas : bbvaBnpAthena.)
   // Lu sur termsheet : produit de TAUX à capital garanti (pas un autocall actions).
   // Coupon 8 %/an années 1-3, puis 5 × (pente CMS 30Y−5Y) plancher 0 % ; call
   // émetteur semestriel à 100 % (du 30/09/2026 au 30/09/2036) ; capital 100 % garanti.
@@ -6659,6 +6656,121 @@ const bnpAthenaIndices: Product = {
   termsheetFichier: 'TS - Athena SX5E NKY SPX - XS3153607810.PDF',
 }
 
+// ── XS3287495306 — BBVA « Sweet Autocallable » / Athena sur BNP Paribas ──────
+//    Décodé de la vraie TS BBVA (Series 42575, ST-269940, TS strikée 02/03→13/04/2026,
+//    reçue par email — le PDF « …_XS3287495306_BBVA.pdf » du dossier contenait par
+//    erreur la TS d'un autre produit, Micron). Single sur BNP Paribas, strike =
+//    plus bas close des 2 strike days (89,77). 60 observations mensuelles
+//    autocallables (non-call 12 mois : 1re le 13/04/2027), trigger dégressif
+//    100 %→92 % (−2 %/an), montant de rappel « snowball » croissant 110,00 %→
+//    159,17 % (+0,8334 %/mois ≈ 10 % p.a.). À maturité (13/04/2032) : 160,0048 %
+//    si BNP ≥ 70 % ; 100 % si 50 %–70 % ; sinon (KI < 50 %, européen) niveau final.
+const bbvaBnpAthenaObs = [
+  '2027-04-13', '2027-05-13', '2027-06-14', '2027-07-13', '2027-08-13',
+  '2027-09-13', '2027-10-13', '2027-11-15', '2027-12-13', '2028-01-13',
+  '2028-02-14', '2028-03-13', '2028-04-13', '2028-05-15', '2028-06-13',
+  '2028-07-13', '2028-08-14', '2028-09-13', '2028-10-13', '2028-11-13',
+  '2028-12-13', '2029-01-15', '2029-02-13', '2029-03-13', '2029-04-13',
+  '2029-05-14', '2029-06-13', '2029-07-13', '2029-08-13', '2029-09-13',
+  '2029-10-15', '2029-11-13', '2029-12-13', '2030-01-14', '2030-02-13',
+  '2030-03-13', '2030-04-15', '2030-05-13', '2030-06-13', '2030-07-15',
+  '2030-08-13', '2030-09-13', '2030-10-14', '2030-11-13', '2030-12-13',
+  '2031-01-13', '2031-02-13', '2031-03-13', '2031-04-15', '2031-05-13',
+  '2031-06-13', '2031-07-14', '2031-08-13', '2031-09-15', '2031-10-13',
+  '2031-11-13', '2031-12-15', '2032-01-13', '2032-02-13', '2032-03-15',
+]
+const bbvaBnpAthenaPay = [
+  '2027-04-20', '2027-05-20', '2027-06-21', '2027-07-20', '2027-08-20',
+  '2027-09-20', '2027-10-20', '2027-11-22', '2027-12-20', '2028-01-20',
+  '2028-02-21', '2028-03-20', '2028-04-24', '2028-05-22', '2028-06-20',
+  '2028-07-20', '2028-08-21', '2028-09-20', '2028-10-20', '2028-11-20',
+  '2028-12-20', '2029-01-22', '2029-02-20', '2029-03-20', '2029-04-20',
+  '2029-05-21', '2029-06-20', '2029-07-20', '2029-08-20', '2029-09-20',
+  '2029-10-22', '2029-11-20', '2029-12-20', '2030-01-21', '2030-02-20',
+  '2030-03-20', '2030-04-24', '2030-05-20', '2030-06-20', '2030-07-22',
+  '2030-08-20', '2030-09-20', '2030-10-21', '2030-11-20', '2030-12-20',
+  '2031-01-20', '2031-02-20', '2031-03-20', '2031-04-22', '2031-05-20',
+  '2031-06-20', '2031-07-21', '2031-08-20', '2031-09-22', '2031-10-20',
+  '2031-11-20', '2031-12-22', '2032-01-20', '2032-02-20', '2032-03-22',
+]
+const bbvaBnpAthenaTrig = [
+  100, 100, 100, 100, 100,
+  100, 100, 100, 100, 100,
+  100, 100, 98, 98, 98,
+  98, 98, 98, 98, 98,
+  98, 98, 98, 98, 96,
+  96, 96, 96, 96, 96,
+  96, 96, 96, 96, 96,
+  96, 94, 94, 94, 94,
+  94, 94, 94, 94, 94,
+  94, 94, 94, 92, 92,
+  92, 92, 92, 92, 92,
+  92, 92, 92, 92, 92,
+]
+const bbvaBnpAthenaAer = [
+  110.0008, 110.8342, 111.6676, 112.501, 113.3344,
+  114.1678, 115.0012, 115.8346, 116.668, 117.5014,
+  118.3348, 119.1682, 120.0016, 120.835, 121.6684,
+  122.5018, 123.3352, 124.1686, 125.002, 125.8354,
+  126.6688, 127.5022, 128.3356, 129.169, 130.0024,
+  130.8358, 131.6692, 132.5026, 133.336, 134.1694,
+  135.0028, 135.8362, 136.6696, 137.503, 138.3364,
+  139.1698, 140.0032, 140.8366, 141.67, 142.5034,
+  143.3368, 144.1702, 145.0036, 145.837, 146.6704,
+  147.5038, 148.3372, 149.1706, 150.004, 150.8374,
+  151.6708, 152.5042, 153.3376, 154.171, 155.0044,
+  155.8378, 156.6712, 157.5046, 158.338, 159.1714,
+]
+const bbvaBnpAthena: Product = {
+  id: 'XS3287495306',
+  nom: 'Athena Airbag BNP Paribas',
+  isin: 'XS3287495306',
+  valor: '148075469',
+  emetteur: 'BBVA Global Markets B.V.',
+  garant: 'Banco Bilbao Vizcaya Argentaria, S.A.',
+  notationEmetteur: 'Moody’s A2 / S&P A+',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260 — Express Certificate',
+  devise: 'EUR',
+  nominal: 300_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-04-13',
+  dateEmission: '2026-04-13',
+  dateConstatationFinale: '2032-04-13',
+  dateEcheance: '2032-04-20',
+  frequence: 'mensuel',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris', devise: 'EUR', niveauInitial: 89.77 },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: true,
+    couponPa: 10.0,
+    barriereRappelPct: 100,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+    bonusFinalPct: 160.0048,
+  },
+  observations: buildObservations(bbvaBnpAthenaObs, bbvaBnpAthenaPay, {
+    niveauRappelPct: (n) => bbvaBnpAthenaTrig[n - 1],
+    montantRemboursementPct: (n) => bbvaBnpAthenaAer[n - 1],
+    rappelActifAPartirDe: 1,
+  }),
+  rr: 'LS',
+  clients: ['CURNILLON - 01223'],
+  productType: 'Athena',
+  description:
+    '6Y Athena/Sweet Autocallable BNP Paribas — 60 obs. mensuelles, trigger dégressif 100 %→92 %, montant snowball 110,00 %→159,17 %, final 160,00 % si BNP ≥ 70 %, protégé 100 % jusqu’à 50 %, KI 50 % européenne.',
+  badges: ['Single', 'Snowball', 'Dégressif'],
+  termsheetFichier: 'TS_XS3287495306_42575.pdf',
+}
+
+
 const detailed: Product[] = [
   msQuartz51, citiZcCallable,
   bnpRearmement, bnpFerroviaires, gsVeoliaErametLvmh, bnpSchneiderEnrBouy, cibcMsftGoogl,
@@ -6692,7 +6804,7 @@ const detailed: Product[] = [
   santanderAirbagBnpIntesaCa, santanderAirbagAsmlSgoTte, santanderBearishNdx,
   marexMstr, marexMoncMcVsco,
   barclaysBnpAcaGle, bilModernaPfizerSanofi, bnpAthenaIndices,
-  bbvaSpacex, barclaysBhpFcxGlen,
+  bbvaSpacex, barclaysBhpFcxGlen, bbvaBnpAthena,
   bnpCallableBoosterCsi3251, bnpClnItraxxBalloon,
 ]
 
