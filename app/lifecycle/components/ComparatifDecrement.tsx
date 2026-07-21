@@ -340,7 +340,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
-    { k: 'bbgTicker', label: 'Ticker BBG' },
     { k: 'niveau', label: 'Niveau', align: 'right' },
     { k: 'emetteur', label: 'Émetteur' },
     { k: 'type', label: 'Type' },
@@ -488,9 +487,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                       {ENRICH[r.ticker].nom}
                     </div>
                   )}
-                </td>
-                <td className="px-2 py-1.5 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                  {bbgOf(r) ?? '—'}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right tabular-nums text-slate-700 whitespace-nowrap"
