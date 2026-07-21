@@ -1563,5 +1563,35 @@
   "description": "MerQube Transatlantic Top Sectors Fixed Basket 50 Point Decrement Index. Secteur : Transatlantique. ~10 composants. Indice actions à décrément (50 points/an), sous-jacent d'autocall (obs. trimestrielle, protection 50 %, maturité max 12 ans). Émetteur : BNP Paribas.",
   "source": "Run BNP Paribas — Indices Efficients en Point (2026)",
   "nbComposants": 10
+ },
+ "MQDZDD50": {
+  "nom": "MerQube Eurozone Defense & Digital 10 Basket 50 Point Decrement",
+  "secteur": "Defense / Aerospace",
+  "decrement": "50 points",
+  "source": "Run UBS 21/07/2026"
+ },
+ "MQDTEC50": {
+  "nom": "MerQube Tech Focus 10 Basket 50 Point Decrement Index (EUR)",
+  "secteur": "AI / Tech / Digital",
+  "decrement": "50 points",
+  "source": "Run UBS 21/07/2026"
+ },
+ "MQDCHI50": {
+  "nom": "MerQube China Exposure 10 Basket 50 Point Decrement (EUR) Index",
+  "secteur": "Chine",
+  "decrement": "50 points",
+  "source": "Run UBS 21/07/2026"
+ },
+ "MQDZTS50": {
+  "nom": "MerQube Eurozone Trans-Sector Selection 50 point Decrement Index",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points",
+  "source": "Run UBS 21/07/2026"
+ },
+ "MQDZPS50": {
+  "nom": "MerQube Eurozone Pan-Sector Selection 10 Basket 50 Point Decrement Index (EUR)",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points",
+  "source": "Run UBS 21/07/2026"
  }
 }
