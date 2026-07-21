@@ -21,6 +21,7 @@ const ENRICH = indicesRaw as Record<string, IndexInfo>
 
 interface Row {
   ticker: string
+  bbgTicker?: string | null // ticker Bloomberg complet de l'indice (ex. « EURHGPT Index »)
   emetteur: string
   type: string
   strike: string | null
@@ -333,8 +334,13 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const niveauOf = (r: Row): number | undefined =>
     liveLevels[r.ticker] ?? r.niveau ?? ENRICH[r.ticker]?.niveau
 
+  // Ticker Bloomberg complet : valeur du run émetteur si présente, sinon dérivée
+  // (« <ticker> Index » — tous les sous-jacents de cette page sont des indices).
+  const bbgOf = (r: Row): string | null => r.bbgTicker ?? (r.ticker ? `${r.ticker} Index` : null)
+
   const COLS: { k: keyof Row; label: string; align?: 'right' | 'center' }[] = [
     { k: 'ticker', label: 'Ticker / Indice' },
+    { k: 'bbgTicker', label: 'Ticker BBG' },
     { k: 'niveau', label: 'Niveau', align: 'right' },
     { k: 'emetteur', label: 'Émetteur' },
     { k: 'type', label: 'Type' },
@@ -456,7 +462,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
           <tbody className="divide-y divide-slate-100">
             {list.map((r) => (
               <tr
-                key={`${r.ticker}|${r.type}`}
+                key={`${r.emetteur}|${r.ticker}|${r.type}`}
                 onClick={() => setOpen(r.ticker)}
                 className="cursor-pointer hover:bg-orange-50"
               >
@@ -482,6 +488,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                       {ENRICH[r.ticker].nom}
                     </div>
                   )}
+                </td>
+                <td className="px-2 py-1.5 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                  {bbgOf(r) ?? '—'}
                 </td>
                 <td
                   className="px-2 py-1.5 text-right tabular-nums text-slate-700 whitespace-nowrap"
@@ -563,6 +572,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Seuil init. AC</dt><dd>{sel.seuilInitial ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Fréquence obs</dt><dd>{sel.frequence ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Dégressivité</dt><dd>{sel.degressivite ?? '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Ticker BBG</dt><dd className="font-mono">{bbgOf(sel) ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Strike</dt><dd>{sel.strike ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Maturité max</dt><dd>{sel.maturiteMax ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Run</dt><dd>{sel.dateRun ?? '—'}</dd></div>

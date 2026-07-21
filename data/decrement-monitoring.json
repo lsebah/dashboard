@@ -1,11 +1,18 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-06-22T17:30:00",
+  "lastCheck": "2026-07-21T14:00:00",
   "statut": "ok",
-  "nouveaux": 1,
-  "majs": 2,
+  "nouveaux": 5,
+  "majs": 42,
   "historique": [
+    {
+      "date": "2026-07-21T14:00:00",
+      "nouveaux": 5,
+      "majs": 42,
+      "statut": "ok",
+      "details": "Refresh manuel 21/07 (sync auto inopérante : secrets GRAPH_* absents). 2 runs INDICES traités : BBVA « Indices décrément 21/07 » (spots + coupons, 9 indices × 2 payoffs) et UBS « Athéna & Phoenix 21/07 » (17 indices × 2 payoffs). 42 lignes rafraîchies + 10 nouvelles (5 indices UBS × 2 : MQDZDD50 Defense&Digital, MQDTEC50 Tech Focus, MQDCHI50 China, MQDZTS50 Trans-Sector, MQDZPS50 Pan-Sector). Consolidation des doublons historiques (libellés de type qui dérivaient run après run : « Athena Degressif »/« Athéna Dégressif », « Phoenix Memoire »/« … Degressif ») : 261 → 228 lignes avant refresh, 1 ligne par émetteur×indice×structure (0 collision même-jour). Catalogue : +5 indices (noms verbatim email UBS). Ajout colonne « Ticker BBG ». À noter (non compté) : GS NEW INDEX « MSCI USA/Europe/Asia 30 Select 50pt Decrement » (annonce, pas de run coté). Aucun chiffre inventé."
+    },
     {
       "date": "2026-06-22T17:30:00",
       "nouveaux": 1,
