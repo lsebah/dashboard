@@ -13,6 +13,7 @@ import type {
   Underlying,
 } from './types'
 import { buildObservations, pnlAvecCoupons, rappelConstate } from './lifecycle'
+import { withObservedLevels } from './observed-levels'
 import { portfolioImport } from './portfolio-import'
 import { termsheetUrl, termsheetFile, termsheetMeta } from './termsheets'
 import {
@@ -6902,7 +6903,10 @@ function minimal(isin: string): Product {
 // définitions, du prix/statut/montant et de l'allocation client. Le P&L et la
 // situation en découlent ; rien n'est figé en dur.
 export const products: Product[] = feedIsins.map((isin) => {
-  const base = defByIsin.get(isin) ?? minimal(isin)
+  // Niveaux constatés connus (indices non-Yahoo) fusionnés AVANT toute dérivation
+  // → un rappel constaté sur MXEADT50 & co est détecté au build comme pour un
+  // sous-jacent Yahoo, et le calendrier/suivi s'arrêtent au bon endroit.
+  const base = withObservedLevels(defByIsin.get(isin) ?? minimal(isin))
   const price = priceByIsin[isin]
   const allocs = allocByIsin[isin]
   // Libellé commercial (colonne « Description » de l'Excel) : fait foi pour la

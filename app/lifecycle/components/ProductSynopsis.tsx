@@ -6,6 +6,7 @@ import {
   couponPa,
   prochainEvenement,
   prochaineObservation,
+  rappelConstate,
   couponsEncaissesPct,
   pnlAvecCoupons,
   formatDateFr,
@@ -33,6 +34,9 @@ export default function ProductSynopsis({
   const s = situation(product)
   const next = prochainEvenement(product)
   const nextObs = prochaineObservation(product)
+  // Rappel constaté (autocall déclenché à une observation passée) : on cesse le
+  // monitoring des observations à venir et on affiche la date de rappel.
+  const rc = rappelConstate(product)
   const mois = moisRestants(product)
   const progress = Math.round(avancement(product) * 100)
   const terms = product.terms
@@ -169,6 +173,16 @@ export default function ProductSynopsis({
           <span className="text-slate-400">{mois} mois restants</span>
         </div>
       </div>
+
+      {/* Rappelé (autocall constaté) : monitoring arrêté, on montre la date de rappel */}
+      {rc && (
+        <div className="rounded-md bg-emerald-50 border border-emerald-200 p-2 text-[12px]">
+          <div className="field-label mb-0.5 text-emerald-700">Rappelé le {formatDateFr(rc.date)}</div>
+          <div className="text-slate-600">
+            Autocall constaté à l&apos;observation n°{rc.n} — worst {rc.niveauPct}% ≥ barrière {rc.barrierePct}%.
+          </div>
+        </div>
+      )}
 
       {/* Monitoring de la prochaine observation (depuis le calendrier décodé) */}
       {nextObs &&
