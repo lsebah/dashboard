@@ -141,6 +141,36 @@ Vercel crons (vercel.json)
 
 ## 2. Dysfonctionnements
 
+> ## ⚠️ Vérification contradictoire (11/08) — lire avant d'utiliser ce document
+>
+> Chaque constat ci-dessous a été soumis à un vérificateur indépendant chargé de
+> le **réfuter**. Résultat : **aucun P0 de la première version ne survit tel quel**
+> — 4 réfutés, 4 revus à la baisse, 3 confirmés mais requalifiés P1.
+>
+> **Constats RÉFUTÉS — ne rien fonder dessus :**
+>
+> | # | Pourquoi c'était faux |
+> |---|---|
+> | **2** (calendrier force le worst-of) | `courant[isin].worstOf` est un **nom trompeur** : sa valeur est déjà `aggregateBasket(pcts, p.basket)` (`courant/route.ts:98-100`). Les deux pages lisent le même endpoint. **0 produit mal classé.** |
+> | **6** (indices décrément : `bars.length > 0` neutralise le suivi) | La garde est un court-circuit **sans effet** : il n'existe aucun historique pour ces indices, et `levels:overlay` ne contient qu'un spot — inapte à dater une observation passée. La « correction » n'aurait changé **0 affichage**. Le vrai levier est *opérationnel* : étoffer `lib/observed-levels.ts`. |
+> | **7** (panne KV ⇒ dashboard vide) | KV n'est qu'une **surcouche** : 177/177 produits restent rendus depuis le feed, chaque route a un repli versionné, et l'état dégradé est signalé (« Prix — feed », « ⚠ Sauvegarde échouée »). |
+> | **10** (notification perdue définitivement) | Le cron quotidien rejoue les échecs (il ne marque l'ISIN que si `res.ok`). **0 notification perdue.** |
+> | **14** (`/lifecycle2` n'émet pas d'email) | Mal formulé : `/lifecycle` étant **intégralement redirigé**, le hook est du **code mort pour tous**. Mais les emails partent quand même (cron + bouton « Marquer rappelé »). |
+>
+> **Biais commun** : avoir lu des *noms*, des *gardes apparentes* et des *chemins*
+> sans vérifier **qui consomme quoi**. Une V3 fondée sur ces constats aurait
+> corrigé du code mort.
+>
+> **Le vrai P0 n'était pas dans cet audit** — il était dans les angles morts :
+> trois parseurs de montant divergents sur le nominal client, dont un
+> **multipliait par 100** (`250000,50` → `25 000 050`). ✅ corrigé le 11/08
+> (`lib/montant.ts`, 8 tests de régression).
+>
+> Autres angles morts non vus ici, à traiter en V3 : la **chaîne d'envoi du relevé
+> client s'imprime même quand les fetch ont échoué** et expédie automatiquement le
+> 1er du mois ; **`/print` sans paramètre affiche le relevé de tous les clients**
+> sans authentification ; **il n'existe aucune CI** (ni `npm test` ni lint).
+
 ### P0 — Un chiffre ou un statut FAUX est affiché
 
 | # | Problème | Emplacement | Impact |
