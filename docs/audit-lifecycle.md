@@ -75,18 +75,27 @@ layout ── Lifecycle2Nav      ⚠ AUCUN hook de données : pas de badge notif
             0 fetch · 0 logique · onglet permanent
 
 ════════════════════════════════════════════════════════════════════════════════
- /lifecycle  ◄══ V1 ORPHELINE (aucun lien depuis l'accueil ; URL directe seulement)
-             MAIS seule à porter Santé + Notifications + les emails de rappel
+ /lifecycle  ◄══ V1 ENTIÈREMENT REDIRIGÉE vers /lifecycle2  (next.config.js:9)
+             { source: '/lifecycle/:path*', destination: '/lifecycle2/:path*' }
+             Les pages existent sur disque mais sont INATTEIGNABLES.
 ════════════════════════════════════════════════════════════════════════════════
 layout ── LifecycleNav  (useLiveProducts + useNotifications + SyncIndicator)
        │      └── POST /api/notifications/email ─► Resend
-       ├─ /lifecycle ........... PortfolioExplorer      (= v2/portefeuille)
-       ├─ /lifecycle/calendrier  CalendarView           (= v2/calendrier)
-       ├─ /lifecycle/comparatif  ComparatifDecrement    (= v2/decrement sans bandeau)
-       ├─ /lifecycle/commissions CommissionsView        (= v2/commissions)
-       ├─ /lifecycle/bloomberg   table statique         (≠ v2/bloomberg, homonyme)
-       ├─ /lifecycle/sante ..... DataHealthView   ⚠ N'EXISTE PAS en v2
-       └─ /lifecycle/notifications NotificationsView ⚠ N'EXISTE PAS en v2
+       │      🔴 JAMAIS MONTÉ : layout dans l'arbre redirigé
+       ├─ /lifecycle ............... → /lifecycle2            (existe)
+       ├─ /lifecycle/calendrier ..... → /lifecycle2/calendrier (existe)
+       ├─ /lifecycle/comparatif ..... → /lifecycle2/decrement  (existe)
+       ├─ /lifecycle/commissions .... → /lifecycle2/commissions(existe)
+       ├─ /lifecycle/bloomberg ...... → /lifecycle2/bloomberg  ⚠ page DIFFÉRENTE
+       ├─ /lifecycle/sante .......... → /lifecycle2/sante ......... 🔴 404
+       └─ /lifecycle/notifications .. → /lifecycle2/notifications . 🔴 404
+
+  🔴 CONSÉQUENCE EN CHAÎNE : « Santé des données » et « Notifications » sont
+     INACCESSIBLES, et comme `useNotifications` — seul appelant de
+     POST /api/notifications/email — n'est monté que par LifecycleNav (v1) et
+     NotificationsView (v1), AUCUN EMAIL DE RAPPEL NE PEUT PLUS PARTIR.
+     `SyncIndicator` étant aussi dans ce layout, un échec de sauvegarde KV est
+     invisible partout dans l'application.
 
   Sens des imports : lifecycle2 ──► lifecycle  (jamais l'inverse).
   Les composants sont partagés ; seules les ROUTES sont dupliquées.
@@ -136,6 +145,13 @@ Vercel crons (vercel.json)
 
 | # | Problème | Emplacement | Impact |
 |---|---|---|---|
+| **0a** | **`/lifecycle/*` est redirigé vers `/lifecycle2/*`**, or `sante/` et `notifications/` **n'existent pas** en v2 | `next.config.js:9` | **Deux écrans en 404**, et surtout : `useNotifications` (seul appelant de `POST /api/notifications/email`) n'étant monté que dans l'arbre redirigé, **aucun email de rappel ne peut plus partir**. `SyncIndicator` idem ⇒ échec de sauvegarde invisible partout. |
+| **0b** | **`prixOf` fabrique un prix de 100** pour toute position sans cotation | `lib/cmf-analytics.ts:39-42` | **77 des 184 lignes du feed n'ont pas de prix** ⇒ ~42 % du portefeuille valorisé au pair sans source. Alimente « Valorisation MtM », « P&L latent », « Rdt depuis origine », la colonne Prix. **Violation frontale de « jamais un chiffre n'est inventé ».** |
+| **0c** | **Le statut n'est dérivé qu'au BUILD** : `rappelConstate(base)` ne voit que `observed-levels.ts` (1 ISIN). Les niveaux live n'arrivent qu'au runtime et **rien ne recalcule le statut** | `lib/products.ts:6918` | Un produit rappelé depuis le dernier build reste « vivant » pour tous les filtres — dont `clientReportRows` ⇒ **il est valorisé dans le relevé envoyé au client**. Le cron santé ne détecte aucun rappel live malgré son commentaire. |
+| **0d** | **Table de change codée en dur, repli silencieux `\|\| 1`** | `lib/cmf-analytics.ts:13-30` | Sans source ni date. Convertit tous les nominaux € (encours, P&L, répartitions, risque). Une devise hors table est comptée **1:1 contre l'euro** — pour TRY, erreur ≈ 36×. |
+| **0e** | **P&L « coupons inclus » double-compte les produits *in fine*** : les coupons non détachés sont déjà dans le prix MtM | `lib/lifecycle.ts:362-370, 467-471` | Le relevé client imprime « Coupons versés +X % » pour un produit dont rien n'a été versé. Formule juste seulement pour les produits à coupons réellement détachés. |
+| **0f** | **Le tri du tableau porte sur les valeurs NON augmentées** (prix du feed, sans surcouche KV ni coupons live) alors que les cellules affichent les valeurs augmentées | `PortfolioExplorer.tsx:332-344, 404` | Trier par P&L ou par Last produit un **ordre visiblement faux**. |
+| **0g** | **15 tests ne démarraient jamais** (résolution ESM) — dont ceux couvrant `aggregateBasket`, au cœur du bug n°1 | `lib/basket.test.ts`, `lib/coherence.test.ts` | Le filet de sécurité du calcul de panier était inexistant. **✅ corrigé le 11/08** : `npm test` passe de 21/23 à **36/36**. |
 | 1 | **`/api/lifecycle/niveaux` utilise `Math.min` en dur** au lieu de `aggregateBasket(p.basket)` — contrairement à `/courant` | `app/api/lifecycle/niveaux/route.ts:79,98` vs `courant/route.ts:100,120` | Pour tout panier `equipondere` / `panier` / `best_of`, **la fiche produit et la ligne de portefeuille affichent deux valeurs différentes**. La fiche montre le pire sous-jacent au lieu de la moyenne. |
 | 2 | **Deux définitions d'« autocall probable »** : le calendrier force le worst-of et ignore `p.basket` | `PortfolioExplorer.tsx:80-92` (correct) vs `CalendarView.tsx:172-179` | Un équipondéré est classé « rappel probable » sur une page et pas sur l'autre. |
 | 3 | **CMS 10Y = 3.042 et OAT 10Y = 3.663 codés en dur**, servis avec `marketState:'REGULAR'` et `timestamp: now` | `app/api/markets/route.ts:81-100` | Indiscernables d'une cotation live côté accueil. **Viole la règle « jamais un chiffre inventé ».** |
