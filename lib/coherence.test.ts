@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { clientCode, computeCoherence, type CommissionLine } from './coherence'
-import type { Product } from './types'
+import { clientCode, computeCoherence, type CommissionLine } from './coherence.ts'
+import type { Product } from './types.ts'
 
 const P = (over: Partial<Product>): Product =>
   ({

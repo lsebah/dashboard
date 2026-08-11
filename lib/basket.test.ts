@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { aggregateBasket, basketPerf } from './lifecycle'
-import type { Product, BasketType } from './types'
+import { aggregateBasket, basketPerf } from './lifecycle.ts'
+import type { Product, BasketType } from './types.ts'
 
 const P = (basket: BasketType, perfs: (number | undefined)[]): Product =>
   ({
