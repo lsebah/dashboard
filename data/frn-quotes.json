@@ -267,12 +267,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 2,
-    "coupon": 2.84,
+    "coupon": 2.9,
     "uf": 0.5,
-    "sensitivity": 1.86,
+    "sensitivity": 1.8,
     "baseReoffer": 99.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer per tenor"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-3",
@@ -281,12 +281,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 3,
-    "coupon": 3,
+    "coupon": 3.07,
     "uf": 1,
-    "sensitivity": 2.58,
+    "sensitivity": 2.49,
     "baseReoffer": 99,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-4",
@@ -295,12 +295,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 4,
-    "coupon": 3.23,
+    "coupon": 3.3,
     "uf": 1,
-    "sensitivity": 3.12,
+    "sensitivity": 3.05,
     "baseReoffer": 99,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-5",
@@ -309,12 +309,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 5,
-    "coupon": 3.26,
+    "coupon": 3.34,
     "uf": 1.5,
-    "sensitivity": 3.75,
+    "sensitivity": 3.71,
     "baseReoffer": 98.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-6",
@@ -323,12 +323,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 6,
-    "coupon": 3.43,
+    "coupon": 3.5,
     "uf": 1.5,
-    "sensitivity": 4.22,
+    "sensitivity": 4.16,
     "baseReoffer": 98.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-7",
@@ -337,12 +337,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 7,
-    "coupon": 3.48,
+    "coupon": 3.54,
     "uf": 2,
-    "sensitivity": 4.83,
+    "sensitivity": 4.79,
     "baseReoffer": 98,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-8",
@@ -351,12 +351,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 8,
-    "coupon": 3.52,
+    "coupon": 3.58,
     "uf": 2.5,
-    "sensitivity": 5.42,
+    "sensitivity": 5.4,
     "baseReoffer": 97.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-9",
@@ -365,12 +365,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 9,
-    "coupon": 3.65,
+    "coupon": 3.71,
     "uf": 2.5,
-    "sensitivity": 5.82,
+    "sensitivity": 5.81,
     "baseReoffer": 97.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-10",
@@ -379,12 +379,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 10,
-    "coupon": 3.76,
+    "coupon": 3.83,
     "uf": 2.5,
-    "sensitivity": 6.21,
+    "sensitivity": 6.19,
     "baseReoffer": 97.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-12",
@@ -393,12 +393,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 12,
-    "coupon": 3.92,
+    "coupon": 3.97,
     "uf": 2.5,
-    "sensitivity": 6.8,
+    "sensitivity": 6.84,
     "baseReoffer": 97.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-EUR-CALLABLE-15",
@@ -407,12 +407,12 @@
     "callType": "CALLABLE",
     "callDetail": "NC1Yx1Y",
     "maturityYears": 15,
-    "coupon": 4.09,
+    "coupon": 4.13,
     "uf": 2.5,
-    "sensitivity": 7.63,
+    "sensitivity": 7.69,
     "baseReoffer": 97.5,
-    "runDate": "2026-06-08",
-    "source": "email CIBC EUR 08/06 — Callable FRN Annual NC1"
+    "runDate": "2026-08-10",
+    "source": "email CIBC EUR 10/08 — Callable Fixed Rate Note, Flat Extendable Annual, NC1Yx1Y, reoffer par tenor, Delta (NC1)"
   },
   {
     "id": "CIBC-USD-CALLABLE-2",
