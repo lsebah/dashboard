@@ -17,6 +17,7 @@ import {
   formatPct,
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
+import { parseMontant } from '@/lib/montant'
 import { useLocalProducts } from '@/lib/local-products'
 import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
@@ -434,9 +435,8 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   // Ajuste (localement) le montant investi du compte d'index `idx` d'un produit.
   const commitMontant = (p: Product, idx: number, raw: string) => {
-    const m = Number(raw.replace(/[^\d.,]/g, '').replace(',', '.'))
     const next = allocsOf(p).map((a, j) =>
-      j === idx ? { ...a, montant: Number.isFinite(m) && m > 0 ? m : undefined } : a,
+      j === idx ? { ...a, montant: parseMontant(raw) } : a,
     )
     setClients(p.isin, next)
   }
