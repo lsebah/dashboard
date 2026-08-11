@@ -1635,5 +1635,11 @@
   "secteur": "Transatlantique",
   "decrement": "50 points",
   "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "MXWOEL50": {
+  "nom": "MSCI World Select ETF Linked 50 Points Decrement Index EUR",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points",
+  "source": "Run BofA 10/08/2026"
  }
 }
