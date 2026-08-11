@@ -55,6 +55,23 @@ interface GraphMsgRaw {
   from?: { emailAddress?: { address?: string } }
 }
 
+/**
+ * Normalise un horodatage en instant UTC utilisable dans un `$filter` OData
+ * (Edm.DateTimeOffset). Un horodatage SANS fuseau (« 2026-08-11T07:45:00 ») est
+ * interprété comme UTC et se voit ajouter le « Z ». Renvoie `undefined` si la
+ * valeur est absente ou illisible — dans ce cas on préfère ne PAS filtrer
+ * (on récupère les N derniers messages) plutôt qu'envoyer un filtre invalide.
+ */
+export function odataInstant(value?: string): string | undefined {
+  if (!value) return undefined
+  const v = value.trim()
+  if (!v) return undefined
+  // Déjà zoné (Z ou ±hh:mm) → on ne touche pas, sauf à revalider la date.
+  const zone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(v)
+  const d = new Date(zone ? v : `${v}Z`)
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString()
+}
+
 /** Liste les messages d'un dossier (les plus récents d'abord), optionnellement depuis `since` (ISO). */
 export async function listFolderMessages(opts: {
   mailbox?: string
@@ -72,7 +89,14 @@ export async function listFolderMessages(opts: {
     $orderby: 'receivedDateTime desc',
     $select: 'id,subject,from,receivedDateTime,hasAttachments,bodyPreview',
   })
-  if (opts.since) params.set('$filter', `receivedDateTime ge ${opts.since}`)
+  // Le filtre OData attend un Edm.DateTimeOffset : l'horodatage DOIT porter un
+  // fuseau (« Z » ou ±hh:mm). Or `since` vient de `lastCheck`, qui peut avoir été
+  // saisi à la main sans suffixe (ex. « 2026-08-11T07:45:00 ») — Graph répond
+  // alors 400, le cron passe en erreur et, comme il ne fait volontairement pas
+  // avancer `lastCheck` en cas d'échec, il reste bloqué indéfiniment sur la même
+  // valeur. On normalise donc systématiquement en instant UTC.
+  const since = odataInstant(opts.since)
+  if (since) params.set('$filter', `receivedDateTime ge ${since}`)
 
   const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(mailbox)}/mailFolders/${folderId}/messages?${params}`
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
