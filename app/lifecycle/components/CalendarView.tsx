@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Product, Observation } from '@/lib/types'
-import { formatDateFr, formatPct, formatMontant, rappelConstate } from '@/lib/lifecycle'
+import { formatDateFr, formatPct, formatMontant, rappelConstate, dateRappel } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
+import { useLiveProducts } from '@/lib/use-live-products'
 import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
 import Modal from './Modal'
@@ -71,19 +72,24 @@ export default function CalendarView({ products }: { products: Product[] }) {
 
   // Allocations clients (localStorage) → repli sur les allocations/clients du feed.
   const { map, statut: statutMap, noms, setStatut } = useAllocations()
+  // Produits AUGMENTÉS des niveaux worst-of constatés (Yahoo/Bloomberg) : sans ça,
+  // un rappel constaté sur un sous-jacent Yahoo (ex. AMD/Intel/NVDA) resterait
+  // invisible au calendrier (ses observations passées n'auraient pas de niveau),
+  // et il continuerait de peupler le calendrier après son rappel.
+  const live = useLiveProducts(products)
   // Produits AVEC la surcharge locale (statut « rappelé/vendu… » + renommage)
   // appliquée : sinon un « Marquer rappelé » cliqué ici ne se reflèterait jamais
   // dans le synopsis (qui lisait le produit statique). Miroir de PortfolioExplorer.
   const prods = useMemo(
     () =>
-      products.map((p) => {
+      live.map((p) => {
         const s = statutMap[p.isin]
         const n = noms[p.isin]
         return s || n
           ? { ...p, statut: s ?? p.statut, nom: n ?? p.nom, description: n ?? p.description }
           : p
       }),
-    [products, statutMap, noms],
+    [live, statutMap, noms],
   )
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
@@ -119,11 +125,16 @@ export default function CalendarView({ products }: { products: Product[] }) {
     const out: Ev[] = []
     for (const p of prods) {
       const clos = CLOS.has(p.statut ?? '')
+      // Date-butoir de monitoring : si le rappel est CONSTATÉ (autocall déclenché
+      // à une observation passée), le produit est remboursé à cette date → aucune
+      // observation postérieure n'est affichée. À défaut de niveau constaté (ex.
+      // rappel marqué manuellement sans date), on retombe sur « pas d'obs future ».
+      const coupe = dateRappel(p) ?? (clos ? today : undefined)
       const obs = p.observations ?? []
       const lastN = obs.reduce((m, o) => Math.max(m, o.n), 0)
       for (const o of obs) {
         if (!o.dateObservation) continue
-        if (clos && o.dateObservation > today) continue // clôturé : pas d'observation future
+        if (coupe && o.dateObservation > coupe) continue // rappelé/clôturé : rien après le rappel
         out.push({
           product: p,
           obs: o,

@@ -25,21 +25,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      # Boucle de contrôle : sans les secrets GRAPH_*, la synchro tournait « en
-      # succès » en ne faisant RIEN (skip silencieux). On échoue désormais
-      # explicitement pour que l'absence de configuration soit visible.
+      # Boucle de contrôle : sans les secrets GRAPH_*, la synchro ne peut RIEN
+      # faire. Plutôt que d'échouer (mail « run failed » quotidien) ou de skipper
+      # en silence (index figé sans qu'on le sache), on SKIP proprement : le run
+      # reste VERT, mais un ::warning + un résumé de job signalent l'absence de
+      # secrets. Dès que Lilian les pose, la synchro repart d'elle-même.
       - name: Vérifier les secrets Graph
+        id: secrets
         env:
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
         run: |
           if [ -z "$GRAPH_TENANT_ID" ] || [ -z "$GRAPH_CLIENT_ID" ] || [ -z "$GRAPH_CLIENT_SECRET" ]; then
-            echo "::error::Secrets GRAPH_TENANT_ID / GRAPH_CLIENT_ID / GRAPH_CLIENT_SECRET absents des secrets GitHub Actions (Settings → Secrets and variables → Actions). La grille FRN ne peut pas se rafraîchir sans eux."
-            exit 1
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Secrets GRAPH_* absents (Settings → Secrets and variables → Actions) — refresh FRN ignoré. Le run reste vert et reprendra dès que les secrets seront posés."
+            {
+              echo "### ⏭️ Refresh FRN ignoré — secrets Graph absents"
+              echo "Les secrets **GRAPH_TENANT_ID / GRAPH_CLIENT_ID / GRAPH_CLIENT_SECRET** ne sont pas configurés dans GitHub. Rien à corriger côté code : la synchro reprendra automatiquement une fois les secrets posés."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
-      - run: npm install --no-save xlsx
+      - if: steps.secrets.outputs.skip != 'true'
+        run: npm install --no-save xlsx
       - name: Mettre à jour la grille FRN depuis les derniers runs (email)
+        if: steps.secrets.outputs.skip != 'true'
         env:
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
@@ -52,6 +63,7 @@ jobs:
         run: node scripts/sync-frn-runs.mjs
       - name: Ouvrir une PR si la grille FRN a changé
         id: cpr
+        if: steps.secrets.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'chore: sync grille FRN depuis les runs email'

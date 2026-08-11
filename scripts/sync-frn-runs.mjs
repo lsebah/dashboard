@@ -31,7 +31,13 @@ const {
   GRAPH_CLIENT_ID,
   GRAPH_CLIENT_SECRET,
   GRAPH_USER = 'l.sebah@cmf.finance',
-  FRN_MAIL_FOLDER = 'Exchange FRN',
+  // Nom RÉEL du dossier Outlook : « FRN », sous-dossier de « Emetteurs »
+  // (findFolderId descend récursivement, le chemin parent n'est pas requis).
+  // L'ancien défaut « Exchange FRN » n'existait PAS dans la boîte : la recherche
+  // échouait systématiquement et le script retombait sur un $search global qui
+  // ramassait n'importe quoi (y compris les mails GitHub « Run failed: Sync FRN »)
+  // → grille FRN jamais mise à jour depuis le 10/06.
+  FRN_MAIL_FOLDER = 'FRN',
   FRN_MAIL_FOLDER_ID,
   FRN_MAIL_QUERY = 'FRN OR "Taux Fixe" OR "Fixed Rate"',
   FRN_MAIL_SENDER,
@@ -128,7 +134,13 @@ async function runMessages(tok, user) {
     const page = await graph(tok, `/users/${user}/messages?$search=${encodeURIComponent(`"${FRN_MAIL_QUERY}"`)}&${sel}&$top=${top}`)
     msgs = (page.value ?? []).sort((a, b) => (a.receivedDateTime < b.receivedDateTime ? 1 : -1))
   }
-  return msgs.filter((m) => !FRN_MAIL_SENDER || (m.from?.emailAddress?.address ?? '').includes(FRN_MAIL_SENDER))
+  // Garde-fou : le repli $search ratisse toute la boîte et peut ramener des mails
+  // automatiques contenant « FRN » (notifications GitHub « Run failed: Sync FRN
+  // runs »…). Ils n'ont aucun prix à parser et évincent de vrais runs (top 10).
+  const AUTOMATE = /(notifications@github|noreply|no-reply|mailer-daemon)/i
+  return msgs
+    .filter((m) => !AUTOMATE.test(m.from?.emailAddress?.address ?? ''))
+    .filter((m) => !FRN_MAIL_SENDER || (m.from?.emailAddress?.address ?? '').includes(FRN_MAIL_SENDER))
 }
 
 // ── Parsing texte (corps du mail) — miroir de lib/frn/parser.ts ─────────────

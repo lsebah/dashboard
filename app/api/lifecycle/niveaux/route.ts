@@ -3,6 +3,7 @@ import { products } from '@/lib/products'
 import { yahooSymbol } from '@/lib/underlyings'
 import { fetchHistory, closeAt, lastClose, type Bar } from '@/lib/yahoo'
 import { kvConfigured, kvGet } from '@/lib/kv'
+import { aggregateBasket } from '@/lib/lifecycle'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -74,9 +75,14 @@ export async function GET(req: Request) {
         : null
     return { nom: c.nom, pct }
   })
+  // Agrégation du panier selon p.basket (worst-of/single → min, best_of → max,
+  // équipondéré/panier → MOYENNE) — identique à /api/lifecycle/courant. Un
+  // Math.min forcé ici affichait, sur la fiche produit, le pire sous-jacent au
+  // lieu de la moyenne pour un équipondéré : la fiche et la ligne de portefeuille
+  // montraient deux valeurs différentes pour le même produit.
   const worstOf = sj.some((x) => x.pct === null)
     ? null
-    : Math.min(...sj.map((x) => x.pct as number))
+    : aggregateBasket(sj.map((x) => x.pct as number), p.basket)
 
   // Worst-of constaté aux observations passées (suivi des coupons) : nécessite
   // TOUS les sous-jacents (strike + historique). Sinon on saute le suivi.
@@ -87,17 +93,21 @@ export async function GET(req: Request) {
     for (const o of p.observations ?? []) {
       const d = o.dateObservation
       if (d > today) continue
-      let worst: number | undefined
+      // Niveau du PANIER à cette observation : même agrégation que le niveau
+      // courant (respecte p.basket). C'est ce chiffre qui pilote le suivi des
+      // coupons ET la détection de rappel — un min forcé sur un équipondéré
+      // faisait manquer des coupons et rater des rappels.
+      const perfs: number[] = []
       for (const c of cols) {
         const cl = closeAt(c.bars, d)
         if (typeof cl !== 'number') {
-          worst = undefined
+          perfs.length = 0
           break
         }
-        const perf = (cl / (c.strike as number)) * 100
-        worst = worst === undefined ? perf : Math.min(worst, perf)
+        perfs.push((cl / (c.strike as number)) * 100)
       }
-      if (typeof worst === 'number') niveaux[d] = Math.round(worst * 100) / 100
+      if (perfs.length === cols.length && perfs.length > 0)
+        niveaux[d] = Math.round(aggregateBasket(perfs, p.basket) * 100) / 100
     }
   }
 

@@ -85,11 +85,15 @@ export function basketPerf(product: Product): number | undefined {
   return aggregateBasket(perfs, product.basket)
 }
 
-/** Prochaine observation à venir (>= aujourd'hui). */
+/** Prochaine observation à venir (>= aujourd'hui). Un produit dont le rappel est
+ *  CONSTATÉ (autocall déclenché à une observation passée) est remboursé : il n'a
+ *  plus d'observation à venir ⇒ on renvoie `undefined` (on cesse de le monitorer).
+ */
 export function prochaineObservation(
   product: Product,
   now: Date = new Date(),
 ): Observation | undefined {
+  if (rappelConstate(product, now)) return undefined
   const today = now.toISOString().slice(0, 10)
   return (product.observations ?? []).find((o) => o.dateObservation >= today)
 }
@@ -381,10 +385,15 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     (t?.kind === 'autocall' && t.sens === 'inverse') ||
     (t?.kind === 'rates' && t.sens === 'bearish')
   const today = now.toISOString().slice(0, 10)
+  // Rappelé (autocall constaté) : le produit est remboursé à cette observation ;
+  // on ne suit plus les coupons des observations POSTÉRIEURES (elles n'existent
+  // plus). Le coupon de l'observation de rappel, lui, reste dû.
+  const dr = rappelConstate(product, now)?.date
   let mem = 0
   let cumul = 0
   const out: CouponLigne[] = []
   for (const o of product.observations ?? []) {
+    if (dr && o.dateObservation > dr) break
     const cpn = o.couponPct
     if (typeof cpn !== 'number') continue
     const past = o.dateObservation <= today
@@ -521,6 +530,13 @@ export function rappelConstate(
       return { n: o.n, date: o.dateObservation, niveauPct: niveau!, barrierePct: barriere! }
   }
   return undefined
+}
+
+/** Date du rappel constaté (autocall déclenché à une observation passée), ou
+ *  `undefined`. Sert à borner le monitoring : aucune observation postérieure à
+ *  cette date n'est active (produit remboursé). */
+export function dateRappel(product: Product, now: Date = new Date()): string | undefined {
+  return rappelConstate(product, now)?.date
 }
 
 /** Amplitude de dégressivité de la barrière de rappel (départ → fin), si step-down. */

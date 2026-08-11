@@ -1,41 +1,55 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-07-21T14:00:00",
+  "lastCheck": "2026-08-11T09:45:00.000Z",
   "statut": "ok",
-  "nouveaux": 5,
-  "majs": 42,
+  "nouveaux": 33,
+  "majs": 69,
   "historique": [
     {
-      "date": "2026-07-21T14:00:00",
+      "date": "2026-08-11T09:45:00.000Z",
+      "nouveaux": 22,
+      "majs": 7,
+      "statut": "ok",
+      "details": "Rattrapage (suite) 11/08 — run CITI « Run de prix hebdomadaire » du 11/08/2026 (prix indicatifs au 10/08, notionnel ~2 Mio EUR) : 16 indices en Athéna Dégressif + 13 en Phoenix Mémoire, avec leurs spots. 7 lignes rafraîchies + 22 nouvelles ; Citi passe de 11 lignes figées au 24/02 à 33 lignes dont 29 au 11/08. Paramètres recopiés des entêtes : 12 ans, EUR, constatation initiale 11-Nov-2026, dégressivité 0,75 %/trim, observation trimestrielle, Strike Forward, PDI 50 %, format CGMFL Note, UF 6,00 % ; Phoenix : barrière de coupon 75 %. Le run n'indique NI seuil initial d'autocall NI période de non-call : laissés à null sur les nouvelles lignes (jamais inventés). Restent au 24/02 les 4 lignes que le run ne cote pas : Phoenix sur MEHEALTH et MXCORE50, et les tickers hérités MBANKD et MOIL50. NON INTÉGRABLE : run SG « Taux Semaine du 03/08 » — les grilles de prix sont des images / un lien externe, aucun chiffre n'est présent dans le corps du mail. Hors périmètre indices : UBS 03-11/08 et BBVA 05/08 (mono-action), Citi mono-action (Renault, Vonovia, Carrefour…)."
+    },
+    {
+      "date": "2026-08-11T07:45:00.000Z",
+      "nouveaux": 11,
+      "majs": 62,
+      "statut": "ok",
+      "details": "Rattrapage manuel 11/08 (sync auto inopérante : secrets GRAPH_* absents). DEUX runs INDICES du 10/08/2026 intégrés — 73 lignes au 10/08, 138/249 lignes ont désormais un niveau. (1) BNPP « Indices Efficients en Point » : 41 indices (coupons + cours), 32 rafraîchies + 9 nouvelles (MTINVEST, EZBWIZ50, MXEURO20, EZSD50, GOLDMS50, COSMOS, MXAINFRA, CYBER, SOLTSD50) ; paramètres de l'entête : 10 ans, strike forward t+3 mois, rappel trimestriel après 1 an, seuil 100 % puis −0,75 % p.q., protection −50 %, UF 5 %. (2) BofA « Autocall Indices Sectoriels/Thématiques » : 16 indices × 2 structures (Athéna + Phoenix Mémoire), 30 rafraîchies + 2 nouvelles (MXWOEL50) ; paramètres : EMTN MLBV, 12 ans, strike Close, PDI 50 %, autocall 100 % après T4 puis −1 %/trim (Phoenix : floor 80 %), barrière coupon 80 % avec mémoire, UF 5 %. Catalogue +8 indices. ANOMALIE DE CLASSEMENT CONSTATÉE : depuis le 21/07, les runs décrément n'arrivent plus dans le sous-dossier Outlook « Emetteurs ▸ Décrement » mais restent dans le parent « Emetteurs » — c'est pourquoi le dernier run vu par la veille datait du 21/07 alors que des runs du 03/08 et 10/08 étaient en boîte. Non intégrés (hors périmètre du comparatif indices) : UBS 03/08 et BBVA 05/08, qui portent sur des mono-actions. Aucun chiffre inventé."
+    },
+    {
+      "date": "2026-07-21T14:00:00.000Z",
       "nouveaux": 5,
       "majs": 42,
       "statut": "ok",
       "details": "Refresh manuel 21/07 (sync auto inopérante : secrets GRAPH_* absents). 2 runs INDICES traités : BBVA « Indices décrément 21/07 » (spots + coupons, 9 indices × 2 payoffs) et UBS « Athéna & Phoenix 21/07 » (17 indices × 2 payoffs). 42 lignes rafraîchies + 10 nouvelles (5 indices UBS × 2 : MQDZDD50 Defense&Digital, MQDTEC50 Tech Focus, MQDCHI50 China, MQDZTS50 Trans-Sector, MQDZPS50 Pan-Sector). Consolidation des doublons historiques (libellés de type qui dérivaient run après run : « Athena Degressif »/« Athéna Dégressif », « Phoenix Memoire »/« … Degressif ») : 261 → 228 lignes avant refresh, 1 ligne par émetteur×indice×structure (0 collision même-jour). Catalogue : +5 indices (noms verbatim email UBS). Ajout colonne « Ticker BBG ». À noter (non compté) : GS NEW INDEX « MSCI USA/Europe/Asia 30 Select 50pt Decrement » (annonce, pas de run coté). Aucun chiffre inventé."
     },
     {
-      "date": "2026-06-22T17:30:00",
+      "date": "2026-06-22T17:30:00.000Z",
       "nouveaux": 1,
       "majs": 2,
       "statut": "ok",
       "details": "MAJ 22/06 — 2 runs traités : BNPP « Indices Efficients en Point » (34 indices) et BofA « Athéna / Phoenix Mémoire » (15 indices). Comparatif : 47 coupons rafraîchis + 17 nouvelles lignes (BNPP 12, BofA 5). Catalogue : +1 indice (TITANC50) ; réconciliation ticker MQDEEM50P→MQDEM50P (run BofA fait foi)."
     },
     {
-      "date": "2026-06-15T12:30:00",
+      "date": "2026-06-15T12:30:00.000Z",
       "nouveaux": 0,
       "majs": 1,
       "statut": "ok",
       "details": "Rafraîchissement complet 15/06 — Décrément : 1 run GS (Autocall Actions Decrement 15/06), 0 nouvel indice (1 idée BNP non comptée). FRN : 0 nouveau run depuis le 11/06. Module iTraxx créé (tranches CLN Main/Crossover)."
     },
     {
-      "date": "2026-06-11T13:25:00",
+      "date": "2026-06-11T13:25:00.000Z",
       "nouveaux": 0,
       "majs": 6,
       "statut": "ok",
       "details": "Scan initial (7 j) : BBVA 10/06, BBVA 09/06, UBS 08/06, BofA 08/06, GS Indices Optimisés 08/06, GS Actions Decrement 08/06. Aucune nouvelle TS/indice ces 7 jours (dernier NEW INDEX GS : 03/06)."
     },
     {
-      "date": "2026-06-11T14:05:00",
+      "date": "2026-06-11T14:05:00.000Z",
       "nouveaux": 0,
       "majs": 6,
       "statut": "ok",

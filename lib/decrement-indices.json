@@ -1593,5 +1593,53 @@
   "secteur": "Multi-Secteurs",
   "decrement": "50 points",
   "source": "Run UBS 21/07/2026"
+ },
+ "MTINVEST": {
+  "nom": "Morningstar Transatlantic Industry Leaders Select 50 D50 Pts",
+  "secteur": "Transatlantique",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "EZSD50": {
+  "nom": "Euronext Eurozone Sector Selection D50 Pts",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "GOLDMS50": {
+  "nom": "Solactive North America Gold Miners Top 20 50 Decrement June 2026",
+  "secteur": "Basic Resources",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "COSMOS": {
+  "nom": "MerQube Space Industry Leaders 10 Fixed Basket 50 Pts D",
+  "secteur": "Industrie Spatiale",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "MXAINFRA": {
+  "nom": "MSCI Global AI Infrastructure Select 20 D50 Pts",
+  "secteur": "AI / Tech / Digital",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "CYBER": {
+  "nom": "Bloomberg Cybersecurity Aggregate D50 Pts",
+  "secteur": "AI / Tech / Digital",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "SOLTSD50": {
+  "nom": "Solactive Transatlantic Equity Select 50 Pts D",
+  "secteur": "Transatlantique",
+  "decrement": "50 points",
+  "source": "Run BNPP Indices Efficients en Point 10/08/2026"
+ },
+ "MXWOEL50": {
+  "nom": "MSCI World Select ETF Linked 50 Points Decrement Index EUR",
+  "secteur": "Multi-Secteurs",
+  "decrement": "50 points",
+  "source": "Run BofA 10/08/2026"
  }
 }

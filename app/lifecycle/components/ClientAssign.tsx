@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { ClientAlloc } from '@/lib/allocations'
 import type { ProductStatus } from '@/lib/types'
 import { parseTermsheetName } from '@/lib/termsheets'
+import { parseMontant } from '@/lib/montant'
 
 const STATUTS: { value: ProductStatus; label: string; cls: string }[] = [
   { value: 'vivant', label: 'Vivant', cls: 'bg-emerald-600' },
@@ -47,10 +48,9 @@ export default function ClientAssign({
   const add = () => {
     const c = client.trim()
     if (!c) return
-    const m = Number(montant.replace(/[^\d.]/g, ''))
     const next = [
       ...allocs.filter((a) => a.client !== c),
-      { client: c, montant: Number.isFinite(m) && m > 0 ? m : undefined },
+      { client: c, montant: parseMontant(montant) },
     ]
     onChange(next)
     setClient('')
@@ -61,12 +61,7 @@ export default function ClientAssign({
 
   // Ajuste le montant investi d'un compte existant (saisie locale).
   const adjust = (c: string, raw: string) => {
-    const m = Number(raw.replace(/[^\d.,]/g, '').replace(',', '.'))
-    onChange(
-      allocs.map((a) =>
-        a.client === c ? { ...a, montant: Number.isFinite(m) && m > 0 ? m : undefined } : a,
-      ),
-    )
+    onChange(allocs.map((a) => (a.client === c ? { ...a, montant: parseMontant(raw) } : a)))
   }
   const cur = statut ?? 'vivant'
 
