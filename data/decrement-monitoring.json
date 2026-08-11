@@ -1,11 +1,18 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-07-21T14:00:00",
+  "lastCheck": "2026-08-11T07:45:00",
   "statut": "ok",
-  "nouveaux": 5,
-  "majs": 42,
+  "nouveaux": 9,
+  "majs": 32,
   "historique": [
+    {
+      "date": "2026-08-11T07:45:00",
+      "nouveaux": 9,
+      "majs": 32,
+      "statut": "ok",
+      "details": "Rattrapage manuel 11/08 (sync auto inopérante : secrets GRAPH_* absents). Run BNPP « Indices Efficients en Point » du 10/08/2026 intégré : 41 indices (coupons + cours), 32 lignes rafraîchies + 9 nouvelles (MTINVEST, EZBWIZ50, MXEURO20, EZSD50, GOLDMS50, COSMOS, MXAINFRA, CYBER, SOLTSD50) ; catalogue +7 indices. Paramètres du run recopiés de l'entête : maturité 10 ans, strike forward t+3 mois, rappel trimestriel après 1 an, seuil 100 % puis −0,75 % p.q., protection −50 %, UF 5 %. ANOMALIE DE CLASSEMENT CONSTATÉE : depuis le 21/07, les runs décrément n'arrivent plus dans le sous-dossier Outlook « Emetteurs ▸ Décrement » mais restent dans le parent « Emetteurs » — c'est pourquoi le dernier run vu par la veille datait du 21/07 alors que des runs du 03/08 et 10/08 existaient. Restent à intégrer : BofA 10/08 (indices sectoriels), UBS 03/08 (mono action), BBVA 05/08 (stock). Aucun chiffre inventé."
+    },
     {
       "date": "2026-07-21T14:00:00",
       "nouveaux": 5,
