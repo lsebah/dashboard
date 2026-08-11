@@ -1,11 +1,18 @@
 {
   "frequence": "quotidien à 19h00",
   "dossier": "Outlook ▸ Emetteurs ▸ Décrement (l.sebah@cmf.finance)",
-  "lastCheck": "2026-08-11T07:45:00.000Z",
+  "lastCheck": "2026-08-11T09:45:00.000Z",
   "statut": "ok",
-  "nouveaux": 11,
-  "majs": 62,
+  "nouveaux": 33,
+  "majs": 69,
   "historique": [
+    {
+      "date": "2026-08-11T09:45:00.000Z",
+      "nouveaux": 22,
+      "majs": 7,
+      "statut": "ok",
+      "details": "Rattrapage (suite) 11/08 — run CITI « Run de prix hebdomadaire » du 11/08/2026 (prix indicatifs au 10/08, notionnel ~2 Mio EUR) : 16 indices en Athéna Dégressif + 13 en Phoenix Mémoire, avec leurs spots. 7 lignes rafraîchies + 22 nouvelles ; Citi passe de 11 lignes figées au 24/02 à 33 lignes dont 29 au 11/08. Paramètres recopiés des entêtes : 12 ans, EUR, constatation initiale 11-Nov-2026, dégressivité 0,75 %/trim, observation trimestrielle, Strike Forward, PDI 50 %, format CGMFL Note, UF 6,00 % ; Phoenix : barrière de coupon 75 %. Le run n'indique NI seuil initial d'autocall NI période de non-call : laissés à null sur les nouvelles lignes (jamais inventés). Restent au 24/02 les 4 lignes que le run ne cote pas : Phoenix sur MEHEALTH et MXCORE50, et les tickers hérités MBANKD et MOIL50. NON INTÉGRABLE : run SG « Taux Semaine du 03/08 » — les grilles de prix sont des images / un lien externe, aucun chiffre n'est présent dans le corps du mail. Hors périmètre indices : UBS 03-11/08 et BBVA 05/08 (mono-action), Citi mono-action (Renault, Vonovia, Carrefour…)."
+    },
     {
       "date": "2026-08-11T07:45:00.000Z",
       "nouveaux": 11,
