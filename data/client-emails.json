@@ -1,7 +1,7 @@
 {
   "_README": "Mapping CODE CLIENT -> email pour l envoi du reporting par client (mode --per-client). Remplis chaque adresse. Les clients laisses vides sont IGNORES (jamais d envoi a l aveugle). Le code doit correspondre EXACTEMENT au libelle client du portefeuille.",
   "ABACUS - 05268": "nicolas.courivaud@abacuspatrimoine.com",
-  "ALVES - 06001": "",
+  "ALVES - 06001": "contact.adis74@gmail.com",
   "APPN - 05277": "scome@appn.asso.fr, driboud.appn@wanadoo.fr",
   "ARCHE - 05272": "p.perrault@arche-associes.com, s.fersi@arche-associes.com",
   "B CAPITAL - 05232": "abcoquelin@gmail.com",
