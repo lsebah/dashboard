@@ -6,6 +6,7 @@ name: Sync issuer runs (emails → Comparatif)
 on:
   schedule:
     - cron: '0 6 * * *' # une fois par jour (06:00 UTC) — rafraîchit les prix/upfronts
+    - cron: '0 8 * * 2' # refresh hebdo demandé : MARDI 08:00 UTC = 10:00 Paris (heure d'été)
   workflow_dispatch:
 
 permissions:
@@ -27,7 +28,9 @@ jobs:
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
           GRAPH_USER: ${{ secrets.GRAPH_USER }}
-          MAIL_QUERY: ${{ secrets.MAIL_QUERY }}
+          MAIL_FOLDER: ${{ vars.MAIL_FOLDER }}
+          MAIL_DOMAINS: ${{ vars.MAIL_DOMAINS }}
+          MAIL_KEYWORDS: ${{ vars.MAIL_KEYWORDS }}
           MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
         run: node scripts/sync-issuer-runs.mjs
       - name: Télécharger les fiches émetteurs (PDF) depuis OneDrive « Fiches Décrements »

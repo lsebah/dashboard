@@ -1,8 +1,8 @@
 name: Sync FRN runs (emails → grille FRN)
 
-# Une fois par jour ouvré + refresh hebdo garanti le lundi matin : lit les mails
-# de run FRN (Fixed Rate Note) classés dans le sous-dossier Outlook
-# « Exchange FRN », parse les prix et met à jour data/frn-quotes.json (run le
+# Une fois par jour ouvré + refresh hebdo garanti le MARDI matin : lit les mails
+# de run FRN (Fixed Rate Note) du sous-dossier Outlook « Emetteurs ▸ FRN »,
+# parse les prix et met à jour data/frn-quotes.json (run le
 # plus récent par couple émetteur/devise/type/maturité). La PR de données est
 # MERGÉE AUTOMATIQUEMENT (fichier data/ auto-généré, pas de code) → la page FRN
 # se rafraîchit sans intervention. Nécessite les secrets Azure AD + la
@@ -10,7 +10,7 @@ name: Sync FRN runs (emails → grille FRN)
 on:
   schedule:
     - cron: '0 6 * * 1-5' # 1× par jour ouvré (06:00 UTC ≈ 08:00 Paris, lun.→ven.)
-    - cron: '0 8 * * 1' # refresh hebdo demandé : lundi 08:00 UTC = 10:00 Paris (heure d'été)
+    - cron: '0 8 * * 2' # refresh hebdo demandé : MARDI 08:00 UTC = 10:00 Paris (heure d'été)
   workflow_dispatch:
 
 permissions:
@@ -68,7 +68,7 @@ jobs:
         with:
           commit-message: 'chore: sync grille FRN depuis les runs email'
           title: 'Sync FRN runs (emails → grille FRN)'
-          body: 'Mise à jour automatique de data/frn-quotes.json depuis les mails de run FRN (dossier « Exchange FRN »).'
+          body: 'Mise à jour automatique de data/frn-quotes.json depuis les mails de run FRN (dossier Outlook « Emetteurs ▸ FRN »).'
           branch: auto/frn-runs-sync
           add-paths: data/frn-quotes.json
       # Fichier de données auto-généré → merge immédiat (refresh réellement

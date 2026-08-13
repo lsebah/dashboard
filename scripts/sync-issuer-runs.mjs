@@ -3,16 +3,18 @@
 //  Met à jour la page « Comparatif » (indices décrément / infos émetteurs) à
 //  partir du dernier mail « Run Décrement / Comparatif Émetteurs » reçu.
 //
-//  1. cherche le mail le plus récent (objet ~ Décrement/Comparatif Émetteurs)
-//     avec une pièce jointe Excel (Microsoft Graph, Mail.Read) ;
+//  1. sélectionne les runs dans « Emetteurs » ET ses sous-dossiers, par
+//     DOMAINE émetteur + mot-clé d'objet (indépendant du classement manuel) ;
 //  2. télécharge le .xlsx, le parse (mêmes colonnes que le comparatif) ;
 //  3. réécrit lib/decrement-comparatif.json → la page Comparatif se met à jour.
 //
 //  Variables d'environnement (secrets GitHub Actions) :
 //    GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET → app Azure AD
 //    GRAPH_USER          → boîte à lire (ex. l.sebah@cmf.finance)
-//    MAIL_QUERY          → mots-clés objet (défaut "Décrement OR Comparatif")
-//    MAIL_SENDER         → (optionnel) filtre expéditeur (ex. prix@cmf.finance)
+//    MAIL_FOLDER         → dossier racine (défaut « Emetteurs », sous-dossiers inclus)
+//    MAIL_DOMAINS        → domaines émetteurs, séparés par des virgules
+//    MAIL_KEYWORDS       → mots-clés d'objet, séparés par des virgules
+//    MAIL_SENDER         → (optionnel) restreint à un expéditeur précis
 //
 //  Permission Graph requise : Mail.Read (application) — consentement admin.
 //  Dépendance : xlsx (SheetJS) — installée par le workflow.
@@ -25,7 +27,20 @@ const {
   GRAPH_CLIENT_ID,
   GRAPH_CLIENT_SECRET,
   GRAPH_USER = 'l.sebah@cmf.finance',
-  MAIL_QUERY = 'Décrement OR Comparatif',
+  // Dossier RACINE de la veille émetteurs. On lit « Emetteurs » ET ses
+  // sous-dossiers : le classement dans « Emetteurs ▸ Décrement » est manuel et
+  // s'est arrêté le 21/07/2026 sans que rien ne le signale — trois semaines de
+  // runs (03/08, 10/08, 11/08) sont restées invisibles. La synchro ne doit plus
+  // dépendre d'un tri à la main.
+  MAIL_FOLDER = 'Emetteurs',
+  // Domaines des desks émetteurs qui envoient des runs d'indices à décrément.
+  // Filtrer par DOMAINE et non par adresse : l'expéditeur BBVA est passé de
+  // theodore.jankowiak à prasit.suryadhay sans préavis.
+  MAIL_DOMAINS = '@bbva.com,@ubs.com,@bnpparibas.com,@bofa.com,@citi.com,@gs.com',
+  // Mots-clés d'objet. Aucun mot commun n'existe entre tous les runs
+  // (« Indices Efficients », « Indices Sectoriels », « Run de prix hebdomadaire »…) :
+  // c'est le couple DOMAINE + MOT-CLÉ qui cadre, pas le mot-clé seul.
+  MAIL_KEYWORDS = 'decrement,décrément,indices efficients,indices sectoriels,prix hebdomadaire',
   MAIL_SENDER,
 } = process.env
 
@@ -60,18 +75,68 @@ async function graph(tok, path) {
 }
 
 // Cherche le mail le plus récent (avec PJ) correspondant aux mots-clés.
-async function latestRunMessage(tok) {
+// Retrouve un dossier par nom, en descendant récursivement l'arborescence.
+async function findFolderId(tok, user, name) {
+  const target = String(name).trim().toLowerCase()
+  const queue = [`/users/${user}/mailFolders?$top=100&$select=id,displayName`]
+  let guard = 0
+  while (queue.length && guard++ < 200) {
+    const page = await graph(tok, queue.shift())
+    for (const f of page.value ?? []) {
+      if (String(f.displayName ?? '').trim().toLowerCase() === target) return f.id
+      queue.push(`/users/${user}/mailFolders/${f.id}/childFolders?$top=100&$select=id,displayName`)
+    }
+    if (page['@odata.nextLink']) queue.push(page['@odata.nextLink'])
+  }
+  return null
+}
+
+// Ids du dossier racine ET de ses sous-dossiers (Décrement, FRN, CLN…).
+async function folderTree(tok, user, rootId) {
+  const ids = [rootId]
+  const page = await graph(tok, `/users/${user}/mailFolders/${rootId}/childFolders?$top=100&$select=id`)
+  for (const f of page.value ?? []) ids.push(f.id)
+  return ids
+}
+
+const norm = (s) =>
+  String(s ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+/**
+ * Runs candidats, les plus récents d'abord. Sélection = DOMAINE émetteur ET
+ * mot-clé d'objet, sur tout l'arbre « Emetteurs » — indépendante du classement
+ * manuel dans les sous-dossiers.
+ */
+async function runMessages(tok) {
   const user = need(GRAPH_USER, 'GRAPH_USER')
-  const search = encodeURIComponent(`"${MAIL_QUERY}"`)
-  const page = await graph(
-    tok,
-    `/users/${user}/messages?$search=${search}&$top=25&$select=id,subject,receivedDateTime,hasAttachments,from`,
-  )
-  const msgs = (page.value ?? [])
-    .filter((m) => m.hasAttachments)
-    .filter((m) => !MAIL_SENDER || (m.from?.emailAddress?.address ?? '').includes(MAIL_SENDER))
-    .sort((a, b) => (a.receivedDateTime < b.receivedDateTime ? 1 : -1))
-  return msgs[0]
+  const rootId = await findFolderId(tok, user, MAIL_FOLDER)
+  if (!rootId) {
+    console.log(`::warning::Dossier « ${MAIL_FOLDER} » introuvable — aucune sélection possible.`)
+    return []
+  }
+  const domains = MAIL_DOMAINS.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean)
+  const keywords = MAIL_KEYWORDS.split(',').map((k) => norm(k).trim()).filter(Boolean)
+
+  const out = []
+  for (const fid of await folderTree(tok, user, rootId)) {
+    const page = await graph(
+      tok,
+      `/users/${user}/mailFolders/${fid}/messages?$top=50&$orderby=receivedDateTime desc` +
+        `&$select=id,subject,receivedDateTime,hasAttachments,from`,
+    )
+    for (const m of page.value ?? []) {
+      const addr = (m.from?.emailAddress?.address ?? '').toLowerCase()
+      if (!domains.some((d) => addr.endsWith(d) || addr.includes(d))) continue
+      if (MAIL_SENDER && !addr.includes(MAIL_SENDER.toLowerCase())) continue
+      const sujet = norm(m.subject)
+      if (!keywords.some((k) => sujet.includes(k))) continue
+      out.push(m)
+    }
+  }
+  return out.sort((a, b) => (a.receivedDateTime < b.receivedDateTime ? 1 : -1))
 }
 
 async function xlsxAttachment(tok, user, messageId) {
@@ -166,17 +231,50 @@ async function main() {
   }
   const tok = await token()
   const user = need(GRAPH_USER, 'GRAPH_USER')
-  const msg = await latestRunMessage(tok)
+  const candidats = await runMessages(tok)
+  if (candidats.length === 0) {
+    console.log(`Aucun run d'indices à décrément trouvé dans « ${MAIL_FOLDER} » (et sous-dossiers).`)
+    return
+  }
+
+  console.log(`${candidats.length} run(s) candidat(s) dans « ${MAIL_FOLDER} » :`)
+  for (const m of candidats.slice(0, 15))
+    console.log(`  · ${m.receivedDateTime.slice(0, 10)}  ${m.from?.emailAddress?.address ?? '?'}  « ${m.subject} »`)
+
+  // Parsing automatique : uniquement les runs livrés en pièce jointe .xlsx.
+  // Les grilles envoyées en TABLEAU HTML dans le corps (BNPP, BofA, Citi, UBS,
+  // BBVA) ne sont pas parsées ici — chaque émetteur a sa mise en page.
+  const avecXlsx = []
+  const sansXlsx = []
+  for (const m of candidats) {
+    if (m.hasAttachments && (await xlsxAttachment(tok, user, m.id))) avecXlsx.push(m)
+    else sansXlsx.push(m)
+  }
+
+  // Rendre le trou VISIBLE plutôt que de sortir en silence : c'est ce silence
+  // qui a laissé la grille figée pendant des semaines.
+  if (sansXlsx.length) {
+    console.log(
+      `::warning::${sansXlsx.length} run(s) détecté(s) mais NON parsable(s) automatiquement ` +
+        `(grille en tableau HTML, pas de .xlsx) — à intégrer à la main : ` +
+        sansXlsx.slice(0, 8).map((m) => `${m.receivedDateTime.slice(0, 10)} ${m.subject}`).join(' · '),
+    )
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      const { appendFileSync } = await import('node:fs')
+      appendFileSync(
+        process.env.GITHUB_STEP_SUMMARY,
+        ['## Runs décrément à intégrer à la main', '', ...sansXlsx.map((m) => `- **${m.receivedDateTime.slice(0, 10)}** — ${m.subject}`), ''].join('\n'),
+      )
+    }
+  }
+
+  const msg = avecXlsx[0]
   if (!msg) {
-    console.log('Aucun mail « Run Décrement » avec pièce jointe trouvé.')
+    console.log('Aucun run avec pièce jointe .xlsx — comparatif inchangé.')
     return
   }
-  console.log(`Mail retenu : « ${msg.subject} » (${msg.receivedDateTime}).`)
+  console.log(`Mail retenu pour le parsing : « ${msg.subject} » (${msg.receivedDateTime}).`)
   const buf = await xlsxAttachment(tok, user, msg.id)
-  if (!buf) {
-    console.log('Pas de pièce jointe .xlsx dans ce mail.')
-    return
-  }
   const rows = parse(buf)
   if (rows.length < 5) {
     console.log(`Parse douteux (${rows.length} lignes) — mise à jour ignorée.`)

@@ -183,6 +183,11 @@ type Structure = 'athena' | 'phoenix'
 const matchStructure = (type: string, st: Structure): boolean =>
   st === 'athena' ? /ath[ée]na/i.test(type) : /phoenix/i.test(type)
 
+// Plancher de niveau du filtre « Niveau ≥ 800 » : sous ce seuil, l'indice à
+// décrément a déjà consommé une large part de sa performance et n'est plus
+// proposable en l'état.
+const PLANCHER_NIVEAU = 800
+
 // Commission CMF réintégrée à l'affichage UNIQUEMENT pour les upfronts issus
 // du PDF/Excel de départ (dans lesquels la commission broker avait été retirée).
 // Les upfronts venant d'un mail émetteur (ufFromMail) sont affichés tels quels.
@@ -227,6 +232,11 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
   const [emetteur, setEmetteur] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
+  // Masque les indices dont le NIVEAU est sous le plancher : un décrément très
+  // bas a déjà consommé une large part de sa performance, il n'est plus
+  // proposable. Filtre volontairement non rétroactif sur les lignes SANS niveau
+  // connu : on ne masque que ce qu'on a mesuré (voir `niveauSousPlancher`).
+  const [plancher, setPlancher] = useState(false)
   const [sort, setSort] = useState<{ key: keyof Row; dir: 'asc' | 'desc' }>({
     key: 'couponPa',
     dir: 'desc',
@@ -244,19 +254,48 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
     [rows],
   )
 
+  // Niveaux live (Bloomberg quotidien → KV levels:overlay, par ticker d'indice).
+  const [liveLevels, setLiveLevels] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let on = true
+    fetch('/api/levels', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { levels?: Record<string, number> }) => {
+        if (on && d?.levels) setLiveLevels(d.levels)
+      })
+      .catch(() => {})
+    return () => {
+      on = false
+    }
+  }, [])
+
+  // Niveau courant de l'indice : Bloomberg quotidien (live) en priorité, sinon
+  // niveau du run de la ligne, sinon niveau seedé au catalogue.
+  const niveauOf = (r: Row): number | undefined =>
+    liveLevels[r.ticker] ?? r.niveau ?? ENRICH[r.ticker]?.niveau
+
+  /** true seulement si le niveau est CONNU et sous le plancher. Un indice sans
+   *  niveau n'est pas masqué : on ne cache pas ce qu'on n'a pas mesuré. */
+  const niveauSousPlancher = (r: Row): boolean => {
+    const n = niveauOf(r)
+    return typeof n === 'number' && n < PLANCHER_NIVEAU
+  }
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
     return rows.filter(
       (r) =>
         (!secteur || canonSecteur(r.secteur) === secteur) &&
         (!structure || matchStructure(r.type, structure)) &&
+        (!plancher || !niveauSousPlancher(r)) &&
         (!emetteur || r.emetteur === emetteur) &&
         (!needle ||
           r.ticker.toLowerCase().includes(needle) ||
           (r.secteur ?? '').toLowerCase().includes(needle) ||
           r.emetteur.toLowerCase().includes(needle)),
     )
-  }, [rows, secteur, structure, emetteur, q])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, secteur, structure, emetteur, q, plancher, liveLevels])
 
   const list = useMemo(() => {
     const m = sort.dir === 'asc' ? 1 : -1
@@ -312,27 +351,6 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
 
   const sel = open ? rows.find((r) => r.ticker === open) ?? null : null
   const selInfo = sel ? ENRICH[sel.ticker] : null
-
-
-  // Niveaux live (Bloomberg quotidien → KV levels:overlay, par ticker d'indice).
-  const [liveLevels, setLiveLevels] = useState<Record<string, number>>({})
-  useEffect(() => {
-    let on = true
-    fetch('/api/levels', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d: { levels?: Record<string, number> }) => {
-        if (on && d?.levels) setLiveLevels(d.levels)
-      })
-      .catch(() => {})
-    return () => {
-      on = false
-    }
-  }, [])
-
-  // Niveau courant de l'indice : Bloomberg quotidien (live) en priorité, sinon
-  // niveau du run de la ligne, sinon niveau seedé au catalogue.
-  const niveauOf = (r: Row): number | undefined =>
-    liveLevels[r.ticker] ?? r.niveau ?? ENRICH[r.ticker]?.niveau
 
   // Ticker Bloomberg complet : valeur du run émetteur si présente, sinon dérivée
   // (« <ticker> Index » — tous les sous-jacents de cette page sont des indices).
@@ -412,6 +430,26 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
               {st === 'athena' ? 'Athéna' : 'Phoenix'}
             </button>
           ))}
+
+          {/* Plancher de niveau — indépendant du filtre de structure. */}
+          <span className="mx-2 h-4 w-px bg-slate-200" aria-hidden />
+          <span className="text-[11px] uppercase tracking-wide text-slate-400 mr-1">Niveau</span>
+          <button
+            onClick={() => setPlancher((v) => !v)}
+            title={`Masque les indices dont le niveau connu est inférieur à ${PLANCHER_NIVEAU}. Les indices sans niveau disponible restent affichés.`}
+            className={`rounded-full border px-2.5 py-1 text-xs tabular-nums ${
+              plancher
+                ? 'border-cmf-blue bg-cmf-blue/10 text-cmf-navy'
+                : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            ≥ {PLANCHER_NIVEAU}
+          </button>
+          {plancher && (
+            <span className="text-[11px] text-slate-400">
+              {rows.filter(niveauSousPlancher).length} masqué(s)
+            </span>
+          )}
         </div>
 
         {/* Filtres secteur (chips) */}

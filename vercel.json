@@ -7,7 +7,7 @@
     },
     {
       "path": "/api/cron/decrement",
-      "schedule": "0 8 * * 1"
+      "schedule": "0 8 * * 2"
     },
     {
       "path": "/api/cron/sante",
