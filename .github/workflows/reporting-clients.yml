@@ -1,10 +1,17 @@
 name: Reporting clients (PDF par email)
 
 # Génère un PDF de valorisation par client (rendu identique à « Imprimer » dans
-# l'app : route /print via Puppeteer) puis l'envoie en pièce jointe par email
-# (Resend). Deux cadences automatiques + déclenchement manuel :
-#   • tous les lundis             → reporting hebdomadaire
-#   • le 1er de chaque mois       → reporting mensuel
+# l'app : route /print via Puppeteer) puis l'envoie à CE client, en pièce jointe
+# (Resend), avec L.sebah@cmf.finance en copie cachée systématique.
+#
+# UN SEUL AGENT pour les deux cadences — l'ancien envoi hebdomadaire « en lot »
+# (tous les PDF dans un seul mail à Laurent) est supprimé :
+#   • tous les lundis        → relevé HEBDOMADAIRE aux clients qui l'ont coché
+#   • le 1er de chaque mois  → relevé MENSUEL aux clients qui l'ont coché
+# Qui reçoit quoi n'est plus codé ici : c'est la fiche client (onglet
+# Maintenance → /api/clients/fiches). Laurent conserve une vue consolidée via le
+# compte rendu envoyé à la fin de chaque run.
+#
 # L'app est buildée et lancée dans le job (localhost:3000) ; les prix live
 # viennent de Vercel KV (secrets) et les niveaux de Yahoo (fetch sortant).
 on:
@@ -15,16 +22,14 @@ on:
     - cron: '15 6 1 * *' # 1er du mois 06:15 UTC — mensuel
   workflow_dispatch:
     inputs:
-      label:
-        description: 'Étiquette de cadence (sujet email)'
-        required: false
-        default: 'manuel'
-      email_to:
-        description: 'Destinataire (override ponctuel — sinon secret NOTIF_EMAIL_TO)'
-        required: false
-        default: ''
-      send_to_clients:
-        description: 'Envoyer à CHAQUE client son PDF (data/client-emails.json) au lieu du lot à toi'
+      cadence:
+        description: 'Cadence à servir (détermine quels abonnés sont envoyés)'
+        type: choice
+        required: true
+        default: mensuel
+        options: [mensuel, hebdo]
+      force_send:
+        description: 'Ignorer le verrou anti-double-envoi (renvoi volontaire)'
         type: boolean
         required: false
         default: false
@@ -48,16 +53,18 @@ jobs:
       - name: Installer Puppeteer (Chromium)
         run: npm install --no-save puppeteer
 
-      # Étiquette de cadence selon le déclencheur (cron hebdo / mensuel / manuel).
+      # Cadence selon le déclencheur. Le cron du 1er du mois et celui du lundi
+      # peuvent tomber le MÊME jour : ce sont alors deux runs distincts, et c'est
+      # le verrou par client (posé par le script) qui empêche le double envoi.
       - name: Déterminer la cadence
         id: cadence
         run: |
           if [ "${{ github.event.schedule }}" = "15 6 1 * *" ]; then
-            echo "label=mensuel" >> "$GITHUB_OUTPUT"
+            echo "value=mensuel" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "15 6 * * 1" ]; then
-            echo "label=hebdomadaire" >> "$GITHUB_OUTPUT"
+            echo "value=hebdo" >> "$GITHUB_OUTPUT"
           else
-            echo "label=${{ github.event.inputs.label || 'manuel' }}" >> "$GITHUB_OUTPUT"
+            echo "value=${{ github.event.inputs.cadence || 'mensuel' }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build de l'app
@@ -77,27 +84,24 @@ jobs:
           echo "APP_PID=$!" >> "$GITHUB_ENV"
           npx --yes wait-on -t 120000 http://localhost:3000/api/clients
 
-      - name: Générer + envoyer les PDF par email
+      - name: Générer + envoyer les relevés
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          # Destinataire (mode lot) : override ponctuel prioritaire sur le secret.
-          NOTIF_EMAIL_TO: ${{ github.event.inputs.email_to || secrets.NOTIF_EMAIL_TO }}
           NOTIF_EMAIL_FROM: ${{ secrets.NOTIF_EMAIL_FROM }}
+          # Destinataire du COMPTE RENDU de fin de run (qui a reçu / qui n'a rien reçu).
+          NOTIF_EMAIL_TO: ${{ secrets.NOTIF_EMAIL_TO }}
+          # Copie cachée additionnelle ; L.sebah@cmf.finance est ajoutée d'office
+          # par le script, quelle que soit la valeur de ce secret.
           NOTIF_EMAIL_BCC: ${{ secrets.NOTIF_EMAIL_BCC }}
-          # Verrou KV anti-double-envoi : un déclenchement manuel PUIS un cron
-          # en retard le même jour n'envoient qu'une fois aux clients.
+          # Verrou KV anti-double-envoi, posé PAR CLIENT et PAR JOUR. Le script
+          # s'arrête sans rien envoyer si ces secrets sont présents mais que le KV
+          # ne répond pas — les fiches d'abonnement y sont également stockées.
           KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
           KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
-        # Mode par client (un PDF → email respectif du client) si :
-        #  • déclenchement manuel avec send_to_clients = true, OU
-        #  • cron MENSUEL (1er du mois) → reporting client mensuel automatique.
-        # Le cron HEBDO (lundi) reste en mode lot vers toi (relecture interne).
         run: |
-          PER=""
-          if [ "${{ github.event.inputs.send_to_clients }}" = "true" ] || [ "${{ github.event.schedule }}" = "15 6 1 * *" ]; then
-            PER="--per-client"
-          fi
-          node scripts/reporting_clients.mjs --email --label "${{ steps.cadence.outputs.label }}" $PER
+          FORCE=""
+          if [ "${{ github.event.inputs.force_send }}" = "true" ]; then FORCE="--force-send"; fi
+          node scripts/reporting_clients.mjs --email --cadence "${{ steps.cadence.outputs.value }}" $FORCE
 
       # Filet de sécurité : les PDF restent téléchargeables depuis l'onglet Actions
       # même si l'email n'est pas configuré (RESEND_API_KEY absent).
@@ -105,7 +109,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reporting-clients-${{ steps.cadence.outputs.label }}
+          name: reporting-clients-${{ steps.cadence.outputs.value }}
           path: reporting_clients/*.pdf
           if-no-files-found: ignore
           retention-days: 90

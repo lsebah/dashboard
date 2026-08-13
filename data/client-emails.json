@@ -1,5 +1,5 @@
 {
-  "_README": "Mapping CODE CLIENT -> email pour l envoi du reporting par client (mode --per-client). Remplis chaque adresse. Les clients laisses vides sont IGNORES (jamais d envoi a l aveugle). Le code doit correspondre EXACTEMENT au libelle client du portefeuille.",
+  "_README": "HISTORIQUE - ce fichier n est PLUS la liste de diffusion. Les adresses et les abonnements (hebdo / mensuel) se saisissent desormais dans l onglet Maintenance du terminal Lifecycle et vivent dans le stockage KV (voir lib/clients-fiches.ts). Ce fichier ne sert plus qu a une chose : donner sa valeur PAR DEFAUT a un client qui n a pas encore de fiche enregistree (adresse reprise, envoi mensuel actif s il a une adresse, envoi hebdo inactif) - c est ce qui garantit que le deploiement n a ajoute ni retire aucun destinataire. Une fois la fiche d un client enregistree en Maintenance, la ligne ci-dessous n a plus aucun effet pour lui.",
   "ABACUS - 05268": "nicolas.courivaud@abacuspatrimoine.com",
   "ALVES - 06001": "contact.adis74@gmail.com",
   "APPN - 05277": "scome@appn.asso.fr, driboud.appn@wanadoo.fr",

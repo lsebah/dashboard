@@ -1,0 +1,6 @@
+{
+  "_README": "Inventaire AUTO-GENERE des documents clients OneDrive (C:\\Users\\lseba\\OneDrive - CMF\\Documents\\Clients). Ne pas editer a la main : le fichier est reecrit par scripts/sync-client-docs.mjs (workflow sync-client-docs.yml). `genere` a null = jamais synchronise (secrets GRAPH_* absents).",
+  "genere": null,
+  "racine": "Documents/Clients",
+  "dossiers": {}
+}
