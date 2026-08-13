@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { products } from '@/lib/products'
 import roster from '@/lib/clients-roster.json'
 import emailsHistoriques from '@/data/client-emails.json'
-import { defaultAllocsOf } from '@/lib/client-report'
+import { produitsEffectifs } from '@/lib/server-overlays'
 import { kvConfigured, kvGetResult, kvSet } from '@/lib/kv'
 import { fusionnerFiches, normaliserFiche, type FicheClient } from '@/lib/clients-fiches'
 
@@ -17,10 +17,16 @@ export const runtime = 'nodejs'
 // l'agent d'envoi — c'est la raison d'être de la route.
 const CLE = 'cmf:clients:fiches:v1'
 
-/** Tous les codes clients connus de l'application (hors fiches et fichier historique). */
-function codesConnus(): string[] {
+/**
+ * Tous les codes clients connus de l'application (hors fiches et fichier
+ * historique). Les surcouches du terminal sont incluses : un client affecté à un
+ * trade saisi via « + Nouveau trade » n'existe dans aucun fichier du dépôt, et
+ * serait autrement absent de la liste de Maintenance.
+ */
+async function codesConnus(): Promise<string[]> {
   const set = new Set<string>()
-  for (const p of products) for (const a of defaultAllocsOf(p)) if (a.client) set.add(a.client)
+  const { products: effectifs, allocsOf } = await produitsEffectifs(products)
+  for (const p of effectifs) for (const a of allocsOf(p)) if (a.client) set.add(a.client)
   for (const c of roster as string[]) if (c) set.add(c)
   // Array.from (et non un spread d'itérateur) : le tsconfig cible ES5.
   return Array.from(set)
@@ -29,7 +35,15 @@ function codesConnus(): string[] {
 const historiques = emailsHistoriques as unknown as Record<string, string>
 
 export async function GET() {
-  const connus = codesConnus()
+  let connus: string[]
+  try {
+    connus = await codesConnus()
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : 'Surcouches du terminal illisibles.' },
+      { status: 503 },
+    )
+  }
 
   // KV absent (dev local) : on sert les valeurs par défaut, en le disant. Aucun
   // envoi ne sera déclenché sur cette base — l'agent refuse ce mode.
