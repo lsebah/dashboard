@@ -937,7 +937,9 @@
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 400000,
-  "description": "Phoenix Memoire iEdge Transatlantic Artificial Intelligence"
+  "description": "Phoenix Memoire iEdge Transatlantic Artificial Intelligence",
+  "statut": "rappele",
+  "statutSource": "email Samy Denommé (OPTIMAL FINANCE) du 01/08/2026 — « FRIP00001I09 a été remboursé »"
  },
  {
   "isin": "XS3049563219",
@@ -1271,7 +1273,9 @@
   "client": "ALVES - 06001",
   "devise": "EUR",
   "amount": 600000,
-  "description": "Phoenix Mémoire Wof Porsche + Volkswagen"
+  "description": "Phoenix Mémoire Wof Porsche + Volkswagen",
+  "statut": "vendu",
+  "statutSource": "vendu chez ALVES — signalé par Laurent le 13/08/2026"
  },
  {
   "isin": "XS2464629414",
@@ -1311,7 +1315,9 @@
   "client": "SAMY - 01674",
   "devise": "EUR",
   "amount": 1500000,
-  "description": "TARN CMS 30Y - CMS 2Y"
+  "description": "TARN CMS 30Y - CMS 2Y",
+  "statut": "vendu",
+  "statutSource": "email Samy Denommé (OPTIMAL FINANCE) du 01/08/2026 — « XS2442403130 a été vendu »"
  },
  {
   "isin": "XS2440513757",
