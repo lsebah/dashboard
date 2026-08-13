@@ -72,7 +72,8 @@ export function fraicheurParEmetteur(
   }
   for (const e of opts.attendus ?? []) if (!dernierPar.has(e)) dernierPar.set(e, '')
 
-  return [...dernierPar.entries()]
+  // Array.from (et non un spread d'itérateur) : le tsconfig cible ES5.
+  return Array.from(dernierPar.entries())
     .map(([emetteur, dernier]) => {
       const age = dernier ? ageJours(dernier, opts.now) : null
       return {

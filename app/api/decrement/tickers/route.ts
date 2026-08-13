@@ -24,7 +24,8 @@ export async function GET() {
     .map((r) => r.ticker)
     .filter((t): t is string => typeof t === 'string' && t.trim() !== '')
 
-  const tickers = [...new Set([...duCatalogue, ...duComparatif])].sort()
+  // Array.from (et non un spread de Set) : le tsconfig cible ES5.
+  const tickers = Array.from(new Set(duCatalogue.concat(duComparatif))).sort()
   return NextResponse.json({
     tickers,
     count: tickers.length,
