@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Product } from '@/lib/types'
+import type { ClientAlloc, Product } from '@/lib/types'
 import { ReportSheet } from '@/app/lifecycle/components/ClientReport'
-import { clientReportRows, clientsAvecReporting, type ReportMaps } from '@/lib/client-report'
+import { clientReportRows, clientsAvecReporting, defaultAllocsOf, type ReportMaps } from '@/lib/client-report'
 
 // Récupère les MÊMES données que le portefeuille (niveaux courants Yahoo + surcouche
 // prix Bloomberg/KV) puis rend la/les feuille(s) <ReportSheet/>. Pose un drapeau
@@ -14,9 +14,12 @@ const EMPTY: ReportMaps = { perfMap: {}, niveauxMap: {}, priceMap: {} }
 export default function PrintReports({
   products,
   selectedClient,
+  allocMap,
 }: {
   products: Product[]
   selectedClient?: string
+  /** Allocations saisies dans le terminal (surcouche KV), résolues côté serveur. */
+  allocMap?: Record<string, ClientAlloc[]>
 }) {
   const [maps, setMaps] = useState<ReportMaps>(EMPTY)
   const [ready, setReady] = useState(false)
@@ -46,9 +49,16 @@ export default function PrintReports({
     })
   }, [products])
 
+  // Même résolution d'allocation que /api/clients : la surcouche du terminal
+  // prime sur le feed, sinon le PDF ignorerait les trades saisis à la main.
+  const allocsOf = useMemo(
+    () => (p: Product) => allocMap?.[p.isin] ?? defaultAllocsOf(p),
+    [allocMap],
+  )
+
   const clients = useMemo(
-    () => (selectedClient ? [selectedClient] : clientsAvecReporting(products, maps)),
-    [products, selectedClient, maps],
+    () => (selectedClient ? [selectedClient] : clientsAvecReporting(products, maps, allocsOf)),
+    [products, selectedClient, maps, allocsOf],
   )
   const date = new Date().toLocaleDateString('fr-FR')
 
@@ -62,7 +72,7 @@ export default function PrintReports({
         >
           <ReportSheet
             client={c}
-            rows={clientReportRows(products, c, maps)}
+            rows={clientReportRows(products, c, maps, allocsOf)}
             perfMap={maps.perfMap}
             date={date}
             // id #client-report unique → uniquement en rendu mono-client.

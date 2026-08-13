@@ -54,6 +54,41 @@ export async function kvGet<T>(key: string): Promise<T | null> {
   }
 }
 
+/**
+ * Variante de `kvGet` qui DISTINGUE « clé absente » de « KV injoignable ».
+ *
+ * `kvGet` renvoie `null` dans les deux cas, ce qui convient aux surcouches
+ * facultatives (prix, notifications) où l'absence de donnée est bénigne. Ce
+ * n'est pas le cas des fiches clients : confondre « aucun abonnement
+ * enregistré » avec « je n'arrive pas à lire les abonnements » ferait, dans le
+ * premier cas, ne rien envoyer à personne en silence. L'appelant doit pouvoir
+ * refuser de continuer.
+ */
+export async function kvGetResult<T>(key: string): Promise<{ ok: boolean; value: T | null }> {
+  if (REST_URL && REST_TOKEN) {
+    try {
+      const res = await fetch(`${REST_URL}/get/${encodeURIComponent(key)}`, {
+        headers: { Authorization: `Bearer ${REST_TOKEN}` },
+        cache: 'no-store',
+      })
+      if (!res.ok) return { ok: false, value: null }
+      const j = (await res.json()) as { result?: string | null }
+      if (j.result == null) return { ok: true, value: null }
+      return { ok: true, value: JSON.parse(j.result) as T }
+    } catch {
+      return { ok: false, value: null }
+    }
+  }
+  try {
+    const c = await redis()
+    if (!c) return { ok: false, value: null }
+    const v = await c.get(key)
+    return { ok: true, value: v == null ? null : (JSON.parse(v) as T) }
+  } catch {
+    return { ok: false, value: null }
+  }
+}
+
 export async function kvSet(key: string, value: unknown): Promise<boolean> {
   if (REST_URL && REST_TOKEN) {
     try {

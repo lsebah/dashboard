@@ -12,6 +12,11 @@ export interface FeedPosition {
   isin: string
   last?: number
   statut?: ProductStatus
+  /** D'où vient le `statut` (email client, avis émetteur, date). Une position
+   *  clôturée sort du portefeuille, du reporting et des alertes : on garde donc
+   *  la trace de qui l'a annoncée et quand. Non consommé par le code — c'est
+   *  une note de provenance destinée à la relecture humaine. */
+  statutSource?: string
   client?: string
   devise?: string
   amount?: number

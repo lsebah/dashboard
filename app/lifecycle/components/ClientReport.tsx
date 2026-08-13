@@ -99,7 +99,10 @@ export function ReportSheet({
         <tbody>
           {rows.map(({ p, montant }) => {
             const pm = perfMap[p.isin] ?? {}
-            const sj = p.sousJacents.map((u) => ({ nom: u.nom, pct: pm[u.nom] as number | undefined }))
+            // `?.` comme aux lignes suivantes : depuis que le relevé inclut les
+            // produits saisis dans le terminal, une fiche incomplète ne doit pas
+            // faire tomber TOUT le PDF (donc l'envoi de tous les clients).
+            const sj = p.sousJacents?.map((u) => ({ nom: u.nom, pct: pm[u.nom] as number | undefined })) ?? []
             // Coupons déjà encaissés (% du nominal) : le produit reçu est déjà
             // augmenté des niveaux constatés, donc valeur cohérente avec la fiche.
             const coupons = couponsEncaissesPct(p)
