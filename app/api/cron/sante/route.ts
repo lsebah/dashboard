@@ -5,6 +5,9 @@ import { computeCoherence, type CommissionLine } from '@/lib/coherence'
 import { messageRappel } from '@/lib/rappel'
 import { yahooSymbol } from '@/lib/underlyings'
 import commissions from '@/lib/commissions.json'
+import comparatif from '@/lib/decrement-comparatif.json'
+import frnQuotes from '@/data/frn-quotes.json'
+import { fraicheurParEmetteur, runsDecrement, runsFrn } from '@/lib/veille-fraicheur'
 import { kvConfigured, kvGet, kvSet } from '@/lib/kv'
 
 export const dynamic = 'force-dynamic'
@@ -20,6 +23,12 @@ export const maxDuration = 60
 // ─────────────────────────────────────────────────────────────────────────
 const CLOSED = new Set(['rappele', 'vendu', 'echu'])
 const PRIX_FROID_JOURS = 5
+// SLA de fraîcheur PAR ÉMETTEUR. La veille décrément s'est arrêtée le 21/07
+// sans que rien ne le signale : d'autres émetteurs continuaient d'arriver, donc
+// « la veille tourne » restait vrai en moyenne. C'est le silence d'UN émetteur
+// qui trahit une chaîne cassée (règle Outlook, expéditeur changé, format modifié).
+const DECREMENT_SLA_JOURS = 10 // runs hebdomadaires
+const FRN_SLA_JOURS = 14 // runs bi-hebdomadaires chez certains émetteurs
 
 interface Overlay {
   asof: string | null
@@ -89,6 +98,19 @@ export async function GET(req: Request) {
       if (!u.bloomberg?.trim() && yahooSymbol(u.bloomberg) === null)
         sansTicker.push(`${p.isin} · ${u.nom}`)
 
+  // 5) Fraîcheur des veilles émetteurs, PAR ÉMETTEUR (décrément & FRN).
+  const now = new Date()
+  const decrementFraicheur = fraicheurParEmetteur(
+    runsDecrement(comparatif as { emetteur?: string; dateRun?: string | null }[]),
+    { now, slaJours: DECREMENT_SLA_JOURS },
+  )
+  const frnFraicheur = fraicheurParEmetteur(
+    runsFrn(frnQuotes as { issuer?: string; runDate?: string | null }[]),
+    { now, slaJours: FRN_SLA_JOURS },
+  )
+  const decrementPerimes = decrementFraicheur.filter((f) => f.perime)
+  const frnPerimes = frnFraicheur.filter((f) => f.perime)
+
   const resume = {
     asof: new Date().toISOString(),
     rappelsNotifies: notifiesApres.length - dejaNotifies.length,
@@ -102,6 +124,8 @@ export async function GET(req: Request) {
     prixFroids,
     prixAgeJours: prixAgeJours != null ? Math.round(prixAgeJours) : null,
     sansTicker: sansTicker.length,
+    decrementPerimes: decrementPerimes.map((f) => ({ e: f.emetteur, j: f.ageJours })),
+    frnPerimes: frnPerimes.map((f) => ({ e: f.emetteur, j: f.ageJours })),
   }
 
   const total =
@@ -110,7 +134,9 @@ export async function GET(req: Request) {
     resume.coherenceDate +
     resume.coherenceOrpheline +
     resume.deviseSuspecte +
-    (prixFroids ? 1 : 0)
+    (prixFroids ? 1 : 0) +
+    decrementPerimes.length +
+    frnPerimes.length
 
   // Pas d'anomalie « dure » → pas d'email (le rapport reste consultable en JSON).
   if (total === 0) {
@@ -138,6 +164,18 @@ export async function GET(req: Request) {
     resume.coherenceOrpheline ? `• ${resume.coherenceOrpheline} ligne(s) commission orpheline(s)` : '',
     resume.deviseSuspecte ? `• ${resume.deviseSuspecte} devise(s) incohérente(s)` : '',
     prixFroids ? `• Prix Bloomberg froids : dernière ingestion il y a ${resume.prixAgeJours} j` : '',
+    decrementPerimes.length
+      ? `• Veille DÉCRÉMENT sans run depuis > ${DECREMENT_SLA_JOURS} j : ` +
+        decrementPerimes
+          .map((f) => `${f.emetteur} (${f.ageJours == null ? 'aucun run' : f.ageJours + ' j'})`)
+          .join(', ')
+      : '',
+    frnPerimes.length
+      ? `• Veille FRN sans run depuis > ${FRN_SLA_JOURS} j : ` +
+        frnPerimes
+          .map((f) => `${f.emetteur} (${f.ageJours == null ? 'aucun run' : f.ageJours + ' j'})`)
+          .join(', ')
+      : '',
     '',
     'Détail complet : onglet « Santé des données » du dashboard.',
     '— Contrôle automatique CMF',
