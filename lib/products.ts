@@ -63,7 +63,14 @@ const marexUso: Product = {
     kind: 'autocall',
     sens: 'inverse', // rappel si le cours est SOUS le niveau d'autocall
     effetMemoire: false,
-    couponPa: 15.1, // 3.775% / trimestre, garanti
+    // Coupon INCONDITIONNEL (aucune barrière de coupon) — termsheet, section
+    // PRODUCT DESCRIPTION : « This Product offers the investor a pre-defined
+    // guaranteed Coupon Amount on the relevant Coupon Payment Date(s) ».
+    // Sans ce drapeau, lifecycle.ts dérive la condition du niveau constaté face
+    // à une barrière de coupon inexistante : les quatre trimestres restaient
+    // « à constater » au lieu d'être acquis.
+    couponGaranti: true,
+    couponPa: 15.1, // 4 × 3,775 % (TS, section COUPON : Coupon Rate)
     barriereRappelPct: 100,
     protectionPct: 175, // barrière haute (inverse) : événement si final ≥ 175%
     protectionStyle: 'europeenne',
@@ -76,7 +83,7 @@ const marexUso: Product = {
   statut: 'vivant',
   rr: 'LS',
   productType: 'Reverse Autocall',
-  description: '1Y Inverse Reverse Autocall USO',
+  description: '1Y Inverse Reverse Autocall USO — coupon 3,775 %/trim. garanti, barrière haute 175 %',
   clients: ['NATAF - 05627'],
   badges: ['Inverse', 'Coupon garanti'],
   termsheetFichier:
