@@ -1,15 +1,24 @@
 // ─────────────────────────────────────────────────────────────────────────
-//  Boucle de contrôle « cohérence » — croise le classeur commissions avec les
-//  définitions produits (feed + termsheets décodées) pour détecter les
+//  Boucle de contrôle « cohérence » — croise le registre des commissions avec
+//  les définitions produits (feed + termsheets décodées) pour détecter les
 //  divergences silencieuses :
 //    • CLIENT : même code numérique (ex. « 01674 ») mais nom différent entre le
-//      classeur (« OPTIMAL - 01674 ») et le produit/feed (« SAMY - 01674 ») —
-//      typiquement un renommage client non répercuté.
-//    • DATE D'ÉMISSION : issue (classeur) vs dateEmission (produit) qui divergent
-//      de plus d'une tolérance (jours).
+//      registre (« OPTIMAL - 01674 ») et le produit/feed (« SAMY - 01674 ») —
+//      typiquement un renommage client non répercuté. Les libellés confirmés
+//      comme désignant un même compte sont déclarés dans ALIAS_CLIENT.
+//    • DATE D'ÉMISSION : issue (registre) vs dateEmission (produit) qui divergent
+//      de plus d'une tolérance (jours). Arbitre : la TERMSHEET, jamais le nom du
+//      fichier de termsheet (il dérive de dateEmission, et s'est révélé faux).
 //    • ISIN commission ABSENT du portefeuille (ligne orpheline) et inversement.
 //  Fonctions PURES → réutilisées par l'écran Santé et le cron d'alerte.
 //  Aucune valeur n'est modifiée : on signale, l'humain tranche.
+//
+//  NOTE DE VOCABULAIRE — le champ `classeur` d'une CoherenceIssue désigne la
+//  valeur telle qu'elle figure dans le REGISTRE DES COMMISSIONS DE LIFECYCLE
+//  (lib/commissions.json, affiché sous « classeur Lifecycle » dans l'onglet
+//  Commissions). Ce n'est plus un export d'un fichier Excel externe : Lifecycle
+//  est la source. Corriger une valeur ici est donc définitif — rien ne viendra
+//  l'écraser au prochain export.
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
 
