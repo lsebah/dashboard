@@ -21,7 +21,7 @@
  "lignes": [
   {
    "isin": "FR1459ABG521",
-   "issue": "2026-09-21",
+   "issue": "2026-06-11",
    "client": "RENAUD GESTION PRIVEE",
    "emetteur": "GS",
    "description": "Phoenix Autocallable sur MSCI ACWI IMI Copper and Power Select 20 Fixed Basket 50 Points DIV EUR Index",
@@ -135,7 +135,7 @@
   },
   {
    "isin": "FR0014018KY5",
-   "issue": "2026-06-15",
+   "issue": "2026-05-20",
    "client": "SPG - 05774",
    "emetteur": "BNP",
    "description": "Athena Mémoire sur Novo Nordisk",
@@ -1826,7 +1826,7 @@
   },
   {
    "isin": "CH1271361060",
-   "issue": "2023-12-01",
+   "issue": "2023-06-12",
    "client": "SOCIPAR - 05762",
    "emetteur": null,
    "description": "Dette Privée - SIP Chabanais",

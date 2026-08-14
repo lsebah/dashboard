@@ -36,6 +36,43 @@ export function clientCode(s?: string): string | null {
   return s?.match(/(\d{4,6})\s*$/)?.[1] ?? null
 }
 
+/** Partie « nom » d'un libellé client (« OPTIMAL - 01674 » → « OPTIMAL »). */
+const racineClient = (s: string): string =>
+  s.replace(/\s*-\s*\d{4,6}\s*$/, '').trim().toUpperCase()
+
+/**
+ * Libellés différents désignant le MÊME compte. Le classeur et le portefeuille
+ * n'ont pas toujours été renommés en même temps ; sans cette table, le contrôle
+ * signale six « divergences » par run sur des lignes parfaitement correctes, et
+ * le bruit finit par masquer les vraies.
+ *
+ * N'ajouter une entrée qu'après confirmation explicite qu'il s'agit du même
+ * compte — c'est la seule chose qui distingue un alias d'une erreur de saisie.
+ */
+const ALIAS_CLIENT: Record<string, string> = {
+  // Confirmé par Laurent (13/08/2026) : « Optimal est pareil que SAMY, c'est le
+  // même compte » — compte 01674, Optimal Finance / Samy Denommé.
+  OPTIMAL: 'SAMY',
+}
+
+const canonique = (s: string): string => {
+  const r = racineClient(s)
+  return ALIAS_CLIENT[r] ?? r
+}
+
+/** Vrai si deux libellés désignent le même compte (alias compris). */
+export function memeClient(a: string, b: string): boolean {
+  return canonique(a) === canonique(b)
+}
+
+/**
+ * Pseudo-ISIN agrégeant PLUSIEURS tranches sous une seule ligne (dette privée).
+ * Chaque tranche a sa propre date d'émission : les comparer à la date unique du
+ * produit agrégé produit une divergence à chaque tranche, sans rien signaler de
+ * réel. Ces codes sont donc exclus des contrôles qui supposent 1 ligne = 1 titre.
+ */
+const ISIN_AGREGE = new Set(['FEI'])
+
 const daysBetween = (a: string, b: string): number =>
   Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 86400000
 
@@ -56,9 +93,9 @@ export function computeCoherence(
   for (const l of lignes) {
     const p = byIsin.get(l.isin)
 
-    // Ligne commission sans produit correspondant (hors « FEI » agrégé).
+    // Ligne commission sans produit correspondant (hors lignes agrégées).
     if (!p) {
-      if (!portefeuilleIsins.has(l.isin) && l.isin !== 'FEI') {
+      if (!portefeuilleIsins.has(l.isin) && !ISIN_AGREGE.has(l.isin)) {
         issues.push({
           isin: l.isin,
           type: 'orpheline',
@@ -73,7 +110,7 @@ export function computeCoherence(
     const lc = clientCode(l.client)
     if (lc && l.client) {
       const match = (p.clients ?? []).find((c) => clientCode(c) === lc)
-      if (match && match.trim() !== l.client.trim()) {
+      if (match && match.trim() !== l.client.trim() && !memeClient(match, l.client)) {
         issues.push({
           isin: l.isin,
           type: 'client',
@@ -84,8 +121,13 @@ export function computeCoherence(
       }
     }
 
-    // Divergence de date d'émission.
-    if (l.issue && p.dateEmission && daysBetween(l.issue, p.dateEmission) > toleranceJours) {
+    // Divergence de date d'émission (hors lignes agrégées multi-tranches).
+    if (
+      l.issue &&
+      p.dateEmission &&
+      !ISIN_AGREGE.has(l.isin) &&
+      daysBetween(l.issue, p.dateEmission) > toleranceJours
+    ) {
       issues.push({
         isin: l.isin,
         type: 'date',

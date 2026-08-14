@@ -31,13 +31,46 @@ test('clientCode extrait le code numérique', () => {
 })
 
 test('divergence client : même code, nom différent', () => {
-  const lignes: CommissionLine[] = [{ isin: 'A', client: 'OPTIMAL - 01674' }]
-  const prods = [P({ isin: 'A', clients: ['SAMY - 01674'] })]
+  const lignes: CommissionLine[] = [{ isin: 'A', client: 'DUPONT - 01674' }]
+  const prods = [P({ isin: 'A', clients: ['MARTIN - 01674'] })]
   const issues = computeCoherence(lignes, prods)
   assert.equal(issues.length, 1)
   assert.equal(issues[0].type, 'client')
-  assert.equal(issues[0].classeur, 'OPTIMAL - 01674')
-  assert.equal(issues[0].produit, 'SAMY - 01674')
+  assert.equal(issues[0].classeur, 'DUPONT - 01674')
+  assert.equal(issues[0].produit, 'MARTIN - 01674')
+})
+
+test('OPTIMAL et SAMY sont le même compte — aucune divergence', () => {
+  // Ce cas servait d'exemple de divergence dans ce fichier. Il était faux :
+  // Laurent a confirmé (13/08/2026) qu'Optimal Finance et Samy Denommé sont
+  // le même compte 01674. Le contrôle signalait six lignes correctes à chaque
+  // run — du bruit qui finit par masquer les vraies anomalies.
+  const lignes: CommissionLine[] = [{ isin: 'A', client: 'OPTIMAL - 01674' }]
+  const prods = [P({ isin: 'A', clients: ['SAMY - 01674'] })]
+  assert.deepEqual(computeCoherence(lignes, prods), [])
+  // …et dans l'autre sens (le classeur peut porter l'un ou l'autre libellé).
+  const inverse: CommissionLine[] = [{ isin: 'A', client: 'SAMY - 01674' }]
+  assert.deepEqual(computeCoherence(inverse, [P({ isin: 'A', clients: ['OPTIMAL - 01674'] })]), [])
+})
+
+test('un alias ne masque pas une vraie divergence sur un autre compte', () => {
+  // Garde-fou : l'alias porte sur le NOM, pas sur le code. Deux comptes
+  // différents restent deux comptes différents.
+  const lignes: CommissionLine[] = [{ isin: 'A', client: 'OPTIMAL - 01674' }]
+  const prods = [P({ isin: 'A', clients: ['ALVES - 01674'] })]
+  assert.equal(computeCoherence(lignes, prods).filter((i) => i.type === 'client').length, 1)
+})
+
+test('la ligne agrégée FEI est exclue du contrôle de date', () => {
+  // « FEI » regroupe plusieurs tranches de la même dette privée, chacune avec sa
+  // propre date d'émission : les comparer à la date unique du produit agrégé
+  // produit une divergence par tranche, sans rien signaler de réel.
+  const lignes: CommissionLine[] = [
+    { isin: 'FEI', issue: '2026-03-20' },
+    { isin: 'FEI', issue: '2025-10-30' },
+  ]
+  const prods = [P({ isin: 'FEI', dateEmission: '2025-04-15' })]
+  assert.deepEqual(computeCoherence(lignes, prods), [])
 })
 
 test('même code + même nom → pas de divergence', () => {
