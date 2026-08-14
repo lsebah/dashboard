@@ -1,10 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────
-//  Commissions — extrait de l'onglet « Lifecycle » du classeur (section
+//  Commissions — registre des commissions de Lifecycle (section
 //  COMMISSION · FACTURES · P&L). Une ligne = une commission sur une position :
 //  commission perçue (CMF), rétrocession reversée au CGP, facturation/paiement,
 //  et commission nette (part Laurent Sebah = perçue × split).
-//  Les totaux annuels (Commissions Nettes par an) sont les chiffres officiels du
-//  classeur (onglet Backlog / Revenue Par Année), qui font foi.
+//  Les totaux annuels (Commissions Nettes par an) sont les chiffres officiels.
+//
+//  SOURCE : ce fichier FAIT FOI. Il a été initialisé depuis le classeur Excel,
+//  mais l'Excel n'est plus la source — Lifecycle l'est. Une correction apportée
+//  ici est définitive ; aucun export ne viendra la remplacer. C'est aussi ce qui
+//  rend légitime de corriger une valeur du registre quand la termsheet la
+//  contredit (cf. les trois dates d'émission reprises le 14/08/2026).
 // ─────────────────────────────────────────────────────────────────────────
 import raw from './commissions.json'
 

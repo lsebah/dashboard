@@ -7,7 +7,9 @@
 //  ⚠️ Confidentialité : SEULES les caractéristiques produits sont importées.
 //  Aucune donnée client ni commission/revenu n'est versionnée. L'axe
 //  d'allocation par client se rebranche via un fichier local non suivi.
-//  L'import complet (~160 lignes) se fera depuis un export propre du classeur.
+//  L'import complet (~160 lignes) reste à faire ; il n'y a plus d'export Excel
+//  à en attendre — Lifecycle est désormais la source, et les positions se
+//  saisissent dans le terminal.
 // ─────────────────────────────────────────────────────────────────────────
 import type {
   Product,
