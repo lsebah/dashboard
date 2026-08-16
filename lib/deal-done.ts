@@ -61,6 +61,14 @@ export interface Deal {
   /** Fin de période de commercialisation (ISO), quand elle est annoncée. */
   finCommercialisation?: string
   maturiteAns?: number
+  /**
+   * Vrai quand il est ÉTABLI que ce deal est une affaire distincte d'une autre
+   * qui lui ressemble — typiquement deux produits de même nom annoncés dans le
+   * MÊME mail, avec des conditions différentes. Supprime la suspicion de
+   * doublon, qui deviendrait sinon un avertissement permanent que plus personne
+   * ne lit. À ne poser qu'après vérification dans le mail d'origine.
+   */
+  distinctConfirme?: boolean
   /** Sujet du mail d'origine — traçabilité. */
   source?: string
 }
@@ -126,6 +134,8 @@ export function dedoublonner(entrees: Deal[]): Dedoublonnage {
       const b = deals[j]
       if (clefProduit(a.produit) !== clefProduit(b.produit)) continue
       if (Math.abs(joursEntre(a.date, b.date)) > 7) continue
+      // Ressemblance déjà tranchée à la lecture du mail : on ne la ressort pas.
+      if (a.distinctConfirme || b.distinctConfirme) continue
       const motifs: string[] = []
       if (a.nominal !== b.nominal) motifs.push('nominal différent')
       if ((a.emetteur ?? '') !== (b.emetteur ?? '')) motifs.push('émetteur différent')

@@ -1,5 +1,5 @@
 {
-  "_README": "Deals annonces par l'equipe dans le dossier Outlook DEAL DONE. Transcription LITTERALE des mails : un champ absent du mail est absent ici, jamais reconstitue. `source` = sujet du mail d'origine. Fenetre couverte : 17/06/2026 au 12/08/2026 (20 deals). Les annonces anterieures restent a reprendre.",
+  "_README": "Deals annonces par l'equipe dans le dossier Outlook DEAL DONE. Transcription LITTERALE des mails : un champ absent du mail est absent ici, jamais reconstitue. `source` = sujet du mail d'origine. Fenetre couverte : 17/06/2026 au 12/08/2026 (25 deals, dont 5 issus de mails multi-produits). Les annonces anterieures restent a reprendre.",
   "fenetre": {
     "du": "2026-06-17",
     "au": "2026-08-12"
@@ -85,20 +85,6 @@
       "coupon": 11
     },
     {
-      "id": "2026-07-23-phoenix-memoire-tech",
-      "date": "2026-07-23",
-      "rr": "MM",
-      "produit": "Phoenix Mémoire TECH",
-      "description": "Memory Phoenix · 3 ans · autocall trimestriel 100 % au T2 puis −2,5 %/trimestre (75 % à maturité) · daily best strike close jusqu'au 06/08 · One Star 100 % à maturité",
-      "emetteur": "Santander",
-      "devise": "USD",
-      "nominal": 300000,
-      "ufGlobal": 0.5,
-      "coupon": 18,
-      "maturiteAns": 3,
-      "source": "deal done : Phoenix TECH 18% coupon"
-    },
-    {
       "id": "2026-07-23-phoenix-memoire-indice-em",
       "date": "2026-07-23",
       "rr": "MM",
@@ -115,6 +101,20 @@
       "finCommercialisation": "2026-09-30",
       "source": "Deal Done : Phoenix Mémoire Indice EM chez Selencia",
       "coupon": 8
+    },
+    {
+      "id": "2026-07-23-phoenix-memoire-tech",
+      "date": "2026-07-23",
+      "rr": "MM",
+      "produit": "Phoenix Mémoire TECH",
+      "description": "Memory Phoenix · 3 ans · autocall trimestriel 100 % au T2 puis −2,5 %/trimestre (75 % à maturité) · daily best strike close jusqu'au 06/08 · One Star 100 % à maturité",
+      "emetteur": "Santander",
+      "devise": "USD",
+      "nominal": 300000,
+      "ufGlobal": 0.5,
+      "coupon": 18,
+      "maturiteAns": 3,
+      "source": "deal done : Phoenix TECH 18% coupon"
     },
     {
       "id": "2026-07-22-phoenix-bearish-cms-10y",
@@ -154,20 +154,6 @@
       "coupon": 12
     },
     {
-      "id": "2026-07-09-autocall-qualcomm",
-      "date": "2026-07-09",
-      "rr": "MH",
-      "produit": "Autocall Qualcomm",
-      "description": "Autocall sur Qualcomm · durée 36 mois · best strike quotidien sur 2 semaines · observation mensuelle · première constatation dans 3 mois",
-      "emetteur": "BBVA",
-      "devise": "USD",
-      "nominal": 315000,
-      "maturiteAns": 3,
-      "source": "deal done QUalcomm",
-      "ufGlobal": 6,
-      "coupon": 11.76
-    },
-    {
       "id": "2026-07-09-athena-degressif-rheinmetall",
       "date": "2026-07-09",
       "rr": "MEG",
@@ -200,6 +186,20 @@
       "coupon": 10
     },
     {
+      "id": "2026-07-09-autocall-qualcomm",
+      "date": "2026-07-09",
+      "rr": "MH",
+      "produit": "Autocall Qualcomm",
+      "description": "Autocall sur Qualcomm · durée 36 mois · best strike quotidien sur 2 semaines · observation mensuelle · première constatation dans 3 mois",
+      "emetteur": "BBVA",
+      "devise": "USD",
+      "nominal": 315000,
+      "maturiteAns": 3,
+      "source": "deal done QUalcomm",
+      "ufGlobal": 6,
+      "coupon": 11.76
+    },
+    {
       "id": "2026-07-06-athena-degressif-ia-electrification",
       "date": "2026-07-06",
       "rr": "MH",
@@ -215,7 +215,24 @@
       "source": "Deal done Cardif et abeille",
       "ufGlobal": 7.1,
       "ufLR": 3,
-      "coupon": 8
+      "coupon": 8,
+      "distinctConfirme": true
+    },
+    {
+      "id": "2026-07-06-athena-degressif-ia-electrification-1m",
+      "date": "2026-07-06",
+      "rr": "MH",
+      "produit": "Athéna Dégressif IA Électrification",
+      "description": "Maturité 12 ans · observation trimestrielle · best strike 2 dates (03/08 + 17/12) · rappel au T4 à 90 % puis dégressivité de 1,50 % par trimestre (floor 50 %) · protection du capital à −50 % · indice ENEAID50 · SECOND des deux produits du même mail (« 1 M€ avec Morgan Stanley pour démarrer »)",
+      "emetteur": "Morgan Stanley",
+      "devise": "EUR",
+      "nominal": 1000000,
+      "ufGlobal": 6.6,
+      "ufLR": 3,
+      "coupon": 8,
+      "maturiteAns": 12,
+      "distinctConfirme": true,
+      "source": "Deal done Cardif et abeille"
     },
     {
       "id": "2026-07-01-athena-wof-microsoft-alphabet",
@@ -276,6 +293,36 @@
       "coupon": 17.5
     },
     {
+      "id": "2026-06-19-autocall-100-kg-wof-indices",
+      "date": "2026-06-19",
+      "rr": "MEG",
+      "produit": "Autocall 100 % KG Wof Indices",
+      "description": "Autocall 100 % KG · CTO · strike close 17/06 (18/06 pour le NKY) · sous-jacents worst-of SMI, FTSE MIB, RTY, NKY",
+      "emetteur": "Goldman Sachs",
+      "devise": "USD",
+      "isin": "XS3384637073",
+      "maturiteAns": 6,
+      "dateEmission": "2026-07-03",
+      "source": "DEAL DONE 17/06",
+      "ufGlobal": 2.85,
+      "coupon": 10.2
+    },
+    {
+      "id": "2026-06-19-phoenix-memoire-bancaire-bnp-aca-sg",
+      "date": "2026-06-19",
+      "rr": "STA",
+      "produit": "Phoenix Mémoire Bancaire Wof BNP + ACA + SG",
+      "description": "Maturité 5 ans · observation trimestrielle · strike au close du 19/06 · issue t+5 bd · seuil de rappel 100 % dès le T4 puis dégressivité de 2,5 % par trimestre jusqu’à 60 % · protection du coupon 60 % (jusqu’à −40 %) · protection du capital 50 % à maturité · sous-jacents worst-of BNP / ACA / SG",
+      "emetteur": "Barclays",
+      "devise": "EUR",
+      "nominal": 200000,
+      "ufGlobal": 5.65,
+      "coupon": 9.1,
+      "isin": "XS3401965978",
+      "maturiteAns": 5,
+      "source": "DEAL DONE 19/06"
+    },
+    {
       "id": "2026-06-19-phoenix-memoire-eneaid50",
       "date": "2026-06-19",
       "rr": "STA",
@@ -290,19 +337,48 @@
       "coupon": 9
     },
     {
-      "id": "2026-06-19-autocall-100-kg-wof-indices",
+      "id": "2026-06-19-phoenix-memoire-sur-indices-barclays",
       "date": "2026-06-19",
       "rr": "MEG",
-      "produit": "Autocall 100 % KG Wof Indices",
-      "description": "Autocall 100 % KG · CTO · strike close 17/06 (18/06 pour le NKY) · sous-jacents worst-of SMI, FTSE MIB, RTY, NKY",
-      "emetteur": "Goldman Sachs",
+      "produit": "Phoenix Mémoire sur Indices",
+      "description": "CTO · maturité 6 ans · observation semestrielle · strike close 17/06 (18/06 pour le NKY) · barrière d’autocall 100 % du niveau initial à partir du S2 · barrière de coupon 85 % avec effet mémoire · protection du capital 60 % à maturité · sous-jacents worst-of SMI, FTSE MIB, SPX, NKY",
+      "emetteur": "Barclays",
       "devise": "USD",
-      "isin": "XS3384637073",
+      "ufGlobal": 2.5,
+      "coupon": 12.5,
+      "isin": "XS3391893156",
+      "dateEmission": "2026-07-01",
       "maturiteAns": 6,
-      "dateEmission": "2026-07-03",
-      "source": "DEAL DONE 17/06",
-      "ufGlobal": 2.85,
-      "coupon": 10.2
+      "source": "DEAL DONE 17/06"
+    },
+    {
+      "id": "2026-06-19-phoenix-memoire-meta-schneider",
+      "date": "2026-06-19",
+      "rr": "STA",
+      "produit": "Phoenix Mémoire Wof Meta + Schneider Electric",
+      "description": "Maturité 5 ans · observation trimestrielle · strike min 2 dates (22/06 + 30/07) · issue t+20 bd · seuil de rappel 100 % dès le T4 puis dégressivité de 1,5 % par trimestre · protection du coupon 80 % (jusqu’à −20 %) · protection du capital 50 % à maturité · sous-jacents worst-of SU FP / META US · UF illisible dans le mail (écrit « 94 % », coquille manifeste) — champ laissé vide",
+      "emetteur": "Marex",
+      "devise": "EUR",
+      "nominal": 500000,
+      "coupon": 11.75,
+      "maturiteAns": 5,
+      "source": "DEAL DONE 19/06"
+    },
+    {
+      "id": "2026-06-19-phoenix-memoire-siemens-energy-bnp",
+      "date": "2026-06-19",
+      "rr": "STA",
+      "produit": "Phoenix Mémoire Wof Siemens Energy + BNP",
+      "description": "Maturité 5 ans · observation trimestrielle · strike min 2 dates (10/07 + 07/08) · issue 24/07 (t+5w) · seuil de rappel 100 % dès le T4 avec dégressivité de 2 % jusqu’à 75 % · coupon distribué jusqu’à −25 % chaque trimestre · protection du capital jusqu’à −50 % à maturité · sous-jacents worst-of Siemens Energy / BNP",
+      "emetteur": "BofA",
+      "devise": "EUR",
+      "nominal": 500000,
+      "ufGlobal": 6.1,
+      "coupon": 14.75,
+      "isin": "XS3332149973",
+      "dateEmission": "2026-07-24",
+      "maturiteAns": 5,
+      "source": "DEAL DONE 19/06"
     }
   ]
 }

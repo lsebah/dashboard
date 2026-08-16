@@ -45,6 +45,30 @@ test('deux tickets du même jour et du même sous-jacent NE sont PAS fusionnés 
   assert.match(r.aVerifier[0].motif, /nominal/)
 })
 
+test('une ressemblance déjà tranchée ne ressort pas en suspicion', () => {
+  // Cas réel du 06/07 : le MÊME mail annonce deux « Athena dégressif IA
+  // Electrification » — 3,25 M€ (rappel T4 à 100 %) et 1 M€ (rappel T4 à 90 %).
+  // La lecture du mail a tranché ; laisser l'avertissement en permanence le
+  // transformerait en bruit que plus personne ne lit.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-07-06', rr: 'MH', produit: 'Athena IA', emetteur: 'MS', nominal: 3250000, distinctConfirme: true }),
+    D({ id: 'b', date: '2026-07-06', rr: 'MH', produit: 'Athena IA', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+  ])
+  assert.equal(r.deals.length, 2)
+  assert.equal(r.aVerifier.length, 0)
+})
+
+test('le drapeau « distinct » ne dédoublonne pas une identité strictement égale', () => {
+  // Garde-fou : deux lignes rigoureusement identiques restent un doublon, même
+  // marquées distinctes — sinon le drapeau deviendrait un moyen de dupliquer.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-07-06', rr: 'STA', produit: 'X', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+    D({ id: 'b', date: '2026-07-06', rr: 'MM', produit: 'X', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+  ])
+  assert.equal(r.deals.length, 1)
+  assert.equal(r.doublons.length, 1)
+})
+
 test('un même produit annoncé à deux mois d’écart reste deux affaires', () => {
   const r = dedoublonner([
     D({ id: 'a', date: '2026-06-24', rr: 'MM', produit: 'Phoenix SpaceX', emetteur: 'Marex', nominal: 300000 }),
