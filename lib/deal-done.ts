@@ -87,6 +87,23 @@ export function clefProduit(nom: string): string {
 const identite = (d: Deal): string =>
   [clefProduit(d.produit), (d.emetteur ?? '').toLowerCase(), d.nominal ?? ''].join('|')
 
+/**
+ * Vrai quand deux annonces portent des upfronts DIFFÉRENTS.
+ *
+ * Un deal a un upfront, un seul. Deux annonces qui n'affichent pas le même UF ne
+ * peuvent donc pas décrire la même affaire : c'est une PREUVE de distinction,
+ * pas un doute. Ni fusion, ni suspicion — la ressemblance est expliquée.
+ * (Règle posée par Laurent le 16/08/2026 sur le cas SpaceX du 24/06 :
+ * 6,00 % contre 0,50 %.)
+ *
+ * La règle exige les DEUX upfronts. Un UF absent d'un côté ne prouve rien — et
+ * c'est justement le cas typique du stagiaire qui reprend une annonce en
+ * omettant des champs, donc le vrai doublon qu'on veut continuer d'attraper.
+ */
+function ufDistincts(a: Deal, b: Deal): boolean {
+  return typeof a.ufGlobal === 'number' && typeof b.ufGlobal === 'number' && a.ufGlobal !== b.ufGlobal
+}
+
 export interface Dedoublonnage {
   /** Deals retenus (un par identité forte). */
   deals: Deal[]
@@ -114,6 +131,13 @@ export function dedoublonner(entrees: Deal[]): Dedoublonnage {
       parIdentite.set(k, d)
       continue
     }
+    // Même identité forte mais upfronts différents : deux affaires, jamais un
+    // doublon. On les garde toutes les deux, en distinguant la clé par l'UF —
+    // fusionner ici ferait disparaître un deal réel.
+    if (ufDistincts(deja, d)) {
+      parIdentite.set(`${k}|uf:${d.ufGlobal}`, d)
+      continue
+    }
     // Le stagiaire ne remplace jamais un sales ; un sales remplace le stagiaire.
     if (deja.rr === 'STA' && d.rr !== 'STA') {
       parIdentite.set(k, d)
@@ -136,6 +160,8 @@ export function dedoublonner(entrees: Deal[]): Dedoublonnage {
       if (Math.abs(joursEntre(a.date, b.date)) > 7) continue
       // Ressemblance déjà tranchée à la lecture du mail : on ne la ressort pas.
       if (a.distinctConfirme || b.distinctConfirme) continue
+      // Upfronts différents : la ressemblance est expliquée, pas suspecte.
+      if (ufDistincts(a, b)) continue
       const motifs: string[] = []
       if (a.nominal !== b.nominal) motifs.push('nominal différent')
       if ((a.emetteur ?? '') !== (b.emetteur ?? '')) motifs.push('émetteur différent')
