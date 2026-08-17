@@ -103,7 +103,14 @@ export default function RiskCartography({
       {/* Filtres */}
       <div className="mb-3 flex flex-wrap gap-2">
         <Select label="Client" value={client} set={setClient} opts={opt(clientOpts)} />
-        <Select label="Émetteur" value={emetteur} set={setEmetteur} opts={opt(emetteurOpts)} />
+        {/* La VALEUR reste le nom complet (c'est elle qui filtre `p.emetteur`) ;
+            seul le LIBELLÉ est le code court, pour coller à la colonne. */}
+        <Select
+          label="Émetteur"
+          value={emetteur}
+          set={setEmetteur}
+          opts={[{ v: ALL, l: ALL }, ...emetteurOpts.map((x) => ({ v: x, l: codeEmetteur(x) }))]}
+        />
         <Select label="Type produit" value={type} set={setType} opts={opt(typeOpts)} />
         <Select
           label="Maturité"
@@ -223,7 +230,13 @@ function RiskDetail({ r }: { r: RiskItem }) {
       <Section title="Émetteurs concernés">
         <div className="flex flex-wrap gap-1">
           {r.emetteurs.map((e) => (
-            <span key={e} className="rounded border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-600">{e}</span>
+            <span
+              key={e}
+              title={e}
+              className="rounded border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-600"
+            >
+              {codeEmetteur(e)}
+            </span>
           ))}
         </div>
       </Section>

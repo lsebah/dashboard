@@ -7,6 +7,7 @@ import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissio
 import { useAllocations } from '@/lib/allocations'
 import Modal from './Modal'
 import { dateFr as dateIso } from '@/lib/dates'
+import { codeEmetteur } from '@/lib/emetteurs'
 
 // Année en cours : seule éditable. Les précédentes sont clôturées (statiques).
 const ANNEE_COURANTE = '2026'
@@ -384,7 +385,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                 </td>
                 <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.isin}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{l.client ?? '—'}</td>
-                <td className={`px-2 py-1.5 whitespace-nowrap ${impaye ? 'font-semibold text-red-600' : ''}`}>{l.emetteur ?? '—'}</td>
+                <td
+                  className={`px-2 py-1.5 whitespace-nowrap ${impaye ? 'font-semibold text-red-600' : ''}`}
+                  title={l.emetteur ?? undefined}
+                >
+                  {l.emetteur ? codeEmetteur(l.emetteur) : '—'}
+                </td>
                 <td className="px-2 py-1.5 max-w-[220px] truncate" title={l.description ?? undefined}>{l.description ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.nominal, l.devise ?? 'EUR')}</td>
                 {/* UF — éditable inline (classeur, année courante) ; les lignes

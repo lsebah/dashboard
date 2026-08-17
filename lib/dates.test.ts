@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { dateFr, jourMois } from './dates'
+import { formatDateFr } from './lifecycle'
 
 test('dateFr rend JJ/MM/AA', () => {
   assert.equal(dateFr('2026-08-17'), '17/08/26')
@@ -31,4 +32,14 @@ test('dateFr refuse plutôt que d’approcher', () => {
 test('jourMois rend JJ/MM', () => {
   assert.equal(jourMois('2026-08-17'), '17/08')
   assert.equal(jourMois(undefined), '—')
+})
+
+test('formatDateFr — le formateur historique — suit la même règle', () => {
+  // Six écrans importent `formatDateFr` (Portefeuille, Synopsis, Notifications,
+  // Reconstruction, Calendrier, Bloomberg) et il rendait « 7 avr. 2026 ». La
+  // règle JJ/MM/AA avait été posée sans que ce formateur-là soit repris : ce
+  // test empêche la divergence de revenir.
+  assert.equal(formatDateFr('2026-04-07'), '07/04/26')
+  assert.equal(formatDateFr('2026-08-20'), '20/08/26')
+  assert.equal(formatDateFr(undefined), '—')
 })

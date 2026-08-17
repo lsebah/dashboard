@@ -14,6 +14,7 @@ import {
   formatMontant,
 } from '@/lib/lifecycle'
 import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
+import { codeEmetteur } from '@/lib/emetteurs'
 import { rateNow } from '@/lib/rates-levels'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
@@ -98,7 +99,7 @@ export default function ProductSynopsis({
         <div className="text-xs text-slate-500">
           <span className="font-mono">{product.isin}</span>
           <span className="mx-1.5">•</span>
-          {product.emetteur}
+          <span title={product.emetteur}>{codeEmetteur(product.emetteur)}</span>
           <span className="mx-1.5">•</span>
           <span className="font-medium text-slate-700">
             {formatMontant(product.nominal, product.devise)}
