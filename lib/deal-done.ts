@@ -69,8 +69,10 @@ export interface Deal {
   nominal?: number
   /** UF global (upfront total), en %. */
   ufGlobal?: number
-  /** UF de la lettre de remise (LR), en %. */
-  ufLR?: number
+  // La LETTRE DE REMISE n'a plus de champ ni de colonne : elle ne concerne
+  // qu'une poignée de deals, et une colonne quasi vide coûtait de la largeur à
+  // la description. Elle est écrite dans `description` (« · LR 3,5 % »), source
+  // unique — un champ doublé d'un texte finit toujours par diverger.
   /** Coupon annuel, en %. */
   coupon?: number
   /** Assureurs vie référencés pour ce produit (AVF). */

@@ -214,7 +214,6 @@
       ],
       "source": "Deal done Cardif et abeille",
       "ufGlobal": 7.1,
-      "ufLR": 3,
       "coupon": 8,
       "distinctConfirme": true
     },
@@ -223,12 +222,11 @@
       "date": "2026-07-06",
       "rr": "MH",
       "produit": "Athéna Dégressif IA Électrification",
-      "description": "Maturité 12 ans · observation trimestrielle · best strike 2 dates (03/08 + 17/12) · rappel au T4 à 90 % puis dégressivité de 1,50 % par trimestre (floor 50 %) · protection du capital à −50 % · indice ENEAID50 · SECOND des deux produits du même mail (« 1 M€ avec Morgan Stanley pour démarrer »)",
+      "description": "Maturité 12 ans · observation trimestrielle · best strike 2 dates (03/08 + 17/12) · rappel au T4 à 90 % puis dégressivité de 1,50 % par trimestre (floor 50 %) · protection du capital à −50 % · indice ENEAID50 · SECOND des deux produits du même mail (« 1 M€ avec Morgan Stanley pour démarrer ») · LR 3 %",
       "emetteur": "Morgan Stanley",
       "devise": "EUR",
       "nominal": 1000000,
       "ufGlobal": 6.6,
-      "ufLR": 3,
       "coupon": 8,
       "maturiteAns": 12,
       "distinctConfirme": true,
@@ -704,12 +702,11 @@
       "date": "2026-05-04",
       "rr": "MM",
       "produit": "Phoenix Non-Mémoire VOLT",
-      "description": "Maturité max 10 ans · best strike 2 dates (04/05 close + 30/06 close) · autocall trimestriel dès le T4 à 100 % · coupon trimestriel · barrière de coupon SANS effet mémoire 60 % (jusqu'à −40 %) · protection du capital 50 % à maturité · commercialisation jusqu'à fin juin · sous-jacent : Euronext Electrification Fixed Basket Decrement 50 Points (VOLTD50)",
+      "description": "Maturité max 10 ans · best strike 2 dates (04/05 close + 30/06 close) · autocall trimestriel dès le T4 à 100 % · coupon trimestriel · barrière de coupon SANS effet mémoire 60 % (jusqu'à −40 %) · protection du capital 50 % à maturité · commercialisation jusqu'à fin juin · sous-jacent : Euronext Electrification Fixed Basket Decrement 50 Points (VOLTD50) · LR 4 %",
       "emetteur": "BNP Paribas",
       "devise": "EUR",
       "nominal": 500000,
       "ufGlobal": 6.3,
-      "ufLR": 4,
       "coupon": 7.45,
       "avf": [
         "UAF",
@@ -822,12 +819,11 @@
       "date": "2026-03-27",
       "rr": "MM",
       "produit": "Note Taux Fixe 100 % Capital et Coupon Garanti (FRN 12Y)",
-      "description": "Maturité 12 ans · rappel annuel au gré de l'émetteur · coupon versé au rappel ou à maturité · capital garanti 100 % à maturité · AV FR UAF, minimum 300 K€ chez UAF · commercialisation jusqu'à mi-juin",
+      "description": "Maturité 12 ans · rappel annuel au gré de l'émetteur · coupon versé au rappel ou à maturité · capital garanti 100 % à maturité · AV FR UAF, minimum 300 K€ chez UAF · commercialisation jusqu'à mi-juin · LR 4,5 %",
       "emetteur": "Société Générale",
       "devise": "EUR",
       "nominal": 500000,
       "ufGlobal": 5.5,
-      "ufLR": 4.5,
       "coupon": 4.5,
       "avf": [
         "UAF"
@@ -933,12 +929,11 @@
       "date": "2026-03-20",
       "rr": "MM",
       "produit": "Phoenix Non-Mémoire Bancaires STABFA50",
-      "description": "Maturité max 12 ans · best strike 3 dates (close + 31/03 + 30/04) · constatations trimestrielles · barrière de rappel −1,5 %/trimestre dès le T4 jusqu'à −40 % · barrière de coupon 60 % · protection du capital 50 % (−50 %) · coupon conditionnel SANS effet mémoire · commercialisation jusqu'au 15/05 · sous-jacent : Solactive Eurozone Banks Focus Decrement 50 (STABFA50)",
+      "description": "Maturité max 12 ans · best strike 3 dates (close + 31/03 + 30/04) · constatations trimestrielles · barrière de rappel −1,5 %/trimestre dès le T4 jusqu'à −40 % · barrière de coupon 60 % · protection du capital 50 % (−50 %) · coupon conditionnel SANS effet mémoire · commercialisation jusqu'au 15/05 · sous-jacent : Solactive Eurozone Banks Focus Decrement 50 (STABFA50) · LR 3,5 %",
       "emetteur": "Société Générale",
       "devise": "EUR",
       "nominal": 300000,
       "ufGlobal": 4.25,
-      "ufLR": 3.5,
       "coupon": 8,
       "avf": [
         "Selencia"
@@ -1296,12 +1291,11 @@
       "date": "2026-02-02",
       "rr": "MM",
       "produit": "Phoenix Non-Mémoire IEEL20TD",
-      "description": "Maturité 12 ans · strike min close + 27/02 + 15/04 · observation trimestrielle · autocall trimestriel 100 % dès le T4 puis −0,682 % par trimestre (jusqu'à 70 %) · barrière de coupon 70 % (jusqu'à −30 %) · protection du capital 50 % à maturité · commercialisation jusqu'à fin avril · sous-jacent : IEEL20TD",
+      "description": "Maturité 12 ans · strike min close + 27/02 + 15/04 · observation trimestrielle · autocall trimestriel 100 % dès le T4 puis −0,682 % par trimestre (jusqu'à 70 %) · barrière de coupon 70 % (jusqu'à −30 %) · protection du capital 50 % à maturité · commercialisation jusqu'à fin avril · sous-jacent : IEEL20TD · LR 3,5 %",
       "emetteur": "Morgan Stanley",
       "devise": "EUR",
       "nominal": 300000,
       "ufGlobal": 4.7,
-      "ufLR": 3.5,
       "coupon": 8,
       "avf": [
         "Selencia"
@@ -1427,9 +1421,8 @@
       "date": "2026-01-20",
       "rr": "MH",
       "produit": "Autocall Daily Crédit Agricole",
-      "description": "Maturité 12 ans · observation quotidienne · best strike quotidien jusqu'au 17 mars · dégressivité de 3 %/an · protection du capital à −50 % · running 0,20 % · lancement chez Generali avec Exclusive Partners · sous-jacent : Crédit Agricole div 1,10 €",
+      "description": "Maturité 12 ans · observation quotidienne · best strike quotidien jusqu'au 17 mars · dégressivité de 3 %/an · protection du capital à −50 % · running 0,20 % · lancement chez Generali avec Exclusive Partners · sous-jacent : Crédit Agricole div 1,10 € · LR 4,2 %",
       "ufGlobal": 7.3,
-      "ufLR": 4.2,
       "coupon": 10,
       "avf": [
         "Generali"

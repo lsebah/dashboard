@@ -25,7 +25,8 @@ const COLS = [
   { label: 'Date', w: 66 },
   { label: 'RR', w: 42 },
   { label: 'UF', w: 50 },
-  { label: 'UF LR', w: 52 },
+  // La lettre de remise n'a plus de colonne : elle ne concerne qu'une poignée de
+  // deals et la largeur profite à la description, qui la porte désormais.
   { label: 'Produit & description', w: 0 }, // flexible
   { label: 'Émetteur', w: 92 },
   { label: 'Dev', w: 40 },
@@ -187,7 +188,7 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
               {COLS.map((c) => (
                 <th
                   key={c.label}
-                  className={`px-2 py-2 font-medium ${['Nominal', 'Coupon', 'Prix', 'UF', 'UF LR'].includes(c.label) ? 'text-right' : 'text-left'}`}
+                  className={`px-2 py-2 font-medium ${['Nominal', 'Coupon', 'Prix', 'UF'].includes(c.label) ? 'text-right' : 'text-left'}`}
                 >
                   {c.label}
                 </th>
@@ -206,7 +207,6 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                     </span>
                   </td>
                   <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
-                  <td className="px-2 py-2 text-right tabular-nums text-slate-600">{pct(d.ufLR)}</td>
                   <td className="px-2 py-2">
                     <div className="font-semibold text-slate-800">{d.produit}</div>
                     {d.description && <div className="mt-0.5 leading-snug text-slate-500">{d.description}</div>}
