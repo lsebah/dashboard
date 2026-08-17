@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Frequency, Product } from '@/lib/types'
 import { canonicalTermsheetName, issuerCode } from '@/lib/termsheets'
-import { addLocalProduct } from '@/lib/local-products'
+import { addLocalProduct, useLocalProducts } from '@/lib/local-products'
+import { products as produitsFeed } from '@/lib/products'
 import { setLocalAllocations, useAllocations, tousLesClients } from '@/lib/allocations'
 import { addLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { commissions } from '@/lib/commissions'
@@ -42,6 +43,10 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
   const [dateEmission, setDateEmission] = useState('')
   const [duree, setDuree] = useState('')
   const [frequence, setFrequence] = useState<Frequency>('trimestriel')
+  // La fréquence a une valeur par défaut : sans ce drapeau, impossible de
+  // distinguer « pas encore choisie » de « choisie et égale au défaut ».
+  const [freqTouchee, setFreqTouchee] = useState(false)
+  const [repris, setRepris] = useState<string>('')
   const [tsFile, setTsFile] = useState<string>('')
   const [allocs, setAllocs] = useState<Alloc[]>([{ client: '', montant: '', uf: '', retro: '' }])
   const [gabrielle, setGabrielle] = useState('office@cmf.finance')
@@ -58,6 +63,51 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
     for (const k of Object.keys(commissions.mailing ?? {})) set.add(k)
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'))
   }, [allocMap])
+
+  // ── Reprise automatique d'un ISIN déjà connu ────────────────────────────
+  //  Un upsize, une seconde tranche ou un ajout de client portent le MÊME
+  //  produit : retaper le nom, l'émetteur et la fréquence, c'est trois
+  //  occasions de les écrire autrement que la première fois — et deux libellés
+  //  pour un seul produit se retrouvent ensuite dans les filtres, les tris et
+  //  le nom de fichier de la termsheet.
+  //
+  //  On ne remplit QUE ce qui est encore vide : une valeur déjà saisie n'est
+  //  jamais écrasée. La reprise est annoncée à l'écran, avec le produit repris.
+  const produitsLocaux = useLocalProducts()
+  const parIsin = useMemo(() => {
+    const m = new Map<string, Product>()
+    // Les produits locaux passent en dernier : ils font foi sur le feed.
+    for (const p of [...produitsFeed, ...produitsLocaux]) m.set(p.isin.toUpperCase(), p)
+    return m
+  }, [produitsLocaux])
+
+  const connu = parIsin.get(isin.trim().toUpperCase())
+
+  useEffect(() => {
+    if (!connu) {
+      setRepris('')
+      return
+    }
+    const pris: string[] = []
+    setNom((v) => {
+      const val = connu.description ?? connu.nom
+      if (v.trim() || !val) return v
+      pris.push('nom')
+      return val
+    })
+    setEmetteur((v) => {
+      if (v.trim() || !connu.emetteur) return v
+      pris.push('émetteur')
+      return connu.emetteur
+    })
+    if (!freqTouchee && connu.frequence) {
+      setFrequence(connu.frequence)
+      pris.push('fréquence')
+    }
+    setRepris(pris.length ? `${connu.nom} — ${pris.join(', ')} repris` : `${connu.nom} — déjà au portefeuille`)
+    // `connu` seul : la reprise se déclenche au changement d'ISIN, pas à chaque frappe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connu])
 
   const setA = (i: number, k: keyof Alloc, v: string) =>
     setAllocs((a) => a.map((row, j) => (j === i ? { ...row, [k]: v } : row)))
@@ -318,6 +368,11 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
             <div>
               <label className="field-label">ISIN</label>
               <input value={isin} onChange={(e) => setIsin(e.target.value)} className={inputCls} placeholder="XS…" />
+              {repris && (
+                <div className="mt-1 text-[11px] text-emerald-700" title="Champs repris du produit déjà au portefeuille — une valeur déjà saisie n'est jamais écrasée">
+                  ✓ {repris}
+                </div>
+              )}
             </div>
             <div>
               <label className="field-label">Émetteur</label>
@@ -341,7 +396,7 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="field-label">Fréquence</label>
-              <select value={frequence} onChange={(e) => setFrequence(e.target.value as Frequency)} className={inputCls}>
+              <select value={frequence} onChange={(e) => { setFreqTouchee(true); setFrequence(e.target.value as Frequency) }} className={inputCls}>
                 {FREQS.map((f) => (
                   <option key={f.v} value={f.v}>
                     {f.label}
