@@ -413,6 +413,20 @@
       "source": "DEAL DONE 09/06"
     },
     {
+      "id": "2026-06-05-athena-degressif-eneaid50",
+      "date": "2026-06-05",
+      "rr": "ALM",
+      "produit": "Athéna Dégressif ENEAID50",
+      "description": "Maturité 12 ans · observation trimestrielle · strike min sur 2 mois, 3 dates (05/06 + 01/07 + 29/07) · seuil de rappel 100 % dès le T4 puis dégressivité de 0,75 %/trimestre jusqu'à 67,75 % (−32,25 %) · protection du capital 50 % à maturité · settlement 03/07 (année non écrite) · sous-jacent : ENEAID50",
+      "emetteur": "Morgan Stanley",
+      "devise": "EUR",
+      "nominal": 800000,
+      "ufGlobal": 7.6,
+      "coupon": 12,
+      "maturiteAns": 12,
+      "source": "Deal done UF 7.6"
+    },
+    {
       "id": "2026-06-03-certiplus-callable-sx5e",
       "date": "2026-06-03",
       "rr": "MM",
@@ -499,6 +513,61 @@
       "coupon": 11,
       "maturiteAns": 5,
       "source": "DEAL DONE 21/05/26"
+    },
+    {
+      "id": "2026-05-15-cln-tranche-itraxx-main-zero-recovery-5-8",
+      "date": "2026-05-15",
+      "rr": "ALM",
+      "produit": "CLN Tranche iTraxx Main Zero Recovery 5/8",
+      "description": "Maturité 5 ans · coupons in fine · tranche 5/8 · coupon 27 % in fine · sous-jacent : iTraxx Main S45 · UF non retenue : la réponse du fil ne donne qu'une fourchette (« 5/5,5 % pour les 3 autres »), pas un chiffre ferme",
+      "emetteur": "BBVA",
+      "devise": "EUR",
+      "nominal": 357000,
+      "coupon": 27,
+      "maturiteAns": 5,
+      "source": "Deal done"
+    },
+    {
+      "id": "2026-05-15-phoenix-memoire-defense-ue-bnp",
+      "date": "2026-05-15",
+      "rr": "ALM",
+      "produit": "Phoenix Mémoire Défense UE EDFEND50",
+      "description": "Maturité 10 ans · strike moyen : moyenne des constatations hebdomadaires sur 6 semaines (6 dates jusqu'au 22/06) · observation trimestrielle · seuil de rappel 100 % dès le T4 · barrière de coupon 55 % (distribution jusqu'à −45 % à chaque constatation) · protection du capital 40 % (−60 % à maturité) · sous-jacent : EDFEND50 · UF 2,50 % : chiffre ferme donné dans la réponse du fil, le mail de deal done n'en contient aucun",
+      "emetteur": "BNP Paribas",
+      "devise": "EUR",
+      "nominal": 300000,
+      "ufGlobal": 2.5,
+      "coupon": 10.5,
+      "maturiteAns": 10,
+      "distinctConfirme": true,
+      "source": "Deal done"
+    },
+    {
+      "id": "2026-05-15-phoenix-memoire-defense-ue-barclays",
+      "date": "2026-05-15",
+      "rr": "ALM",
+      "produit": "Phoenix Mémoire Défense UE Wof Rheinmetall + Safran",
+      "description": "Maturité 5 ans · strike 13/05 · observation trimestrielle · seuil de rappel 100 % dès le T3 avec dégressivité de 3 %/trimestre jusqu'à 60 % · protection de coupon 60 % (jusqu'à −40 %) · protection du capital 50 % à maturité · sous-jacents worst-of : Rheinmetall / Safran · UF non retenue : la réponse du fil ne donne qu'une fourchette (« 5/5,5 % pour les 3 autres »), pas un chiffre ferme",
+      "emetteur": "Barclays",
+      "devise": "EUR",
+      "nominal": 414000,
+      "coupon": 8.5,
+      "maturiteAns": 5,
+      "distinctConfirme": true,
+      "source": "Deal done"
+    },
+    {
+      "id": "2026-05-15-reverse-convertible-autocallable-pci",
+      "date": "2026-05-15",
+      "rr": "ALM",
+      "produit": "Reverse Convertible Autocallable PCI",
+      "description": "Maturité 5 ans · strike au close · observation trimestrielle · seuil de rappel 100 % dès le T4 avec dégressivité de 2 %/trimestre · protection du capital 50 % à maturité en put à levier · coupon garanti 6,00 % p.a. · sous-jacents worst-of : Siemens Energy / Air Liquide / Veolia · UF non retenue : la réponse du fil ne donne qu'une fourchette (« 5/5,5 % pour les 3 autres »), pas un chiffre ferme",
+      "emetteur": "Santander",
+      "devise": "EUR",
+      "nominal": 500000,
+      "coupon": 6,
+      "maturiteAns": 5,
+      "source": "Deal done"
     },
     {
       "id": "2026-05-13-phoenix-memoire-defense-us-missiles",
@@ -1098,6 +1167,22 @@
       "source": "Deal Done : Athena Airbag Novo"
     },
     {
+      "id": "2026-02-19-cln-itraxx-europe-main-s44-zero-recovery",
+      "date": "2026-02-19",
+      "rr": "ALM",
+      "produit": "CLN iTraxx Europe Main S44 Zero Recovery 4/7",
+      "description": "Maturité 5 ans · tranche 4/7 (3 jokers), attachment 2,40 % / detachment 5,60 % · zero recovery, settlement cash européen · coupon 6 % annuel (base 30/360, first coupon short) · trade 19/02, émission 12/03, maturité 09/01/2031, fin de risque crédit 20/12/2030 · placements : 200 K€ chez CIC (CTO) et 200 K€ chez AVL Utmost / Quintet · sous-jacent : iTraxx Europe Main S44 · UF 2,75 % confirmée deux fois (message et ticket BBVA) ; une UF de 2,50 % figure plus haut dans le fil, c'est une étape de négociation antérieure",
+      "emetteur": "BBVA",
+      "devise": "EUR",
+      "nominal": 400000,
+      "ufGlobal": 2.75,
+      "coupon": 6,
+      "isin": "XS3260441996",
+      "dateEmission": "2026-03-12",
+      "maturiteAns": 5,
+      "source": "Deal done"
+    },
+    {
       "id": "2026-02-13-phoenix-memoire-tech-us",
       "date": "2026-02-13",
       "rr": "MH",
@@ -1111,6 +1196,18 @@
       "isin": "XS3263004627",
       "maturiteAns": 3,
       "source": "deal done Phoenix Mémoire Tech US - XS3263004627"
+    },
+    {
+      "id": "2026-02-12-athena-sante-pci",
+      "date": "2026-02-12",
+      "rr": "ALM",
+      "produit": "Athéna Santé PCI Wof Sanofi + Novo Nordisk",
+      "description": "Maturité 5 ans · strike min quotidien du 10/02 au 02/03 (15 dates) · observation mensuelle · seuil de rappel 100 % dès le M6 avec dégressivité de 0,5 %/mois · airbag 50 % à maturité (tous les coupons jusqu'à −50 % du worst-of) · protection du capital 50 % à maturité · sous-jacents worst-of : Sanofi / Novo Nordisk · le mail écrit « Rendement : 9,70 % p.a. » et non « Coupon » · UF 5,10 % donnée dans la réponse du fil, le bloc deal done n'en contient aucune · émetteur non écrit",
+      "nominal": 500000,
+      "ufGlobal": 5.1,
+      "coupon": 9.7,
+      "maturiteAns": 5,
+      "source": "Re: Deal Done"
     },
     {
       "id": "2026-02-12-phoenix-memoire-ferroviaire-infrastructures",
@@ -1167,6 +1264,21 @@
       "source": "deal done Phoenix mémoire défense Generali"
     },
     {
+      "id": "2026-02-05-athena-airbag-sanofi-ssdsan04",
+      "date": "2026-02-05",
+      "rr": "STA",
+      "produit": "Athéna Airbag Sanofi (SSDSAN04)",
+      "description": "CTO EFG Lux · maturité 10 ans · best strike 2 dates (05/02 + 16/03) · observation mensuelle · seuil de rappel 100 % du M12 au M23 puis dégressivité de 2 % par palier annuel · airbag 70 % (−30 %) · protection du capital 50 % à maturité · sous-jacent : Sanofi D 3,76 (SSDSAN04) · émetteur non écrit dans le mail (EFG Lux est le compte-titres) · objet du mail daté 2025 par coquille, reçu le 05/02/2026",
+      "devise": "EUR",
+      "nominal": 300000,
+      "ufGlobal": 3,
+      "coupon": 9.7008,
+      "isin": "XS3256693576",
+      "dateEmission": "2026-03-16",
+      "maturiteAns": 10,
+      "source": "Deal Done 05/02/2025"
+    },
+    {
       "id": "2026-02-03-phoenix-memoire-paypal-publicis",
       "date": "2026-02-03",
       "rr": "MM",
@@ -1196,6 +1308,23 @@
       ],
       "maturiteAns": 12,
       "source": "Deal DONE : Phoenix Energie chez Selencia"
+    },
+    {
+      "id": "2026-01-29-athena-lvmh-totalenergies",
+      "date": "2026-01-29",
+      "rr": "STA",
+      "produit": "Athéna Wof LVMH + TotalEnergies",
+      "description": "EFG Lux · maturité 6 ans · strike au close + 27/03 · observation mensuelle · seuil de rappel 100 % (non call 1 an) puis dégressivité par palier annuel de 5 % jusqu'à −20 % · protection du capital 50 % · sous-jacents worst-of : LVMH / TotalEnergies",
+      "emetteur": "BBVA",
+      "devise": "EUR",
+      "nominal": 500000,
+      "ufGlobal": 5.1,
+      "coupon": 10,
+      "isin": "XS3250077966",
+      "dateEmission": "2026-03-27",
+      "finCommercialisation": "2026-03-27",
+      "maturiteAns": 6,
+      "source": "Deal Done 29/01/2026"
     },
     {
       "id": "2026-01-29-phoenix-memoire-lvmh-sap",
@@ -1244,6 +1373,36 @@
       ],
       "maturiteAns": 3,
       "source": "DEAL DONE : Phoenix Mémoire Luxe"
+    },
+    {
+      "id": "2026-01-22-phoenix-memoire-alphabet-nvidia-meta",
+      "date": "2026-01-22",
+      "rr": "PRIX",
+      "produit": "Phoenix Mémoire Wof Alphabet + Nvidia + Meta",
+      "description": "Maturité 5 ans · strike au close · observation trimestrielle · seuil de rappel 90 % dès le T3 · protection de coupon 60 % (jusqu'à −40 %) · protection du capital 60 % à maturité en put à levier · émission 06/02 (année non écrite) · sous-jacents worst-of : Alphabet / Nvidia / Meta · première des deux tranches du mail",
+      "emetteur": "Marex",
+      "devise": "EUR",
+      "nominal": 480000,
+      "ufGlobal": 5.2,
+      "coupon": 9.6,
+      "maturiteAns": 5,
+      "distinctConfirme": true,
+      "source": "DEAL DONE 22/01/26"
+    },
+    {
+      "id": "2026-01-22-phoenix-memoire-oracle-vertiv",
+      "date": "2026-01-22",
+      "rr": "PRIX",
+      "produit": "Phoenix Mémoire Wof Oracle + Vertiv",
+      "description": "Maturité 5 ans · strike au close · observation trimestrielle · seuil de rappel 90 % dès le T3 · protection de coupon 60 % (jusqu'à −40 %) · protection du capital 60 % à maturité en put à levier · émission 06/02 (année non écrite) · sous-jacents worst-of : Oracle / Vertiv · seconde des deux tranches du mail",
+      "emetteur": "Marex",
+      "devise": "EUR",
+      "nominal": 265000,
+      "ufGlobal": 6,
+      "coupon": 13,
+      "maturiteAns": 5,
+      "distinctConfirme": true,
+      "source": "DEAL DONE 22/01/26"
     },
     {
       "id": "2026-01-22-phoenix-non-memoire-mxlfb50d",
