@@ -7,7 +7,19 @@
 // ─────────────────────────────────────────────────────────────────────────
 import { reportSync } from './sync-status'
 
-export type Slot = 'ov' | 'local' | 'alloc' | 'statut' | 'noms' | 'products' | 'frn' | 'notifs'
+export type Slot =
+  | 'ov'
+  // Copie de sûreté des surcharges, écrite avant une réinitialisation pour
+  // pouvoir l'annuler. Slot distinct : une restauration ne doit pas dépendre
+  // du navigateur qui a fait la réinitialisation.
+  | 'ov-backup'
+  | 'local'
+  | 'alloc'
+  | 'statut'
+  | 'noms'
+  | 'products'
+  | 'frn'
+  | 'notifs'
 
 /** Lit un slot côté serveur. `configured:false` ⇒ KV absent (repli navigateur). */
 export async function loadSlot<T>(slot: Slot): Promise<{ configured: boolean; value: T | null }> {

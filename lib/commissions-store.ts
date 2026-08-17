@@ -18,9 +18,16 @@ export interface CommissionOverride {
 }
 
 const KEY = 'cmf.commissions.ov.v1'
+// Copie de sûreté écrite AVANT toute réinitialisation. « Réinitialiser mes
+// saisies » effaçait le navigateur ET le serveur, sans filet : un clic de trop
+// et le travail de saisie était perdu, sans rien à restaurer. La copie survit
+// à la réinitialisation et alimente le bouton « Annuler ».
+const KEY_BACKUP = 'cmf.commissions.ov.backup.v1'
 
 export function useCommissionsStore() {
   const [ov, setOv] = useState<Record<string, CommissionOverride>>({})
+  // Saisies effacées par la dernière réinitialisation, restaurables.
+  const [backup, setBackup] = useState<Record<string, CommissionOverride>>({})
   // null = inconnu, true = sauvegarde serveur active, false = navigateur seul.
   const [serverSync, setServerSync] = useState<boolean | null>(null)
 
@@ -35,6 +42,12 @@ export function useCommissionsStore() {
       /* ignore */
     }
     if (Object.keys(local).length) setOv(local)
+    try {
+      const rawB = localStorage.getItem(KEY_BACKUP)
+      if (rawB) setBackup(JSON.parse(rawB))
+    } catch {
+      /* ignore */
+    }
     // 2) Le serveur fait foi s'il est configuré — MAIS sans écraser les saisies
     //    locales récentes (qui peuvent ne pas encore avoir été remontées). On
     //    fusionne : le serveur apporte les modifs des autres appareils, le
@@ -64,6 +77,13 @@ export function useCommissionsStore() {
       // Repousse au serveur uniquement si la fusion diffère (propage le local).
       if (JSON.stringify(merged) !== JSON.stringify(server)) void saveSlot('ov', merged)
     })
+    // Copie de sûreté du serveur : permet d'annuler une réinitialisation faite
+    // depuis un AUTRE poste (ou après avoir vidé le cache du navigateur).
+    void loadSlot<Record<string, CommissionOverride>>('ov-backup').then(({ configured, value }) => {
+      if (cancelled || !configured) return
+      const b = value && typeof value === 'object' ? value : {}
+      if (Object.keys(b).length) setBackup((cur) => (Object.keys(cur).length ? cur : b))
+    })
     return () => {
       cancelled = true
     }
@@ -89,15 +109,38 @@ export function useCommissionsStore() {
     persist(next)
   }
 
+  /**
+   * Efface toutes les saisies — mais en garde une copie d'abord.
+   * La copie vit dans le navigateur ET sur le serveur : une réinitialisation
+   * faite depuis un poste doit pouvoir s'annuler depuis ce poste, même après
+   * un rechargement.
+   */
   const reset = () => {
-    setOv({})
+    const avant = ov
+    setBackup(avant)
     try {
+      localStorage.setItem(KEY_BACKUP, JSON.stringify(avant))
       localStorage.removeItem(KEY)
     } catch {
       /* ignore */
     }
+    void saveSlot('ov-backup', avant)
+    setOv({})
     void saveSlot('ov', {})
   }
 
-  return { ov, patch, reset, serverSync }
+  /** Annule la dernière réinitialisation : remet les saisies sauvegardées. */
+  const restore = () => {
+    if (Object.keys(backup).length === 0) return
+    persist(backup)
+    setBackup({})
+    try {
+      localStorage.removeItem(KEY_BACKUP)
+    } catch {
+      /* ignore */
+    }
+    void saveSlot('ov-backup', {})
+  }
+
+  return { ov, patch, reset, restore, backup, serverSync }
 }

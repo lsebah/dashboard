@@ -19,6 +19,10 @@ export const runtime = 'nodejs'
 // `configured:false` et le client retombe sur le stockage navigateur.
 const SLOTS: Record<string, string> = {
   ov: 'cmf:commissions:ov:v1',
+  // Copie de sûreté des surcharges, écrite AVANT une réinitialisation pour
+  // pouvoir l'annuler. Clé distincte : la restauration ne doit pas dépendre du
+  // navigateur qui a fait la réinitialisation.
+  'ov-backup': 'cmf:commissions:ov:backup:v1',
   local: 'cmf:commissions:local:v1',
   alloc: 'cmf:lifecycle:alloc:v1',
   statut: 'cmf:lifecycle:statut:v1',

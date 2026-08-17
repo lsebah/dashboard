@@ -51,7 +51,7 @@ const rowKey = ligneKey
 type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
 export default function CommissionsView({ data }: { data: CommissionsData }) {
-  const { ov, patch, reset, serverSync } = useCommissionsStore()
+  const { ov, patch, reset, restore, backup, serverSync } = useCommissionsStore()
   // Commissions créées localement (depuis « Nouveau trade ») → fusionnées.
   // Celles-ci sont entièrement éditables / supprimables (elles t'appartiennent),
   // contrairement aux lignes du classeur (officielles, surcharges limitées).
@@ -63,6 +63,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
   const nbSaisies = Object.keys(ov).length
+  const nbRestaurables = Object.keys(backup).length
   // Ligne en cours d'édition (locale OU registre) — UNE seule mécanique.
   const [edit, setEdit] = useState<ReturnType<typeof calc> | null>(null)
   const [an, setAn] = useState<string>(ANNEE_COURANTE)
@@ -322,11 +323,30 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher (ISIN, client, émetteur, facture…)" className="input w-[280px]" />
         {nbSaisies > 0 && (
           <button
-            onClick={() => reset()}
+            onClick={() => {
+              // Un clic effaçait tout, sans question et sans retour possible.
+              if (
+                window.confirm(
+                  `Effacer ${nbSaisies} saisie(s) — UF, rétro, n° de facture, dates de paiement ?\n\n` +
+                    'Une copie est conservée : « Annuler la réinitialisation » les remettra.',
+                )
+              )
+                reset()
+            }}
             className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-700 hover:bg-amber-100"
-            title="Efface toutes les saisies locales (UF/Rétro/n° facture/date de paiement)"
+            title="Efface toutes les saisies locales (UF/Rétro/n° facture/date de paiement) — annulable"
           >
             Réinitialiser mes saisies ({nbSaisies})
+          </button>
+        )}
+        {/* Filet : tant que la copie existe, la réinitialisation est annulable. */}
+        {nbRestaurables > 0 && (
+          <button
+            onClick={() => restore()}
+            className="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
+            title="Remet les saisies effacées par la dernière réinitialisation"
+          >
+            ↩ Annuler la réinitialisation ({nbRestaurables})
           </button>
         )}
       </div>
