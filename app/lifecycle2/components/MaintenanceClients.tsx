@@ -65,7 +65,9 @@ const octets = (n?: number): string => {
   return `${(n / (1024 * 1024)).toFixed(1)} Mo`
 }
 
-const jour = (iso?: string | null): string => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '')
+import { dateFr } from '@/lib/dates'
+
+const jour = (iso?: string | null): string => dateFr(iso, '')
 
 export default function MaintenanceClients() {
   const [fiches, setFiches] = useState<FicheEffective[]>([])

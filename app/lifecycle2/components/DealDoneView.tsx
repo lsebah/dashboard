@@ -5,9 +5,13 @@ import {
   assureurs,
   dealsDeLaSemaine,
   dedoublonner,
+  deviseDe,
+  DEVISE_PAR_DEFAUT,
   enCommercialisation,
   type Deal,
 } from '@/lib/deal-done'
+import { codeEmetteur } from '@/lib/emetteurs'
+import { dateFr, jourMois } from '@/lib/dates'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -49,11 +53,14 @@ const RR_COULEUR: Record<string, string> = {
   PRIX: 'bg-slate-100 text-slate-500',
 }
 
-const jour = (iso?: string) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '')
-const jourCourt = (iso?: string) => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '')
+const jour = (iso?: string) => dateFr(iso, '')
+const jourCourt = (iso?: string) => jourMois(iso, '')
 const pct = (v?: number) => (typeof v === 'number' ? `${String(v).replace('.', ',')} %` : '—')
+const SYMBOLE: Record<string, string> = { EUR: ' €', USD: ' $', GBP: ' £', CHF: ' CHF' }
 const montant = (v?: number, devise?: string) =>
-  typeof v === 'number' ? `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}${devise === 'USD' ? ' $' : devise === 'EUR' ? ' €' : ''}` : '—'
+  typeof v === 'number'
+    ? `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}${SYMBOLE[devise ?? ''] ?? ''}`
+    : '—'
 
 export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[]; fenetre?: { du: string; au: string } }) {
   const [prix, setPrix] = useState<Record<string, number>>({})
@@ -98,7 +105,7 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
   }, [deals, rr, avf, q])
 
   const totalNominalEur = filtres
-    .filter((d) => d.devise === 'EUR' && typeof d.nominal === 'number')
+    .filter((d) => deviseDe(d) === DEVISE_PAR_DEFAUT && typeof d.nominal === 'number')
     .reduce((s, d) => s + (d.nominal ?? 0), 0)
 
   return (
@@ -212,9 +219,17 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                     {d.description && <div className="mt-0.5 leading-snug text-slate-500">{d.description}</div>}
                     {d.isin && <div className="mt-0.5 font-mono text-[11px] text-slate-400">{d.isin}</div>}
                   </td>
-                  <td className="px-2 py-2 text-slate-700">{d.emetteur ?? '—'}</td>
-                  <td className="px-2 py-2 text-slate-600">{d.devise ?? '—'}</td>
-                  <td className="px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, d.devise)}</td>
+                  <td className="px-2 py-2 font-medium text-slate-700">{codeEmetteur(d.emetteur)}</td>
+                  {/* Devise : EUR par défaut. Toute autre devise ressort en rouge italique —
+                      c'est l'exception qui doit sauter aux yeux, pas la règle. */}
+                  <td
+                    className={`px-2 py-2 ${
+                      deviseDe(d) === DEVISE_PAR_DEFAUT ? 'text-slate-600' : 'font-semibold italic text-red-600'
+                    }`}
+                  >
+                    {deviseDe(d)}
+                  </td>
+                  <td className="px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, deviseDe(d))}</td>
                   <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.coupon)}</td>
                   <td className="px-2 py-2">
                     {(d.avf ?? []).length > 0 ? (

@@ -123,8 +123,11 @@ async function chargerFiches() {
   const j = await r.json()
   if (!j.configured)
     throw new Error(
-      "les fiches clients ne sont pas persistées sur cet environnement (KV non configuré). " +
-        "Envoi refusé : impossible de savoir qui est abonné.",
+      'les abonnements au relevé ne sont pas lisibles : le stockage KV n\'est pas configuré sur cet ' +
+        'environnement. Envoi refusé — sans lui, impossible de savoir qui est abonné.\n' +
+        '  → Copier KV_REST_API_URL et KV_REST_API_TOKEN depuis Vercel (Settings → Environment ' +
+        'Variables) vers GitHub (Settings → Secrets and variables → Actions).\n' +
+        '  → Tant qu\'ils manquent, le verrou anti-double-envoi est inopérant lui aussi.',
     )
   if (!Array.isArray(j.fiches) || j.fiches.length === 0) throw new Error('aucune fiche client renvoyée')
   return j.fiches

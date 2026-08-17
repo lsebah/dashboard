@@ -6,6 +6,7 @@ import { computeRisks, NIVEAU_COLOR, type RiskItem } from '@/lib/cmf-risk'
 import { eurCompact } from '@/lib/cmf-analytics'
 import { Panel } from './charts'
 import Modal from '@/app/lifecycle/components/Modal'
+import { codeEmetteur } from '@/lib/emetteurs'
 
 const yearsTo = (iso: string) => {
   const t = new Date(iso).getTime()
@@ -235,7 +236,7 @@ function RiskDetail({ r }: { r: RiskItem }) {
                 <tr key={p.isin} className="hover:bg-slate-50">
                   <td className="px-2 py-1 text-slate-700">{p.nom}</td>
                   <td className="px-2 py-1 font-mono text-[11px] text-slate-400">{p.isin}</td>
-                  <td className="px-2 py-1 text-slate-500">{p.emetteur}</td>
+                  <td className="px-2 py-1 text-slate-500">{codeEmetteur(p.emetteur)}</td>
                   <td className="px-2 py-1 text-right tabular-nums text-slate-600">{eurCompact(p.montant)}</td>
                 </tr>
               ))}

@@ -25,7 +25,7 @@ function businessDaysAgo(iso: string, now = new Date()): number {
   }
   return count
 }
-const dateFr = (iso: string) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '—')
+import { dateFr } from '@/lib/dates'
 
 interface TableModel {
   issuers: string[]

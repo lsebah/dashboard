@@ -4,6 +4,7 @@ import type { Product } from '@/lib/types'
 import { issuerCode } from '@/lib/termsheets'
 import { couponsEncaissesPct, couponPa, pnlAvecCoupons } from '@/lib/lifecycle'
 import { productTypeLabel } from '@/lib/classification'
+import { dateFr } from '@/lib/dates'
 
 // Reporting client mensuel (format CMF) — imprimable en PDF via le navigateur
 // OU rendu en PDF côté serveur (route /print + scripts/reporting_clients.mjs).
@@ -13,13 +14,7 @@ import { productTypeLabel } from '@/lib/classification'
 //
 // La FEUILLE de reporting est isolée dans <ReportSheet/> pour servir de source
 // unique aux deux rendus (aperçu modal ici + export PDF headless).
-const dfr = (iso?: string) => {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime())
-    ? '—'
-    : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`
-}
+const dfr = dateFr
 const dureeAns = (p: Product) => {
   const a = new Date(p.dateConstatationInitiale || p.dateEmission).getTime()
   const b = new Date(p.dateEcheance).getTime()

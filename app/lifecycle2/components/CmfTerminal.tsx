@@ -37,6 +37,7 @@ import {
   ACCENT,
 } from './charts'
 import RiskCartography from './RiskCartography'
+import { codeEmetteur } from '@/lib/emetteurs'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
 function barriereProtection(p: Product): number | undefined {
@@ -338,7 +339,7 @@ function PositionsTable({ products, courant }: { products: Product[]; courant: R
             {rows.map(({ p, nom, prix, pnl, wo, sit, mat }) => (
               <tr key={p.isin} className="hover:bg-slate-50">
                 <td className="whitespace-nowrap px-3 py-1.5 font-mono text-slate-600">{p.isin}</td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-slate-700">{p.emetteur}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-slate-700">{codeEmetteur(p.emetteur)}</td>
                 <td className="max-w-[180px] truncate px-3 py-1.5 text-slate-500" title={p.nom}>{p.productType ?? p.family}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-800">{eurCompact(nom)}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{prix.toFixed(1)}</td>

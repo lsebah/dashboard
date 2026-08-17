@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import curated from '@/data/markets-curated.json'
+import { dateFr } from '@/lib/dates'
 
 interface MarketItem {
   group: string
@@ -149,7 +150,7 @@ export default function MarketTerminal() {
                         )}
                       </td>
                       <td className="px-3 py-1.5 text-right text-[11px] text-slate-400 tabular-nums" title={stale ? 'Plus de 30 jours' : undefined}>
-                        {it.asof ? new Date(it.asof).toLocaleDateString('fr-FR') : '—'}
+                        {dateFr(it.asof)}
                       </td>
                     </tr>
                   )

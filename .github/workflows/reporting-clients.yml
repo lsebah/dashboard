@@ -47,6 +47,30 @@ jobs:
           node-version: 20
           cache: npm
 
+      # Pré-vol : sans le KV, l'agent ne peut pas savoir qui est abonné et refuse
+      # de partir (cf. scripts/reporting_clients.mjs). Autant le dire TOUT DE
+      # SUITE plutôt qu'après deux minutes de npm ci + build, et le dire en
+      # nommant le geste exact à faire. On échoue volontairement — un envoi de
+      # relevés qui ne part pas doit se voir en rouge, jamais être ignoré.
+      - name: Vérifier les secrets KV
+        env:
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+        run: |
+          if [ -z "$KV_REST_API_URL" ] || [ -z "$KV_REST_API_TOKEN" ]; then
+            echo "::error::Secrets KV_REST_API_URL / KV_REST_API_TOKEN absents des secrets Actions. Les abonnements au relevé (onglet Maintenance) y sont stockés : sans eux, impossible de savoir qui est abonné. À copier depuis Vercel → Settings → Environment Variables vers GitHub → Settings → Secrets and variables → Actions."
+            {
+              echo "### ❌ Envoi impossible — secrets KV absents"
+              echo ""
+              echo "Les abonnements au relevé vivent dans le stockage KV. Sans **KV_REST_API_URL** et **KV_REST_API_TOKEN**, l'agent ne sait pas qui est abonné et refuse de partir plutôt que d'envoyer au jugé."
+              echo ""
+              echo "Les copier depuis **Vercel → Settings → Environment Variables** vers **GitHub → Settings → Secrets and variables → Actions**."
+              echo ""
+              echo "Tant qu'ils manquent, le verrou anti-double-envoi ne fonctionne pas non plus."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
       - name: Installer les dépendances
         run: npm ci
 

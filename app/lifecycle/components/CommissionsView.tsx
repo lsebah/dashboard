@@ -6,6 +6,7 @@ import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { useAllocations } from '@/lib/allocations'
 import Modal from './Modal'
+import { dateFr as dateIso } from '@/lib/dates'
 
 // Année en cours : seule éditable. Les précédentes sont clôturées (statiques).
 const ANNEE_COURANTE = '2026'
@@ -19,8 +20,7 @@ const num = (n: number | null | undefined) =>
 // UF / Rétro : toujours 2 décimales. 0.06 → « 6.00 % ».
 const PCT2 = (n: number | null | undefined) =>
   typeof n === 'number' ? `${(n * 100).toFixed(2)} %` : '—'
-const dateFr = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleDateString('fr-FR') : null
+const dateFr = (iso: string | null | undefined) => (iso ? dateIso(iso) : null)
 const annee = (l: CommissionLigne) => (l.issue ? l.issue.slice(0, 4) : '—')
 const trimestre = (iso: string) => `Q${Math.floor(new Date(iso).getMonth() / 3) + 1}`
 // Date du jour (ISO) — pour signaler les émissions à venir.

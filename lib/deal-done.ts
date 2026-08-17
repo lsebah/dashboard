@@ -95,6 +95,20 @@ export interface Deal {
   source?: string
 }
 
+/**
+ * Devise retenue quand le mail n'en écrit aucune. Règle posée par Laurent
+ * (17/08/2026) : « si devise pas incluse = EUR ». Ce n'est pas une supposition,
+ * c'est la convention maison — la devise n'est mentionnée que lorsqu'elle sort
+ * de l'ordinaire. Le champ `devise` reste vide dans les données (transcription
+ * fidèle) ; la règle s'applique à la lecture, en un seul endroit.
+ */
+export const DEVISE_PAR_DEFAUT = 'EUR'
+
+/** Devise effective d'un deal, défaut EUR. */
+export function deviseDe(d: Pick<Deal, 'devise'>): string {
+  return d.devise?.trim() || DEVISE_PAR_DEFAUT
+}
+
 /** Normalise un nom de produit pour la comparaison (accents, ponctuation, casse). */
 export function clefProduit(nom: string): string {
   return nom

@@ -6,7 +6,7 @@ import type { ItraxxTranche, ItraxxIndex } from '@/lib/itraxx/types'
 
 const TRANCHES = tranchesRaw as ItraxxTranche[]
 
-const dateFr = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '—')
+import { dateFr } from '@/lib/dates'
 const fmtCoupon = (t: ItraxxTranche) => t.coupon ?? '—'
 const trancheLabel = (t: ItraxxTranche) =>
   t.attachment != null && t.detachment != null ? `${t.attachment}–${t.detachment}%` : t.tranche
