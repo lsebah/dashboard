@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
-import { ligneKey, ligneKeyLegacy } from '@/lib/commissions'
+import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { useAllocations } from '@/lib/allocations'
@@ -62,6 +62,9 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   const lignesAll = useMemo(() => [...data.lignes, ...localCommissions], [data, localCommissions])
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
+  // Anciennes clés que plusieurs lignes se partagent : leur surcharge n'est
+  // attribuable à personne (cf. clesLegacyAmbigues).
+  const legacyAmbigu = useMemo(() => clesLegacyAmbigues(lignesAll), [lignesAll])
   const nbSaisies = Object.keys(ov).length
   const nbRestaurables = Object.keys(backup).length
   // Ligne en cours d'édition (locale OU registre) — UNE seule mécanique.
@@ -77,10 +80,18 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // rattachée à l'année courante (anneeAttr) — y compris un report émis une année
   // antérieure mais encaissé en 2026 —, quel que soit le filtre actif.
   const calc = (l: CommissionLigne) => {
+    const isLocal = localKeys.has(rowKey(l))
+    // Les surcharges ne concernent QUE les lignes du registre. Une ligne locale
+    // porte ses propres valeurs, éditées via le crayon : lui appliquer une
+    // surcharge ne peut être qu'un résidu, jamais une intention.
+    //
     // Lecture : clé courante d'abord, ancienne clé ensuite — une saisie faite
-    // avant l'ajout du nominal reste appliquée. L'écriture, elle, est toujours
-    // en clé courante (patch(rowKey(l))).
-    const o = ov[rowKey(l)] ?? ov[ligneKeyLegacy(l)] ?? {}
+    // avant l'ajout du nominal reste appliquée —, MAIS jamais une ancienne clé
+    // ambiguë, qui recopierait la valeur d'une ligne sur sa voisine.
+    // L'écriture, elle, est toujours en clé courante (patch(rowKey(l))).
+    const kLegacy = ligneKeyLegacy(l)
+    const oLegacy = legacyAmbigu.has(kLegacy) ? undefined : ov[kLegacy]
+    const o = isLocal ? {} : (ov[rowKey(l)] ?? oLegacy ?? {})
     const editable = anneeAttr(l) === ANNEE_COURANTE
     const uf = editable ? o.uf ?? l.ufPct : l.ufPct
     const retro = editable ? o.retro ?? l.retroPct : l.retroPct
@@ -111,7 +122,6 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const oFac = editable ? o.facture : undefined
     const facture = (oFac === undefined ? l.facture : oFac) ?? null
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
-    const isLocal = localKeys.has(rowKey(l))
     // Renommage manuel (Portefeuille) prioritaire sur la description du classeur.
     const description = noms[l.isin] ?? l.description
     return { ...l, description, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal }

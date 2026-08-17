@@ -73,3 +73,29 @@ export const ligneKey = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 
  */
 export const ligneKeyLegacy = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue'>): string =>
   `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}`
+
+/**
+ * Clés ANCIENNES (sans nominal) devenues ambiguës : deux lignes ou plus s'y
+ * rattachent. Une surcharge portant une telle clé ne peut être attribuée à
+ * aucune des deux — l'appliquer aux deux propage la valeur de l'une sur l'autre.
+ *
+ * C'est exactement ce qui s'est produit sur FR1459ABG521 / RENAUD GESTION
+ * PRIVEE : les 63 000 € du registre et l'upsize de 24 000 € partageant la même
+ * date d'émission, un UF de 5 % saisi sur le premier s'affichait sur le second,
+ * qui vaut 4,46 %. Le repli sur l'ancienne clé est donc REFUSÉ dès qu'elle est
+ * ambiguë : mieux vaut perdre une saisie que la recopier sur la mauvaise ligne.
+ */
+export function clesLegacyAmbigues(
+  lignes: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+): Set<string> {
+  const compte = new Map<string, number>()
+  for (const l of lignes) {
+    const k = ligneKeyLegacy(l)
+    compte.set(k, (compte.get(k) ?? 0) + 1)
+  }
+  const ambigues = new Set<string>()
+  compte.forEach((n, k) => {
+    if (n > 1) ambigues.add(k)
+  })
+  return ambigues
+}
