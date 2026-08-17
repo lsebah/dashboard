@@ -38,6 +38,7 @@ import {
 } from './charts'
 import RiskCartography from './RiskCartography'
 import { codeEmetteur } from '@/lib/emetteurs'
+import SyntheseTete from './SyntheseTete'
 import { pourcent } from '@/lib/pourcentage'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
@@ -160,6 +161,9 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
           {live ? 'Niveaux temps réel' : 'Chargement des niveaux…'}
         </span>
       </div>
+
+      {/* ── Tête de synthèse : indices, puis rappels probables sous 30 j ── */}
+      <SyntheseTete products={products} />
 
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
