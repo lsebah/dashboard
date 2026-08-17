@@ -63,8 +63,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
   const nbSaisies = Object.keys(ov).length
-  const [editFac, setEditFac] = useState<string | null>(null) // ligne dont le n° facture est en édition
-  const [editLocal, setEditLocal] = useState<LocalCommission | null>(null) // commission locale en cours d'édition
+  // Ligne en cours d'édition (locale OU registre) — UNE seule mécanique.
+  const [edit, setEdit] = useState<ReturnType<typeof calc> | null>(null)
   const [an, setAn] = useState<string>(ANNEE_COURANTE)
   const [statut, setStatut] = useState<StatutFacture>('toutes')
   const [q, setQ] = useState('')
@@ -136,9 +136,6 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
       patch(rowKey(l), { credited: date })
     }
   }
-  const togglePaid = (l: ReturnType<typeof calc>) =>
-    setCredited(l, l.credited ? null : new Date().toISOString().slice(0, 10))
-
   // Supprime une commission locale (avec confirmation).
   const deleteLocal = (l: ReturnType<typeof calc>) => {
     if (window.confirm(`Supprimer la commission ${l.isin}${l.client ? ' — ' + l.client : ''} ?`))
@@ -241,8 +238,6 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lignesAll, ov],
   )
-  const inputPct ='w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none'
-
   const TH = ({ k, label, num: n }: { k: string; label: string; num?: boolean }) => (
     <th onClick={() => toggleSort(k)} className={`px-2 py-1.5 font-medium cursor-pointer whitespace-nowrap ${n ? 'text-right' : 'text-left'}`} title="Trier">
       {label}{sort.key === k ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}
@@ -398,99 +393,39 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                 </td>
                 <td className="px-2 py-1.5 max-w-[220px] truncate" title={l.description ?? undefined}>{l.description ?? '—'}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.nominal, l.devise ?? 'EUR')}</td>
-                {/* UF — éditable inline (classeur, année courante) ; les lignes
-                    locales s'éditent via le crayon (➜ pas de double saisie). */}
-                <td className="px-1 py-1 text-right tabular-nums whitespace-nowrap">
-                  {l.editable && !l.isLocal ? (
-                    <input key={`uf|${rowKey(l)}|${l.ufPct ?? ''}`} defaultValue={typeof l.ufPct === 'number' ? (l.ufPct * 100).toFixed(2) : ''} inputMode="decimal" placeholder="—" className={inputPct} title="Saisir l'UF total (%)" onBlur={(e) => patch(rowKey(l), { uf: parsePct(e.target.value) })} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
-                  ) : PCT2(l.ufPct)}
-                </td>
+                {/* UF, Rétro, facture et paiement se modifient TOUS par le crayon
+                    (une seule mécanique d'édition). Ici : affichage seul. */}
+                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{PCT2(l.ufPct)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold text-emerald-700">{EUR(l.net)}</td>
-                {/* Rétro — éditable inline (classeur, année courante). 0 ou absent → « — ». */}
-                <td className="px-1 py-1 text-right tabular-nums whitespace-nowrap">
-                  {l.editable && !l.isLocal ? (
-                    <input key={`re|${rowKey(l)}|${l.retroPct ?? ''}`} defaultValue={l.retroPct ? (l.retroPct * 100).toFixed(2) : ''} inputMode="decimal" placeholder="—" className={inputPct} title="Saisir la rétrocession (%)" onBlur={(e) => patch(rowKey(l), { retro: parsePct(e.target.value) })} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }} />
-                  ) : l.retroPct ? PCT2(l.retroPct) : <span className="text-slate-300">—</span>}
+                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
+                  {l.retroPct ? PCT2(l.retroPct) : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap text-orange-600">{l.comClient ? EUR(l.comClient) : <span className="text-slate-300">—</span>}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{EUR(l.comTotal)}</td>
-                {/* Facture : clic sur le n° pour l'ajouter/modifier (année courante).
-                    Années clôturées = statique. */}
+                {/* Facture : n° en lecture seule. L'ajout/la modification passent par le
+                    crayon, comme tout le reste. « Facturer Gabrielle » reste : c'est
+                    une ACTION (ouvrir l'email), pas une saisie. */}
                 <td className="px-2 py-1 whitespace-nowrap">
-                  {!l.editable ? (
-                    l.facture ?? <span className="text-slate-300">—</span>
-                  ) : l.isLocal ? (
-                    editFac === rowKey(l) ? (
-                      <input
-                        autoFocus
-                        type="text"
-                        defaultValue={l.facture ?? ""}
-                        placeholder="n° facture"
-                        className="w-24 rounded border border-cmf-blue bg-white px-1 py-0.5 text-[11px] focus:outline-none"
-                        onBlur={(e) => {
-                          const val = e.target.value.trim()
-                          const base = localCommissions.find((x) => rowKey(x) === rowKey(l))
-                          if (base) upsert({ ...base, facture: val || null, statutFacture: base.credited ? "payee" : val ? "envoyee" : "en_attente" })
-                          setEditFac(null)
-                        }}
-                        onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditFac(null) }}
-                      />
-                    ) : l.facture ? (
-                      <button onClick={() => setEditFac(rowKey(l))} className="hover:underline decoration-dotted" title="Cliquer pour modifier le n°">{l.facture}</button>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5">
-                        <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance)">✉ Facturer Gabrielle</a>
-                        <button onClick={() => setEditFac(rowKey(l))} className="text-[11px] text-cmf-blue hover:underline" title="Saisir le n° de facture">+ n°</button>
-                      </span>
-                    )
-                  ) : editFac === rowKey(l) ? (
-                    <input
-                      autoFocus
-                      type="text"
-                      defaultValue={l.facture ?? ''}
-                      placeholder="n° facture"
-                      className="w-24 rounded border border-cmf-blue bg-white px-1 py-0.5 text-[11px] focus:outline-none"
-                      onBlur={(e) => { patch(rowKey(l), { facture: e.target.value.trim() || undefined }); setEditFac(null) }}
-                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditFac(null) }}
-                    />
-                  ) : l.facture ? (
-                    <button onClick={() => setEditFac(rowKey(l))} className="hover:underline decoration-dotted" title="Cliquer pour modifier le n°">{l.facture}</button>
+                  {l.facture ? (
+                    l.facture
+                  ) : l.editable ? (
+                    <a
+                      href={factureMailto(l)}
+                      className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100"
+                      title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance) — tu procèdes à l’envoi"
+                    >
+                      ✉ Facturer Gabrielle
+                    </a>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5">
-                      <a href={factureMailto(l)} className="inline-flex items-center gap-1 rounded border border-cmf-blue/40 bg-blue-50 px-1.5 py-0.5 font-medium text-cmf-blue hover:bg-blue-100" title="Ouvrir l’email de facture pré-rempli vers Gabrielle (office@cmf.finance) — tu procèdes à l’envoi">✉ Facturer Gabrielle</a>
-                      <button onClick={() => setEditFac(rowKey(l))} className="text-[11px] text-cmf-blue hover:underline" title="Saisir le n° de facture">+ n°</button>
-                    </span>
+                    <span className="text-slate-300">—</span>
                   )}
                 </td>
-                {/* Payée : bascule en un clic (année courante) ; sinon statique.
-                    Vert « ✓ Payé » = encaissé ; rouge « ● Non payé » = à encaisser.
-                    Quand c'est payé, on peut ajuster la date exacte à côté. */}
-                <td className="px-1 py-1 whitespace-nowrap">
-                  {l.editable ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <button
-                        onClick={() => togglePaid(l)}
-                        className={
-                          l.credited
-                            ? 'rounded px-2 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200'
-                            : 'rounded px-2 py-0.5 text-[11px] font-semibold text-red-700 bg-red-100 hover:bg-red-200'
-                        }
-                        title={l.credited ? 'Marquer NON payé' : 'Marquer payé (date du jour)'}
-                      >
-                        {l.credited ? '✓ Payé' : '● Non payé'}
-                      </button>
-                      {l.credited && (
-                        <input
-                          type="date"
-                          value={l.credited}
-                          onChange={(e) => setCredited(l, e.target.value || null)}
-                          className="rounded border border-transparent bg-transparent px-1 py-0.5 text-[11px] hover:border-slate-300 focus:border-cmf-blue focus:bg-white focus:outline-none"
-                          title="Date d'encaissement (paiement)"
-                        />
-                      )}
+                {/* Paiement : état seul. Le bascule se fait dans le crayon. */}
+                <td className="px-2 py-1.5 whitespace-nowrap">
+                  {l.credited ? (
+                    <span className="inline-flex items-center gap-1 rounded bg-emerald-100 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      ✓ Payé {dateFr(l.credited)}
                     </span>
-                  ) : l.credited ? (
-                    <span className="text-emerald-600">{dateFr(l.credited)}</span>
                   ) : impaye ? (
                     <span className="inline-flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700">● Non payé</span>
                   ) : (
@@ -498,23 +433,28 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                   )}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{typeof l.split === 'number' ? pourcent(l.split * 100, 0) : '—'}</td>
-                {/* Actions — édition / suppression réservées à TES trades (lignes locales). */}
+                {/* Actions — le crayon est le SEUL point d'entrée pour modifier une
+                    commission, ligne locale ou ligne du registre. La croix reste
+                    réservée aux lignes locales : une ligne du registre ne se
+                    supprime pas depuis le navigateur. */}
                 <td className="px-2 py-1 whitespace-nowrap text-center">
-                  {l.isLocal ? (
+                  {l.editable ? (
                     <span className="inline-flex items-center gap-1.5">
                       <button
-                        onClick={() => setEditLocal(localCommissions.find((x) => rowKey(x) === rowKey(l)) ?? null)}
+                        onClick={() => setEdit(l)}
                         className="text-slate-400 hover:text-cmf-blue"
                         title="Modifier cette commission"
                       >
                         ✎
                       </button>
-                      <button onClick={() => deleteLocal(l)} className="text-slate-400 hover:text-red-600" title="Supprimer cette commission">
-                        ✕
-                      </button>
+                      {l.isLocal && (
+                        <button onClick={() => deleteLocal(l)} className="text-slate-400 hover:text-red-600" title="Supprimer cette commission">
+                          ✕
+                        </button>
+                      )}
                     </span>
                   ) : (
-                    <span className="text-slate-200" title="Ligne du classeur (officielle)">·</span>
+                    <span className="text-slate-200" title="Année clôturée — non modifiable">·</span>
                   )}
                 </td>
               </tr>
@@ -536,39 +476,73 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
         (navigateur), non versionnées.
       </p>
 
-      {editLocal && (
-        <LocalCommissionEditor
-          ligne={editLocal}
-          onClose={() => setEditLocal(null)}
+      {edit && (
+        <CommissionEditor
+          ligne={edit}
+          // Une ligne du REGISTRE ne se réécrit pas depuis le navigateur : son
+          // identité (ISIN, client, nominal, dates…) vient de commissions.json.
+          // Seuls UF, rétro, n° de facture et paiement sont surchargeables.
+          registre={!edit.isLocal}
+          onClose={() => setEdit(null)}
           onSave={(next) => {
-            // `replace` gère le renommage (ISIN/client modifié) en un seul passage.
-            replace(editLocal.isin, editLocal.client, next)
-            setEditLocal(null)
+            if (edit.isLocal) {
+              const base = localCommissions.find((x) => rowKey(x) === rowKey(edit))
+              if (base) replace(base.isin, base.client, { ...base, ...next } as LocalCommission)
+            } else {
+              patch(rowKey(edit), {
+                uf: next.ufPct ?? undefined,
+                retro: next.retroPct ?? undefined,
+                facture: next.facture,
+                credited: next.credited,
+              })
+            }
+            setEdit(null)
           }}
-          onDelete={() => {
-            remove(editLocal.isin, editLocal.client)
-            setEditLocal(null)
-          }}
+          onDelete={
+            edit.isLocal
+              ? () => {
+                  remove(edit.isin, edit.client)
+                  setEdit(null)
+                }
+              : undefined
+          }
         />
       )}
     </div>
   )
 }
 
-// ── Éditeur d'une commission locale (« ton » trade) ────────────────────────
-// Tous les champs sont modifiables ; les montants (Com. totale / Reversé CGP /
-// Net) sont recalculés depuis Nominal × UF / Rétro. « Payé » coche la date du
-// jour (ajustable). Pas de double mécanisme : l'état vit sur la commission.
-function LocalCommissionEditor({
+// ── Éditeur de commission — L'UNIQUE mécanique de modification ─────────────
+//
+//  Il en existait DEUX : des champs éditables directement dans le tableau (UF,
+//  rétro, n° de facture, bascule « payé ») pour les lignes du registre, et cette
+//  modale pour les lignes locales. Deux chemins pour un même geste, deux rendus
+//  différents du même chiffre — le tableau affichait « 5.00 » dans un input là
+//  où la ligne voisine affichait « 5,00 % ».
+//
+//  Tout passe désormais par ici. Le tableau ne fait plus qu'afficher.
+//
+//  Deux natures de lignes, un seul écran :
+//    • ligne LOCALE (« Nouveau trade ») — tout est modifiable, suppression
+//      possible : la donnée n'existe qu'ici ;
+//    • ligne du REGISTRE (commissions.json) — l'identité est en lecture seule.
+//      Le navigateur ne réécrit pas le registre ; il pose une surcharge sur les
+//      quatre champs qui en admettent une : UF, rétro, n° de facture, paiement.
+//
+//  Les montants (Com. totale / Reversé CGP / Net) sont recalculés en direct
+//  depuis Nominal × UF / Rétro — on voit ce qu'on enregistre avant de le faire.
+function CommissionEditor({
   ligne,
+  registre = false,
   onClose,
   onSave,
   onDelete,
 }: {
-  ligne: LocalCommission
+  ligne: CommissionLigne
+  registre?: boolean
   onClose: () => void
-  onSave: (next: LocalCommission) => void
-  onDelete: () => void
+  onSave: (next: Partial<LocalCommission>) => void
+  onDelete?: () => void
 }) {
   const [client, setClient] = useState(ligne.client ?? '')
   const [description, setDescription] = useState(ligne.description ?? '')
@@ -595,35 +569,41 @@ function LocalCommissionEditor({
   const net = comTotal - comClient // split local = 1 (100 % LS)
 
   const submit = () => {
-    if (!nominal.trim()) {
+    if (!registre && !nominal.trim()) {
       alert('Renseigne le nominal.')
       return
     }
     const r2 = (x: number) => Math.round(x * 100) / 100
     const r6 = (x: number) => Math.round(x * 1e6) / 1e6
     const isPaid = paid && !!credited
-    const next: LocalCommission = {
-      ...ligne,
-      client: client.trim() || null,
-      description: description.trim() || null,
-      emetteur: emetteur.trim() || null,
-      devise: devise.trim() || 'EUR',
-      nominal: nNum,
-      issue: issue || null,
+    // Les champs d'IDENTITÉ ne sont renvoyés que pour une ligne locale : sur une
+    // ligne du registre ils sont verrouillés, et les réémettre laisserait croire
+    // qu'ils ont été enregistrés.
+    const identite = registre
+      ? {}
+      : {
+          client: client.trim() || null,
+          description: description.trim() || null,
+          emetteur: emetteur.trim() || null,
+          devise: devise.trim() || 'EUR',
+          nominal: nNum,
+          issue: issue || null,
+          comTotal: r2(comTotal),
+          comClient: r2(comClient),
+          net: r2(net),
+          statutFacture: (isPaid ? 'payee' : facture.trim() ? 'envoyee' : 'en_attente') as LocalCommission['statutFacture'],
+          histo: [
+            ...(((ligne as LocalCommission).histo) ?? []),
+            { action: 'Modifié dans Commissions', date: new Date().toLocaleString('fr-FR'), user: 'Laurent' },
+          ],
+        }
+    onSave({
+      ...identite,
       ufPct: r6(ufDec),
       retroPct: r6(retroDec),
-      comTotal: r2(comTotal),
-      comClient: r2(comClient),
-      net: r2(net),
       facture: facture.trim() || null,
       credited: isPaid ? credited : null,
-      statutFacture: isPaid ? 'payee' : facture.trim() ? 'envoyee' : 'en_attente',
-      histo: [
-        ...(ligne.histo ?? []),
-        { action: 'Modifié dans Commissions', date: new Date().toLocaleString('fr-FR'), user: 'Laurent' },
-      ],
-    }
-    onSave(next)
+    })
   }
 
   const fieldCls = 'mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-cmf-blue focus:outline-none'
@@ -632,6 +612,13 @@ function LocalCommissionEditor({
   return (
     <Modal open onClose={onClose} title="Modifier la commission">
       <div className="rounded-lg bg-white p-5 shadow-xl">
+        {registre && (
+          <p className="mb-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
+            Ligne du <strong>registre Lifecycle</strong> : l&apos;identité (client, émetteur, nominal, dates)
+            vient de <code>commissions.json</code> et n&apos;est pas modifiable ici. Tes modifications d&apos;UF,
+            de rétro, de n° de facture et de paiement sont enregistrées <strong>par-dessus</strong> le registre.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <div>
             <label className={lab}>ISIN</label>
@@ -639,27 +626,27 @@ function LocalCommissionEditor({
           </div>
           <div>
             <label className={lab}>Client</label>
-            <input value={client} onChange={(e) => setClient(e.target.value)} className={fieldCls} placeholder="NOM - 00000" />
+            <input value={client} onChange={(e) => setClient(e.target.value)} readOnly={registre} className={registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} placeholder="NOM - 00000" />
           </div>
           <div>
             <label className={lab}>Émetteur</label>
-            <input value={emetteur} onChange={(e) => setEmetteur(e.target.value)} className={fieldCls} />
+            <input value={emetteur} onChange={(e) => setEmetteur(e.target.value)} readOnly={registre} className={registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} />
           </div>
           <div className="col-span-2 md:col-span-3">
             <label className={lab}>Description</label>
-            <input value={description} onChange={(e) => setDescription(e.target.value)} className={fieldCls} />
+            <input value={description} onChange={(e) => setDescription(e.target.value)} readOnly={registre} className={registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} />
           </div>
           <div>
             <label className={lab}>Nominal</label>
-            <input value={nominal} onChange={(e) => setNominal(e.target.value)} inputMode="numeric" className={`${fieldCls} text-right tabular-nums`} placeholder="200000" />
+            <input value={nominal} onChange={(e) => setNominal(e.target.value)} readOnly={registre} inputMode="numeric" className={`${registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} text-right tabular-nums`} placeholder="200000" />
           </div>
           <div>
             <label className={lab}>Devise</label>
-            <input value={devise} onChange={(e) => setDevise(e.target.value.toUpperCase())} className={fieldCls} />
+            <input value={devise} onChange={(e) => setDevise(e.target.value.toUpperCase())} readOnly={registre} className={registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} />
           </div>
           <div>
             <label className={lab}>Date d&apos;émission</label>
-            <input type="date" value={issue} onChange={(e) => setIssue(e.target.value)} className={fieldCls} />
+            <input type="date" value={issue} onChange={(e) => setIssue(e.target.value)} readOnly={registre} className={registre ? `${fieldCls} bg-slate-50 text-slate-500` : fieldCls} />
           </div>
           <div>
             <label className={lab}>UF %</label>
@@ -703,9 +690,14 @@ function LocalCommissionEditor({
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-2 border-t border-slate-200 pt-4">
-          <button onClick={onDelete} className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100">
-            Supprimer
-          </button>
+          {/* Une ligne du registre ne se supprime pas depuis le navigateur. */}
+          {onDelete ? (
+            <button onClick={onDelete} className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100">
+              Supprimer
+            </button>
+          ) : (
+            <span />
+          )}
           <div className="flex gap-2">
             <button onClick={onClose} className="rounded-md border border-slate-300 px-4 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
               Annuler
