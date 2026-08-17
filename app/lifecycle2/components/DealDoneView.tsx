@@ -43,7 +43,9 @@ const RR_COULEUR: Record<string, string> = {
   MEG: 'bg-emerald-100 text-emerald-800',
   PD: 'bg-amber-100 text-amber-800',
   TB: 'bg-rose-100 text-rose-800',
+  ALM: 'bg-teal-100 text-teal-800',
   STA: 'bg-slate-100 text-slate-500',
+  PRIX: 'bg-slate-100 text-slate-500',
 }
 
 const jour = (iso?: string) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '')
