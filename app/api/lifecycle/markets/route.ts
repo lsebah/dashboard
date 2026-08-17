@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { kvConfigured, kvGet } from '@/lib/kv'
+import { TAUX_REFERENCE, clotureStooq, resoudreTaux, type SourceTaux } from '@/lib/taux'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -59,6 +61,8 @@ interface MarketItem {
   changePct: number | null
   marketState: string
   timestamp?: number
+  /** Provenance, pour les valeurs qui n'ont pas de cotation Yahoo (taux). */
+  source?: SourceTaux
 }
 
 async function fetchQuote(s: Sym): Promise<MarketItem> {
@@ -79,7 +83,50 @@ async function fetchQuote(s: Sym): Promise<MarketItem> {
   }
 }
 
+/**
+ * CMS 10Y / OAT 10Y — internet d'abord (Stooq), sinon la surcouche Bloomberg
+ * du run quotidien, sinon RIEN. Ces deux taux étaient écrits en dur dans le
+ * code : ils s'affichaient comme des niveaux du jour alors qu'ils étaient figés.
+ */
+async function fetchTaux(): Promise<MarketItem[]> {
+  const overlay = kvConfigured()
+    ? (await kvGet<{ levels: Record<string, number> }>('levels:overlay'))?.levels ?? {}
+    : {}
+
+  return Promise.all(
+    TAUX_REFERENCE.map(async (t) => {
+      let stooq: number | null = null
+      if (t.stooq) {
+        try {
+          const r = await fetch(
+            `https://stooq.com/q/l/?s=${encodeURIComponent(t.stooq)}&f=sd2t2ohlcv&h&e=csv`,
+            { headers: { 'User-Agent': 'Mozilla/5.0' }, next: { revalidate: 300 } },
+          )
+          if (r.ok) stooq = clotureStooq(await r.text())
+        } catch {
+          stooq = null // source muette : on passe à Bloomberg
+        }
+      }
+      const r = resoudreTaux(t, stooq, overlay)
+      return {
+        group: 'Taux EUR',
+        name: t.nom,
+        symbol: t.cle,
+        unit: '%',
+        price: r?.valeur ?? null,
+        // Aucune des deux sources ne donne la veille : pas de variation
+        // affichée plutôt qu'une variation calculée sur un repère inconnu.
+        change: null,
+        changePct: null,
+        marketState: r ? 'REGULAR' : 'CLOSED',
+        ...(r ? { source: r.source } : {}),
+      } as MarketItem
+    }),
+  )
+}
+
 export async function GET() {
-  const items = await Promise.all(SYMBOLS.map(fetchQuote))
+  const [quotes, taux] = await Promise.all([Promise.all(SYMBOLS.map(fetchQuote)), fetchTaux()])
+  const items = [...quotes, ...taux]
   return NextResponse.json({ items, updatedAt: new Date().toISOString(), live: items.some((i) => i.price !== null) })
 }

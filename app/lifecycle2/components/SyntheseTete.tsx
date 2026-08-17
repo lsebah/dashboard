@@ -14,9 +14,11 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { Panel } from './charts'
 import { autocallsProbables, nominalParDevise, type AutocallProche } from '@/lib/autocall-proche'
-import { codeEmetteur } from '@/lib/emetteurs'
 import { dateFr } from '@/lib/dates'
 import { pourcent, pourcentSigne } from '@/lib/pourcentage'
+import Modal from '@/app/lifecycle/components/Modal'
+import ProductSynopsis from '@/app/lifecycle/components/ProductSynopsis'
+import { useAugmentedProduct } from '@/lib/useProductLevels'
 
 interface MarketItem {
   group: string
@@ -40,6 +42,15 @@ const signeClasse = (n: number | null) =>
   n == null ? 'text-slate-400' : n >= 0 ? 'text-emerald-600' : 'text-red-600'
 
 export default function SyntheseTete({ products }: { products: Product[] }) {
+  // Fiche produit ouverte depuis la liste des rappels.
+  const [ouvert, setOuvert] = useState<Product | null>(null)
+  const augmente = useAugmentedProduct(ouvert)
+  const parIsin = useMemo(() => {
+    const m = new Map<string, Product>()
+    for (const p of products) m.set(p.isin, p)
+    return m
+  }, [products])
+
   const [marches, setMarches] = useState<MarketItem[] | null>(null)
   const [niveaux, setNiveaux] = useState<Record<string, number | null> | null>(null)
 
@@ -141,7 +152,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                   <th className="py-1.5 pr-2 font-medium">Observation</th>
                   <th className="py-1.5 pr-2 font-medium">ISIN</th>
                   <th className="py-1.5 pr-2 font-medium">Produit</th>
-                  <th className="py-1.5 pr-2 font-medium">Émetteur</th>
+                  <th className="py-1.5 pr-2 font-medium">Client</th>
                   <th className="py-1.5 pr-2 text-right font-medium">Niveau</th>
                   <th className="py-1.5 pr-2 text-right font-medium">Barrière</th>
                   <th className="py-1.5 pr-2 text-right font-medium">Marge</th>
@@ -150,7 +161,12 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rappels.map((a) => (
-                  <tr key={a.isin} className="hover:bg-emerald-50/40">
+                  <tr
+                    key={a.isin}
+                    onClick={() => setOuvert(parIsin.get(a.isin) ?? null)}
+                    className="cursor-pointer hover:bg-emerald-50/40"
+                    title="Ouvrir la fiche produit"
+                  >
                     <td className="py-1.5 pr-2 whitespace-nowrap">
                       {dateFr(a.dateObservation)}
                       <span className="ml-1.5 text-[11px] text-slate-400">
@@ -169,8 +185,22 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                         </span>
                       )}
                     </td>
-                    <td className="py-1.5 pr-2 whitespace-nowrap text-slate-500" title={a.emetteur}>
-                      {codeEmetteur(a.emetteur)}
+                    {/* Client plutôt qu'émetteur : à trois jours d'un rappel, la
+                        question est « qui j'appelle », pas « qui a émis ». */}
+                    <td
+                      className="max-w-[150px] truncate py-1.5 pr-2 text-slate-600"
+                      title={a.clients.length ? a.clients.join(' · ') : undefined}
+                    >
+                      {a.clients.length === 0 ? (
+                        <span className="text-slate-300">—</span>
+                      ) : a.clients.length === 1 ? (
+                        a.clients[0]
+                      ) : (
+                        <>
+                          {a.clients[0]}
+                          <span className="ml-1 text-[11px] text-slate-400">+{a.clients.length - 1}</span>
+                        </>
+                      )}
                     </td>
                     <td className="py-1.5 pr-2 text-right tabular-nums font-medium whitespace-nowrap">
                       {pourcent(a.niveau, 2)}
@@ -179,7 +209,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                       {pourcent(a.barriere, 2)}
                     </td>
                     <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap font-semibold text-emerald-700">
-                      +{a.marge.toFixed(2)} pt
+                      +{a.marge.toFixed(2).replace('.', ',')} pt
                     </td>
                     <td className="py-1.5 text-right tabular-nums whitespace-nowrap">
                       {eur0(a.nominal)} {a.devise}
@@ -195,6 +225,19 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
           </div>
         )}
       </Panel>
+
+      {/* Fiche produit — mêmes composants que le Portefeuille, niveaux live. */}
+      <Modal open={!!ouvert} onClose={() => setOuvert(null)} title={ouvert?.nom} wide>
+        {augmente ? (
+          <div className="rounded-lg bg-white p-4 shadow-xl">
+            <ProductSynopsis product={augmente} />
+          </div>
+        ) : (
+          <div className="rounded-lg bg-white p-6 text-center text-[13px] text-slate-400 shadow-xl">
+            Chargement de la fiche…
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
