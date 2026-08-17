@@ -45,6 +45,82 @@ test('deux tickets du même jour et du même sous-jacent NE sont PAS fusionnés 
   assert.match(r.aVerifier[0].motif, /nominal/)
 })
 
+test('une ressemblance déjà tranchée ne ressort pas en suspicion', () => {
+  // Cas réel du 06/07 : le MÊME mail annonce deux « Athena dégressif IA
+  // Electrification » — 3,25 M€ (rappel T4 à 100 %) et 1 M€ (rappel T4 à 90 %).
+  // La lecture du mail a tranché ; laisser l'avertissement en permanence le
+  // transformerait en bruit que plus personne ne lit.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-07-06', rr: 'MH', produit: 'Athena IA', emetteur: 'MS', nominal: 3250000, distinctConfirme: true }),
+    D({ id: 'b', date: '2026-07-06', rr: 'MH', produit: 'Athena IA', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+  ])
+  assert.equal(r.deals.length, 2)
+  assert.equal(r.aVerifier.length, 0)
+})
+
+test('le drapeau « distinct » ne dédoublonne pas une identité strictement égale', () => {
+  // Garde-fou : deux lignes rigoureusement identiques restent un doublon, même
+  // marquées distinctes — sinon le drapeau deviendrait un moyen de dupliquer.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-07-06', rr: 'STA', produit: 'X', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+    D({ id: 'b', date: '2026-07-06', rr: 'MM', produit: 'X', emetteur: 'MS', nominal: 1000000, distinctConfirme: true }),
+  ])
+  assert.equal(r.deals.length, 1)
+  assert.equal(r.doublons.length, 1)
+})
+
+// ── Règle des upfronts ──────────────────────────────────────────────────────
+test('deux UF différents lèvent la suspicion : ce sont deux affaires', () => {
+  // Cas SpaceX du 24/06 : 200 K annoncés par le stagiaire à 6,00 % d'UF,
+  // 300 K par le sales à 0,50 %. Un deal a UN upfront : deux upfronts
+  // différents prouvent deux affaires. Plus de suspicion à afficher.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-06-24', rr: 'STA', produit: 'Phoenix SpaceX', nominal: 200000, ufGlobal: 6 }),
+    D({ id: 'b', date: '2026-06-24', rr: 'MM', produit: 'Phoenix SpaceX', emetteur: 'Marex', nominal: 300000, ufGlobal: 0.5 }),
+  ])
+  assert.equal(r.deals.length, 2)
+  assert.equal(r.aVerifier.length, 0)
+})
+
+test('des UF identiques laissent la suspicion intacte', () => {
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-06-24', rr: 'STA', produit: 'Phoenix SpaceX', nominal: 200000, ufGlobal: 6 }),
+    D({ id: 'b', date: '2026-06-24', rr: 'MM', produit: 'Phoenix SpaceX', nominal: 300000, ufGlobal: 6 }),
+  ])
+  assert.equal(r.aVerifier.length, 1)
+})
+
+test('un UF absent d’un côté ne prouve rien — la suspicion reste', () => {
+  // C'est le cas typique du stagiaire qui reprend une annonce en omettant des
+  // champs : exactement le doublon qu'on veut continuer d'attraper.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-06-24', rr: 'STA', produit: 'Phoenix SpaceX', nominal: 200000 }),
+    D({ id: 'b', date: '2026-06-24', rr: 'MM', produit: 'Phoenix SpaceX', nominal: 300000, ufGlobal: 0.5 }),
+  ])
+  assert.equal(r.aVerifier.length, 1)
+})
+
+test('des UF différents empêchent aussi la FUSION d’une identité forte', () => {
+  // Même produit, même émetteur, même nominal — mais deux upfronts. Fusionner
+  // ferait disparaître une affaire réelle : on garde les deux lignes.
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-06-24', rr: 'STA', produit: 'X', emetteur: 'Marex', nominal: 300000, ufGlobal: 6 }),
+    D({ id: 'b', date: '2026-06-24', rr: 'MM', produit: 'X', emetteur: 'Marex', nominal: 300000, ufGlobal: 0.5 }),
+  ])
+  assert.equal(r.deals.length, 2)
+  assert.equal(r.doublons.length, 0)
+  assert.equal(r.aVerifier.length, 0)
+})
+
+test('même identité ET même UF restent un doublon', () => {
+  const r = dedoublonner([
+    D({ id: 'a', date: '2026-06-24', rr: 'STA', produit: 'X', emetteur: 'Marex', nominal: 300000, ufGlobal: 0.5 }),
+    D({ id: 'b', date: '2026-06-24', rr: 'MM', produit: 'X', emetteur: 'Marex', nominal: 300000, ufGlobal: 0.5 }),
+  ])
+  assert.equal(r.deals.length, 1)
+  assert.equal(r.deals[0].rr, 'MM')
+})
+
 test('un même produit annoncé à deux mois d’écart reste deux affaires', () => {
   const r = dedoublonner([
     D({ id: 'a', date: '2026-06-24', rr: 'MM', produit: 'Phoenix SpaceX', emetteur: 'Marex', nominal: 300000 }),
