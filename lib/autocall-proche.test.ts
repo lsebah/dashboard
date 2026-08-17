@@ -137,9 +137,62 @@ test('un rappel DÉJÀ constaté quitte les probables', () => {
 
   const avec = bilanRappels([p], { AG: 170 }, { AG: { '2026-06-10': 128 } }, LE_JOUR)
   assert.equal(avec.probables.length, 0)
-  assert.equal(avec.constates.length, 1)
-  assert.equal(avec.constates[0].date, '2026-06-10')
-  assert.equal(avec.constates[0].niveau, 128)
+  // 68 jours : hors de la fenêtre passée, mais l'anomalie ne se périme pas.
+  assert.equal(avec.passes.length, 0)
+  assert.equal(avec.aConfirmer.length, 1)
+  assert.equal(avec.aConfirmer[0].date, '2026-06-10')
+  assert.equal(avec.aConfirmer[0].niveau, 128)
+  assert.equal(avec.aConfirmer[0].acte, false)
+})
+
+test('un rappel RÉCENT entre dans la fenêtre passée', () => {
+  const p = P({ isin: 'R', obs: '2026-11-10', barriere: 100 })
+  ;(p.observations as unknown[]).unshift({
+    n: 0,
+    dateObservation: '2026-08-10',
+    datePaiement: '2026-08-10',
+    autocallActif: true,
+    niveauRappelPct: 100,
+  })
+  const b = bilanRappels([p], { R: 130 }, { R: { '2026-08-10': 112 } }, LE_JOUR)
+  assert.equal(b.passes.length, 1)
+  assert.equal(b.passes[0].joursDepuis, 7)
+  assert.equal(b.passes[0].acte, false, 'pas encore marqué rappelé')
+  assert.equal(b.aConfirmer.length, 1, 'et donc à confirmer')
+})
+
+test('un produit MARQUÉ rappelé est daté, pas ignoré', () => {
+  // Il ne doit plus apparaître comme « probable », mais il a sa place dans
+  // l'historique des 30 derniers jours — c'est ce qu'on vient d'encaisser.
+  const p = P({ isin: 'ACTE', obs: '2026-11-10', barriere: 100, statut: 'rappele' })
+  ;(p.observations as unknown[]).unshift({
+    n: 0,
+    dateObservation: '2026-08-05',
+    datePaiement: '2026-08-05',
+    autocallActif: true,
+    niveauRappelPct: 100,
+  })
+  const b = bilanRappels([p], { ACTE: 130 }, { ACTE: { '2026-08-05': 118 } }, LE_JOUR)
+  assert.equal(b.probables.length, 0)
+  assert.equal(b.passes.length, 1)
+  assert.equal(b.passes[0].acte, true)
+  assert.equal(b.aConfirmer.length, 0, 'acté : plus rien à confirmer')
+})
+
+test('vendu et échu restent hors sujet', () => {
+  for (const statut of ['vendu', 'echu'] as const) {
+    const p = P({ isin: 'X', obs: '2026-11-10', barriere: 100, statut })
+    ;(p.observations as unknown[]).unshift({
+      n: 0,
+      dateObservation: '2026-08-05',
+      datePaiement: '2026-08-05',
+      autocallActif: true,
+      niveauRappelPct: 100,
+    })
+    const b = bilanRappels([p], { X: 130 }, { X: { '2026-08-05': 118 } }, LE_JOUR)
+    assert.equal(b.passes.length, 0, statut)
+    assert.equal(b.aConfirmer.length, 0, statut)
+  }
 })
 
 test('ce qui ne peut pas être tranché est COMPTÉ, pas tu', () => {

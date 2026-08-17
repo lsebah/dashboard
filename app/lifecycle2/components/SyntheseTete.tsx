@@ -10,7 +10,7 @@
 //  Les deux blocs se chargent indépendamment : un marché indisponible ne doit
 //  pas masquer la liste des rappels, qui est la partie actionnable.
 // ─────────────────────────────────────────────────────────────────────────
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { Panel } from './charts'
 import { bilanRappels, nominalParDevise } from '@/lib/autocall-proche'
@@ -102,8 +102,55 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
     () => (niveaux ? bilanRappels(products, niveaux, constates, new Date(), 30) : null),
     [products, niveaux, constates],
   )
-  const rappels = bilan?.probables ?? null
-  const exposition = useMemo(() => (rappels ? nominalParDevise(rappels) : {}), [rappels])
+  // Une seule ligne de temps : passé et à venir dans le même tableau, séparés
+  // par un repère « aujourd'hui ». Les deux moitiés partagent les mêmes colonnes.
+  const lignes = useMemo(() => {
+    if (!bilan) return []
+    const passe = bilan.passes.map((c) => ({
+      isin: c.isin,
+      nom: c.nom,
+      date: c.date,
+      jours: c.joursDepuis,
+      futur: false,
+      niveau: c.niveau,
+      barriere: c.barriere,
+      marge: Math.round((c.niveau - c.barriere) * 100) / 100,
+      nominal: c.nominal,
+      devise: c.devise,
+      clients: c.clients,
+      inverse: false,
+      etat: c.acte ? 'Rappelé' : 'Rappelé · à confirmer',
+      etatCls: c.acte ? 'bg-slate-100 text-slate-700' : 'bg-violet-100 text-violet-700',
+    }))
+    const futur = bilan.probables.map((a) => ({
+      isin: a.isin,
+      nom: a.nom,
+      date: a.dateObservation,
+      jours: a.joursRestants,
+      futur: true,
+      niveau: a.niveau,
+      barriere: a.barriere,
+      marge: a.marge,
+      nominal: a.nominal,
+      devise: a.devise,
+      clients: a.clients,
+      inverse: a.inverse,
+      etat: 'Probable',
+      etatCls: 'bg-emerald-100 text-emerald-800',
+    }))
+    // Chronologique : le plus ancien en haut, l'à-venir en bas. Le passé récent
+    // et l'imminent se retrouvent ainsi de part et d'autre du repère.
+    return [...passe.reverse(), ...futur]
+  }, [bilan])
+  const indexAujourdHui = bilan?.passes.length ?? 0
+  const exposition = useMemo(
+    () => (bilan ? nominalParDevise(bilan.probables) : {}),
+    [bilan],
+  )
+  const devises = (l: { nominal: number; devise: string }[]) =>
+    Object.entries(nominalParDevise(l))
+      .map(([d, n]) => `${eur0(n)} ${d}`)
+      .join(' · ')
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -134,27 +181,36 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
         )}
       </Panel>
 
-      {/* ── 2. Rappels probables sous 30 jours ────────────────────────── */}
+      {/* ── 2. Rappels : 30 jours passés + 30 jours à venir, une seule ligne
+             de temps. Deux onglets auraient obligé à cliquer pour comparer ce
+             qui vient de tomber et ce qui va tomber — or c'est justement la
+             comparaison qui informe. ─────────────────────────────────────── */}
       <Panel
-        title="Rappel probable sous 30 jours"
-        sub="prochaine observation ≤ 30 j et barrière déjà franchie"
+        title="Rappels — 30 jours de part et d'autre"
+        sub="ce qui vient d'être rappelé, et ce qui va probablement l'être"
         className="lg:col-span-2"
         right={
-          rappels && rappels.length > 0 ? (
-            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
-              {rappels.length} produit{rappels.length > 1 ? 's' : ''} ·{' '}
-              {Object.entries(exposition)
-                .map(([d, n]) => `${eur0(n)} ${d}`)
-                .join(' · ')}
+          bilan ? (
+            <span className="flex flex-wrap items-center gap-1.5">
+              {bilan.passes.length > 0 && (
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                  {bilan.passes.length} rappelé{bilan.passes.length > 1 ? 's' : ''} · {devises(bilan.passes)}
+                </span>
+              )}
+              {bilan.probables.length > 0 && (
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+                  {bilan.probables.length} probable{bilan.probables.length > 1 ? 's' : ''} · {devises(bilan.probables)}
+                </span>
+              )}
             </span>
           ) : undefined
         }
       >
-        {rappels === null ? (
+        {bilan === null ? (
           <p className="py-6 text-center text-[13px] text-slate-400">Calcul des niveaux courants…</p>
-        ) : rappels.length === 0 ? (
+        ) : lignes.length === 0 ? (
           <p className="py-6 text-center text-[13px] text-slate-400">
-            Aucun rappel probable dans les 30 jours.
+            Aucun rappel dans les 30 jours passés, aucun probable dans les 30 à venir.
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -167,85 +223,94 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                   <th className="py-1.5 pr-2 font-medium">Client</th>
                   <th className="py-1.5 pr-2 text-right font-medium">Niveau</th>
                   <th className="py-1.5 pr-2 text-right font-medium">Barrière</th>
-                  <th className="py-1.5 pr-2 text-right font-medium">Marge</th>
-                  <th className="py-1.5 text-right font-medium">Nominal</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Écart</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Nominal</th>
+                  <th className="py-1.5 font-medium">État</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {rappels.map((a) => (
-                  <tr
-                    key={a.isin}
-                    onClick={() => setOuvert(parIsin.get(a.isin) ?? null)}
-                    className="cursor-pointer hover:bg-emerald-50/40"
-                    title="Ouvrir la fiche produit"
-                  >
-                    <td className="py-1.5 pr-2 whitespace-nowrap">
-                      {dateFr(a.dateObservation)}
-                      <span className="ml-1.5 text-[11px] text-slate-400">
-                        {a.joursRestants === 0 ? "aujourd'hui" : `J−${a.joursRestants}`}
-                      </span>
-                    </td>
-                    <td className="py-1.5 pr-2 font-mono text-[12px] whitespace-nowrap">{a.isin}</td>
-                    <td className="max-w-[240px] truncate py-1.5 pr-2 text-slate-600" title={a.nom}>
-                      {a.nom}
-                      {a.inverse && (
-                        <span
-                          className="ml-1.5 rounded bg-violet-100 px-1 py-0.5 text-[10px] font-medium text-violet-700"
-                          title="Autocall inverse — le rappel se déclenche à la baisse"
-                        >
-                          inverse
-                        </span>
-                      )}
-                    </td>
-                    {/* Client plutôt qu'émetteur : à trois jours d'un rappel, la
-                        question est « qui j'appelle », pas « qui a émis ». */}
-                    <td
-                      className="max-w-[150px] truncate py-1.5 pr-2 text-slate-600"
-                      title={a.clients.length ? a.clients.join(' · ') : undefined}
+                {lignes.map((l, i) => (
+                  <Fragment key={`${l.isin}|${l.date}`}>
+                    {/* Repère : la frontière entre l'acquis et l'estimé. */}
+                    {i === indexAujourdHui && (
+                      <tr className="bg-slate-50/80">
+                        <td colSpan={9} className="py-1 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                          — aujourd&apos;hui —
+                        </td>
+                      </tr>
+                    )}
+                    <tr
+                      onClick={() => setOuvert(parIsin.get(l.isin) ?? null)}
+                      className={`cursor-pointer ${l.futur ? 'hover:bg-emerald-50/40' : 'hover:bg-slate-50'}`}
+                      title="Ouvrir la fiche produit"
                     >
-                      {a.clients.length === 0 ? (
-                        <span className="text-slate-300">—</span>
-                      ) : a.clients.length === 1 ? (
-                        a.clients[0]
-                      ) : (
-                        <>
-                          {a.clients[0]}
-                          <span className="ml-1 text-[11px] text-slate-400">+{a.clients.length - 1}</span>
-                        </>
-                      )}
-                    </td>
-                    <td className="py-1.5 pr-2 text-right tabular-nums font-medium whitespace-nowrap">
-                      {pourcent(a.niveau, 2)}
-                    </td>
-                    <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap text-slate-500">
-                      {pourcent(a.barriere, 2)}
-                    </td>
-                    <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap font-semibold text-emerald-700">
-                      +{a.marge.toFixed(2).replace('.', ',')} pt
-                    </td>
-                    <td className="py-1.5 text-right tabular-nums whitespace-nowrap">
-                      {eur0(a.nominal)} {a.devise}
-                    </td>
-                  </tr>
+                      <td className="py-1.5 pr-2 whitespace-nowrap">
+                        {dateFr(l.date)}
+                        <span className="ml-1.5 text-[11px] text-slate-400">
+                          {l.jours === 0 ? 'auj.' : l.futur ? `J−${l.jours}` : `J+${l.jours}`}
+                        </span>
+                      </td>
+                      <td className="py-1.5 pr-2 font-mono text-[12px] whitespace-nowrap">{l.isin}</td>
+                      <td className="max-w-[220px] truncate py-1.5 pr-2 text-slate-600" title={l.nom}>
+                        {l.nom}
+                        {l.inverse && (
+                          <span
+                            className="ml-1.5 rounded bg-violet-100 px-1 py-0.5 text-[10px] font-medium text-violet-700"
+                            title="Autocall inverse — le rappel se déclenche à la baisse"
+                          >
+                            inverse
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        className="max-w-[140px] truncate py-1.5 pr-2 text-slate-600"
+                        title={l.clients.length ? l.clients.join(' · ') : undefined}
+                      >
+                        {l.clients.length === 0 ? (
+                          <span className="text-slate-300">—</span>
+                        ) : l.clients.length === 1 ? (
+                          l.clients[0]
+                        ) : (
+                          <>
+                            {l.clients[0]}
+                            <span className="ml-1 text-[11px] text-slate-400">+{l.clients.length - 1}</span>
+                          </>
+                        )}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums font-medium whitespace-nowrap">
+                        {pourcent(l.niveau, 2)}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap text-slate-500">
+                        {pourcent(l.barriere, 2)}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap font-semibold text-emerald-700">
+                        +{l.marge.toFixed(2).replace('.', ',')} pt
+                      </td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums whitespace-nowrap">
+                        {eur0(l.nominal)} {l.devise}
+                      </td>
+                      <td className="py-1.5 whitespace-nowrap">
+                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${l.etatCls}`}>{l.etat}</span>
+                      </td>
+                    </tr>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
             <p className="mt-2 text-[11px] text-slate-400">
-              Estimation au niveau courant du panier : une observation peut encore être démentie d&apos;ici là.
+              Passé : barrière franchie à une observation constatée. À venir : estimation au niveau
+              courant du panier — une observation peut encore être démentie d&apos;ici là.
             </p>
           </div>
         )}
-        {/* Rappel DÉJÀ déclenché à une observation passée : ce n'est plus une
-            probabilité, c'est une confirmation à obtenir auprès de l'émetteur. */}
-        {bilan && bilan.constates.length > 0 && (
+
+        {/* Anomalie qui ne se périme pas : rappel déclenché, produit non marqué. */}
+        {bilan && bilan.aConfirmer.length > 0 && (
           <div className="mt-3 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-[12px] text-violet-900">
-            <strong>
-              {bilan.constates.length} rappel(s) déjà constaté(s)
-            </strong>{' '}
-            — la barrière a été franchie à une observation PASSÉE, le produit n&apos;est pas encore marqué
-            « rappelé ». À confirmer auprès de l&apos;émetteur.
+            <strong>{bilan.aConfirmer.length} rappel(s) constaté(s) non actés</strong> — la barrière a été
+            franchie, le produit n&apos;est pas encore marqué « rappelé » au portefeuille.
             <ul className="mt-1 space-y-0.5">
-              {bilan.constates.map((c) => (
+              {bilan.aConfirmer.map((c) => (
                 <li key={c.isin}>
                   <button
                     onClick={() => setOuvert(parIsin.get(c.isin) ?? null)}
@@ -253,7 +318,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                   >
                     {dateFr(c.date)} · {c.isin} · {c.nom}
                   </button>{' '}
-                  — {pourcent(c.niveau, 2)} ≥ {pourcent(c.barriere, 2)} · {eur0(c.nominal)} {c.devise}
+                  — {pourcent(c.niveau, 2)} vs {pourcent(c.barriere, 2)} · {eur0(c.nominal)} {c.devise}
                 </li>
               ))}
             </ul>
@@ -264,11 +329,11 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
             produit invisible passe pour un produit calme. */}
         {bilan && (bilan.nonEvalues.length > 0 || bilan.nbNonCall > 0) && (
           <p className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
-            Périmètre de la fenêtre :{' '}
+            Périmètre :{' '}
             {bilan.nbNonCall > 0 && (
               <>
-                <strong>{bilan.nbNonCall}</strong> produit(s) observés mais en période de non-call
-                (rappel impossible){bilan.nonEvalues.length > 0 ? ' · ' : '.'}
+                <strong>{bilan.nbNonCall}</strong> produit(s) observés mais en période de non-call (rappel
+                impossible){bilan.nonEvalues.length > 0 ? ' · ' : '.'}
               </>
             )}
             {bilan.nonEvalues.length > 0 && (

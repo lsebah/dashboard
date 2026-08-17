@@ -108,7 +108,7 @@ export interface NonEvalue {
   motif: 'niveau inconnu' | 'barrière non décodée'
 }
 
-/** Rappel DÉJÀ déclenché à une observation passée, pas encore acté. */
+/** Rappel DÉJÀ déclenché à une observation passée. */
 export interface RappelConstate {
   isin: string
   nom: string
@@ -118,13 +118,20 @@ export interface RappelConstate {
   nominal: number
   devise: string
   clients: string[]
+  /** Vrai quand le produit est marqué « rappelé » : la boucle est fermée. */
+  acte: boolean
+  /** Jours écoulés depuis l'observation qui a déclenché le rappel. */
+  joursDepuis: number
 }
 
 export interface BilanRappels {
   /** Rappel probable à la prochaine observation, dans la fenêtre. */
   probables: AutocallProche[]
-  /** Barrière déjà franchie à une observation PASSÉE — à confirmer auprès de l'émetteur. */
-  constates: RappelConstate[]
+  /** Rappels déclenchés DANS la fenêtre passée (actés ou non). */
+  passes: RappelConstate[]
+  /** Barrière franchie mais produit pas encore marqué « rappelé », quel que soit
+   *  l'âge : c'est l'anomalie à traiter, pas une ligne d'historique. */
+  aConfirmer: RappelConstate[]
   /** Observation dans la fenêtre mais verdict impossible — l'aveu, pas le silence. */
   nonEvalues: NonEvalue[]
   /** Observation dans la fenêtre mais rappel inactif (non-call) : réponse définitive. */
@@ -166,19 +173,22 @@ export function bilanRappels(
   horizonJours = 30,
 ): BilanRappels {
   const probables: AutocallProche[] = []
-  const constates: RappelConstate[] = []
+  const passes: RappelConstate[] = []
+  const aConfirmer: RappelConstate[] = []
   const nonEvalues: NonEvalue[] = []
   let nbNonCall = 0
 
   for (const brut of produits) {
-    if (!vivant(brut)) continue
+    // Les produits déjà MARQUÉS rappelés sont scannés eux aussi : ce sont eux
+    // qui peuplent la fenêtre passée. Vendus et échus restent hors sujet.
+    if (brut.statut === 'vendu' || brut.statut === 'echu') continue
     const p = avecNiveauxConstates(brut, niveauxConstates[brut.isin])
 
     // 1) Rappel déjà DÉCLENCHÉ à une observation passée : le produit n'a plus
     //    d'échéance à surveiller, il a une confirmation à obtenir.
     const rc = rappelConstate(p, aujourdHui)
     if (rc) {
-      constates.push({
+      const item: RappelConstate = {
         isin: p.isin,
         nom: p.nom,
         date: rc.date,
@@ -187,9 +197,19 @@ export function bilanRappels(
         nominal: p.nominal,
         devise: p.devise,
         clients: p.clients ?? [],
-      })
+        acte: p.statut === 'rappele',
+        joursDepuis: -jours(rc.date, aujourdHui),
+      }
+      if (item.joursDepuis >= 0 && item.joursDepuis <= horizonJours) passes.push(item)
+      // L'anomalie ne se périme pas : un rappel non acté reste à traiter, même
+      // s'il date de trois mois.
+      if (!item.acte) aConfirmer.push(item)
       continue
     }
+
+    // Un produit marqué « rappelé » dont on ne peut pas dater le rappel n'a rien
+    // à faire dans une liste à venir : on l'écarte sans le compter à tort.
+    if (p.statut === 'rappele') continue
 
     const obs = prochaineObservation(p, aujourdHui)
     if (!obs) continue
@@ -233,13 +253,20 @@ export function bilanRappels(
   }
 
   probables.sort((a, b) => a.joursRestants - b.joursRestants || b.marge - a.marge || a.isin.localeCompare(b.isin))
-  constates.sort((a, b) => b.date.localeCompare(a.date))
+  // Passés : du plus récent au plus ancien — l'ordre dans lequel on les traite.
+  passes.sort((a, b) => b.date.localeCompare(a.date) || a.isin.localeCompare(b.isin))
+  aConfirmer.sort((a, b) => b.date.localeCompare(a.date) || a.isin.localeCompare(b.isin))
   nonEvalues.sort((a, b) => a.joursRestants - b.joursRestants || a.isin.localeCompare(b.isin))
-  return { probables, constates, nonEvalues, nbNonCall }
+  return { probables, passes, aConfirmer, nonEvalues, nbNonCall }
 }
 
-/** Nominal total exposé à un rappel dans la fenêtre, par devise. */
-export function nominalParDevise(liste: AutocallProche[]): Record<string, number> {
+/**
+ * Nominal total par devise. Les euros et les dollars ne s'additionnent pas :
+ * la fonction renvoie une entrée par devise, jamais un total unique.
+ */
+export function nominalParDevise(
+  liste: { nominal: number; devise: string }[],
+): Record<string, number> {
   const m: Record<string, number> = {}
   for (const a of liste) m[a.devise] = (m[a.devise] ?? 0) + a.nominal
   return m
