@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
+import { ligneKey, ligneKeyLegacy } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { useAllocations } from '@/lib/allocations'
@@ -45,7 +46,7 @@ const parsePct = (raw: string): number | undefined => {
   return Number.isFinite(v) ? v / 100 : undefined
 }
 
-const rowKey = (l: CommissionLigne) => `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}`
+const rowKey = ligneKey
 
 type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
 
@@ -75,7 +76,10 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // rattachée à l'année courante (anneeAttr) — y compris un report émis une année
   // antérieure mais encaissé en 2026 —, quel que soit le filtre actif.
   const calc = (l: CommissionLigne) => {
-    const o = ov[rowKey(l)] ?? {}
+    // Lecture : clé courante d'abord, ancienne clé ensuite — une saisie faite
+    // avant l'ajout du nominal reste appliquée. L'écriture, elle, est toujours
+    // en clé courante (patch(rowKey(l))).
+    const o = ov[rowKey(l)] ?? ov[ligneKeyLegacy(l)] ?? {}
     const editable = anneeAttr(l) === ANNEE_COURANTE
     const uf = editable ? o.uf ?? l.ufPct : l.ufPct
     const retro = editable ? o.retro ?? l.retroPct : l.retroPct

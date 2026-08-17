@@ -44,3 +44,32 @@ export interface CommissionsData {
 }
 
 export const commissions = raw as unknown as CommissionsData
+
+// ─────────────────────────────────────────────────────────────────────────
+//  Identité d'une ligne de commission.
+//
+//  La clé servait à retrouver une ligne pour y coller une saisie manuelle
+//  (UF, rétro, n° de facture, date d'encaissement). Elle ne portait que
+//  ISIN + client + date d'émission — ce qui suffisait tant qu'un client ne
+//  faisait qu'UN ticket par produit.
+//
+//  Ce n'est pas le cas : un UPSIZE crée un second ticket, même client, même
+//  produit, même date d'émission (FR1459ABG521 / RENAUD GESTION PRIVEE :
+//  63 000 € le 12/06 puis 24 000 € le 17/08, tous deux émis le 21/09/2026).
+//  Sans le nominal dans la clé, les deux lignes n'en font qu'une : une rétro
+//  saisie sur l'une s'appliquerait silencieusement à l'autre.
+//
+//  Le nominal les sépare — c'est justement ce qui différencie deux tickets.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Identité d'une ligne : ISIN + client + date d'émission + nominal. */
+export const ligneKey = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>): string =>
+  `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}|${l.nominal ?? ''}`
+
+/**
+ * Ancienne clé (sans nominal). Les saisies déjà enregistrées dans KV/navigateur
+ * la portent : on continue de LIRE avec, sinon elles disparaîtraient toutes le
+ * jour du changement. Les écritures, elles, utilisent toujours `ligneKey`.
+ */
+export const ligneKeyLegacy = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue'>): string =>
+  `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}`
