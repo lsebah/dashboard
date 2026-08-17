@@ -14,8 +14,8 @@
 //  sur une période de non-call, le produit n'est PAS signalé. Une liste qui
 //  contient des faux positifs cesse d'être lue.
 // ─────────────────────────────────────────────────────────────────────────
-import type { Product } from './types'
-import { prochaineObservation } from './lifecycle'
+import type { Observation, Product } from './types'
+import { prochaineObservation, rappelConstate } from './lifecycle'
 
 export interface AutocallProche {
   isin: string
@@ -97,6 +97,145 @@ export function autocallsProbables(
   return out.sort(
     (a, b) => a.joursRestants - b.joursRestants || b.marge - a.marge || a.isin.localeCompare(b.isin),
   )
+}
+
+/** Ce que la liste n'a PAS pu trancher, avec le motif. */
+export interface NonEvalue {
+  isin: string
+  nom: string
+  dateObservation: string
+  joursRestants: number
+  motif: 'niveau inconnu' | 'barrière non décodée'
+}
+
+/** Rappel DÉJÀ déclenché à une observation passée, pas encore acté. */
+export interface RappelConstate {
+  isin: string
+  nom: string
+  date: string
+  niveau: number
+  barriere: number
+  nominal: number
+  devise: string
+  clients: string[]
+}
+
+export interface BilanRappels {
+  /** Rappel probable à la prochaine observation, dans la fenêtre. */
+  probables: AutocallProche[]
+  /** Barrière déjà franchie à une observation PASSÉE — à confirmer auprès de l'émetteur. */
+  constates: RappelConstate[]
+  /** Observation dans la fenêtre mais verdict impossible — l'aveu, pas le silence. */
+  nonEvalues: NonEvalue[]
+  /** Observation dans la fenêtre mais rappel inactif (non-call) : réponse définitive. */
+  nbNonCall: number
+}
+
+/**
+ * Injecte les niveaux CONSTATÉS aux observations passées dans un produit.
+ * Sans eux, `rappelConstate` ne peut rien voir : un produit rappelé il y a deux
+ * mois continue d'apparaître comme « rappel probable » à sa prochaine échéance.
+ */
+export function avecNiveauxConstates(
+  p: Product,
+  niveaux: Record<string, number> | undefined,
+): Product {
+  if (!niveaux || Object.keys(niveaux).length === 0) return p
+  const observations: Observation[] | undefined = p.observations?.map((o) =>
+    typeof niveaux[o.dateObservation] === 'number'
+      ? { ...o, niveauConstatePct: niveaux[o.dateObservation] }
+      : o,
+  )
+  return { ...p, observations }
+}
+
+/**
+ * Bilan complet de la fenêtre : ce qui va probablement être rappelé, ce qui l'a
+ * DÉJÀ été sans être acté, et ce qu'on n'a pas pu trancher.
+ *
+ * Le troisième point est le plus important. Une liste qui se contente d'afficher
+ * ce qu'elle sait laisse croire que le reste est calme, alors qu'il est
+ * seulement invisible : un sous-jacent sans niveau (indice à décrément absent du
+ * run Bloomberg) suffit à faire disparaître un produit sans un mot.
+ */
+export function bilanRappels(
+  produits: Product[],
+  niveauxCourants: Record<string, number | null | undefined>,
+  niveauxConstates: Record<string, Record<string, number>> = {},
+  aujourdHui: Date = new Date(),
+  horizonJours = 30,
+): BilanRappels {
+  const probables: AutocallProche[] = []
+  const constates: RappelConstate[] = []
+  const nonEvalues: NonEvalue[] = []
+  let nbNonCall = 0
+
+  for (const brut of produits) {
+    if (!vivant(brut)) continue
+    const p = avecNiveauxConstates(brut, niveauxConstates[brut.isin])
+
+    // 1) Rappel déjà DÉCLENCHÉ à une observation passée : le produit n'a plus
+    //    d'échéance à surveiller, il a une confirmation à obtenir.
+    const rc = rappelConstate(p, aujourdHui)
+    if (rc) {
+      constates.push({
+        isin: p.isin,
+        nom: p.nom,
+        date: rc.date,
+        niveau: rc.niveauPct,
+        barriere: rc.barrierePct,
+        nominal: p.nominal,
+        devise: p.devise,
+        clients: p.clients ?? [],
+      })
+      continue
+    }
+
+    const obs = prochaineObservation(p, aujourdHui)
+    if (!obs) continue
+    const d = jours(obs.dateObservation, aujourdHui)
+    if (d < 0 || d > horizonJours) continue
+
+    // 2) Non-call : réponse DÉFINITIVE, pas une lacune. Compté, pas listé.
+    if (obs.autocallActif === false) {
+      nbNonCall++
+      continue
+    }
+    // 3) Barrière non décodée ou niveau courant absent : verdict impossible.
+    if (typeof obs.niveauRappelPct !== 'number') {
+      nonEvalues.push({ isin: p.isin, nom: p.nom, dateObservation: obs.dateObservation, joursRestants: d, motif: 'barrière non décodée' })
+      continue
+    }
+    const niveau = niveauxCourants[p.isin]
+    if (typeof niveau !== 'number') {
+      nonEvalues.push({ isin: p.isin, nom: p.nom, dateObservation: obs.dateObservation, joursRestants: d, motif: 'niveau inconnu' })
+      continue
+    }
+
+    const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
+    const barriere = obs.niveauRappelPct
+    if (!(inverse ? niveau <= barriere : niveau >= barriere)) continue
+
+    probables.push({
+      isin: p.isin,
+      nom: p.nom,
+      emetteur: p.emetteur,
+      dateObservation: obs.dateObservation,
+      joursRestants: d,
+      niveau: Math.round(niveau * 100) / 100,
+      barriere,
+      marge: Math.round((inverse ? barriere - niveau : niveau - barriere) * 100) / 100,
+      inverse,
+      nominal: p.nominal,
+      devise: p.devise,
+      clients: p.clients ?? [],
+    })
+  }
+
+  probables.sort((a, b) => a.joursRestants - b.joursRestants || b.marge - a.marge || a.isin.localeCompare(b.isin))
+  constates.sort((a, b) => b.date.localeCompare(a.date))
+  nonEvalues.sort((a, b) => a.joursRestants - b.joursRestants || a.isin.localeCompare(b.isin))
+  return { probables, constates, nonEvalues, nbNonCall }
 }
 
 /** Nominal total exposé à un rappel dans la fenêtre, par devise. */

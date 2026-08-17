@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/types'
 import { Panel } from './charts'
-import { autocallsProbables, nominalParDevise, type AutocallProche } from '@/lib/autocall-proche'
+import { bilanRappels, nominalParDevise } from '@/lib/autocall-proche'
 import { dateFr } from '@/lib/dates'
 import { pourcent, pourcentSigne } from '@/lib/pourcentage'
 import Modal from '@/app/lifecycle/components/Modal'
@@ -53,6 +53,9 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
 
   const [marches, setMarches] = useState<MarketItem[] | null>(null)
   const [niveaux, setNiveaux] = useState<Record<string, number | null> | null>(null)
+  // Niveaux CONSTATÉS aux observations passées, par ISIN — sans eux, un produit
+  // rappelé il y a deux mois s'affiche encore comme « rappel probable ».
+  const [constates, setConstates] = useState<Record<string, Record<string, number>>>({})
 
   useEffect(() => {
     let annule = false
@@ -74,10 +77,18 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
         if (annule) return
-        const c = (j?.courant ?? {}) as Record<string, { worstOf: number | null }>
+        const c = (j?.courant ?? {}) as Record<
+          string,
+          { worstOf: number | null; niveaux?: Record<string, number> }
+        >
         const m: Record<string, number | null> = {}
-        for (const isin of Object.keys(c)) m[isin] = c[isin]?.worstOf ?? null
+        const n: Record<string, Record<string, number>> = {}
+        for (const isin of Object.keys(c)) {
+          m[isin] = c[isin]?.worstOf ?? null
+          if (c[isin]?.niveaux) n[isin] = c[isin].niveaux as Record<string, number>
+        }
         setNiveaux(m)
+        setConstates(n)
       })
       .catch(() => {
         if (!annule) setNiveaux({})
@@ -87,10 +98,11 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
     }
   }, [])
 
-  const rappels: AutocallProche[] | null = useMemo(
-    () => (niveaux ? autocallsProbables(products, niveaux, new Date(), 30) : null),
-    [products, niveaux],
+  const bilan = useMemo(
+    () => (niveaux ? bilanRappels(products, niveaux, constates, new Date(), 30) : null),
+    [products, niveaux, constates],
   )
+  const rappels = bilan?.probables ?? null
   const exposition = useMemo(() => (rappels ? nominalParDevise(rappels) : {}), [rappels])
 
   return (
@@ -219,10 +231,66 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
               </tbody>
             </table>
             <p className="mt-2 text-[11px] text-slate-400">
-              Estimation au niveau courant du panier : une observation peut encore être démentie d&apos;ici
-              là. Les produits sans niveau connu ou en période de non-call ne sont pas listés.
+              Estimation au niveau courant du panier : une observation peut encore être démentie d&apos;ici là.
             </p>
           </div>
+        )}
+        {/* Rappel DÉJÀ déclenché à une observation passée : ce n'est plus une
+            probabilité, c'est une confirmation à obtenir auprès de l'émetteur. */}
+        {bilan && bilan.constates.length > 0 && (
+          <div className="mt-3 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-[12px] text-violet-900">
+            <strong>
+              {bilan.constates.length} rappel(s) déjà constaté(s)
+            </strong>{' '}
+            — la barrière a été franchie à une observation PASSÉE, le produit n&apos;est pas encore marqué
+            « rappelé ». À confirmer auprès de l&apos;émetteur.
+            <ul className="mt-1 space-y-0.5">
+              {bilan.constates.map((c) => (
+                <li key={c.isin}>
+                  <button
+                    onClick={() => setOuvert(parIsin.get(c.isin) ?? null)}
+                    className="underline decoration-dotted hover:text-violet-700"
+                  >
+                    {dateFr(c.date)} · {c.isin} · {c.nom}
+                  </button>{' '}
+                  — {pourcent(c.niveau, 2)} ≥ {pourcent(c.barriere, 2)} · {eur0(c.nominal)} {c.devise}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Périmètre : ce que la liste n'a PAS pu trancher. Sans cette ligne, un
+            produit invisible passe pour un produit calme. */}
+        {bilan && (bilan.nonEvalues.length > 0 || bilan.nbNonCall > 0) && (
+          <p className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
+            Périmètre de la fenêtre :{' '}
+            {bilan.nbNonCall > 0 && (
+              <>
+                <strong>{bilan.nbNonCall}</strong> produit(s) observés mais en période de non-call
+                (rappel impossible){bilan.nonEvalues.length > 0 ? ' · ' : '.'}
+              </>
+            )}
+            {bilan.nonEvalues.length > 0 && (
+              <>
+                <strong>{bilan.nonEvalues.length}</strong> non évalué(s) :{' '}
+                {bilan.nonEvalues.map((x, i) => (
+                  <span key={x.isin}>
+                    {i > 0 && ', '}
+                    <button
+                      onClick={() => setOuvert(parIsin.get(x.isin) ?? null)}
+                      className="underline decoration-dotted hover:text-slate-800"
+                      title={`${x.nom} — observation le ${dateFr(x.dateObservation)}`}
+                    >
+                      {x.isin}
+                    </button>
+                    <span className="text-slate-400"> ({x.motif})</span>
+                  </span>
+                ))}
+                .
+              </>
+            )}
+          </p>
         )}
       </Panel>
 

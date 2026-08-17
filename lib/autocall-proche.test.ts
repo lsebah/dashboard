@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { autocallsProbables, nominalParDevise } from './autocall-proche.ts'
+import { autocallsProbables, bilanRappels, nominalParDevise } from './autocall-proche.ts'
 import type { Product } from './types.ts'
 
 const LE_JOUR = new Date('2026-08-17T00:00:00Z')
@@ -115,4 +115,63 @@ test('nominalParDevise agrège sans mélanger les devises', () => {
     LE_JOUR,
   )
   assert.deepEqual(nominalParDevise(r), { EUR: 500_000, USD: 50_000 })
+})
+
+// ── bilanRappels : le verdict complet, y compris ce qu'on ne sait pas ──────
+
+test('un rappel DÉJÀ constaté quitte les probables', () => {
+  // Cas Silver Miners : première observation active le 10/06 à 100 %, panier à
+  // 170 % aujourd'hui. Sans les niveaux constatés, le produit s'affichait comme
+  // « rappel probable le 10/09 » alors qu'il était rappelé depuis juin.
+  const p = P({ isin: 'AG', obs: '2026-09-10', barriere: 100 })
+  ;(p.observations as unknown[]).unshift({
+    n: 0,
+    dateObservation: '2026-06-10',
+    datePaiement: '2026-06-10',
+    autocallActif: true,
+    niveauRappelPct: 100,
+  })
+
+  const sans = bilanRappels([p], { AG: 170 }, {}, LE_JOUR)
+  assert.equal(sans.probables.length, 1, 'sans niveau constaté : faux positif')
+
+  const avec = bilanRappels([p], { AG: 170 }, { AG: { '2026-06-10': 128 } }, LE_JOUR)
+  assert.equal(avec.probables.length, 0)
+  assert.equal(avec.constates.length, 1)
+  assert.equal(avec.constates[0].date, '2026-06-10')
+  assert.equal(avec.constates[0].niveau, 128)
+})
+
+test('ce qui ne peut pas être tranché est COMPTÉ, pas tu', () => {
+  // Le silence est le vrai danger : un produit sans niveau disparaissait de la
+  // liste, et son absence se lisait comme « rien à signaler ».
+  const sansNiveau = P({ isin: 'SANS', obs: '2026-08-25', barriere: 100 })
+  const sansBarriere = P({ isin: 'NOBAR', obs: '2026-08-26' })
+  ;(sansBarriere.observations as { niveauRappelPct?: number }[])[0].niveauRappelPct = undefined
+
+  const b = bilanRappels([sansNiveau, sansBarriere], { SANS: null }, {}, LE_JOUR)
+  assert.equal(b.probables.length, 0)
+  assert.equal(b.nonEvalues.length, 2)
+  assert.deepEqual(
+    b.nonEvalues.map((x) => [x.isin, x.motif]).sort(),
+    [
+      ['NOBAR', 'barrière non décodée'],
+      ['SANS', 'niveau inconnu'],
+    ],
+  )
+})
+
+test('le non-call est une réponse, pas une lacune : compté à part', () => {
+  const p = P({ isin: 'NC', obs: '2026-08-25', barriere: 100 })
+  ;(p.observations as { autocallActif: boolean }[])[0].autocallActif = false
+  const b = bilanRappels([p], { NC: 150 }, {}, LE_JOUR)
+  assert.equal(b.nbNonCall, 1)
+  assert.equal(b.nonEvalues.length, 0, 'ne doit PAS être rangé dans les non évalués')
+  assert.equal(b.probables.length, 0)
+})
+
+test('bilanRappels et autocallsProbables s’accordent sur le cas simple', () => {
+  const p = [P({ isin: 'A', obs: '2026-08-25', barriere: 100 })]
+  const b = bilanRappels(p, { A: 104 }, {}, LE_JOUR)
+  assert.deepEqual(b.probables, autocallsProbables(p, { A: 104 }, LE_JOUR))
 })
