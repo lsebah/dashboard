@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { clientCode, computeCoherence, type CommissionLine } from './coherence.ts'
+import { clientCode, computeCoherence, emissionAvantStrike, type CommissionLine } from './coherence.ts'
 import type { Product } from './types.ts'
 
 const P = (over: Partial<Product>): Product =>
@@ -102,4 +102,31 @@ test('ligne commission orpheline (aucun produit)', () => {
 test('FEI agrégé : jamais signalé orphelin', () => {
   const lignes: CommissionLine[] = [{ isin: 'FEI', client: 'MACIF' }]
   assert.equal(computeCoherence(lignes, []).filter((i) => i.type === 'orpheline').length, 0)
+})
+
+test('une émission antérieure au strike est signalée, jamais corrigée', () => {
+  // Un produit ne peut pas être émis avant d'être constaté. Quand ça arrive,
+  // le champ « émission » contient autre chose — le plus souvent la date de
+  // trade (cas FR1459ABG521, 17/08/2026).
+  const p = (isin: string, emission: string, strike: string) =>
+    ({ isin, dateEmission: emission, dateConstatationInitiale: strike }) as any
+
+  const r = emissionAvantStrike([
+    p('AAA', '2026-09-21', '2026-09-21'), // même jour : valide
+    p('BBB', '2026-10-05', '2026-09-21'), // émission après : valide
+    p('CCC', '2026-06-11', '2026-06-15'), // émission avant : impossible
+  ])
+  assert.equal(r.length, 1)
+  assert.equal(r[0].isin, 'CCC')
+  assert.equal(r[0].type, 'emission')
+  assert.match(r[0].detail, /ANTÉRIEURE/)
+  assert.match(r[0].detail, /date de trade/)
+})
+
+test('un produit sans l’une des deux dates n’est pas signalé', () => {
+  const r = emissionAvantStrike([
+    { isin: 'AAA', dateEmission: '2026-06-11' } as any,
+    { isin: 'BBB', dateConstatationInitiale: '2026-06-15' } as any,
+  ])
+  assert.equal(r.length, 0)
 })

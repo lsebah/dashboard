@@ -34,7 +34,7 @@ export interface CommissionLine {
 
 export interface CoherenceIssue {
   isin: string
-  type: 'client' | 'date' | 'orpheline'
+  type: 'client' | 'date' | 'orpheline' | 'emission'
   classeur?: string
   produit?: string
   detail: string
@@ -145,6 +145,36 @@ export function computeCoherence(
         detail: `Écart de date d'émission > ${toleranceJours} j (classeur ${l.issue} vs produit ${p.dateEmission}).`,
       })
     }
+  }
+
+  issues.push(...emissionAvantStrike(products))
+  return issues
+}
+
+/**
+ * Un produit ne peut pas être ÉMIS avant d'être CONSTATÉ : la constatation
+ * initiale fixe le niveau de départ, l'émission vient après. Une date
+ * d'émission antérieure au strike n'est donc pas une approximation, c'est un
+ * autre événement rangé dans le mauvais champ — presque toujours la date de
+ * TRADE (cas FR1459ABG521 : 11/06 dans le champ émission, alors que le mail de
+ * facturation dit « Trade Date 12/06/2026 · Issue Date 21/09/2026 »).
+ *
+ * Le contrôle ne CORRIGE rien : il signale. La bonne date ne se déduit pas, elle
+ * se lit dans la termsheet ou le mail de l'émetteur.
+ */
+export function emissionAvantStrike(products: Product[]): CoherenceIssue[] {
+  const issues: CoherenceIssue[] = []
+  for (const p of products) {
+    if (!p.dateEmission || !p.dateConstatationInitiale) continue
+    if (p.dateEmission >= p.dateConstatationInitiale) continue
+    const j = Math.round(daysBetween(p.dateEmission, p.dateConstatationInitiale))
+    issues.push({
+      isin: p.isin,
+      type: 'emission',
+      produit: p.dateEmission,
+      classeur: p.dateConstatationInitiale,
+      detail: `Émission ${p.dateEmission} ANTÉRIEURE au strike ${p.dateConstatationInitiale} (${j} j) — impossible : le champ « date d'émission » contient probablement une date de trade.`,
+    })
   }
   return issues
 }

@@ -5588,8 +5588,15 @@ const gsBasket50Div: Product = {
   devise: 'EUR',
   nominal: 30_000_000,
   valeurNominale: 1000,
+  // Date d'ÉMISSION 21/09/2026 — pas 11/06. Le 11/06 était une date de trade
+  // (le trade lui-même est du 12/06 selon le mail de facturation à Gabrielle du
+  // 12/06/2026 : « Trade Date 12/06/2026 · Issue Date 21/09/2026 »). Le produit
+  // s'appelle « Rendement Energies septembre 2026 » et sa première observation
+  // tombe le 21/10/2026, à un mois jour pour jour de l'émission — tout concorde.
+  // dateConstatationInitiale reste inchangée : aucune pièce ne la donne, et un
+  // strike ne se déduit pas.
   dateConstatationInitiale: '2026-06-15',
-  dateEmission: '2026-06-11',
+  dateEmission: '2026-09-21',
   dateConstatationFinale: '2038-09-21',
   dateEcheance: '2038-10-05',
   frequence: 'mensuel',
