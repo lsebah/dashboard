@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
-import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues } from '@/lib/commissions'
+import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues, doublonsRegistreLocal } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { useAllocations } from '@/lib/allocations'
@@ -65,6 +65,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Anciennes clés que plusieurs lignes se partagent : leur surcharge n'est
   // attribuable à personne (cf. clesLegacyAmbigues).
   const legacyAmbigu = useMemo(() => clesLegacyAmbigues(lignesAll), [lignesAll])
+  // Saisies locales qui font double emploi avec une ligne du registre : les
+  // deux s'additionnent dans les totaux (cf. doublonsRegistreLocal).
+  const doublons = useMemo(
+    () => doublonsRegistreLocal(data.lignes, localCommissions),
+    [data, localCommissions],
+  )
   const nbSaisies = Object.keys(ov).length
   const nbRestaurables = Object.keys(backup).length
   // Ligne en cours d'édition (locale OU registre) — UNE seule mécanique.
@@ -361,6 +367,20 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
         )}
       </div>
 
+      {doublons.length > 0 && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-[12px] text-amber-900">
+          <strong>{doublons.length} saisie(s) locale(s) font double emploi avec le registre</strong> —
+          même ISIN, même client, même date d&apos;émission et même nominal. Les deux lignes s&apos;additionnent
+          dans les totaux : la commission est comptée deux fois. Supprime la saisie locale (✕) pour ne
+          garder que la ligne du registre.
+          <ul className="mt-1 space-y-0.5">
+            {doublons.map((k) => (
+              <li key={k} className="font-mono text-[11px]">{k.split('|').filter(Boolean).join(' · ')}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Totaux du jeu filtré */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
         {[
@@ -473,12 +493,12 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                       <button
                         onClick={() => setEdit(l)}
                         className="text-slate-400 hover:text-cmf-blue"
-                        title="Modifier cette commission"
+                        title={l.isLocal ? 'Modifier cette commission (saisie locale)' : 'Modifier cette commission (ligne du registre)'}
                       >
                         ✎
                       </button>
                       {l.isLocal && (
-                        <button onClick={() => deleteLocal(l)} className="text-slate-400 hover:text-red-600" title="Supprimer cette commission">
+                        <button onClick={() => deleteLocal(l)} className="text-slate-400 hover:text-red-600" title="Supprimer cette saisie locale — seules les lignes créées via « Nouveau trade » se suppriment ici">
                           ✕
                         </button>
                       )}

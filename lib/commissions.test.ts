@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues } from './commissions.ts'
+import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues, doublonsRegistreLocal } from './commissions.ts'
 
 const L = (nominal?: number) => ({
   isin: 'FR1459ABG521',
@@ -54,4 +54,24 @@ test('une ancienne clé unique reste utilisable', () => {
 test('trois tickets sur la même ancienne clé : toujours une seule entrée ambiguë', () => {
   const a = clesLegacyAmbigues([L(1), L(2), L(3)])
   assert.equal(a.size, 1)
+})
+
+test('une saisie locale identique à une ligne du registre est signalée', () => {
+  // Les deux lignes s'additionnent dans les totaux : la commission est comptée
+  // deux fois. On signale — on ne fusionne pas.
+  const d = doublonsRegistreLocal([L(63000)], [L(63000)])
+  assert.deepEqual(d, ['FR1459ABG521|RENAUD GESTION PRIVEE|2026-09-21|63000'])
+})
+
+test('un nominal différent n’est pas un doublon — c’est un second ticket', () => {
+  assert.deepEqual(doublonsRegistreLocal([L(63000)], [L(24000)]), [])
+})
+
+test('aucun doublon quand les saisies locales sont inconnues du registre', () => {
+  assert.deepEqual(doublonsRegistreLocal([L(63000)], []), [])
+  assert.deepEqual(doublonsRegistreLocal([], [L(63000)]), [])
+})
+
+test('un doublon présent deux fois localement n’est signalé qu’une fois', () => {
+  assert.equal(doublonsRegistreLocal([L(63000)], [L(63000), L(63000)]).length, 1)
 })

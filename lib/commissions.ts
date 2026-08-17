@@ -99,3 +99,33 @@ export function clesLegacyAmbigues(
   })
   return ambigues
 }
+
+/**
+ * Lignes présentes À LA FOIS au registre et dans les saisies locales — même
+ * ISIN, même client, même date d'émission, même nominal.
+ *
+ * Ce n'est pas un doublon d'affichage anodin : les deux lignes s'additionnent
+ * dans les totaux, donc la commission est comptée DEUX FOIS. Le cas se produit
+ * quand un trade saisi via « Nouveau trade » est ensuite inscrit au registre
+ * sans que la saisie locale soit supprimée.
+ *
+ * On SIGNALE, on ne fusionne pas : deux tickets de même nominal le même jour
+ * sur le même produit existent (une allocation en deux fois), et les fusionner
+ * ferait disparaître un montant réel.
+ */
+export function doublonsRegistreLocal(
+  registre: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+  locales: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+): string[] {
+  const auRegistre = new Set(registre.map(ligneKey))
+  const vus = new Set<string>()
+  const out: string[] = []
+  for (const l of locales) {
+    const k = ligneKey(l)
+    if (auRegistre.has(k) && !vus.has(k)) {
+      vus.add(k)
+      out.push(k)
+    }
+  }
+  return out
+}
