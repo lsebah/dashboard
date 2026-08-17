@@ -364,8 +364,8 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
                 <tr>
                   <th className={`${cell} text-left`}>Client</th>
                   <th className={`${cell} text-right`}>Montant</th>
-                  <th className={`${cell} text-right`}>UF %</th>
-                  <th className={`${cell} text-right`}>Rétro %</th>
+                  <th className={`${cell} text-right`}>UF %</th>
+                  <th className={`${cell} text-right`}>Rétro %</th>
                   <th className={`${cell} text-right`}>Com. CMF</th>
                   <th className={cell}></th>
                 </tr>

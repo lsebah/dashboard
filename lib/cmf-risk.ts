@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
 import { estVivant, eurNominal, parEmetteur, concentration } from './cmf-analytics'
+import { pourcent } from './pourcentage'
 
 export type RiskLevel = 'faible' | 'modéré' | 'élevé' | 'critique'
 
@@ -138,9 +139,9 @@ export function computeRisks(
       description:
         "Part du portefeuille exposée au premier émetteur. Une concentration élevée accroît la sensibilité au risque de crédit/défaut d'un seul émetteur.",
       produits: affected.map(prodRef),
-      emetteurs: emet.slice(0, 3).map((e) => `${e.label} (${e.pct.toFixed(1)} %)`),
+      emetteurs: emet.slice(0, 3).map((e) => `${e.label} (${pourcent(e.pct, 1)})`),
       facteurs: [
-        `Premier émetteur ${top.label} = ${top.pct.toFixed(1)} % de l'encours`,
+        `Premier émetteur ${top.label} = ${pourcent(top.pct, 1)} de l'encours`,
         `HHI émetteurs = ${conc.hhiEmetteur} (concentration)`,
         `${conc.nbEmetteurs} émetteurs au total`,
       ],
@@ -164,7 +165,7 @@ export function computeRisks(
         "Exposition agrégée (répartie à parts égales dans les paniers) au sous-jacent le plus représenté. Une chute de ce sous-jacent affecte simultanément plusieurs produits.",
       produits: affected.map(prodRef),
       emetteurs: uniq(affected.map((p) => p.emetteur)),
-      facteurs: [`${su.nom} = ${su.pct.toFixed(1)} % de l'exposition sous-jacents`, `${affected.length} produit(s) contiennent ce sous-jacent`],
+      facteurs: [`${su.nom} = ${pourcent(su.pct, 1)} de l'exposition sous-jacents`, `${affected.length} produit(s) contiennent ce sous-jacent`],
       references: ['Exposition nominale répartie à parts égales entre les sous-jacents de chaque panier'],
       historique: [],
     })

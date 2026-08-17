@@ -12,6 +12,7 @@ import {
 } from '@/lib/deal-done'
 import { codeEmetteur } from '@/lib/emetteurs'
 import { dateFr, jourMois } from '@/lib/dates'
+import { pourcent, insecable } from '@/lib/pourcentage'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -28,14 +29,17 @@ import { dateFr, jourMois } from '@/lib/dates'
 const COLS = [
   { label: 'Date', w: 66 },
   { label: 'RR', w: 42 },
-  { label: 'UF', w: 50 },
+  // UF et Coupon : largeurs calées sur la valeur la PLUS LONGUE des données
+  // (« 9,7008 % » côté coupon). Une insécable trop large pour sa colonne
+  // déborderait au lieu de se couper — le remède serait pire que le mal.
+  { label: 'UF', w: 62 },
   // La lettre de remise n'a plus de colonne : elle ne concerne qu'une poignée de
   // deals et la largeur profite à la description, qui la porte désormais.
   { label: 'Produit & description', w: 0 }, // flexible
   { label: 'Émetteur', w: 92 },
   { label: 'Dev', w: 40 },
   { label: 'Nominal', w: 96 },
-  { label: 'Coupon', w: 58 },
+  { label: 'Coupon', w: 78 },
   { label: 'AVF', w: 132 },
   { label: 'Prix', w: 54 },
   { label: 'Compartiment', w: 104 },
@@ -55,7 +59,9 @@ const RR_COULEUR: Record<string, string> = {
 
 const jour = (iso?: string) => dateFr(iso, '')
 const jourCourt = (iso?: string) => jourMois(iso, '')
-const pct = (v?: number) => (typeof v === 'number' ? `${String(v).replace('.', ',')} %` : '—')
+const pct = (v?: number) => pourcent(v)
+// Espace fine insécable avant le symbole : « 315 000 $ » se coupait au même
+// endroit que les pourcentages.
 const SYMBOLE: Record<string, string> = { EUR: ' €', USD: ' $', GBP: ' £', CHF: ' CHF' }
 const montant = (v?: number, devise?: string) =>
   typeof v === 'number'
@@ -213,10 +219,12 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                       {d.rr}
                     </span>
                   </td>
-                  <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
                   <td className="px-2 py-2">
                     <div className="font-semibold text-slate-800">{d.produit}</div>
-                    {d.description && <div className="mt-0.5 leading-snug text-slate-500">{d.description}</div>}
+                    {d.description && (
+                      <div className="mt-0.5 leading-snug text-slate-500">{insecable(d.description)}</div>
+                    )}
                     {d.isin && <div className="mt-0.5 font-mono text-[11px] text-slate-400">{d.isin}</div>}
                   </td>
                   <td className="px-2 py-2 font-medium text-slate-700">{codeEmetteur(d.emetteur)}</td>
@@ -229,8 +237,8 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                   >
                     {deviseDe(d)}
                   </td>
-                  <td className="px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, deviseDe(d))}</td>
-                  <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.coupon)}</td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, deviseDe(d))}</td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.coupon)}</td>
                   <td className="px-2 py-2">
                     {(d.avf ?? []).length > 0 ? (
                       <div className="flex flex-wrap gap-1">

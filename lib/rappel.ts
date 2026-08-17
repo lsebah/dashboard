@@ -6,6 +6,7 @@
 //  ne fait que reformuler les termes décodés du produit.
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
+import { pourcent } from './pourcentage'
 
 /** Résumé « payoff » lisible d'un produit (termes décodés, rien d'inventé). */
 export function resumePayoff(product: Product): string {
@@ -24,7 +25,7 @@ export function resumePayoff(product: Product): string {
   const t = p.terms
   if (t?.kind === 'autocall') {
     if (typeof t.couponPa === 'number') l.push(`Coupon p.a. : ${t.couponPa} %${t.effetMemoire ? ' (effet mémoire)' : ''}`)
-    if (typeof t.barriereCouponPct === 'number') l.push(`Barrière coupon : ${t.barriereCouponPct} %`)
+    if (typeof t.barriereCouponPct === 'number') l.push(`Barrière coupon : ${pourcent(t.barriereCouponPct)}`)
     if (typeof t.barriereRappelPct === 'number')
       l.push(`Barrière de rappel : ${t.barriereRappelPct} %${t.degressif ? ' (dégressive)' : ''}`)
     if (typeof t.protectionPct === 'number')

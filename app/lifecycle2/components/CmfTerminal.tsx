@@ -38,6 +38,7 @@ import {
 } from './charts'
 import RiskCartography from './RiskCartography'
 import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
 function barriereProtection(p: Product): number | undefined {
@@ -235,8 +236,8 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
             />
             <div className="min-w-0 flex-1 space-y-2 text-[13px]">
               <Stat k="Produits proches / sous barrière" v={live ? `${proches}` : '…'} warn={proches > 0} />
-              <Stat k="Top émetteur" v={conc.topEmetteur ? `${conc.topEmetteur.label} · ${conc.topEmetteur.pct.toFixed(1)} %` : '—'} />
-              <Stat k="Top sous-jacent" v={conc.topSousJacent ? `${conc.topSousJacent.nom} · ${conc.topSousJacent.pct.toFixed(1)} %` : '—'} />
+              <Stat k="Top émetteur" v={conc.topEmetteur ? `${conc.topEmetteur.label} · ${pourcent(conc.topEmetteur.pct, 1)}` : '—'} />
+              <Stat k="Top sous-jacent" v={conc.topSousJacent ? `${conc.topSousJacent.nom} · ${pourcent(conc.topSousJacent.pct, 1)}` : '—'} />
               <Stat k="Concentration (HHI émetteur)" v={`${conc.hhiEmetteur}`} />
             </div>
           </div>
@@ -344,7 +345,7 @@ function PositionsTable({ products, courant }: { products: Product[]; courant: R
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-800">{eurCompact(nom)}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{prix.toFixed(1)}</td>
                 <td className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{pct(pnl)}</td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{typeof wo === 'number' ? `${wo.toFixed(0)} %` : '—'}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{typeof wo === 'number' ? pourcent(wo, 0) : '—'}</td>
                 <td className="whitespace-nowrap px-3 py-1.5">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full" style={{ background: SIT_META[sit].color }} />

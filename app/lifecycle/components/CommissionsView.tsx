@@ -8,6 +8,7 @@ import { useAllocations } from '@/lib/allocations'
 import Modal from './Modal'
 import { dateFr as dateIso } from '@/lib/dates'
 import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 // Année en cours : seule éditable. Les précédentes sont clôturées (statiques).
 const ANNEE_COURANTE = '2026'
@@ -20,7 +21,7 @@ const num = (n: number | null | undefined) =>
   typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''
 // UF / Rétro : toujours 2 décimales. 0.06 → « 6.00 % ».
 const PCT2 = (n: number | null | undefined) =>
-  typeof n === 'number' ? `${(n * 100).toFixed(2)} %` : '—'
+  typeof n === 'number' ? pourcent(n * 100, 2) : '—'
 const dateFr = (iso: string | null | undefined) => (iso ? dateIso(iso) : null)
 const annee = (l: CommissionLigne) => (l.issue ? l.issue.slice(0, 4) : '—')
 const trimestre = (iso: string) => `Q${Math.floor(new Date(iso).getMonth() / 3) + 1}`
@@ -492,7 +493,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                     <span className="text-amber-600">en attente</span>
                   )}
                 </td>
-                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{typeof l.split === 'number' ? `${(l.split * 100).toFixed(0)} %` : '—'}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">{typeof l.split === 'number' ? pourcent(l.split * 100, 0) : '—'}</td>
                 {/* Actions — édition / suppression réservées à TES trades (lignes locales). */}
                 <td className="px-2 py-1 whitespace-nowrap text-center">
                   {l.isLocal ? (
@@ -657,11 +658,11 @@ function LocalCommissionEditor({
             <input type="date" value={issue} onChange={(e) => setIssue(e.target.value)} className={fieldCls} />
           </div>
           <div>
-            <label className={lab}>UF %</label>
+            <label className={lab}>UF %</label>
             <input value={uf} onChange={(e) => setUf(e.target.value)} inputMode="decimal" className={`${fieldCls} text-right tabular-nums`} placeholder="5.65" />
           </div>
           <div>
-            <label className={lab}>Rétro %</label>
+            <label className={lab}>Rétro %</label>
             <input value={retro} onChange={(e) => setRetro(e.target.value)} inputMode="decimal" className={`${fieldCls} text-right tabular-nums`} placeholder="4" />
           </div>
           <div>

@@ -17,6 +17,7 @@ import { SITUATION_LABEL, SITUATION_COLOR, freqLabel } from './labels'
 import { codeEmetteur } from '@/lib/emetteurs'
 import { rateNow } from '@/lib/rates-levels'
 import tsPdfs from '@/lib/ts-pdfs.json'
+import { pourcent, insecable } from '@/lib/pourcentage'
 
 // PDF banque déposé dans public/ts/<ISIN>.pdf (indexé par scripts/index-ts-pdfs.mjs).
 const TS_PDFS = tsPdfs as Record<string, string>
@@ -268,7 +269,7 @@ export default function ProductSynopsis({
                     <li className="flex gap-3">
                       <span className="text-slate-700 truncate max-w-[150px]">{ref}</span>
                       <span className="ml-auto tabular-nums text-slate-700">
-                        {typeof now === 'number' ? `${now.toFixed(2)} %` : '—'}
+                        {typeof now === 'number' ? pourcent(now, 2) : '—'}
                         {typeof barr === 'number' && (
                           <span className="text-slate-400"> / barr. {barr}%</span>
                         )}
@@ -294,13 +295,13 @@ export default function ProductSynopsis({
                       }`}
                     >
                       {typeof u.perf === 'number'
-                        ? `${(100 + u.perf).toFixed(1)} %`
+                        ? pourcent(100 + u.perf, 1)
                         : '—'}
                     </span>
                   </li>
                 ))}
             {product.sousJacents.length === 0 && terms?.kind !== 'rates' && (
-              <li className="text-slate-400">{product.description ?? '—'}</li>
+              <li className="text-slate-400">{product.description ? insecable(product.description) : '—'}</li>
             )}
           </ul>
         </div>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import curated from '@/data/markets-curated.json'
 import { dateFr } from '@/lib/dates'
+import { pourcent, pourcentSigne } from '@/lib/pourcentage'
 
 interface MarketItem {
   group: string
@@ -31,11 +32,11 @@ function fmtPrice(it: MarketItem): string {
   if (it.price == null) return '—'
   if (it.group === 'Change') return it.price.toFixed(4)
   if (it.group === 'Volatilité') return it.price.toFixed(2)
-  if (it.unit === '%') return `${it.price.toFixed(2)} %`
+  if (it.unit === '%') return pourcent(it.price, 2)
   return it.price.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
 }
 const pctClass = (n: number | null) => (n == null ? 'text-slate-400' : n >= 0 ? 'text-emerald-600' : 'text-red-600')
-const fmtPct = (n: number | null) => (n == null ? '—' : `${n >= 0 ? '+' : ''}${n.toFixed(2)} %`)
+const fmtPct = (n: number | null) => (n == null ? '—' : pourcentSigne(n, 2))
 const daysAgo = (iso: string | null) => {
   if (!iso) return Infinity
   const d = new Date(iso).getTime()

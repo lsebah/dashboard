@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import indicesRaw from '@/lib/decrement-indices.json'
 import Modal from './Modal'
 import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 interface IndexInfo {
   nom?: string
@@ -218,7 +219,7 @@ function describe(r: Row): string {
   if (r.secteur) s += ` (secteur ${r.secteur})`
   const p: string[] = []
   if (typeof r.couponPa === 'number')
-    p.push(`coupon ${r.couponPa.toFixed(2)} % p.a.${r.memoire ? ' à effet mémoire' : ''}`)
+    p.push(`coupon ${pourcent(r.couponPa, 2)} p.a.${r.memoire ? ' à effet mémoire' : ''}`)
   if (r.barriereCoupon) p.push(`barrière coupon ${r.barriereCoupon}`)
   if (r.barriereProtection) p.push(`protection ${r.barriereProtection}`)
   if (r.departAutocall) p.push(`autocall dès ${r.departAutocall}`)
@@ -604,7 +605,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Composants</dt><dd>{selInfo.nbComposants}</dd></div>
               )}
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Décrément</dt><dd>{selInfo?.decrement ?? '—'}</dd></div>
-              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? `${sel.couponPa.toFixed(2)} %` : '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? pourcent(sel.couponPa, 2) : '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Effet mémoire</dt><dd>{sel.memoire ? 'Oui' : 'Non'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Barrière coupon</dt><dd>{sel.barriereCoupon ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Protection</dt><dd>{sel.barriereProtection ?? '—'}</dd></div>

@@ -1,4 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────
+import { pourcent } from './pourcentage'
 //  Facture « CMF FACTURE GABRIELLE » — construit l'email pré-rempli à envoyer
 //  à Gabrielle Salmon (office@cmf.finance), qui édite la facture pour
 //  l'émetteur. Format aligné sur le skill existant (onglet Commissions).
@@ -8,7 +9,7 @@ export const FACTURE_CC = 'p.doize@cmf.finance,t.ballot@cmf.finance'
 
 const num = (n?: number | null) =>
   typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''
-const pct2 = (n?: number | null) => (typeof n === 'number' ? `${(n * 100).toFixed(2)} %` : '—')
+const pct2 = (n?: number | null) => (typeof n === 'number' ? pourcent(n * 100, 2) : '—')
 const dateFr = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '')
 
 export interface FactureData {

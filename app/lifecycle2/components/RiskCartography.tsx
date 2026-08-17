@@ -7,6 +7,7 @@ import { eurCompact } from '@/lib/cmf-analytics'
 import { Panel } from './charts'
 import Modal from '@/app/lifecycle/components/Modal'
 import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 const yearsTo = (iso: string) => {
   const t = new Date(iso).getTime()
@@ -149,7 +150,7 @@ export default function RiskCartography({
               return (
                 <g key={r.id} className="cursor-pointer" onClick={() => setSel(r)} onMouseEnter={() => setHover(r.id)} onMouseLeave={() => setHover(null)}>
                   <circle cx={cx} cy={cy} r={rOf(r.montantExpose)} fill={NIVEAU_COLOR[r.niveau]} fillOpacity={on ? 0.85 : 0.6} stroke={NIVEAU_COLOR[r.niveau]} strokeWidth={on ? 2 : 1}>
-                    <title>{`${r.nom}\n${r.categorie} · niveau ${r.niveau}\nExposition ${r.pctPortefeuille.toFixed(1)} % · ${eurCompact(r.montantExpose)}\nSévérité ${r.severite}/100 · clic pour le détail`}</title>
+                    <title>{`${r.nom}\n${r.categorie} · niveau ${r.niveau}\nExposition ${pourcent(r.pctPortefeuille, 1)} · ${eurCompact(r.montantExpose)}\nSévérité ${r.severite}/100 · clic pour le détail`}</title>
                   </circle>
                 </g>
               )
@@ -159,7 +160,7 @@ export default function RiskCartography({
             <div className="mt-1 text-[11px] text-slate-500">
               {(() => {
                 const r = shown.find((x) => x.id === hover)
-                return r ? `${r.nom} — ${r.niveau} · ${r.pctPortefeuille.toFixed(1)} % · ${eurCompact(r.montantExpose)}` : ''
+                return r ? `${r.nom} — ${r.niveau} · ${pourcent(r.pctPortefeuille, 1)} · ${eurCompact(r.montantExpose)}` : ''
               })()}
             </div>
           )}
@@ -182,7 +183,7 @@ export default function RiskCartography({
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: NIVEAU_COLOR[r.niveau] }} />
                     <span className="truncate text-slate-700">{r.nom}</span>
                   </span>
-                  <span className="shrink-0 tabular-nums text-slate-500">{r.pctPortefeuille.toFixed(0)} %</span>
+                  <span className="shrink-0 tabular-nums text-slate-500">{pourcent(r.pctPortefeuille, 0)}</span>
                 </button>
               </li>
             ))}
@@ -215,7 +216,7 @@ function RiskDetail({ r }: { r: RiskItem }) {
 
       <div className="grid grid-cols-3 gap-2">
         <Kpi k="Montant exposé" v={eurCompact(r.montantExpose)} />
-        <Kpi k="% du portefeuille" v={`${r.pctPortefeuille.toFixed(1)} %`} />
+        <Kpi k="% du portefeuille" v={pourcent(r.pctPortefeuille, 1)} />
         <Kpi k="Produits concernés" v={`${r.produits.length}`} />
       </div>
 
