@@ -58,7 +58,12 @@ export interface Deal {
   id: string
   /** Date d'annonce du deal (ISO `AAAA-MM-JJ`). */
   date: string
-  rr: RR
+  /**
+   * Commercial à l'origine du deal. ABSENT pour les affaires reprises du
+   * registre des commissions, qui ne porte pas cette information : on affiche
+   * « — » plutôt que d'attribuer le deal à quelqu'un au hasard.
+   */
+  rr?: RR
   /** Nom court du produit — toujours renseigné. */
   produit: string
   /** Payoff en clair — toujours renseigné. */

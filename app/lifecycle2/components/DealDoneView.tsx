@@ -95,7 +95,7 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
   const ouverts = useMemo(() => enCommercialisation(deals, aujourdHui), [deals, aujourdHui])
   const listeAvf = useMemo(() => assureurs(deals), [deals])
   const listeRr = useMemo(
-    () => Array.from(new Set(deals.map((d) => d.rr))).sort(),
+    () => Array.from(new Set(deals.map((d) => d.rr).filter(Boolean))) as string[],
     [deals],
   )
 
@@ -215,8 +215,15 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                 <tr key={d.id} className="border-b border-slate-100 align-top hover:bg-slate-50/60">
                   <td className="px-2 py-2 tabular-nums text-slate-600">{jour(d.date)}</td>
                   <td className="px-2 py-2">
-                    <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${RR_COULEUR[d.rr] ?? 'bg-slate-100 text-slate-600'}`}>
-                      {d.rr}
+                    {/* Sans RR (affaire reprise du registre) : un tiret, jamais
+                        un commercial attribué au hasard. */}
+                    <span
+                      className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                        (d.rr && RR_COULEUR[d.rr]) || 'bg-slate-100 text-slate-400'
+                      }`}
+                      title={d.rr ? undefined : 'Affaire reprise du registre des commissions — RR non renseigné'}
+                    >
+                      {d.rr ?? '—'}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
