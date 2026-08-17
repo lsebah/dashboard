@@ -80,13 +80,17 @@ export async function GET(req: Request) {
           : undefined
       const strike =
         u.niveauInitial ?? closeAt(bars, p.dateConstatationInitiale) ?? bars[0]?.close ?? strikeOverlay
-      return { nom: u.nom, bars, strike, bbg: u.bloomberg?.trim() }
+      return { nom: u.nom, bars, strike, bbg: u.bloomberg?.trim(), taux: u.marche === 'Taux' }
     })
 
     // Niveaux COURANTS (% du strike) par sous-jacent — résilient. Repli sur le
     // niveau Bloomberg (PX_Last) quand Yahoo n'a pas de clôture (décréments…).
     const sj = cols.map((c) => {
       const last = lastClose(c.bars) ?? (c.bbg ? levels[c.bbg] : undefined)
+      // Sous-jacent de TAUX : le niveau EST le taux (2,80 %), pas un pourcentage
+      // d'un strike. Les barrières de ces produits sont elles-mêmes exprimées en
+      // taux absolu — diviser par un strike les rendrait incomparables.
+      if (c.taux) return { nom: c.nom, pct: typeof last === 'number' ? last : null }
       const pct =
         typeof last === 'number' && typeof c.strike === 'number' && c.strike > 0
           ? Math.round((last / c.strike) * 10000) / 100

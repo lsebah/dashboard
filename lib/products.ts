@@ -2675,6 +2675,14 @@ const sgPhoenixCms10: Product = {
 }
 
 // ── Helper : produit Phoenix Bearish sur taux (capital garanti) ──────────────
+// Ticker Bloomberg des taux de référence — c'est la clé sous laquelle le run
+// quotidien dépose leur niveau (`levels:overlay`). Un swap n'a pas de cotation
+// Yahoo : sans ce ticker, le niveau reste introuvable et le produit disparaît
+// des listes de rappel sans un mot.
+const TICKER_TAUX: Record<string, string> = {
+  'EUR CMS 10Y': 'EUSA10 BGN Curncy',
+}
+
 function phoenixBearish(p: {
   isin: string
   nom: string
@@ -2730,7 +2738,9 @@ function phoenixBearish(p: {
     dateEcheance: p.echeance,
     frequence: p.freq,
     basket: 'single',
-    sousJacents: [{ nom: p.tauxRef, marche: 'Taux' }],
+    // Le taux de référence porte son ticker Bloomberg : c'est par lui que le run
+    // quotidien fournit le niveau (aucune cotation Yahoo pour un swap).
+    sousJacents: [{ nom: p.tauxRef, marche: 'Taux', bloomberg: TICKER_TAUX[p.tauxRef] }],
     terms: {
       kind: 'rates',
       type: 'phoenix_taux',
@@ -5901,7 +5911,9 @@ const marexMoncMcVsco: Product = {
   sousJacents: [
     { nom: 'Moncler SpA', bloomberg: 'MONC IM', marche: 'Borsa Italiana', niveauInitial: 48.39 },
     { nom: 'LVMH Moët Hennessy Louis Vuitton', bloomberg: 'MC FP', marche: 'Euronext Paris', niveauInitial: 444.60 },
-    { nom: "Victoria's Secret & Company", bloomberg: 'VSCO UN', marche: 'NYSE', niveauInitial: 18.52 },
+    // Mnémonique passé de VSCO à VSXY (17/08/2026, confirmé par Laurent) ; la
+    // dénomination, elle, ne change pas.
+    { nom: "Victoria's Secret & Company", bloomberg: 'VSXY UN', marche: 'NYSE', niveauInitial: 18.52 },
   ],
   terms: {
     kind: 'autocall',

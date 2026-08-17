@@ -228,3 +228,15 @@ test('bilanRappels et autocallsProbables s’accordent sur le cas simple', () =>
   const b = bilanRappels(p, { A: 104 }, {}, LE_JOUR)
   assert.deepEqual(b.probables, autocallsProbables(p, { A: 104 }, LE_JOUR))
 })
+
+test('un callable émetteur n’est pas une donnée manquante', () => {
+  // Le rappel est à la main de l'émetteur : aucune barrière ne le prédit.
+  // Le ranger dans « barrière non décodée » envoyait chercher une termsheet
+  // qui n'a pas la réponse (cas XS3214893623, Callable Booster CSI 500).
+  const p = P({ isin: 'CALL', obs: '2026-09-11' })
+  ;(p.observations as { niveauRappelPct?: number }[])[0].niveauRappelPct = undefined
+  ;(p as { terms: unknown }).terms = { kind: 'rates', type: 'callable', callable: true }
+  const b = bilanRappels([p], { CALL: 105 }, {}, LE_JOUR)
+  assert.equal(b.nonEvalues.length, 1)
+  assert.equal(b.nonEvalues[0].motif, 'call émetteur')
+})

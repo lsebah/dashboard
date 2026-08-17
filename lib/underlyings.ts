@@ -32,7 +32,11 @@ const SUFFIXE: Record<string, string> = {
 // Cas particuliers où le « root » Bloomberg diffère du symbole Yahoo, ET indices
 // boursiers classiques (Yahoo « ^… ») qu'il faut sortir du filtre « Index ».
 const SPECIAL: Record<string, string> = {
-  'ROG SE': 'ROG.SW',
+  // Roche : Laurent a confirmé la cotation à retenir (17/08/2026) —
+  // finance.yahoo.com/quote/RO.SW. L'ancien mappage ROG.SW ne renvoyait plus
+  // d'historique, ce qui suffisait à rendre TOUT le worst-of incalculable.
+  'ROG SE': 'RO.SW',
+  'ROG SW': 'RO.SW',
   'HOLN SW': 'HOLN.SW',
   'ENR GY': 'ENR.DE',
   'SIE GY': 'SIE.DE',

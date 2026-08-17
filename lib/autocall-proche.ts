@@ -105,7 +105,12 @@ export interface NonEvalue {
   nom: string
   dateObservation: string
   joursRestants: number
-  motif: 'niveau inconnu' | 'barrière non décodée'
+  /**
+   * `call émetteur` n'est PAS une lacune : le rappel est à la main de l'émetteur,
+   * aucune barrière ne permet de le prévoir. Le ranger avec les données
+   * manquantes envoyait chercher une termsheet qui n'a pas la réponse.
+   */
+  motif: 'niveau inconnu' | 'barrière non décodée' | 'call émetteur'
 }
 
 /** Rappel DÉJÀ déclenché à une observation passée. */
@@ -223,7 +228,14 @@ export function bilanRappels(
     }
     // 3) Barrière non décodée ou niveau courant absent : verdict impossible.
     if (typeof obs.niveauRappelPct !== 'number') {
-      nonEvalues.push({ isin: p.isin, nom: p.nom, dateObservation: obs.dateObservation, joursRestants: d, motif: 'barrière non décodée' })
+      const callable = p.terms?.kind === 'rates' && p.terms.callable === true
+      nonEvalues.push({
+        isin: p.isin,
+        nom: p.nom,
+        dateObservation: obs.dateObservation,
+        joursRestants: d,
+        motif: callable ? 'call émetteur' : 'barrière non décodée',
+      })
       continue
     }
     const niveau = niveauxCourants[p.isin]
