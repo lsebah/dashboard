@@ -19,6 +19,7 @@ import { pourcent, pourcentSigne } from '@/lib/pourcentage'
 import Modal from '@/app/lifecycle/components/Modal'
 import ProductSynopsis from '@/app/lifecycle/components/ProductSynopsis'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
+import { useAllocations } from '@/lib/allocations'
 
 interface MarketItem {
   group: string
@@ -42,14 +43,36 @@ const signeClasse = (n: number | null) =>
   n == null ? 'text-slate-400' : n >= 0 ? 'text-emerald-600' : 'text-red-600'
 
 export default function SyntheseTete({ products }: { products: Product[] }) {
+  // Statuts forcés (rappelé / vendu…) : la page les LIT — sinon un produit marqué
+  // ailleurs continuerait d'apparaître ici comme vivant — et les ÉCRIT.
+  const { statut: statutMap, setStatut } = useAllocations()
+  const produits = useMemo(
+    () => products.map((p) => (statutMap[p.isin] ? { ...p, statut: statutMap[p.isin] } : p)),
+    [products, statutMap],
+  )
+
+  /**
+   * Acte le rappel : statut « rappelé » + notification à L.sebah@cmf.finance.
+   * Même geste et même endpoint idempotent que dans le Portefeuille — recliquer
+   * n'envoie pas un second email.
+   */
+  const marquerRappele = (isin: string) => {
+    setStatut(isin, 'rappele')
+    void fetch('/api/notifications/rappel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isin }),
+    }).catch(() => {})
+  }
+
   // Fiche produit ouverte depuis la liste des rappels.
   const [ouvert, setOuvert] = useState<Product | null>(null)
   const augmente = useAugmentedProduct(ouvert)
   const parIsin = useMemo(() => {
     const m = new Map<string, Product>()
-    for (const p of products) m.set(p.isin, p)
+    for (const p of produits) m.set(p.isin, p)
     return m
-  }, [products])
+  }, [produits])
 
   const [marches, setMarches] = useState<MarketItem[] | null>(null)
   const [niveaux, setNiveaux] = useState<Record<string, number | null> | null>(null)
@@ -99,8 +122,8 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
   }, [])
 
   const bilan = useMemo(
-    () => (niveaux ? bilanRappels(products, niveaux, constates, new Date(), 30) : null),
-    [products, niveaux, constates],
+    () => (niveaux ? bilanRappels(produits, niveaux, constates, new Date(), 30) : null),
+    [produits, niveaux, constates],
   )
   // Une seule ligne de temps : passé et à venir dans le même tableau, séparés
   // par un repère « aujourd'hui ». Les deux moitiés partagent les mêmes colonnes.
@@ -121,6 +144,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       inverse: false,
       etat: c.acte ? 'Rappelé' : 'Rappelé · à confirmer',
       etatCls: c.acte ? 'bg-slate-100 text-slate-700' : 'bg-violet-100 text-violet-700',
+      aActer: !c.acte,
     }))
     const futur = bilan.probables.map((a) => ({
       isin: a.isin,
@@ -137,6 +161,8 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       inverse: a.inverse,
       etat: 'Probable',
       etatCls: 'bg-emerald-100 text-emerald-800',
+      // Un rappel probable n'est pas encore un fait : rien à acter.
+      aActer: false,
     }))
     // Chronologique : le plus ancien en haut, l'à-venir en bas. Le passé récent
     // et l'imminent se retrouvent ainsi de part et d'autre du repère.
@@ -290,7 +316,22 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                         {eur0(l.nominal)} {l.devise}
                       </td>
                       <td className="py-1.5 whitespace-nowrap">
-                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${l.etatCls}`}>{l.etat}</span>
+                        {l.aActer ? (
+                          // Le clic sur la ligne ouvre la fiche : on arrête la
+                          // propagation, sinon acter ouvrirait aussi la modale.
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              marquerRappele(l.isin)
+                            }}
+                            className="rounded border border-violet-300 bg-violet-100 px-1.5 py-0.5 text-[11px] font-medium text-violet-800 hover:bg-violet-200"
+                            title="Marquer ce produit « rappelé » au portefeuille et notifier L.sebah@cmf.finance"
+                          >
+                            ✓ Acter le rappel
+                          </button>
+                        ) : (
+                          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${l.etatCls}`}>{l.etat}</span>
+                        )}
                       </td>
                     </tr>
                   </Fragment>
@@ -318,7 +359,14 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                   >
                     {dateFr(c.date)} · {c.isin} · {c.nom}
                   </button>{' '}
-                  — {pourcent(c.niveau, 2)} vs {pourcent(c.barriere, 2)} · {eur0(c.nominal)} {c.devise}
+                  — {pourcent(c.niveau, 2)} vs {pourcent(c.barriere, 2)} · {eur0(c.nominal)} {c.devise}{' '}
+                  <button
+                    onClick={() => marquerRappele(c.isin)}
+                    className="ml-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-violet-800 hover:bg-violet-100"
+                    title="Marquer « rappelé » au portefeuille et notifier L.sebah@cmf.finance"
+                  >
+                    ✓ Acter
+                  </button>
                 </li>
               ))}
             </ul>
