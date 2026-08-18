@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Product, Observation } from '@/lib/types'
-import { formatDateFr, formatPct, formatMontant, rappelConstate, dateRappel } from '@/lib/lifecycle'
+import { formatDateFr, formatPct, formatMontant, rappelConstate, dateRappel, estInverse } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import { useLiveProducts } from '@/lib/use-live-products'
@@ -168,14 +168,14 @@ export default function CalendarView({ products }: { products: Product[] }) {
     }
   }, [prods])
 
-  // Autocall probable : worst-of courant vs barrière de rappel (inverse-aware).
+  // Autocall probable : worst-of courant vs barrière de rappel (inverse-aware
+  // — actions ET taux bearish, cf. lib/lifecycle.ts:estInverse).
   const estAutocallProbable = (e: Ev): boolean => {
     if (!e.autocallActif) return false
     const wo = courant[e.product.isin]
     const barr = e.obs.niveauRappelPct
     if (typeof wo !== 'number' || typeof barr !== 'number') return false
-    const inverse = e.product.terms?.kind === 'autocall' && e.product.terms.sens === 'inverse'
-    return inverse ? wo <= barr : wo >= barr
+    return estInverse(e.product) ? wo <= barr : wo >= barr
   }
 
   // Bornes de la période visible.
