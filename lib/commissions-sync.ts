@@ -52,9 +52,11 @@ export async function saveSlot(slot: Slot, value: unknown): Promise<boolean> {
           reportSync('ok')
           return true
         }
-        // KV non configuré : repli navigateur, ce n'est PAS une erreur.
+        // KV non configuré : repli navigateur. Ce n'est pas une erreur réseau,
+        // mais ça reste à signaler — sans quoi rien ne distingue une saisie
+        // vraiment partagée d'une saisie piégée dans ce seul navigateur.
         if (j.configured === false) {
-          reportSync('idle')
+          reportSync('local')
           return false
         }
       }
