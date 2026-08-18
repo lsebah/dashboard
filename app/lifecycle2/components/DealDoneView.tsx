@@ -13,6 +13,9 @@ import {
 import { codeEmetteur } from '@/lib/emetteurs'
 import { dateFr, jourMois } from '@/lib/dates'
 import { pourcent, insecable } from '@/lib/pourcentage'
+import { commissions } from '@/lib/commissions'
+import { useLocalCommissions } from '@/lib/local-commissions'
+import { croiserAvecRegistre } from '@/lib/deal-done-registre'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -88,7 +91,17 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
       })
   }, [])
 
-  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(bruts), [bruts])
+  // Le registre des commissions est le second référentiel (règle de Laurent,
+  // 17/08/2026). Il vit dans DEUX magasins : le fichier versionné et les tickets
+  // saisis dans Lifecycle (KV). Ne lire que le premier faisait disparaître les
+  // affaires les plus récentes — les deux tickets ARCHE d'août en étaient.
+  const { list: localesCom } = useLocalCommissions()
+  const avecRegistre = useMemo(() => {
+    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026')
+    return [...r.deals, ...r.ajoutes]
+  }, [bruts, localesCom])
+
+  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
 
   const aujourdHui = useMemo(() => new Date(), [])
   const semaine = useMemo(() => dealsDeLaSemaine(deals, aujourdHui), [deals, aujourdHui])

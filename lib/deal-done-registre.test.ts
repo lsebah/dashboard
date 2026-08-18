@@ -81,3 +81,24 @@ test('un ISIN du registre ne s’attache pas deux fois au même deal', () => {
   assert.equal(r.rapproches.length, 1)
   assert.equal(r.ajoutes.length, 1, "le second devient un deal à part, il n'est pas perdu")
 })
+
+test('les tickets saisis dans Lifecycle comptent autant que le fichier', () => {
+  // Les deux tickets ARCHE d'août 2026 ne sont PAS dans commissions.json : ils
+  // ont été saisis dans Lifecycle et vivent en KV. Ne croiser que le fichier
+  // versionné les faisait disparaître du Deal Done.
+  const local = L({
+    isin: 'XS3461528773',
+    issue: '2026-08-21',
+    client: 'ARCHE - 05272',
+    emetteur: 'BNP',
+    devise: 'USD',
+    nominal: 3525000,
+    ufPct: 0.0045,
+    description: '3.5Y Buffered Return Enhanced S&P 500',
+  })
+  const r = croiserAvecRegistre([], [local])
+  assert.equal(r.ajoutes.length, 1)
+  assert.equal(r.ajoutes[0].isin, 'XS3461528773')
+  assert.equal(r.ajoutes[0].devise, 'USD')
+  assert.equal(r.ajoutes[0].ufGlobal, 0.45)
+})
