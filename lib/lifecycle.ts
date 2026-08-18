@@ -8,6 +8,23 @@ import type { Product, Observation, Underlying, Frequency, BasketType } from './
 import { couponLedger } from './coupons-ledger'
 import { dateFr } from './dates'
 
+/**
+ * Vrai si le produit est INVERSE (bearish) : le rappel/coupon se déclenche
+ * quand le sous-jacent est SOUS la barrière, pas au-dessus. Couvre deux
+ * familles distinctes — actions (`kind: 'autocall', sens: 'inverse'`) et taux
+ * (`kind: 'rates', sens: 'bearish'`) — car un des deux cas manquait dans deux
+ * écrans (Calendrier, Portefeuille) : leur « rappel probable » comparait le
+ * niveau courant à la barrière avec le sens ACTIONS pour un Phoenix Bearish
+ * (taux), qui l'affichait « probable » alors que le taux s'éloignait de sa
+ * barrière (ex. FR001400U1I0, CMS10 à 3,28 % pour une barrière à 2,20 % —
+ * signalé par Laurent le 18/08/2026, confirmé par la termsheet SG : l'autocall
+ * n'est déclenché que si le fixing est ≤ 2,20 %, jamais ≥).
+ */
+export function estInverse(product: Pick<Product, 'terms'>): boolean {
+  const t = product.terms
+  return (t?.kind === 'autocall' && t.sens === 'inverse') || (t?.kind === 'rates' && t.sens === 'bearish')
+}
+
 /** Construit un calendrier d'observations à partir de listes de dates. */
 export function buildObservations(
   obsDates: string[],
@@ -166,9 +183,7 @@ export function situation(product: Product): Situation {
 
   // Produit INVERSE (bearish) : on joue à la BAISSE, la barrière de protection
   // est HAUTE ⇒ tout est en miroir du cas standard (la hausse est défavorable).
-  const inverse =
-    (terms?.kind === 'autocall' && terms.sens === 'inverse') ||
-    (terms?.kind === 'rates' && terms.sens === 'bearish')
+  const inverse = estInverse(product)
   if (inverse) {
     if (perf <= 0) return 'positive' // sous le strike = favorable au bearish
     if (protectionPct === undefined) return 'sans_stress'
@@ -382,9 +397,7 @@ export function suiviCoupons(product: Product, now: Date = new Date()): CouponLi
     (t?.kind === 'autocall' && t.effetMemoire) || (t?.kind === 'rates' && !!t.effetMemoire)
   // Produit INVERSE (bearish) : le coupon tombe quand le sous-jacent est SOUS la
   // barrière (la hausse est défavorable) ⇒ condition en miroir du cas standard.
-  const inverse =
-    (t?.kind === 'autocall' && t.sens === 'inverse') ||
-    (t?.kind === 'rates' && t.sens === 'bearish')
+  const inverse = estInverse(product)
   const today = now.toISOString().slice(0, 10)
   // Rappelé (autocall constaté) : le produit est remboursé à cette observation ;
   // on ne suit plus les coupons des observations POSTÉRIEURES (elles n'existent
@@ -514,10 +527,7 @@ export function rappelConstate(
   const today = now.toISOString().slice(0, 10)
   // Inverse (bearish) : l'autocall se déclenche quand le sous-jacent passe SOUS la
   // barrière de rappel (≤), et non au-dessus (≥) comme un autocall standard.
-  const t = product.terms
-  const inverse =
-    (t?.kind === 'autocall' && t.sens === 'inverse') ||
-    (t?.kind === 'rates' && t.sens === 'bearish')
+  const inverse = estInverse(product)
   for (const o of product.observations ?? []) {
     if (o.autocallActif === false) continue // période non-call (lock-out)
     if (o.dateObservation > today) continue // observation future

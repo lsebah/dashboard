@@ -15,6 +15,7 @@ import {
   aggregateBasket,
   formatDateFr,
   formatPct,
+  estInverse,
 } from '@/lib/lifecycle'
 import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
 import { parseMontant } from '@/lib/montant'
@@ -81,8 +82,12 @@ function estEnCours(p: Product): boolean {
 }
 
 // Autocall probable à la PROCHAINE observation : worst-of courant (niveaux Yahoo
-// injectés dans p.sousJacents) vs barrière de rappel. Pour un autocall INVERSE
-// (reverse), le rappel se déclenche quand le sous-jacent BAISSE (worst ≤ barrière).
+// injectés dans p.sousJacents) vs barrière de rappel. Pour un produit INVERSE
+// (actions reverse, ou taux bearish type Phoenix Bearish CMS), le rappel se
+// déclenche quand le sous-jacent BAISSE (niveau ≤ barrière), pas l'inverse —
+// `estInverse` couvre les deux familles ; l'oubli du cas taux affichait un
+// Phoenix Bearish comme « probable » alors que son taux s'éloignait de la
+// barrière (FR001400U1I0, signalé par Laurent le 18/08/2026).
 function autocallProbable(p: Product): boolean {
   const obs = prochaineObservation(p)
   if (!obs || obs.autocallActif === false || typeof obs.niveauRappelPct !== 'number') return false
@@ -93,8 +98,7 @@ function autocallProbable(p: Product): boolean {
   // Niveau du panier selon son TYPE (worst-of, moyenne équipondérée, best-of),
   // pas un worst-of forcé.
   const niveau = 100 + aggregateBasket(perfs, p.basket)
-  const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
-  return inverse ? niveau <= obs.niveauRappelPct : niveau >= obs.niveauRappelPct
+  return estInverse(p) ? niveau <= obs.niveauRappelPct : niveau >= obs.niveauRappelPct
 }
 
 function lastLabel(p: Product): { text: string; cls: string } {
