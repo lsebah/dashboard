@@ -17,6 +17,7 @@ import { commissions } from '@/lib/commissions'
 import { useLocalCommissions } from '@/lib/local-commissions'
 import { croiserAvecRegistre } from '@/lib/deal-done-registre'
 import { useLocalProducts } from '@/lib/local-products'
+import { STRIKE_TERMSHEET } from '@/lib/strikes-termsheets'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -113,6 +114,10 @@ export default function DealDoneView({
   const strikesTous = useMemo(() => {
     const m: Record<string, string> = { ...strikes }
     for (const p of produitsLocaux) if (p.dateConstatationInitiale) m[p.isin] = p.dateConstatationInitiale
+    // La termsheet (contenu réel) prime sur un trade saisi localement sans sa
+    // « Date de strike » : celui-ci retombe par défaut sur l'émission, ce qui
+    // daterait l'affaire à tort.
+    Object.assign(m, STRIKE_TERMSHEET)
     return m
   }, [strikes, produitsLocaux])
   const croisement = useMemo(
