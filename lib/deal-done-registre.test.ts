@@ -117,8 +117,32 @@ test('c’est le STRIKE qui date une affaire reprise, pas l’émission', () => 
   assert.equal(r.ajoutes[0].dateEmission, '2026-04-22', "l'émission reste dans son champ")
 })
 
-test('strike inconnu : on retombe sur l’émission et on le DIT', () => {
+test('strike absent : la date d’émission prend le relais', () => {
+  // Règle du 18/08 : « si date de strike absente, utilise issue date ».
   const r = croiserAvecRegistre([], [L({ isin: 'XS9', issue: '2026-04-22', description: 'Athena Vinci' })])
   assert.equal(r.ajoutes[0].date, '2026-04-22')
-  assert.match(r.ajoutes[0].description ?? '', /strike inconnu/)
+})
+
+test('un ISIN présent des deux côtés TRANCHE, dans les deux sens', () => {
+  // Le défaut qui a collé le FR1459ABG521 (Copper & Power) sur l'Autocall
+  // MXEADT50 : le deal portait déjà SON ISIN, mais le rapprochement se faisait
+  // quand même par libellé, et la ligne du registre disparaissait avec lui.
+  const deal = D({ isin: 'XS-AUTRE', produit: 'Autocall Dégressif MXEADT50' })
+  const l = L({ isin: 'FR-CELUI-CI', description: 'Phoenix MSCI ACWI Copper Power Select 50 Points' })
+  assert.equal(memeAffaire(deal, l), false)
+  const r = croiserAvecRegistre([deal], [l])
+  assert.equal(r.ajoutes.length, 1, 'la ligne du registre devient une affaire, elle ne se perd pas')
+  assert.equal(r.deals[0].isin, 'XS-AUTRE', "l'ISIN du deal n'est pas écrasé")
+})
+
+test('le vocabulaire d’indice ne rapproche rien', () => {
+  const deal = D({ produit: 'Autocall Dégressif MXEADT50 MSCI Europe Aerospace Defense Select 50 Points Decrement' })
+  const l = L({ description: 'Phoenix Autocallable MSCI ACWI IMI Copper Power Select 20 Fixed Basket 50 Points DIV' })
+  assert.equal(memeAffaire(deal, l), false)
+})
+
+test('émetteurs différents : pas de rapprochement par libellé', () => {
+  const deal = D({ produit: 'Phoenix Engie Nexans Schneider', emetteur: 'Barclays' })
+  const l = L({ description: 'Phoenix Engie Nexans Schneider', emetteur: 'BBVA' })
+  assert.equal(memeAffaire(deal, l), false)
 })
