@@ -17,6 +17,7 @@ import { commissions } from '@/lib/commissions'
 import { useLocalCommissions } from '@/lib/local-commissions'
 import { croiserAvecRegistre } from '@/lib/deal-done-registre'
 import { useLocalProducts } from '@/lib/local-products'
+import { STRIKE_TERMSHEET } from '@/lib/strikes-termsheets'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -113,14 +114,41 @@ export default function DealDoneView({
   const strikesTous = useMemo(() => {
     const m: Record<string, string> = { ...strikes }
     for (const p of produitsLocaux) if (p.dateConstatationInitiale) m[p.isin] = p.dateConstatationInitiale
+    // La termsheet (contenu réel) prime sur un trade saisi localement sans sa
+    // « Date de strike » : celui-ci retombe par défaut sur l'émission, ce qui
+    // daterait l'affaire à tort.
+    Object.assign(m, STRIKE_TERMSHEET)
     return m
   }, [strikes, produitsLocaux])
-  const avecRegistre = useMemo(() => {
-    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikesTous)
-    return [...r.deals, ...r.ajoutes]
-  }, [bruts, localesCom, strikesTous])
+  const croisement = useMemo(
+    () => croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikesTous),
+    [bruts, localesCom, strikesTous],
+  )
+  const avecRegistre = useMemo(
+    () => [...croisement.deals, ...croisement.ajoutes],
+    [croisement],
+  )
 
   const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
+
+  /**
+   * Filet de sécurité : toute commission locale 2026 dont l'ISIN n'apparaît
+   * NULLE PART dans le tableau final est une anomalie du croisement, jamais
+   * un silence acceptable — c'est exactement le défaut qui a fait disparaître
+   * les tickets ARCHE le 17/08 (deux magasins de commissions, un seul lu) puis
+   * recollé un ISIN au mauvais produit le 18/08 (vocabulaire d'indice trop
+   * permissif). Les deux étaient invisibles tant que rien ne les signalait.
+   */
+  const manquants = useMemo(() => {
+    const presents = new Set(deals.map((d) => d.isin).filter(Boolean))
+    return localesCom.filter(
+      (l) =>
+        l.isin &&
+        l.isin !== 'FEI' &&
+        (l.issue ?? '').startsWith('2026') &&
+        !presents.has(l.isin),
+    )
+  }, [localesCom, deals])
 
   const aujourdHui = useMemo(() => new Date(), [])
   const semaine = useMemo(() => dealsDeLaSemaine(deals, aujourdHui), [deals, aujourdHui])
@@ -166,6 +194,23 @@ export default function DealDoneView({
           </span>
         )}
       </div>
+
+      {/* Filet : une commission locale 2026 absente du tableau final — jamais
+          un silence, toujours une ligne nommée. */}
+      {manquants.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[12px] text-red-900">
+          <strong>{manquants.length} commission(s) locale(s) introuvable(s) dans le tableau</strong> — la
+          ligne existe dans Commissions mais n&apos;apparaît nulle part ici. Signale-le : c&apos;est une
+          anomalie du croisement, pas un oubli d&apos;annonce.
+          <ul className="mt-1 space-y-0.5">
+            {manquants.map((l) => (
+              <li key={`${l.isin}|${l.client ?? ''}`} className="font-mono">
+                {l.isin} · {l.client ?? '—'} · {l.description ?? '—'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Doublons */}
       {(doublons.length > 0 || aVerifier.length > 0) && (
