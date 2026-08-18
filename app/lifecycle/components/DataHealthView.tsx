@@ -115,7 +115,13 @@ export default function DataHealthView({ products }: { products: Product[] }) {
   const lignes = (commissions as { lignes: CommissionLine[] }).lignes ?? []
   const coherence = useMemo(() => computeCoherence(lignes, products), [lignes, products])
   const complet =
-    h.sansCoupon.length + h.sansTS.length + h.airbagSansNiveau.length + h.deviseSuspecte.length + h.typeNonIdentifie.length + coherence.length
+    h.sansCoupon.length +
+    h.sansTS.length +
+    h.airbagSansNiveau.length +
+    h.deviseSuspecte.length +
+    h.typeNonIdentifie.length +
+    h.termsheetSansProduit.length +
+    coherence.length
 
   return (
     <div className="flex flex-col gap-4">
@@ -140,6 +146,12 @@ export default function DataHealthView({ products }: { products: Product[] }) {
           titre="Termsheet absente"
           desc="Aucun PDF local, URL produit ou entrée d'index ne résout la TS."
           items={h.sansTS}
+        />
+        <Section
+          titre="Termsheet sans produit"
+          desc="Déposée dans le dossier OneDrive, jamais créée dans l'app — ni associée, ni décodée."
+          items={h.termsheetSansProduit}
+          critique
         />
         <Section
           titre="Niveau d'airbag non décodé"
