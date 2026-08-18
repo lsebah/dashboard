@@ -53,6 +53,11 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
   const [devise, setDevise] = useState('EUR')
   const [nom, setNom] = useState('')
   const [dateEmission, setDateEmission] = useState('')
+  // Le STRIKE (constatation initiale) était recopié de la date d'émission : le
+  // formulaire n'en avait qu'une. Or c'est le strike qui date une affaire —
+  // l'émission tombe souvent plusieurs semaines après. Champ distinct, qui
+  // retombe sur l'émission s'il reste vide.
+  const [dateStrike, setDateStrike] = useState('')
   const [duree, setDuree] = useState('')
   const [frequence, setFrequence] = useState<Frequency>('trimestriel')
   // La fréquence a une valeur par défaut : sans ce drapeau, impossible de
@@ -133,6 +138,11 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
       if (v || !connu.dateEmission) return v
       pris.push("date d'émission")
       return connu.dateEmission
+    })
+    setDateStrike((v) => {
+      if (v || !connu.dateConstatationInitiale) return v
+      pris.push('strike')
+      return connu.dateConstatationInitiale
     })
     setDuree((v) => {
       const n = dureeAns(connu)
@@ -286,7 +296,7 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
       family: 'autocall',
       devise,
       nominal: tot.montant || 0,
-      dateConstatationInitiale: dateEmission || '',
+      dateConstatationInitiale: dateStrike || dateEmission || '',
       dateEmission: dateEmission || '',
       dateConstatationFinale: ech,
       dateEcheance: ech,
@@ -425,6 +435,16 @@ export default function NouveauTrade({ onClose }: { onClose: () => void }) {
             <div>
               <label className="field-label">Date d&apos;émission</label>
               <input type="date" value={dateEmission} onChange={(e) => setDateEmission(e.target.value)} className={inputCls} />
+            </div>
+            <div>
+              <label className="field-label">Date de strike</label>
+              <input
+                type="date"
+                value={dateStrike}
+                onChange={(e) => setDateStrike(e.target.value)}
+                className={inputCls}
+                title="Constatation initiale. Laissée vide, la date d'émission est reprise."
+              />
             </div>
             <div>
               <label className="field-label">Durée (ans)</label>
