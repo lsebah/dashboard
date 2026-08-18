@@ -10,12 +10,12 @@
 //  Les deux blocs se chargent indépendamment : un marché indisponible ne doit
 //  pas masquer la liste des rappels, qui est la partie actionnable.
 // ─────────────────────────────────────────────────────────────────────────
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Product } from '@/lib/types'
-import { Panel } from './charts'
+import { Panel, ACCENT } from './charts'
 import { bilanRappels, nominalParDevise } from '@/lib/autocall-proche'
 import { dateFr } from '@/lib/dates'
-import { pourcent, pourcentSigne } from '@/lib/pourcentage'
+import { pourcent, ESPACE_FINE } from '@/lib/pourcentage'
 import Modal from '@/app/lifecycle/components/Modal'
 import ProductSynopsis from '@/app/lifecycle/components/ProductSynopsis'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
@@ -30,17 +30,60 @@ interface MarketItem {
   change: number | null
   changePct: number | null
   marketState: string
+  /** Provenance des taux qui n'ont pas de cotation Yahoo (CMS10, OAT10). */
+  source?: 'stooq' | 'bloomberg'
 }
 
 const eur0 = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 0 })
-const niveauFmt = (it: MarketItem): string => {
+
+/** Change, volatilité, commodités retenus en Synthèse (cf. `divers` plus bas). */
+const DIVERS_SYMBOLES = new Set(['EURUSD=X', '^VIX', 'GC=F', 'CL=F'])
+
+/**
+ * Niveau lisible d'un instrument « divers » — décimales adaptées à sa nature :
+ * un cours de change se lit à 4 décimales, un indice de volatilité à 2, une
+ * commodité en gros chiffres ronds. Toujours en virgule française.
+ */
+function niveauDivers(it: MarketItem): string {
   if (it.price == null) return '—'
-  if (it.group === 'Change') return it.price.toFixed(4)
-  if (it.unit === '%') return pourcent(it.price, 2)
-  return it.price.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+  if (it.symbol === 'EURUSD=X') return it.price.toFixed(4).replace('.', ',')
+  if (it.symbol === '^VIX') return it.price.toFixed(2).replace('.', ',')
+  // Commodités ($) : gros chiffres ronds au-delà de 1000 (or), deux décimales
+  // en dessous (WTI) — même seuil que le reste du site.
+  const decimales = it.price >= 1000 ? 0 : 2
+  return `${it.price.toLocaleString('fr-FR', { maximumFractionDigits: decimales, minimumFractionDigits: decimales })}${ESPACE_FINE}$`
 }
-const signeClasse = (n: number | null) =>
-  n == null ? 'text-slate-400' : n >= 0 ? 'text-emerald-600' : 'text-red-600'
+
+/**
+ * Box de marché — même habillage que StatCard (barre d'accent navy, libellé en
+ * petites capitales slate-500) mais compacte : plusieurs par ligne, comme dans
+ * la maquette. Le CONTENU diffère volontairement entre un indice et un taux :
+ *   • un INDICE n'affiche PAS son niveau — un point d'indice ne se lit pas
+ *     hors contexte —, seulement sa variation, colorée ;
+ *   • un TAUX affiche son NIVEAU — c'est lui la donnée utile — et sa variation
+ *     seulement quand la source la fournit (jamais pour CMS10/OAT10, qui n'ont
+ *     pas de clôture de veille).
+ */
+function MarcheBox({ label, children, title }: { label: string; children: ReactNode; title?: string }) {
+  return (
+    <div className="lc2-kpi lc2-rise relative overflow-hidden px-3 py-2.5" title={title}>
+      <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: ACCENT }} />
+      <div className="lc2-label truncate">{label}</div>
+      <div className="mt-1">{children}</div>
+    </div>
+  )
+}
+
+/** Variation colorée — même code que le delta de StatCard (▲/▼, emerald/red-700). */
+function Delta({ pct }: { pct: number | null }) {
+  if (pct == null) return <span className="text-sm font-bold text-slate-300">—</span>
+  const up = pct >= 0
+  return (
+    <span className={`text-sm font-bold tabular-nums ${up ? 'text-emerald-700' : 'text-red-700'}`}>
+      {up ? '▲' : '▼'} {pourcent(Math.abs(pct), 2)}
+    </span>
+  )
+}
 
 export default function SyntheseTete({ products }: { products: Product[] }) {
   // Statuts forcés (rappelé / vendu…) : la page les LIT — sinon un produit marqué
@@ -88,7 +131,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
         const items: MarketItem[] = Array.isArray(j?.items) ? j.items : []
-        if (!annule) setMarches(items.filter((i) => i.group === 'Indices'))
+        if (!annule) setMarches(items)
       })
       .catch(() => {
         // Marché indisponible : le bloc le dit, il n'affiche pas de faux niveau.
@@ -120,6 +163,23 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       annule = true
     }
   }, [])
+
+  const indices = useMemo(() => marches?.filter((i) => i.group === 'Indices') ?? [], [marches])
+  const taux = useMemo(
+    () =>
+      marches?.filter(
+        (i) => (i.group === 'Taux souverains US' && i.name === 'US 10Y') || i.group === 'Taux EUR',
+      ) ?? [],
+    [marches],
+  )
+  // Change, volatilité, commodités : quatre instruments précis (pas les groupes
+  // entiers — cinq paires de change ou quatre commodités auraient noyé le
+  // tableau). Contrairement à un indice, leur NIVEAU se lit seul : un cours
+  // EUR/USD ou un prix de l'or ont un sens hors contexte.
+  const divers = useMemo(
+    () => marches?.filter((i) => DIVERS_SYMBOLES.has(i.symbol)) ?? [],
+    [marches],
+  )
 
   const bilan = useMemo(
     () => (niveaux ? bilanRappels(produits, niveaux, constates, new Date(), 30) : null),
@@ -179,42 +239,83 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       .join(' · ')
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      {/* ── 1. Indices ────────────────────────────────────────────────── */}
-      <Panel title="Indices" sub="run quotidien · niveaux de clôture ou temps réel">
+    <div className="flex flex-col gap-4">
+      {/* ── 1. Marchés — indices (variation seule) puis taux (niveau), en
+             BOX comme sur la page d'accueil, mais dans le code couleur de
+             Lifecycle (fond blanc, barre d'accent navy) et non le thème sombre
+             de l'accueil. Pleine largeur : le Rappels passe dessous. ────── */}
+      <Panel title="Marchés" sub="indices & taux · run quotidien">
         {marches === null ? (
           <p className="py-6 text-center text-[13px] text-slate-400">Chargement des niveaux…</p>
-        ) : marches.length === 0 ? (
+        ) : indices.length === 0 && taux.length === 0 && divers.length === 0 ? (
           <p className="py-6 text-center text-[13px] text-slate-400">
             Niveaux indisponibles — aucun chiffre n&apos;est affiché plutôt qu&apos;un chiffre périmé.
           </p>
         ) : (
-          <table className="w-full text-[13px]">
-            <tbody className="divide-y divide-slate-100">
-              {marches.map((it) => (
-                <tr key={it.symbol}>
-                  <td className="py-1.5 pr-2 text-slate-600">{it.name}</td>
-                  <td className="py-1.5 text-right tabular-nums font-medium text-slate-800 whitespace-nowrap">
-                    {niveauFmt(it)}
-                  </td>
-                  <td className={`w-20 py-1.5 pl-2 text-right tabular-nums whitespace-nowrap ${signeClasse(it.changePct)}`}>
-                    {it.changePct == null ? '—' : pourcentSigne(it.changePct, 2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+            {indices.map((it) => (
+              <MarcheBox key={it.symbol} label={it.name}>
+                <Delta pct={it.changePct} />
+              </MarcheBox>
+            ))}
+            {taux.map((t) => (
+              <MarcheBox
+                key={t.symbol}
+                label={t.name}
+                title={t.source ? `Source : ${t.source}` : undefined}
+              >
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-bold tabular-nums text-slate-900">
+                    {t.price == null ? '—' : pourcent(t.price, 2)}
+                  </span>
+                  {t.changePct != null && (
+                    <span
+                      className={`text-[11px] font-semibold tabular-nums ${
+                        t.changePct >= 0 ? 'text-emerald-700' : 'text-red-700'
+                      }`}
+                    >
+                      {t.changePct >= 0 ? '▲' : '▼'} {pourcent(Math.abs(t.changePct), 2)}
+                    </span>
+                  )}
+                </div>
+              </MarcheBox>
+            ))}
+            {/* Change, volatilité, commodités : niveau ET variation, comme les
+                taux — ce sont des nombres qui se lisent seuls, contrairement à
+                un point d'indice. */}
+            {divers.map((it) => (
+              <MarcheBox key={it.symbol} label={it.name}>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-bold tabular-nums text-slate-900">
+                    {niveauDivers(it)}
+                  </span>
+                  <span
+                    className={`text-[11px] font-semibold tabular-nums ${
+                      it.changePct == null
+                        ? 'text-slate-400'
+                        : it.changePct >= 0
+                          ? 'text-emerald-700'
+                          : 'text-red-700'
+                    }`}
+                  >
+                    {it.changePct == null
+                      ? '—'
+                      : `${it.changePct >= 0 ? '▲' : '▼'} ${pourcent(Math.abs(it.changePct), 2)}`}
+                  </span>
+                </div>
+              </MarcheBox>
+            ))}
+          </div>
         )}
       </Panel>
 
       {/* ── 2. Rappels : 30 jours passés + 30 jours à venir, une seule ligne
              de temps. Deux onglets auraient obligé à cliquer pour comparer ce
              qui vient de tomber et ce qui va tomber — or c'est justement la
-             comparaison qui informe. ─────────────────────────────────────── */}
+             comparaison qui informe. Pleine largeur, sous les marchés. ──── */}
       <Panel
         title="Rappels — 30 jours de part et d'autre"
         sub="ce qui vient d'être rappelé, et ce qui va probablement l'être"
-        className="lg:col-span-2"
         right={
           bilan ? (
             <span className="flex flex-wrap items-center gap-1.5">

@@ -70,6 +70,26 @@ test('un autocall INVERSE se déclenche à la baisse', () => {
   assert.equal(autocallsProbables([inv], { INV: 95 }, LE_JOUR).length, 0)
 })
 
+test('un Phoenix Bearish (taux) se déclenche aussi à la baisse', () => {
+  // Régression : la première version ne testait que kind === 'autocall', pas
+  // kind === 'rates' — un Phoenix Bearish (ex. FR001400U1I0) s'affichait
+  // « probable » dès que le taux MONTAIT au-dessus de sa barrière, l'exact
+  // inverse de la réalité (signalé par Laurent le 18/08/2026).
+  const bearish = P({
+    isin: 'BEAR',
+    obs: '2026-08-25',
+    barriere: 2.2,
+    terms: { kind: 'rates', sens: 'bearish' } as Product['terms'],
+  })
+  // Taux au-dessus de la barrière (loin d'un rappel) : rien à signaler.
+  assert.equal(autocallsProbables([bearish], { BEAR: 3.28 }, LE_JOUR).length, 0)
+  // Taux au-dessous ou égal à la barrière : rappel probable.
+  const r = autocallsProbables([bearish], { BEAR: 2.0 }, LE_JOUR)
+  assert.equal(r.length, 1)
+  assert.equal(r[0].inverse, true)
+  assert.equal(r[0].marge, 0.2)
+})
+
 test('sans niveau connu, on ne signale pas', () => {
   const p = [P({ isin: 'A', obs: '2026-08-25' })]
   assert.equal(autocallsProbables(p, {}, LE_JOUR).length, 0)

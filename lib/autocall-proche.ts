@@ -15,7 +15,7 @@
 //  contient des faux positifs cesse d'être lue.
 // ─────────────────────────────────────────────────────────────────────────
 import type { Observation, Product } from './types'
-import { prochaineObservation, rappelConstate } from './lifecycle'
+import { prochaineObservation, rappelConstate, estInverse } from './lifecycle'
 
 export interface AutocallProche {
   isin: string
@@ -71,7 +71,7 @@ export function autocallsProbables(
     const niveau = niveaux[p.isin]
     if (typeof niveau !== 'number') continue
 
-    const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
+    const inverse = estInverse(p)
     const barriere = obs.niveauRappelPct
     const franchie = inverse ? niveau <= barriere : niveau >= barriere
     if (!franchie) continue
@@ -244,7 +244,7 @@ export function bilanRappels(
       continue
     }
 
-    const inverse = p.terms?.kind === 'autocall' && p.terms.sens === 'inverse'
+    const inverse = estInverse(p)
     const barriere = obs.niveauRappelPct
     if (!(inverse ? niveau <= barriere : niveau >= barriere)) continue
 
