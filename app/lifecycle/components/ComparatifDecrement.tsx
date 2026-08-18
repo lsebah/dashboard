@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import indicesRaw from '@/lib/decrement-indices.json'
 import Modal from './Modal'
+import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 interface IndexInfo {
   nom?: string
@@ -44,13 +46,16 @@ interface Row {
   ufFromMail?: boolean
 }
 
+// Clés = codes canoniques (lib/emetteurs) : la source écrit « MS », « BNPP »,
+// « BofA », le tableau affiche MSCO, BNP, BOFA. Sans cette clé commune, la
+// couleur se perdrait silencieusement au changement d'affichage.
 const ISSUER_COLOR: Record<string, string> = {
-  MS: 'text-rose-600',
-  BNPP: 'text-emerald-600',
+  MSCO: 'text-rose-600',
+  BNP: 'text-emerald-600',
   GS: 'text-amber-600',
   UBS: 'text-red-600',
-  BofA: 'text-blue-600',
-  Citi: 'text-sky-600',
+  BOFA: 'text-blue-600',
+  CITI: 'text-sky-600',
   BBVA: 'text-indigo-600',
 }
 
@@ -214,7 +219,7 @@ function describe(r: Row): string {
   if (r.secteur) s += ` (secteur ${r.secteur})`
   const p: string[] = []
   if (typeof r.couponPa === 'number')
-    p.push(`coupon ${r.couponPa.toFixed(2)} % p.a.${r.memoire ? ' à effet mémoire' : ''}`)
+    p.push(`coupon ${pourcent(r.couponPa, 2)} p.a.${r.memoire ? ' à effet mémoire' : ''}`)
   if (r.barriereCoupon) p.push(`barrière coupon ${r.barriereCoupon}`)
   if (r.barriereProtection) p.push(`protection ${r.barriereProtection}`)
   if (r.departAutocall) p.push(`autocall dès ${r.departAutocall}`)
@@ -532,7 +537,9 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 >
                   {(() => { const n = niveauOf(r); return typeof n === 'number' ? n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) : '—' })()}
                 </td>
-                <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[r.emetteur] ?? 'text-slate-600'}`}>{r.emetteur}</td>
+                <td className={`px-2 py-1.5 font-medium ${ISSUER_COLOR[codeEmetteur(r.emetteur)] ?? 'text-slate-600'}`}>
+                  {codeEmetteur(r.emetteur)}
+                </td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-600">{r.type}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">{r.secteur ?? '—'}</td>
                 <td className={`px-2 py-1.5 text-right tabular-nums ${coupCls(r.couponPa)}`}>
@@ -598,7 +605,7 @@ export default function ComparatifDecrement({ rows }: { rows: Row[] }) {
                 <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Composants</dt><dd>{selInfo.nbComposants}</dd></div>
               )}
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Décrément</dt><dd>{selInfo?.decrement ?? '—'}</dd></div>
-              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? `${sel.couponPa.toFixed(2)} %` : '—'}</dd></div>
+              <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Coupon p.a.</dt><dd>{typeof sel.couponPa === 'number' ? pourcent(sel.couponPa, 2) : '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Effet mémoire</dt><dd>{sel.memoire ? 'Oui' : 'Non'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Barrière coupon</dt><dd>{sel.barriereCoupon ?? '—'}</dd></div>
               <div className="flex gap-2"><dt className="field-label w-28 shrink-0">Protection</dt><dd>{sel.barriereProtection ?? '—'}</dd></div>

@@ -37,6 +37,9 @@ import {
   ACCENT,
 } from './charts'
 import RiskCartography from './RiskCartography'
+import { codeEmetteur } from '@/lib/emetteurs'
+import SyntheseTete from './SyntheseTete'
+import { pourcent } from '@/lib/pourcentage'
 
 // ── Helpers de situation « live » (depuis le worst-of courant Yahoo) ─────────
 function barriereProtection(p: Product): number | undefined {
@@ -159,6 +162,9 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
         </span>
       </div>
 
+      {/* ── Tête de synthèse : indices, puis rappels probables sous 30 j ── */}
+      <SyntheseTete products={products} />
+
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Encours nominal" value={eurCompact(T.nominal)} sub={`${T.nbVivant} produits vivants`} accent={ACCENT} style={{ animationDelay: '0ms' }} spark={<Sparkline data={sparkEncours} />} />
@@ -234,8 +240,8 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
             />
             <div className="min-w-0 flex-1 space-y-2 text-[13px]">
               <Stat k="Produits proches / sous barrière" v={live ? `${proches}` : '…'} warn={proches > 0} />
-              <Stat k="Top émetteur" v={conc.topEmetteur ? `${conc.topEmetteur.label} · ${conc.topEmetteur.pct.toFixed(1)} %` : '—'} />
-              <Stat k="Top sous-jacent" v={conc.topSousJacent ? `${conc.topSousJacent.nom} · ${conc.topSousJacent.pct.toFixed(1)} %` : '—'} />
+              <Stat k="Top émetteur" v={conc.topEmetteur ? `${conc.topEmetteur.label} · ${pourcent(conc.topEmetteur.pct, 1)}` : '—'} />
+              <Stat k="Top sous-jacent" v={conc.topSousJacent ? `${conc.topSousJacent.nom} · ${pourcent(conc.topSousJacent.pct, 1)}` : '—'} />
               <Stat k="Concentration (HHI émetteur)" v={`${conc.hhiEmetteur}`} />
             </div>
           </div>
@@ -338,12 +344,12 @@ function PositionsTable({ products, courant }: { products: Product[]; courant: R
             {rows.map(({ p, nom, prix, pnl, wo, sit, mat }) => (
               <tr key={p.isin} className="hover:bg-slate-50">
                 <td className="whitespace-nowrap px-3 py-1.5 font-mono text-slate-600">{p.isin}</td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-slate-700">{p.emetteur}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-slate-700">{codeEmetteur(p.emetteur)}</td>
                 <td className="max-w-[180px] truncate px-3 py-1.5 text-slate-500" title={p.nom}>{p.productType ?? p.family}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-800">{eurCompact(nom)}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{prix.toFixed(1)}</td>
                 <td className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${pnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{pct(pnl)}</td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{typeof wo === 'number' ? `${wo.toFixed(0)} %` : '—'}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums text-slate-600">{typeof wo === 'number' ? pourcent(wo, 0) : '—'}</td>
                 <td className="whitespace-nowrap px-3 py-1.5">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full" style={{ background: SIT_META[sit].color }} />

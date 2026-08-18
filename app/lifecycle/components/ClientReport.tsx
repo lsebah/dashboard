@@ -4,6 +4,8 @@ import type { Product } from '@/lib/types'
 import { issuerCode } from '@/lib/termsheets'
 import { couponsEncaissesPct, couponPa, pnlAvecCoupons } from '@/lib/lifecycle'
 import { productTypeLabel } from '@/lib/classification'
+import { dateFr } from '@/lib/dates'
+import { pourcent, pourcentSigne, insecable } from '@/lib/pourcentage'
 
 // Reporting client mensuel (format CMF) — imprimable en PDF via le navigateur
 // OU rendu en PDF côté serveur (route /print + scripts/reporting_clients.mjs).
@@ -13,13 +15,7 @@ import { productTypeLabel } from '@/lib/classification'
 //
 // La FEUILLE de reporting est isolée dans <ReportSheet/> pour servir de source
 // unique aux deux rendus (aperçu modal ici + export PDF headless).
-const dfr = (iso?: string) => {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime())
-    ? '—'
-    : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`
-}
+const dfr = dateFr
 const dureeAns = (p: Product) => {
   const a = new Date(p.dateConstatationInitiale || p.dateEmission).getTime()
   const b = new Date(p.dateEcheance).getTime()
@@ -110,7 +106,7 @@ export function ReportSheet({
               <tr key={p.isin} className="border-b border-slate-200 align-top">
                 <td className="px-2 py-2">
                   <div className="font-bold text-slate-800">{p.isin}</div>
-                  <div className="text-slate-700">{p.description ?? p.nom}</div>
+                  <div className="text-slate-700">{insecable(p.description ?? p.nom)}</div>
                   {(() => {
                     const r = recapParts(p)
                     return r.length > 0 ? (
@@ -136,7 +132,7 @@ export function ReportSheet({
                             className={wo !== null && s.pct === wo ? 'font-semibold text-slate-700' : ''}
                           >
                             {i > 0 ? ' · ' : ''}
-                            {s.nom} {s.pct.toFixed(0)} %
+                            {s.nom} {pourcent(s.pct, 0)}
                           </span>
                         ))}
                       </div>
@@ -152,7 +148,7 @@ export function ReportSheet({
                   <div className="font-semibold">{val(p)}</div>
                   {typeof coupons === 'number' && coupons > 0 && (
                     <div className="text-[10px] font-normal text-slate-500">
-                      Coupons versés +{coupons.toFixed(2).replace('.', ',')} %
+                      Coupons versés {pourcentSigne(coupons, 2)}
                     </div>
                   )}
                 </td>

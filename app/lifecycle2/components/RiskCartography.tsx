@@ -6,6 +6,8 @@ import { computeRisks, NIVEAU_COLOR, type RiskItem } from '@/lib/cmf-risk'
 import { eurCompact } from '@/lib/cmf-analytics'
 import { Panel } from './charts'
 import Modal from '@/app/lifecycle/components/Modal'
+import { codeEmetteur } from '@/lib/emetteurs'
+import { pourcent } from '@/lib/pourcentage'
 
 const yearsTo = (iso: string) => {
   const t = new Date(iso).getTime()
@@ -102,7 +104,14 @@ export default function RiskCartography({
       {/* Filtres */}
       <div className="mb-3 flex flex-wrap gap-2">
         <Select label="Client" value={client} set={setClient} opts={opt(clientOpts)} />
-        <Select label="Émetteur" value={emetteur} set={setEmetteur} opts={opt(emetteurOpts)} />
+        {/* La VALEUR reste le nom complet (c'est elle qui filtre `p.emetteur`) ;
+            seul le LIBELLÉ est le code court, pour coller à la colonne. */}
+        <Select
+          label="Émetteur"
+          value={emetteur}
+          set={setEmetteur}
+          opts={[{ v: ALL, l: ALL }, ...emetteurOpts.map((x) => ({ v: x, l: codeEmetteur(x) }))]}
+        />
         <Select label="Type produit" value={type} set={setType} opts={opt(typeOpts)} />
         <Select
           label="Maturité"
@@ -141,7 +150,7 @@ export default function RiskCartography({
               return (
                 <g key={r.id} className="cursor-pointer" onClick={() => setSel(r)} onMouseEnter={() => setHover(r.id)} onMouseLeave={() => setHover(null)}>
                   <circle cx={cx} cy={cy} r={rOf(r.montantExpose)} fill={NIVEAU_COLOR[r.niveau]} fillOpacity={on ? 0.85 : 0.6} stroke={NIVEAU_COLOR[r.niveau]} strokeWidth={on ? 2 : 1}>
-                    <title>{`${r.nom}\n${r.categorie} · niveau ${r.niveau}\nExposition ${r.pctPortefeuille.toFixed(1)} % · ${eurCompact(r.montantExpose)}\nSévérité ${r.severite}/100 · clic pour le détail`}</title>
+                    <title>{`${r.nom}\n${r.categorie} · niveau ${r.niveau}\nExposition ${pourcent(r.pctPortefeuille, 1)} · ${eurCompact(r.montantExpose)}\nSévérité ${r.severite}/100 · clic pour le détail`}</title>
                   </circle>
                 </g>
               )
@@ -151,7 +160,7 @@ export default function RiskCartography({
             <div className="mt-1 text-[11px] text-slate-500">
               {(() => {
                 const r = shown.find((x) => x.id === hover)
-                return r ? `${r.nom} — ${r.niveau} · ${r.pctPortefeuille.toFixed(1)} % · ${eurCompact(r.montantExpose)}` : ''
+                return r ? `${r.nom} — ${r.niveau} · ${pourcent(r.pctPortefeuille, 1)} · ${eurCompact(r.montantExpose)}` : ''
               })()}
             </div>
           )}
@@ -174,7 +183,7 @@ export default function RiskCartography({
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: NIVEAU_COLOR[r.niveau] }} />
                     <span className="truncate text-slate-700">{r.nom}</span>
                   </span>
-                  <span className="shrink-0 tabular-nums text-slate-500">{r.pctPortefeuille.toFixed(0)} %</span>
+                  <span className="shrink-0 tabular-nums text-slate-500">{pourcent(r.pctPortefeuille, 0)}</span>
                 </button>
               </li>
             ))}
@@ -207,7 +216,7 @@ function RiskDetail({ r }: { r: RiskItem }) {
 
       <div className="grid grid-cols-3 gap-2">
         <Kpi k="Montant exposé" v={eurCompact(r.montantExpose)} />
-        <Kpi k="% du portefeuille" v={`${r.pctPortefeuille.toFixed(1)} %`} />
+        <Kpi k="% du portefeuille" v={pourcent(r.pctPortefeuille, 1)} />
         <Kpi k="Produits concernés" v={`${r.produits.length}`} />
       </div>
 
@@ -222,7 +231,13 @@ function RiskDetail({ r }: { r: RiskItem }) {
       <Section title="Émetteurs concernés">
         <div className="flex flex-wrap gap-1">
           {r.emetteurs.map((e) => (
-            <span key={e} className="rounded border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-600">{e}</span>
+            <span
+              key={e}
+              title={e}
+              className="rounded border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-600"
+            >
+              {codeEmetteur(e)}
+            </span>
           ))}
         </div>
       </Section>
@@ -235,7 +250,7 @@ function RiskDetail({ r }: { r: RiskItem }) {
                 <tr key={p.isin} className="hover:bg-slate-50">
                   <td className="px-2 py-1 text-slate-700">{p.nom}</td>
                   <td className="px-2 py-1 font-mono text-[11px] text-slate-400">{p.isin}</td>
-                  <td className="px-2 py-1 text-slate-500">{p.emetteur}</td>
+                  <td className="px-2 py-1 text-slate-500">{codeEmetteur(p.emetteur)}</td>
                   <td className="px-2 py-1 text-right tabular-nums text-slate-600">{eurCompact(p.montant)}</td>
                 </tr>
               ))}

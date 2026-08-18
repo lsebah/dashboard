@@ -76,28 +76,10 @@ export async function GET() {
 
   const markets: MarketItem[] = [...quotes]
 
-  // Static bond/swap data (no reliable free API)
-  const now = Math.floor(Date.now() / 1000)
-  markets.push(
-    {
-      name: 'CMS 10Y',
-      symbol: 'CMS10',
-      price: 3.042,
-      change: -0.012,
-      changePct: -0.39,
-      marketState: 'REGULAR',
-      timestamp: now,
-    },
-    {
-      name: 'OAT 10Y',
-      symbol: 'OAT10',
-      price: 3.663,
-      change: -0.019,
-      changePct: -0.52,
-      marketState: 'REGULAR',
-      timestamp: now,
-    },
-  )
+  // CMS 10Y / OAT 10Y ne sont plus écrits en dur ici : ils étaient figés
+  // (3,042 et 3,663) tout en s'affichant comme les niveaux du jour. Ils sont
+  // désormais résolus dans /api/lifecycle/markets — internet puis Bloomberg —
+  // et cette route ne sert que les cotations Yahoo.
 
   return NextResponse.json({
     markets,

@@ -150,7 +150,7 @@ export default function FrnImportPanel({
             <table className="w-full text-[12px]">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
-                  {['Maturité (Y)', 'Type', 'Coupon %', 'UF %', 'Sensi', ''].map((h) => (
+                  {['Maturité (Y)', 'Type', 'Coupon %', 'UF %', 'Sensi', ''].map((h) => (
                     <th key={h} className="px-2 py-1.5 text-left font-medium">{h}</th>
                   ))}
                 </tr>

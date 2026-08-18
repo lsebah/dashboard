@@ -25,7 +25,10 @@ function businessDaysAgo(iso: string, now = new Date()): number {
   }
   return count
 }
-const dateFr = (iso: string) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '—')
+import { dateFr } from '@/lib/dates'
+// Grille : code court. L'export texte (destiné à un email client) garde le nom
+// complet — « BARC » n'a de sens qu'en interne.
+import { codeEmetteur } from '@/lib/emetteurs'
 
 interface TableModel {
   issuers: string[]
@@ -181,7 +184,7 @@ export default function FrnView() {
             return (
               <tr key={iss} className="hover:bg-orange-50/40">
                 <td className="sticky left-0 z-10 bg-white px-3 py-1 whitespace-nowrap leading-tight">
-                  <div className="font-medium text-slate-800">{iss}</div>
+                  <div className="font-medium text-slate-800" title={iss}>{codeEmetteur(iss)}</div>
                   {info && <div className="text-[10px] leading-none text-slate-400" title="Moody's / S&P / Fitch (indicatif)">{ratingLine(info)}</div>}
                 </td>
                 <td className={`px-2 py-1 whitespace-nowrap tabular-nums ${stale ? 'text-amber-600' : 'text-slate-500'}`} title={stale ? `Plus de ${staleDays} j ouvrés` : undefined}>

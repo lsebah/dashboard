@@ -5,9 +5,17 @@ import {
   assureurs,
   dealsDeLaSemaine,
   dedoublonner,
+  deviseDe,
+  DEVISE_PAR_DEFAUT,
   enCommercialisation,
   type Deal,
 } from '@/lib/deal-done'
+import { codeEmetteur } from '@/lib/emetteurs'
+import { dateFr, jourMois } from '@/lib/dates'
+import { pourcent, insecable } from '@/lib/pourcentage'
+import { commissions } from '@/lib/commissions'
+import { useLocalCommissions } from '@/lib/local-commissions'
+import { croiserAvecRegistre } from '@/lib/deal-done-registre'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -24,13 +32,17 @@ import {
 const COLS = [
   { label: 'Date', w: 66 },
   { label: 'RR', w: 42 },
-  { label: 'UF', w: 50 },
-  { label: 'UF LR', w: 52 },
+  // UF et Coupon : largeurs calées sur la valeur la PLUS LONGUE des données
+  // (« 9,7008 % » côté coupon). Une insécable trop large pour sa colonne
+  // déborderait au lieu de se couper — le remède serait pire que le mal.
+  { label: 'UF', w: 62 },
+  // La lettre de remise n'a plus de colonne : elle ne concerne qu'une poignée de
+  // deals et la largeur profite à la description, qui la porte désormais.
   { label: 'Produit & description', w: 0 }, // flexible
   { label: 'Émetteur', w: 92 },
   { label: 'Dev', w: 40 },
   { label: 'Nominal', w: 96 },
-  { label: 'Coupon', w: 58 },
+  { label: 'Coupon', w: 78 },
   { label: 'AVF', w: 132 },
   { label: 'Prix', w: 54 },
   { label: 'Compartiment', w: 104 },
@@ -43,16 +55,32 @@ const RR_COULEUR: Record<string, string> = {
   MEG: 'bg-emerald-100 text-emerald-800',
   PD: 'bg-amber-100 text-amber-800',
   TB: 'bg-rose-100 text-rose-800',
+  ALM: 'bg-teal-100 text-teal-800',
   STA: 'bg-slate-100 text-slate-500',
+  PRIX: 'bg-slate-100 text-slate-500',
 }
 
-const jour = (iso?: string) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '')
-const jourCourt = (iso?: string) => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '')
-const pct = (v?: number) => (typeof v === 'number' ? `${String(v).replace('.', ',')} %` : '—')
+const jour = (iso?: string) => dateFr(iso, '')
+const jourCourt = (iso?: string) => jourMois(iso, '')
+const pct = (v?: number) => pourcent(v)
+// Espace fine insécable avant le symbole : « 315 000 $ » se coupait au même
+// endroit que les pourcentages.
+const SYMBOLE: Record<string, string> = { EUR: ' €', USD: ' $', GBP: ' £', CHF: ' CHF' }
 const montant = (v?: number, devise?: string) =>
-  typeof v === 'number' ? `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}${devise === 'USD' ? ' $' : devise === 'EUR' ? ' €' : ''}` : '—'
+  typeof v === 'number'
+    ? `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}${SYMBOLE[devise ?? ''] ?? ''}`
+    : '—'
 
-export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[]; fenetre?: { du: string; au: string } }) {
+export default function DealDoneView({
+  deals: bruts,
+  fenetre,
+  strikes = {},
+}: {
+  deals: Deal[]
+  fenetre?: { du: string; au: string }
+  /** ISIN → date de strike, pour dater les affaires reprises du registre. */
+  strikes?: Record<string, string>
+}) {
   const [prix, setPrix] = useState<Record<string, number>>({})
   const [rr, setRr] = useState<string>('')
   const [avf, setAvf] = useState<string>('')
@@ -72,14 +100,24 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
       })
   }, [])
 
-  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(bruts), [bruts])
+  // Le registre des commissions est le second référentiel (règle de Laurent,
+  // 17/08/2026). Il vit dans DEUX magasins : le fichier versionné et les tickets
+  // saisis dans Lifecycle (KV). Ne lire que le premier faisait disparaître les
+  // affaires les plus récentes — les deux tickets ARCHE d'août en étaient.
+  const { list: localesCom } = useLocalCommissions()
+  const avecRegistre = useMemo(() => {
+    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikes)
+    return [...r.deals, ...r.ajoutes]
+  }, [bruts, localesCom, strikes])
+
+  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
 
   const aujourdHui = useMemo(() => new Date(), [])
   const semaine = useMemo(() => dealsDeLaSemaine(deals, aujourdHui), [deals, aujourdHui])
   const ouverts = useMemo(() => enCommercialisation(deals, aujourdHui), [deals, aujourdHui])
   const listeAvf = useMemo(() => assureurs(deals), [deals])
   const listeRr = useMemo(
-    () => Array.from(new Set(deals.map((d) => d.rr))).sort(),
+    () => Array.from(new Set(deals.map((d) => d.rr).filter(Boolean))) as string[],
     [deals],
   )
 
@@ -95,7 +133,7 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
   }, [deals, rr, avf, q])
 
   const totalNominalEur = filtres
-    .filter((d) => d.devise === 'EUR' && typeof d.nominal === 'number')
+    .filter((d) => deviseDe(d) === DEVISE_PAR_DEFAUT && typeof d.nominal === 'number')
     .reduce((s, d) => s + (d.nominal ?? 0), 0)
 
   return (
@@ -185,7 +223,7 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
               {COLS.map((c) => (
                 <th
                   key={c.label}
-                  className={`px-2 py-2 font-medium ${['Nominal', 'Coupon', 'Prix', 'UF', 'UF LR'].includes(c.label) ? 'text-right' : 'text-left'}`}
+                  className={`px-2 py-2 font-medium ${['Nominal', 'Coupon', 'Prix', 'UF'].includes(c.label) ? 'text-right' : 'text-left'}`}
                 >
                   {c.label}
                 </th>
@@ -199,21 +237,37 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
                 <tr key={d.id} className="border-b border-slate-100 align-top hover:bg-slate-50/60">
                   <td className="px-2 py-2 tabular-nums text-slate-600">{jour(d.date)}</td>
                   <td className="px-2 py-2">
-                    <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${RR_COULEUR[d.rr] ?? 'bg-slate-100 text-slate-600'}`}>
-                      {d.rr}
+                    {/* Sans RR (affaire reprise du registre) : un tiret, jamais
+                        un commercial attribué au hasard. */}
+                    <span
+                      className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                        (d.rr && RR_COULEUR[d.rr]) || 'bg-slate-100 text-slate-400'
+                      }`}
+                      title={d.rr ? undefined : 'Affaire reprise du registre des commissions — RR non renseigné'}
+                    >
+                      {d.rr ?? '—'}
                     </span>
                   </td>
-                  <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
-                  <td className="px-2 py-2 text-right tabular-nums text-slate-600">{pct(d.ufLR)}</td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.ufGlobal)}</td>
                   <td className="px-2 py-2">
                     <div className="font-semibold text-slate-800">{d.produit}</div>
-                    {d.description && <div className="mt-0.5 leading-snug text-slate-500">{d.description}</div>}
+                    {d.description && (
+                      <div className="mt-0.5 leading-snug text-slate-500">{insecable(d.description)}</div>
+                    )}
                     {d.isin && <div className="mt-0.5 font-mono text-[11px] text-slate-400">{d.isin}</div>}
                   </td>
-                  <td className="px-2 py-2 text-slate-700">{d.emetteur ?? '—'}</td>
-                  <td className="px-2 py-2 text-slate-600">{d.devise ?? '—'}</td>
-                  <td className="px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, d.devise)}</td>
-                  <td className="px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.coupon)}</td>
+                  <td className="px-2 py-2 font-medium text-slate-700">{codeEmetteur(d.emetteur)}</td>
+                  {/* Devise : EUR par défaut. Toute autre devise ressort en rouge italique —
+                      c'est l'exception qui doit sauter aux yeux, pas la règle. */}
+                  <td
+                    className={`px-2 py-2 ${
+                      deviseDe(d) === DEVISE_PAR_DEFAUT ? 'text-slate-600' : 'font-semibold italic text-red-600'
+                    }`}
+                  >
+                    {deviseDe(d)}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-slate-800">{montant(d.nominal, deviseDe(d))}</td>
+                  <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums font-medium text-slate-800">{pct(d.coupon)}</td>
                   <td className="px-2 py-2">
                     {(d.avf ?? []).length > 0 ? (
                       <div className="flex flex-wrap gap-1">

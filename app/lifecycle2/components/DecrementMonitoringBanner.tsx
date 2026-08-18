@@ -10,7 +10,20 @@ const STATUT_STYLE: Record<string, string> = {
   erreur: 'bg-red-50 text-red-700 border-red-200',
   'à configurer': 'bg-amber-50 text-amber-700 border-amber-200',
 }
-const dateFr = (iso: string | null) => (iso ? new Date(iso).toLocaleString('fr-FR') : '—')
+// Horodatage de contrôle : JJ/MM/AA + heure. L'heure compte ici — elle dit si
+// la veille est passée aujourd'hui ou seulement hier soir.
+const horodatage = (iso: string | null) => {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 // Refresh attendu tous les 30 jours : on calcule l'ancienneté du dernier
 // contrôle et on alerte quand les données dépassent la fenêtre.
@@ -46,7 +59,7 @@ export default function DecrementMonitoringBanner() {
     <div className="mb-3 rounded-lg border border-[#e2e6ec] bg-white p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Stat k="Dernière vérification" v={dateFr(S.lastCheck)} />
+          <Stat k="Dernière vérification" v={horodatage(S.lastCheck)} />
           <Stat k="Nouveaux produits" v={String(S.nouveaux)} />
           <Stat k="Mises à jour" v={String(S.majs)} />
           <div>
@@ -87,7 +100,7 @@ export default function DecrementMonitoringBanner() {
             .reverse()
             .map((r, i) => (
               <li key={i}>
-                • {dateFr(r.date)} — {r.nouveaux} nouveau(x), {r.majs} MAJ{r.details ? ` · ${r.details}` : ''}
+                • {horodatage(r.date)} — {r.nouveaux} nouveau(x), {r.majs} MAJ{r.details ? ` · ${r.details}` : ''}
               </li>
             ))}
         </ul>

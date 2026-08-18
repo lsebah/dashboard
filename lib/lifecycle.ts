@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product, Observation, Underlying, Frequency, BasketType } from './types'
 import { couponLedger } from './coupons-ledger'
+import { dateFr } from './dates'
 
 /** Construit un calendrier d'observations à partir de listes de dates. */
 export function buildObservations(
@@ -673,26 +674,19 @@ export function scenariosCredit(product: Product): Scenario[] {
   return scenarios
 }
 
-const MOIS_FR = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
-]
-
-/** Formate une date ISO en "j mois aaaa" (fr). */
+/**
+ * Formate une date ISO en `JJ/MM/AA`.
+ *
+ * Rendait « 7 avr. 2026 » jusqu'au 17/08/2026 : un mois en toutes lettres coûte
+ * le double de largeur, ne s'aligne pas d'une ligne à l'autre et ne se trie pas
+ * à l'œil. La règle est désormais JJ/MM/AA partout ; cette fonction délègue à
+ * `dateFr` pour qu'il n'existe qu'UNE implémentation dans tout le site.
+ *
+ * Le nom est conservé : six écrans l'importent (Portefeuille, Synopsis,
+ * Notifications, Reconstruction, Calendrier, Bloomberg).
+ */
 export function formatDateFr(iso?: string): string {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return `${d.getDate()} ${MOIS_FR[d.getMonth()]} ${d.getFullYear()}`
+  return dateFr(iso)
 }
 
 export function formatPct(v?: number, digits = 2): string {

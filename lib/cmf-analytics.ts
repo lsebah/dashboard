@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import type { Product } from './types'
 import { couponPa, pnlAvecCoupons } from './lifecycle'
+import { pourcent, pourcentSigne } from './pourcentage'
 
 // ── Change statique (EUR base) ───────────────────────────────────────────────
 const FX: Record<string, number> = {
@@ -50,8 +51,8 @@ export const eurCompact = (n: number): string => {
   if (a >= 1e4) return (n / 1e3).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' k€'
   return Math.round(n).toLocaleString('fr-FR') + ' €'
 }
-export const pct = (n: number, d = 2): string => `${n >= 0 ? '+' : ''}${n.toFixed(d)} %`
-export const pctAbs = (n: number, d = 1): string => `${n.toFixed(d)} %`
+export const pct = (n: number, d = 2): string => pourcentSigne(n, d)
+export const pctAbs = (n: number, d = 1): string => pourcent(n, d)
 
 // ── Totaux du portefeuille (livre vivant) ────────────────────────────────────
 export interface Totaux {

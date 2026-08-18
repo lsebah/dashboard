@@ -3,6 +3,7 @@
 //  dépendance. Thème blanc cassé, accent orange Bloomberg. Composants purs.
 // ─────────────────────────────────────────────────────────────────────────
 import type { ReactNode, CSSProperties } from 'react'
+import { pourcent } from '@/lib/pourcentage'
 
 // Accent unique (navy institutionnel) + rampe sobre bleu acier / gris ardoise.
 export const ACCENT = '#0f2748'
@@ -71,7 +72,7 @@ export function StatCard({
         <span className="lc2-label">{label}</span>
         {delta !== undefined && (
           <span className={`tabular-nums text-[11px] font-semibold ${delta >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-            {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(2)} %
+            {delta >= 0 ? '▲' : '▼'} {pourcent(Math.abs(delta), 2)}
             {deltaLabel && <span className="ml-1 font-normal text-slate-400">{deltaLabel}</span>}
           </span>
         )}
@@ -122,7 +123,7 @@ export function Donut({
               strokeDasharray={`${Math.max(0, len - gap)} ${c - Math.max(0, len - gap)}`}
               strokeDashoffset={-acc}
             >
-              <title>{`${d.label} — ${((Math.max(0, d.value) / total) * 100).toFixed(1)} %`}</title>
+              <title>{`${d.label} — ${pourcent((Math.max(0, d.value) / total) * 100, 1)}`}</title>
             </circle>
           )
           acc += len
@@ -159,7 +160,7 @@ export function Legend({
           <span className="truncate text-slate-700">{d.label}</span>
           <span className="ml-auto shrink-0 tabular-nums text-slate-500">
             {format(d.value)}
-            {d.pct != null && <span className="text-slate-400"> · {d.pct.toFixed(1)} %</span>}
+            {d.pct != null && <span className="text-slate-400"> · {pourcent(d.pct, 1)}</span>}
           </span>
         </li>
       ))}
@@ -189,7 +190,7 @@ export function BarList({
             </span>
             <span className="shrink-0 tabular-nums text-slate-500">
               {format(it.value)}
-              {it.pct != null && <span className="text-slate-400"> · {it.pct.toFixed(1)} %</span>}
+              {it.pct != null && <span className="text-slate-400"> · {pourcent(it.pct, 1)}</span>}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-100">

@@ -23,6 +23,7 @@ import { augmentProduct, clientReportRows } from '@/lib/client-report'
 import ClientReport from './ClientReport'
 import { canonicalForProduct, termsheetFile, termsheetUrl } from '@/lib/termsheets'
 import { aAirbag, airbagNiveau, productTypeLabel } from '@/lib/classification'
+import { codeEmetteur } from '@/lib/emetteurs'
 import tsPdfs from '@/lib/ts-pdfs.json'
 
 // PDF de la TS déposé dans public/ts/<ISIN>.pdf (cf. scripts/index-ts-pdfs.mjs).
@@ -57,13 +58,17 @@ function airbagNiveauOrWarn(p: Product): number | null {
 }
 
 // Horodatage (date + heure, fuseau Paris) du dernier update des prix Bloomberg.
+// La date suit la règle du site (JJ/MM/AA) ; l'heure reste, c'est elle qui dit
+// si le run du jour est passé.
 function formatHorodatage(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return '—'
+  // Tout est calculé dans le fuseau Paris, y compris la date : à 00h30 à Paris,
+  // l'horodatage UTC est encore la veille.
   return d.toLocaleString('fr-FR', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric',
+    year: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Paris',
@@ -313,7 +318,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
       next: (p) => prochainEvenement(p),
       cy: (p) => p.devise,
       amount: (p) => p.nominal,
-      issuer: (p) => p.emetteur,
+      // On trie sur le code affiché : trier sur « Goldman Sachs » alors que la
+      // colonne montre « GS » donnerait un ordre incompréhensible à la lecture.
+      issuer: (p) => codeEmetteur(p.emetteur),
       freq: (p) => freqLabel(p.frequence),
       y: (p) => annees(p) ?? undefined,
       desc: (p) => p.description ?? p.nom,
@@ -671,7 +678,14 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
         )
       }
       case 'issuer':
-        return <td key="issuer" className="px-2 py-1.5 whitespace-nowrap">{p.emetteur.split(' ')[0]}</td>
+        // Code court (4 capitales max), pas le premier mot : « Canadian » et
+        // « Bank » sortaient tous deux d'un `split(' ')[0]`, et « Goldman » ne
+        // se rapprochait pas de « GS » dans un tri.
+        return (
+          <td key="issuer" className="px-2 py-1.5 whitespace-nowrap" title={p.emetteur}>
+            {codeEmetteur(p.emetteur)}
+          </td>
+        )
       case 'freq':
         return <td key="freq" className="px-2 py-1.5 text-slate-500">{freqLabel(p.frequence)}</td>
       case 'y':

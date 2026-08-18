@@ -11,6 +11,15 @@
 //    • le nom du produit et sa description sont les seuls champs sur lesquels
 //      on compte toujours : ce sont eux qui identifient l'affaire.
 //
+//  DEUX RÈGLES D'ARBITRAGE, posées par Laurent le 16/08/2026 — elles tranchent
+//  définitivement les cas où un mail donne deux chiffres :
+//    • UF — on retient TOUJOURS l'upfront du mail de deal done lui-même. Si une
+//      réponse du fil, ou une phrase de commentaire du même mail, avance un
+//      autre chiffre, c'est celui du deal done qui fait foi ; l'écart est
+//      simplement consigné dans la description.
+//    • NOMINAL — champ non critique. S'il est écrit dans le deal done, on prend
+//      celui-là ; sinon on omet, sans jamais le reconstituer.
+//
 //  DOUBLONS — le stagiaire annonce parfois un deal déjà annoncé par un sales.
 //  On dédoublonne, mais SEULEMENT sur une identité forte (même produit, même
 //  émetteur, même nominal) : deux tickets du même jour sur le même sous-jacent
@@ -19,10 +28,18 @@
 //  exactement là qu'une fusion automatique ferait disparaître un vrai deal.
 // ─────────────────────────────────────────────────────────────────────────
 
-/** Identifiant du commercial. STA = stagiaire. */
-export type RR = 'LS' | 'MH' | 'MM' | 'MEG' | 'PD' | 'TB' | 'STA'
+/** Identifiant du commercial. STA = stagiaire, PRIX = boîte de pricing. */
+export type RR = 'LS' | 'MH' | 'MM' | 'MEG' | 'PD' | 'TB' | 'ALM' | 'STA' | 'PRIX'
 
-/** Expéditeur du mail → identifiant RR. */
+/**
+ * Expéditeur du mail → identifiant RR.
+ *
+ * Deux adresses partagent `STA` : le poste de stagiaire a changé de boîte sans
+ * changer de rôle. Un expéditeur absent de cette table voit ses deals ÉCARTÉS —
+ * c'est délibéré : mieux vaut une lacune visible qu'un deal rangé sous un code
+ * inventé. Sept mails l'ont été jusqu'à ce que Laurent fournisse les codes
+ * manquants (16/08/2026).
+ */
 export const RR_PAR_EMAIL: Record<string, RR> = {
   'l.sebah@cmf.finance': 'LS',
   'm.gohin@cmf.finance': 'MH',
@@ -30,7 +47,10 @@ export const RR_PAR_EMAIL: Record<string, RR> = {
   'm.elghzaoui@cmf.finance': 'MEG',
   'p.doize@cmf.finance': 'PD',
   't.ballot@cmf.finance': 'TB',
+  'a.lemenn@cmf.finance': 'ALM',
   'stagiaire.cmf@cmf.finance': 'STA',
+  'a.subias@cmf.finance': 'STA',
+  'prix@cmf.finance': 'PRIX',
 }
 
 export interface Deal {
@@ -38,7 +58,12 @@ export interface Deal {
   id: string
   /** Date d'annonce du deal (ISO `AAAA-MM-JJ`). */
   date: string
-  rr: RR
+  /**
+   * Commercial à l'origine du deal. ABSENT pour les affaires reprises du
+   * registre des commissions, qui ne porte pas cette information : on affiche
+   * « — » plutôt que d'attribuer le deal à quelqu'un au hasard.
+   */
+  rr?: RR
   /** Nom court du produit — toujours renseigné. */
   produit: string
   /** Payoff en clair — toujours renseigné. */
@@ -49,8 +74,10 @@ export interface Deal {
   nominal?: number
   /** UF global (upfront total), en %. */
   ufGlobal?: number
-  /** UF de la lettre de remise (LR), en %. */
-  ufLR?: number
+  // La LETTRE DE REMISE n'a plus de champ ni de colonne : elle ne concerne
+  // qu'une poignée de deals, et une colonne quasi vide coûtait de la largeur à
+  // la description. Elle est écrite dans `description` (« · LR 3,5 % »), source
+  // unique — un champ doublé d'un texte finit toujours par diverger.
   /** Coupon annuel, en %. */
   coupon?: number
   /** Assureurs vie référencés pour ce produit (AVF). */
@@ -71,6 +98,20 @@ export interface Deal {
   distinctConfirme?: boolean
   /** Sujet du mail d'origine — traçabilité. */
   source?: string
+}
+
+/**
+ * Devise retenue quand le mail n'en écrit aucune. Règle posée par Laurent
+ * (17/08/2026) : « si devise pas incluse = EUR ». Ce n'est pas une supposition,
+ * c'est la convention maison — la devise n'est mentionnée que lorsqu'elle sort
+ * de l'ordinaire. Le champ `devise` reste vide dans les données (transcription
+ * fidèle) ; la règle s'applique à la lecture, en un seul endroit.
+ */
+export const DEVISE_PAR_DEFAUT = 'EUR'
+
+/** Devise effective d'un deal, défaut EUR. */
+export function deviseDe(d: Pick<Deal, 'devise'>): string {
+  return d.devise?.trim() || DEVISE_PAR_DEFAUT
 }
 
 /** Normalise un nom de produit pour la comparaison (accents, ponctuation, casse). */

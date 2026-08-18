@@ -6,7 +6,8 @@ import type { ItraxxTranche, ItraxxIndex } from '@/lib/itraxx/types'
 
 const TRANCHES = tranchesRaw as ItraxxTranche[]
 
-const dateFr = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '—')
+import { dateFr } from '@/lib/dates'
+import { codeEmetteur } from '@/lib/emetteurs'
 const fmtCoupon = (t: ItraxxTranche) => t.coupon ?? '—'
 const trancheLabel = (t: ItraxxTranche) =>
   t.attachment != null && t.detachment != null ? `${t.attachment}–${t.detachment}%` : t.tranche
@@ -80,7 +81,9 @@ export default function ItraxxView() {
                 <td className="px-3 py-1.5 font-medium text-cmf-navy" title={t.coupon ?? undefined}>{fmtCoupon(t)}</td>
                 <td className="px-3 py-1.5 whitespace-nowrap text-slate-600">{t.couponType ?? '—'}</td>
                 <td className="px-3 py-1.5 text-slate-600" title={t.format ?? undefined}>{t.format ?? '—'}</td>
-                <td className="px-3 py-1.5 whitespace-nowrap text-slate-600">{t.issuer ?? '—'}</td>
+                <td className="px-3 py-1.5 whitespace-nowrap text-slate-600" title={t.issuer ?? undefined}>
+                  {t.issuer ? codeEmetteur(t.issuer) : '—'}
+                </td>
                 <td className="px-3 py-1.5 whitespace-nowrap text-slate-600">{t.devise ?? '—'}</td>
                 <td className="px-3 py-1.5 whitespace-nowrap tabular-nums text-slate-400" title={t.source}>{dateFr(t.runDate)}</td>
               </tr>

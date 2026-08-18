@@ -44,3 +44,88 @@ export interface CommissionsData {
 }
 
 export const commissions = raw as unknown as CommissionsData
+
+// ─────────────────────────────────────────────────────────────────────────
+//  Identité d'une ligne de commission.
+//
+//  La clé servait à retrouver une ligne pour y coller une saisie manuelle
+//  (UF, rétro, n° de facture, date d'encaissement). Elle ne portait que
+//  ISIN + client + date d'émission — ce qui suffisait tant qu'un client ne
+//  faisait qu'UN ticket par produit.
+//
+//  Ce n'est pas le cas : un UPSIZE crée un second ticket, même client, même
+//  produit, même date d'émission (FR1459ABG521 / RENAUD GESTION PRIVEE :
+//  63 000 € le 12/06 puis 24 000 € le 17/08, tous deux émis le 21/09/2026).
+//  Sans le nominal dans la clé, les deux lignes n'en font qu'une : une rétro
+//  saisie sur l'une s'appliquerait silencieusement à l'autre.
+//
+//  Le nominal les sépare — c'est justement ce qui différencie deux tickets.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Identité d'une ligne : ISIN + client + date d'émission + nominal. */
+export const ligneKey = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>): string =>
+  `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}|${l.nominal ?? ''}`
+
+/**
+ * Ancienne clé (sans nominal). Les saisies déjà enregistrées dans KV/navigateur
+ * la portent : on continue de LIRE avec, sinon elles disparaîtraient toutes le
+ * jour du changement. Les écritures, elles, utilisent toujours `ligneKey`.
+ */
+export const ligneKeyLegacy = (l: Pick<CommissionLigne, 'isin' | 'client' | 'issue'>): string =>
+  `${l.isin}|${l.client ?? ''}|${l.issue ?? ''}`
+
+/**
+ * Clés ANCIENNES (sans nominal) devenues ambiguës : deux lignes ou plus s'y
+ * rattachent. Une surcharge portant une telle clé ne peut être attribuée à
+ * aucune des deux — l'appliquer aux deux propage la valeur de l'une sur l'autre.
+ *
+ * C'est exactement ce qui s'est produit sur FR1459ABG521 / RENAUD GESTION
+ * PRIVEE : les 63 000 € du registre et l'upsize de 24 000 € partageant la même
+ * date d'émission, un UF de 5 % saisi sur le premier s'affichait sur le second,
+ * qui vaut 4,46 %. Le repli sur l'ancienne clé est donc REFUSÉ dès qu'elle est
+ * ambiguë : mieux vaut perdre une saisie que la recopier sur la mauvaise ligne.
+ */
+export function clesLegacyAmbigues(
+  lignes: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+): Set<string> {
+  const compte = new Map<string, number>()
+  for (const l of lignes) {
+    const k = ligneKeyLegacy(l)
+    compte.set(k, (compte.get(k) ?? 0) + 1)
+  }
+  const ambigues = new Set<string>()
+  compte.forEach((n, k) => {
+    if (n > 1) ambigues.add(k)
+  })
+  return ambigues
+}
+
+/**
+ * Lignes présentes À LA FOIS au registre et dans les saisies locales — même
+ * ISIN, même client, même date d'émission, même nominal.
+ *
+ * Ce n'est pas un doublon d'affichage anodin : les deux lignes s'additionnent
+ * dans les totaux, donc la commission est comptée DEUX FOIS. Le cas se produit
+ * quand un trade saisi via « Nouveau trade » est ensuite inscrit au registre
+ * sans que la saisie locale soit supprimée.
+ *
+ * On SIGNALE, on ne fusionne pas : deux tickets de même nominal le même jour
+ * sur le même produit existent (une allocation en deux fois), et les fusionner
+ * ferait disparaître un montant réel.
+ */
+export function doublonsRegistreLocal(
+  registre: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+  locales: Pick<CommissionLigne, 'isin' | 'client' | 'issue' | 'nominal'>[],
+): string[] {
+  const auRegistre = new Set(registre.map(ligneKey))
+  const vus = new Set<string>()
+  const out: string[] = []
+  for (const l of locales) {
+    const k = ligneKey(l)
+    if (auRegistre.has(k) && !vus.has(k)) {
+      vus.add(k)
+      out.push(k)
+    }
+  }
+  return out
+}
