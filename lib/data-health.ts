@@ -6,7 +6,7 @@
 import type { Product } from './types'
 import { couponPa } from './lifecycle'
 import { aAirbag, airbagNiveau, productTypeLabel } from './classification'
-import { termsheetUrl } from './termsheets'
+import { termsheetUrl, TERMSHEET_FILES, TERMSHEET_ISINS, parseTermsheetName } from './termsheets'
 import tsPdfs from './ts-pdfs.json'
 
 const TS_PDFS = tsPdfs as Record<string, string>
@@ -26,6 +26,11 @@ export interface DataHealth {
   airbagSansNiveau: HealthItem[]
   deviseSuspecte: HealthItem[]
   typeNonIdentifie: HealthItem[]
+  /** Termsheet présente dans le dossier OneDrive, mais AUCUN produit ne
+   *  porte son ISIN — le sens inverse de `sansTS`. Sans ce contrôle, une
+   *  termsheet neuve reste invisible tant que personne ne la remarque à
+   *  l'œil : ni décodée, ni signalée, juste absente. */
+  termsheetSansProduit: HealthItem[]
 }
 
 /** Une TS est « disponible » si un PDF local, une URL produit ou l'index la résout. */
@@ -68,5 +73,30 @@ export function computeDataHealth(products: Product[]): DataHealth {
     if (label === '—') typeNonIdentifie.push(item(p))
   }
 
-  return { total: products.length, sansCoupon, sansTS, airbagSansNiveau, deviseSuspecte, typeNonIdentifie }
+  // Termsheets du dossier dont l'ISIN n'appartient à AUCUN produit du feed —
+  // ni décodées, ni même créées. On lit ce qu'on peut du nom de fichier
+  // (nomenclature) ; rien n'est deviné pour les champs que le nom ne porte pas.
+  const isinsConnus = new Set(products.map((p) => p.isin))
+  const termsheetSansProduit: HealthItem[] = TERMSHEET_ISINS.filter((isin) => !isinsConnus.has(isin)).map(
+    (isin) => {
+      const fichier = TERMSHEET_FILES[isin]
+      const meta = parseTermsheetName(fichier)
+      return {
+        isin,
+        nom: meta.nom ?? fichier,
+        type: meta.emetteur ?? '—',
+        detail: meta.dateEmission ? `déposée le ${meta.dateEmission}` : fichier,
+      }
+    },
+  )
+
+  return {
+    total: products.length,
+    sansCoupon,
+    sansTS,
+    airbagSansNiveau,
+    deviseSuspecte,
+    typeNonIdentifie,
+    termsheetSansProduit,
+  }
 }

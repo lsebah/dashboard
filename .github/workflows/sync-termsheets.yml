@@ -88,20 +88,32 @@ jobs:
             echo "APP_URL absent — contrôle de décodage ignoré."
             exit 0
           fi
-          JSON=$(curl -fsS "${APP_URL%/}/api/lifecycle/decode-status" || echo '{"count":-1}')
+          JSON=$(curl -fsS "${APP_URL%/}/api/lifecycle/decode-status" || echo '{"count":-1,"countNonRattachees":-1}')
           COUNT=$(printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).count)}catch{console.log(-1)}})')
+          COUNT_NR=$(printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).countNonRattachees)}catch{console.log(-1)}})')
           echo "Produits vivants avec TS mais payoff non décodé : $COUNT"
+          echo "Termsheets du dossier sans AUCUN produit correspondant : $COUNT_NR"
           if [ "$COUNT" = "-1" ]; then
             echo "::warning::Contrôle de décodage indisponible (app injoignable)."
-          elif [ "$COUNT" != "0" ]; then
-            echo "::warning::$COUNT produit(s) avec TS mais NON décodé(s) — voir /api/lifecycle/decode-status ou l'onglet Santé."
-            printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.aDecoder||[]).forEach(p=>console.log(`  - ${p.isin} · ${p.nom} (${p.raison})`))})'
-            {
-              echo "## TS non décodées : $COUNT"
-              printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.aDecoder||[]).forEach(p=>console.log(`- **${p.isin}** ${p.nom} — ${p.raison}`))})'
-            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "✅ Toutes les TS des produits vivants sont décodées."
+            if [ "$COUNT" != "0" ]; then
+              echo "::warning::$COUNT produit(s) avec TS mais NON décodé(s) — voir /api/lifecycle/decode-status ou l'onglet Santé."
+              printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.aDecoder||[]).forEach(p=>console.log(`  - ${p.isin} · ${p.nom} (${p.raison})`))})'
+              {
+                echo "## TS non décodées : $COUNT"
+                printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.aDecoder||[]).forEach(p=>console.log(`- **${p.isin}** ${p.nom} — ${p.raison}`))})'
+              } >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "✅ Toutes les TS des produits vivants sont décodées."
+            fi
+            if [ "$COUNT_NR" != "0" ] && [ "$COUNT_NR" != "-1" ]; then
+              echo "::warning::$COUNT_NR termsheet(s) du dossier sans AUCUN produit — jamais associées ni décodées, voir l'onglet Santé (« Termsheet sans produit »)."
+              printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.nonRattachees||[]).forEach(p=>console.log(`  - ${p.isin} · ${p.nom} · ${p.emetteur}`))})'
+              {
+                echo "## Termsheets sans produit : $COUNT_NR"
+                printf '%s' "$JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);(j.nonRattachees||[]).forEach(p=>console.log(`- **${p.isin}** ${p.nom} · ${p.emetteur}`))})'
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
       - name: Ouvrir une PR si l'index a changé
         id: cpr

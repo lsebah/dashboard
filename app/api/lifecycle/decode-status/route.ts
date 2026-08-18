@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { products } from '@/lib/products'
-import { aTermsheet } from '@/lib/data-health'
+import { aTermsheet, computeDataHealth } from '@/lib/data-health'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -34,5 +34,20 @@ export async function GET() {
       client: (p.clients ?? []).join(', ') || null,
     }))
 
-  return NextResponse.json({ count: aDecoder.length, aDecoder })
+  // En amont du décodage : des termsheets du dossier dont l'ISIN n'a même pas
+  // encore de produit dans le feed — invisibles ailleurs, elles ne remonteraient
+  // sinon qu'à l'œil, en parcourant le dossier OneDrive au hasard.
+  const nonRattachees = computeDataHealth(products).termsheetSansProduit.map((h) => ({
+    isin: h.isin,
+    nom: h.nom,
+    emetteur: h.type,
+    detail: h.detail,
+  }))
+
+  return NextResponse.json({
+    count: aDecoder.length,
+    aDecoder,
+    countNonRattachees: nonRattachees.length,
+    nonRattachees,
+  })
 }
