@@ -16,6 +16,7 @@ import { pourcent, insecable } from '@/lib/pourcentage'
 import { commissions } from '@/lib/commissions'
 import { useLocalCommissions } from '@/lib/local-commissions'
 import { croiserAvecRegistre } from '@/lib/deal-done-registre'
+import { useLocalProducts } from '@/lib/local-products'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -105,10 +106,19 @@ export default function DealDoneView({
   // saisis dans Lifecycle (KV). Ne lire que le premier faisait disparaître les
   // affaires les plus récentes — les deux tickets ARCHE d'août en étaient.
   const { list: localesCom } = useLocalCommissions()
+  // Les produits saisis dans Lifecycle ne sont pas dans le feed versionné : sans
+  // eux, le strike des trades les plus récents restait introuvable et la ligne
+  // retombait sur la date d'émission.
+  const produitsLocaux = useLocalProducts()
+  const strikesTous = useMemo(() => {
+    const m: Record<string, string> = { ...strikes }
+    for (const p of produitsLocaux) if (p.dateConstatationInitiale) m[p.isin] = p.dateConstatationInitiale
+    return m
+  }, [strikes, produitsLocaux])
   const avecRegistre = useMemo(() => {
-    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikes)
+    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikesTous)
     return [...r.deals, ...r.ajoutes]
-  }, [bruts, localesCom, strikes])
+  }, [bruts, localesCom, strikesTous])
 
   const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
 

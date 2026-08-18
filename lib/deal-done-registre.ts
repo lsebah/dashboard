@@ -25,15 +25,33 @@
 import type { CommissionLigne } from './commissions'
 import type { Deal } from './deal-done'
 import { clefProduit } from './deal-done'
+import { codeEmetteur } from './emetteurs'
 
 /** Pseudo-ISIN agrégeant plusieurs tranches — hors périmètre (cf. coherence.ts). */
 const ISIN_AGREGE = new Set(['FEI'])
 
-/** Mots vides : présents partout, ils ne prouvent aucune ressemblance. */
+/**
+ * Mots vides : présents partout, ils ne prouvent aucune ressemblance.
+ *
+ * La première version ne listait que le vocabulaire de payoff, et le
+ * vocabulaire des INDICES suffisait à rapprocher n'importe quoi : « Phoenix
+ * Autocallable sur MSCI ACWI IMI Copper and Power Select 20 Fixed Basket 50
+ * Points DIV » partageait « msci », « select » et « points » avec « Autocall
+ * Dégressif MXEADT50 — MSCI Europe Aerospace & Defense Top 10 Select 50 Points
+ * Decrement ». Deux produits sans rapport, un ISIN collé au mauvais.
+ */
 const VIDES = new Set([
-  'phoenix', 'athena', 'athena', 'memoire', 'autocall', 'autocallable', 'worst',
-  'wof', 'sur', 'de', 'du', 'la', 'le', 'les', 'et', 'aux', 'des', 'airbag',
-  'degressif', 'mensuel', 'mensuelle', 'trimestriel', 'inverse', 'reverse',
+  // payoff
+  'phoenix', 'athena', 'athena', 'memoire', 'memory', 'autocall', 'autocallable',
+  'worst', 'wof', 'airbag', 'degressif', 'mensuel', 'mensuelle', 'trimestriel',
+  'trimestrielle', 'annuel', 'inverse', 'reverse', 'callable', 'participation',
+  'note', 'buffered', 'enhanced', 'bonus', 'snowball', 'asynchrone', 'booster',
+  // indices et habillage
+  'msci', 'index', 'indice', 'indices', 'select', 'points', 'decrement',
+  'basket', 'fixed', 'weighted', 'equal', 'europe', 'european', 'euro', 'eur',
+  'usd', 'world', 'global', 'total', 'return', 'price',
+  // grammaire
+  'sur', 'de', 'du', 'la', 'le', 'les', 'et', 'aux', 'des', 'avec', 'pour',
 ])
 
 const mots = (s?: string | null): Set<string> =>
@@ -69,15 +87,40 @@ const communs = (a: Set<string>, b: Set<string>): number => {
 /**
  * Un deal annoncé et une ligne de registre désignent-ils la MÊME affaire ?
  *
- * Vrai si les ISIN coïncident, ou si les libellés partagent au moins deux mots
- * distinctifs (hors vocabulaire de payoff, présent partout). Deux mots, pas un :
- * « Rheinmetall » seul apparaît dans quatre produits différents de 2026.
+ * L'ISIN tranche, dans les DEUX sens : deux ISIN présents et différents
+ * signifient deux affaires, quels que soient les libellés. C'est ce qui manquait
+ * — un deal portant déjà son ISIN se voyait apparier à une autre ligne, et la
+ * ligne du registre disparaissait sans devenir une affaire à part entière.
+ *
+ * Sans ISIN côté deal, le rapprochement par libellé exige BEAUCOUP plus :
+ * le même émetteur, et trois mots distinctifs communs. Les sous-jacents sont
+ * les seuls mots qui identifient vraiment un produit ; tout le reste (payoff,
+ * vocabulaire d'indice) est du décor et vit dans VIDES.
  */
 export function memeAffaire(deal: Deal, ligne: CommissionLigne): boolean {
-  if (deal.isin && ligne.isin && deal.isin === ligne.isin) return true
+  if (deal.isin || ligne.isin) {
+    if (deal.isin && ligne.isin) return deal.isin === ligne.isin
+    if (deal.isin && !ligne.isin) return false
+  }
+  if (codeEmetteur(deal.emetteur) !== codeEmetteur(ligne.emetteur)) return false
   const a = mots(`${deal.produit} ${deal.description ?? ''}`)
   const b = mots(ligne.description)
-  return communs(a, b) >= 2
+  const n = communs(a, b)
+  if (n >= 3) return true
+  // Deux mots seulement : il faut une preuve de plus. La PROXIMITÉ DES DATES en
+  // est une — une affaire est facturée dans les semaines qui suivent son
+  // annonce. « Ferroviaire / Infrastructure » et « Ferroviaires + Infra » ne
+  // partagent que deux mots, mais quatorze jours les séparent.
+  return n >= 2 && joursEntre(deal.date, ligne.issue) <= 60
+}
+
+/** Écart en jours entre deux dates ISO ; `Infinity` si l'une manque. */
+const joursEntre = (a?: string, b?: string | null): number => {
+  if (!a || !b) return Number.POSITIVE_INFINITY
+  const x = new Date(a).getTime()
+  const y = new Date(b).getTime()
+  if (Number.isNaN(x) || Number.isNaN(y)) return Number.POSITIVE_INFINITY
+  return Math.abs(x - y) / 86_400_000
 }
 
 export interface CroisementRegistre {
@@ -153,16 +196,17 @@ export function croiserAvecRegistre(
       return
     }
     const nominal = groupe.reduce((s, l) => s + (l.nominal ?? 0), 0)
+    // Le STRIKE fait le repère chronologique. À défaut — produit absent du
+    // portefeuille, ou trade saisi sans strike —, la date d'émission le
+    // remplace (règle de Laurent, 18/08/2026). Pas de mention alarmante : le
+    // repli est la règle, pas une anomalie.
     const strike = strikeParIsin[isin]
     ajoutes.push({
       id: `registre-${isin}`,
-      // Le STRIKE fait le repère chronologique, pas l'émission.
       date: strike || ref.issue || '',
       rr: rrParDefaut,
       produit: ref.description ?? isin,
-      description: strike
-        ? `Repris du registre des commissions — aucun deal done correspondant dans le dossier Outlook.`
-        : `Repris du registre des commissions — aucun deal done correspondant, et strike inconnu (ISIN absent du portefeuille) : la date affichée est celle d'émission.`,
+      description: `Repris du registre des commissions — aucun deal done correspondant dans le dossier Outlook.`,
       emetteur: ref.emetteur ?? undefined,
       devise: ref.devise ?? undefined,
       nominal: nominal > 0 ? nominal : undefined,
