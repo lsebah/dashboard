@@ -100,6 +100,27 @@ export function croiserAvecRegistre(
   deals: Deal[],
   lignes: CommissionLigne[],
   annee = '2026',
+  /**
+   * RR attribué aux affaires reprises du registre. Le registre ne porte pas le
+   * commercial ; Laurent a confirmé (18/08/2026) que ces affaires sont les
+   * siennes — « il faut indiquer mon RR = LS sur ces deals ». Le paramètre
+   * reste explicite : le jour où une reprise viendra d'un autre, il suffira de
+   * le passer, sans toucher à la logique.
+   */
+  rrParDefaut: Deal['rr'] = 'LS',
+  /**
+   * ISIN → date de constatation initiale (strike), lue au portefeuille.
+   *
+   * Le registre ne connaît que la date d'ÉMISSION, qui tombe souvent plusieurs
+   * semaines après le trade : l'affaire se retrouvait rangée bien après le
+   * moment où elle a été faite. Laurent (18/08/2026) : « il fallait utiliser la
+   * date de strike, pas l'issue date ». Le strike est le repère chronologique
+   * qui correspond aux dates d'annonce des autres lignes du tableau.
+   *
+   * ISIN absent du portefeuille : on garde la date d'émission faute de mieux,
+   * et on le dit dans la description.
+   */
+  strikeParIsin: Record<string, string> = {},
 ): CroisementRegistre {
   const retenues = lignes.filter(
     (l) => (l.issue ?? '').startsWith(annee) && !ISIN_AGREGE.has(l.isin),
@@ -132,14 +153,16 @@ export function croiserAvecRegistre(
       return
     }
     const nominal = groupe.reduce((s, l) => s + (l.nominal ?? 0), 0)
+    const strike = strikeParIsin[isin]
     ajoutes.push({
       id: `registre-${isin}`,
-      // Faute d'annonce, la date d'émission tient lieu de repère chronologique.
-      date: ref.issue ?? '',
-      // Le registre ne porte pas de RR : on ne l'invente pas.
-      rr: undefined as unknown as Deal['rr'],
+      // Le STRIKE fait le repère chronologique, pas l'émission.
+      date: strike || ref.issue || '',
+      rr: rrParDefaut,
       produit: ref.description ?? isin,
-      description: `Repris du registre des commissions — aucun deal done correspondant dans le dossier Outlook.`,
+      description: strike
+        ? `Repris du registre des commissions — aucun deal done correspondant dans le dossier Outlook.`
+        : `Repris du registre des commissions — aucun deal done correspondant, et strike inconnu (ISIN absent du portefeuille) : la date affichée est celle d'émission.`,
       emetteur: ref.emetteur ?? undefined,
       devise: ref.devise ?? undefined,
       nominal: nominal > 0 ? nominal : undefined,

@@ -71,7 +71,16 @@ const montant = (v?: number, devise?: string) =>
     ? `${v.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}${SYMBOLE[devise ?? ''] ?? ''}`
     : '—'
 
-export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[]; fenetre?: { du: string; au: string } }) {
+export default function DealDoneView({
+  deals: bruts,
+  fenetre,
+  strikes = {},
+}: {
+  deals: Deal[]
+  fenetre?: { du: string; au: string }
+  /** ISIN → date de strike, pour dater les affaires reprises du registre. */
+  strikes?: Record<string, string>
+}) {
   const [prix, setPrix] = useState<Record<string, number>>({})
   const [rr, setRr] = useState<string>('')
   const [avf, setAvf] = useState<string>('')
@@ -97,9 +106,9 @@ export default function DealDoneView({ deals: bruts, fenetre }: { deals: Deal[];
   // affaires les plus récentes — les deux tickets ARCHE d'août en étaient.
   const { list: localesCom } = useLocalCommissions()
   const avecRegistre = useMemo(() => {
-    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026')
+    const r = croiserAvecRegistre(bruts, [...commissions.lignes, ...localesCom], '2026', 'LS', strikes)
     return [...r.deals, ...r.ajoutes]
-  }, [bruts, localesCom])
+  }, [bruts, localesCom, strikes])
 
   const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
 

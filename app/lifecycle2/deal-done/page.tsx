@@ -1,6 +1,7 @@
 import brut from '@/data/deal-done.json'
 import DealDoneView from '../components/DealDoneView'
 import type { Deal } from '@/lib/deal-done'
+import { products } from '@/lib/products'
 
 export const metadata = { title: 'Deal Done — Lifecycle CMF' }
 
@@ -15,6 +16,10 @@ interface Fichier {
 
 export default function DealDonePage() {
   const { deals, fenetre } = brut as unknown as Fichier
+  // Strike (constatation initiale) par ISIN : c'est LUI qui date une affaire
+  // reprise du registre, lequel ne connaît que la date d'émission.
+  const strikes: Record<string, string> = {}
+  for (const p of products) if (p.dateConstatationInitiale) strikes[p.isin] = p.dateConstatationInitiale
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -25,7 +30,7 @@ export default function DealDonePage() {
           directement dans Lifecycle.
         </p>
       </div>
-      <DealDoneView deals={deals} fenetre={fenetre} />
+      <DealDoneView deals={deals} fenetre={fenetre} strikes={strikes} />
     </div>
   )
 }

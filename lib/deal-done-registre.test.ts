@@ -37,7 +37,7 @@ test('une ligne sans annonce devient un deal marqué comme tel', () => {
   assert.equal(r.ajoutes.length, 1)
   assert.equal(r.ajoutes[0].isin, 'XS9')
   assert.equal(r.ajoutes[0].ufGlobal, 5)
-  assert.equal(r.ajoutes[0].rr, undefined, 'le registre ne porte pas de RR')
+  assert.equal(r.ajoutes[0].rr, 'LS', 'affaires reprises du registre = LS (confirmé le 18/08)')
   assert.equal(r.ajoutes[0].source, 'registre des commissions')
 })
 
@@ -82,6 +82,11 @@ test('un ISIN du registre ne s’attache pas deux fois au même deal', () => {
   assert.equal(r.ajoutes.length, 1, "le second devient un deal à part, il n'est pas perdu")
 })
 
+test('le RR par défaut reste paramétrable', () => {
+  const r = croiserAvecRegistre([], [L({ isin: 'XS9', description: 'Athena Vinci' })], '2026', 'MH')
+  assert.equal(r.ajoutes[0].rr, 'MH')
+})
+
 test('les tickets saisis dans Lifecycle comptent autant que le fichier', () => {
   // Les deux tickets ARCHE d'août 2026 ne sont PAS dans commissions.json : ils
   // ont été saisis dans Lifecycle et vivent en KV. Ne croiser que le fichier
@@ -101,4 +106,19 @@ test('les tickets saisis dans Lifecycle comptent autant que le fichier', () => {
   assert.equal(r.ajoutes[0].isin, 'XS3461528773')
   assert.equal(r.ajoutes[0].devise, 'USD')
   assert.equal(r.ajoutes[0].ufGlobal, 0.45)
+})
+
+test('c’est le STRIKE qui date une affaire reprise, pas l’émission', () => {
+  // L'émission tombe souvent plusieurs semaines après le trade : dater sur elle
+  // rangeait l'affaire bien après le moment où elle a été faite.
+  const l = L({ isin: 'XS9', issue: '2026-04-22', description: 'Athena Vinci' })
+  const r = croiserAvecRegistre([], [l], '2026', 'LS', { XS9: '2026-04-01' })
+  assert.equal(r.ajoutes[0].date, '2026-04-01', 'strike')
+  assert.equal(r.ajoutes[0].dateEmission, '2026-04-22', "l'émission reste dans son champ")
+})
+
+test('strike inconnu : on retombe sur l’émission et on le DIT', () => {
+  const r = croiserAvecRegistre([], [L({ isin: 'XS9', issue: '2026-04-22', description: 'Athena Vinci' })])
+  assert.equal(r.ajoutes[0].date, '2026-04-22')
+  assert.match(r.ajoutes[0].description ?? '', /strike inconnu/)
 })
