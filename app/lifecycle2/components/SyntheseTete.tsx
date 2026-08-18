@@ -15,7 +15,7 @@ import type { Product } from '@/lib/types'
 import { Panel, ACCENT } from './charts'
 import { bilanRappels, nominalParDevise } from '@/lib/autocall-proche'
 import { dateFr } from '@/lib/dates'
-import { pourcent } from '@/lib/pourcentage'
+import { pourcent, ESPACE_FINE } from '@/lib/pourcentage'
 import Modal from '@/app/lifecycle/components/Modal'
 import ProductSynopsis from '@/app/lifecycle/components/ProductSynopsis'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
@@ -35,6 +35,24 @@ interface MarketItem {
 }
 
 const eur0 = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 0 })
+
+/** Change, volatilité, commodités retenus en Synthèse (cf. `divers` plus bas). */
+const DIVERS_SYMBOLES = new Set(['EURUSD=X', '^VIX', 'GC=F', 'CL=F'])
+
+/**
+ * Niveau lisible d'un instrument « divers » — décimales adaptées à sa nature :
+ * un cours de change se lit à 4 décimales, un indice de volatilité à 2, une
+ * commodité en gros chiffres ronds. Toujours en virgule française.
+ */
+function niveauDivers(it: MarketItem): string {
+  if (it.price == null) return '—'
+  if (it.symbol === 'EURUSD=X') return it.price.toFixed(4).replace('.', ',')
+  if (it.symbol === '^VIX') return it.price.toFixed(2).replace('.', ',')
+  // Commodités ($) : gros chiffres ronds au-delà de 1000 (or), deux décimales
+  // en dessous (WTI) — même seuil que le reste du site.
+  const decimales = it.price >= 1000 ? 0 : 2
+  return `${it.price.toLocaleString('fr-FR', { maximumFractionDigits: decimales, minimumFractionDigits: decimales })}${ESPACE_FINE}$`
+}
 
 /**
  * Box de marché — même habillage que StatCard (barre d'accent navy, libellé en
@@ -154,6 +172,14 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       ) ?? [],
     [marches],
   )
+  // Change, volatilité, commodités : quatre instruments précis (pas les groupes
+  // entiers — cinq paires de change ou quatre commodités auraient noyé le
+  // tableau). Contrairement à un indice, leur NIVEAU se lit seul : un cours
+  // EUR/USD ou un prix de l'or ont un sens hors contexte.
+  const divers = useMemo(
+    () => marches?.filter((i) => DIVERS_SYMBOLES.has(i.symbol)) ?? [],
+    [marches],
+  )
 
   const bilan = useMemo(
     () => (niveaux ? bilanRappels(produits, niveaux, constates, new Date(), 30) : null),
@@ -221,7 +247,7 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
       <Panel title="Marchés" sub="indices & taux · run quotidien">
         {marches === null ? (
           <p className="py-6 text-center text-[13px] text-slate-400">Chargement des niveaux…</p>
-        ) : indices.length === 0 && taux.length === 0 ? (
+        ) : indices.length === 0 && taux.length === 0 && divers.length === 0 ? (
           <p className="py-6 text-center text-[13px] text-slate-400">
             Niveaux indisponibles — aucun chiffre n&apos;est affiché plutôt qu&apos;un chiffre périmé.
           </p>
@@ -251,6 +277,31 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
                       {t.changePct >= 0 ? '▲' : '▼'} {pourcent(Math.abs(t.changePct), 2)}
                     </span>
                   )}
+                </div>
+              </MarcheBox>
+            ))}
+            {/* Change, volatilité, commodités : niveau ET variation, comme les
+                taux — ce sont des nombres qui se lisent seuls, contrairement à
+                un point d'indice. */}
+            {divers.map((it) => (
+              <MarcheBox key={it.symbol} label={it.name}>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-bold tabular-nums text-slate-900">
+                    {niveauDivers(it)}
+                  </span>
+                  <span
+                    className={`text-[11px] font-semibold tabular-nums ${
+                      it.changePct == null
+                        ? 'text-slate-400'
+                        : it.changePct >= 0
+                          ? 'text-emerald-700'
+                          : 'text-red-700'
+                    }`}
+                  >
+                    {it.changePct == null
+                      ? '—'
+                      : `${it.changePct >= 0 ? '▲' : '▼'} ${pourcent(Math.abs(it.changePct), 2)}`}
+                  </span>
                 </div>
               </MarcheBox>
             ))}
