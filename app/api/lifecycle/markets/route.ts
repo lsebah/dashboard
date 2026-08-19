@@ -84,7 +84,7 @@ async function fetchQuote(s: Sym): Promise<MarketItem> {
 }
 
 /**
- * CMS 10Y / OAT 10Y — internet d'abord (Stooq), sinon la surcouche Bloomberg
+ * CMS 10Y / TEC 10 — internet d'abord (Stooq), sinon la surcouche Bloomberg
  * du run quotidien, sinon RIEN. Ces deux taux étaient écrits en dur dans le
  * code : ils s'affichaient comme des niveaux du jour alors qu'ils étaient figés.
  */

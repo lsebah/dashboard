@@ -30,7 +30,7 @@ interface MarketItem {
   change: number | null
   changePct: number | null
   marketState: string
-  /** Provenance des taux qui n'ont pas de cotation Yahoo (CMS10, OAT10). */
+  /** Provenance des taux qui n'ont pas de cotation Yahoo (CMS10, TEC10). */
   source?: 'stooq' | 'bloomberg'
 }
 
@@ -61,9 +61,19 @@ function niveauDivers(it: MarketItem): string {
  *   • un INDICE n'affiche PAS son niveau — un point d'indice ne se lit pas
  *     hors contexte —, seulement sa variation, colorée ;
  *   • un TAUX affiche son NIVEAU — c'est lui la donnée utile — et sa variation
- *     seulement quand la source la fournit (jamais pour CMS10/OAT10, qui n'ont
+ *     seulement quand la source la fournit (jamais pour CMS10/TEC10, qui n'ont
  *     pas de clôture de veille).
  */
+/** En-tête de sous-groupe (Indices / Taux / Divers) — distingue les trois
+ *  familles, qui se lisaient jusqu'ici comme une seule rangée continue. */
+function GroupeLabel({ children }: { children: ReactNode }) {
+  return (
+    <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+      {children}
+    </div>
+  )
+}
+
 function MarcheBox({ label, children, title }: { label: string; children: ReactNode; title?: string }) {
   return (
     <div className="lc2-kpi lc2-rise relative overflow-hidden px-3 py-2.5" title={title}>
@@ -252,59 +262,81 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
             Niveaux indisponibles — aucun chiffre n&apos;est affiché plutôt qu&apos;un chiffre périmé.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {indices.map((it) => (
-              <MarcheBox key={it.symbol} label={it.name}>
-                <Delta pct={it.changePct} />
-              </MarcheBox>
-            ))}
-            {taux.map((t) => (
-              <MarcheBox
-                key={t.symbol}
-                label={t.name}
-                title={t.source ? `Source : ${t.source}` : undefined}
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-bold tabular-nums text-slate-900">
-                    {t.price == null ? '—' : pourcent(t.price, 2)}
-                  </span>
-                  {t.changePct != null && (
-                    <span
-                      className={`text-[11px] font-semibold tabular-nums ${
-                        t.changePct >= 0 ? 'text-emerald-700' : 'text-red-700'
-                      }`}
-                    >
-                      {t.changePct >= 0 ? '▲' : '▼'} {pourcent(Math.abs(t.changePct), 2)}
-                    </span>
-                  )}
+          <div className="flex flex-col gap-3">
+            {indices.length > 0 && (
+              <div>
+                <GroupeLabel>Indices</GroupeLabel>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                  {indices.map((it) => (
+                    <MarcheBox key={it.symbol} label={it.name}>
+                      <Delta pct={it.changePct} />
+                    </MarcheBox>
+                  ))}
                 </div>
-              </MarcheBox>
-            ))}
+              </div>
+            )}
+            {taux.length > 0 && (
+              <div>
+                <GroupeLabel>Taux</GroupeLabel>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                  {taux.map((t) => (
+                    <MarcheBox
+                      key={t.symbol}
+                      label={t.name}
+                      title={t.source ? `Source : ${t.source}` : undefined}
+                    >
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-bold tabular-nums text-slate-900">
+                          {t.price == null ? '—' : pourcent(t.price, 2)}
+                        </span>
+                        {t.changePct != null && (
+                          <span
+                            className={`text-[11px] font-semibold tabular-nums ${
+                              t.changePct >= 0 ? 'text-emerald-700' : 'text-red-700'
+                            }`}
+                          >
+                            {t.changePct >= 0 ? '▲' : '▼'} {pourcent(Math.abs(t.changePct), 2)}
+                          </span>
+                        )}
+                      </div>
+                    </MarcheBox>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Change, volatilité, commodités : niveau ET variation, comme les
                 taux — ce sont des nombres qui se lisent seuls, contrairement à
-                un point d'indice. */}
-            {divers.map((it) => (
-              <MarcheBox key={it.symbol} label={it.name}>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-bold tabular-nums text-slate-900">
-                    {niveauDivers(it)}
-                  </span>
-                  <span
-                    className={`text-[11px] font-semibold tabular-nums ${
-                      it.changePct == null
-                        ? 'text-slate-400'
-                        : it.changePct >= 0
-                          ? 'text-emerald-700'
-                          : 'text-red-700'
-                    }`}
-                  >
-                    {it.changePct == null
-                      ? '—'
-                      : `${it.changePct >= 0 ? '▲' : '▼'} ${pourcent(Math.abs(it.changePct), 2)}`}
-                  </span>
+                un point d'indice. Marge supplémentaire au-dessus : un groupe à
+                part, pas la suite des taux (Laurent, 19/08/2026). */}
+            {divers.length > 0 && (
+              <div className="mt-2">
+                <GroupeLabel>Divers</GroupeLabel>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                  {divers.map((it) => (
+                    <MarcheBox key={it.symbol} label={it.name}>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-bold tabular-nums text-slate-900">
+                          {niveauDivers(it)}
+                        </span>
+                        <span
+                          className={`text-[11px] font-semibold tabular-nums ${
+                            it.changePct == null
+                              ? 'text-slate-400'
+                              : it.changePct >= 0
+                                ? 'text-emerald-700'
+                                : 'text-red-700'
+                          }`}
+                        >
+                          {it.changePct == null
+                            ? '—'
+                            : `${it.changePct >= 0 ? '▲' : '▼'} ${pourcent(Math.abs(it.changePct), 2)}`}
+                        </span>
+                      </div>
+                    </MarcheBox>
+                  ))}
                 </div>
-              </MarcheBox>
-            ))}
+              </div>
+            )}
           </div>
         )}
       </Panel>
