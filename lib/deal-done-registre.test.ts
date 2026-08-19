@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { croiserAvecRegistre, memeAffaire } from './deal-done-registre.ts'
+import { dedoublonner } from './deal-done.ts'
 import type { Deal } from './deal-done.ts'
 import type { CommissionLigne } from './commissions.ts'
 
@@ -145,4 +146,37 @@ test('émetteurs différents : pas de rapprochement par libellé', () => {
   const deal = D({ produit: 'Phoenix Engie Nexans Schneider', emetteur: 'Barclays' })
   const l = L({ description: 'Phoenix Engie Nexans Schneider', emetteur: 'BBVA' })
   assert.equal(memeAffaire(deal, l), false)
+})
+
+test('un thème commercial confirmé DISTINCT n’est plus signalé « à vérifier »', () => {
+  // Cas réel : « Phoenix Mémoire Réarmement Europe » vendu à deux clients par
+  // deux émetteurs différents (BNP/OPTIMAL XS3266613416, BBVA/APPN
+  // XS3250102665), aucun des deux annoncé dans Deal Done. Le même libellé et
+  // des dates à 6 jours d'écart les faisaient ressortir comme un doublon
+  // potentiel, alors que ce sont deux affaires réelles distinctes (Laurent,
+  // 19/08/2026).
+  const lignes: CommissionLigne[] = [
+    L({
+      isin: 'XS3266613416',
+      issue: '2026-02-26',
+      client: 'OPTIMAL - 01674',
+      emetteur: 'BNP',
+      description: 'Phoenix Mémoire Rearmement Europe',
+      nominal: 300000,
+    }),
+    L({
+      isin: 'XS3250102665',
+      issue: '2026-02-20',
+      client: 'APPN - 05277',
+      emetteur: 'BBVA',
+      description: 'Phoenix Memoire Réarmement Europe',
+      nominal: 300000,
+    }),
+  ]
+  const r = croiserAvecRegistre([], lignes)
+  assert.equal(r.ajoutes.length, 2)
+  assert.ok(r.ajoutes.every((d) => d.distinctConfirme === true))
+
+  const { aVerifier } = dedoublonner(r.ajoutes)
+  assert.equal(aVerifier.length, 0)
 })
