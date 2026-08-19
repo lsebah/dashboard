@@ -3117,6 +3117,85 @@ const bbvaBnpAcaIntesa: Product = {
     '251106_5Y_Phoenix Memory Wof BNP + Credit Agricole + Intesa_Trimestriel_XS3148555405_BBVA.pdf',
 }
 
+// ── XS3468899185 — Barclays Phoenix Mémoire BNP + Société Générale + Intesa ──
+// Décodé depuis la vraie termsheet indicative (18/08/2026), lue dans le dossier
+// OneDrive Termsheets. Lookback sur le strike : Initial Price = le plus BAS des
+// deux relevés du 18/08 et du 18/09/2026 — on retient le Trade Date (18/08) comme
+// date de constatation initiale, cohérent avec la convention du reste du feed.
+const bmObs = [
+  '2026-12-18', '2027-03-18', '2027-06-18', '2027-09-20', '2027-12-20',
+  '2028-03-20', '2028-06-19', '2028-09-18', '2028-12-18', '2029-03-19',
+  '2029-06-18', '2029-09-18', '2029-12-18', '2030-03-18', '2030-06-18',
+  '2030-09-18', '2030-12-18', '2031-03-18', '2031-06-18', '2031-09-18',
+]
+const bmPay = [
+  '2027-01-05', '2027-04-05', '2027-07-02', '2027-10-04', '2028-01-03',
+  '2028-04-03', '2028-07-03', '2028-10-02', '2029-01-04', '2029-04-04',
+  '2029-07-02', '2029-10-02', '2030-01-04', '2030-04-01', '2030-07-02',
+  '2030-10-02', '2031-01-06', '2031-04-01', '2031-07-02', '2031-10-02',
+]
+// Autocall dégressif 90%→75% (n=4 à 9, -2,5 pt/trim.) puis plancher 75% (n=10 à 19) ;
+// non-call n=1-3 ; n=20 = Date de Valorisation Finale (maturité, pas un autocall).
+const bmAer: (number | undefined)[] = [
+  undefined, undefined, undefined, 90, 87.5, 85, 82.5, 80, 77.5,
+  75, 75, 75, 75, 75, 75, 75, 75, 75, 75, undefined,
+]
+const barclaysBnpSgIntesa: Product = {
+  id: 'XS3468899185',
+  nom: 'Phoenix Mémoire BNP + Société Générale + Intesa Sanpaolo',
+  isin: 'XS3468899185',
+  emetteur: 'Barclays Bank PLC',
+  notationEmetteur: 'A1 (Moody’s) / A+ (S&P)',
+  assetClass: 'equity',
+  family: 'autocall',
+  devise: 'EUR',
+  nominal: 2_265_000,
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-08-18',
+  dateEmission: '2026-09-18',
+  dateConstatationFinale: '2031-09-18',
+  dateEcheance: '2031-10-02',
+  frequence: 'trimestriel',
+  basket: 'worst_of',
+  sousJacents: [
+    { nom: 'BNP Paribas SA', bloomberg: 'BNP FP', isin: 'FR0000131104', marche: 'Euronext Paris' },
+    { nom: 'Société Générale SA', bloomberg: 'GLE FP', isin: 'FR0000130809', marche: 'Euronext Paris' },
+    { nom: 'Intesa Sanpaolo S.p.A.', bloomberg: 'ISP IM', isin: 'IT0000072618', marche: 'Borsa Italiana' },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: true,
+    degressif: true,
+    couponPa: 10.5,
+    barriereCouponPct: 75,
+    barriereRappelPct: 90,
+    protectionPct: 50,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(bmObs, bmPay, {
+    niveauRappelPct: (n) => bmAer[n - 1],
+    montantRemboursementPct: 100,
+    couponPct: 2.625,
+    niveauCouponPct: 75,
+    rappelActifAPartirDe: 4,
+  }),
+  rr: 'LS',
+  clients: ['CAPITALL'],
+  productType: 'Phoenix',
+  description:
+    '5Y Phoenix Mémoire Wof BNP + Société Générale + Intesa Sanpaolo — coupon trimestriel 2,625 % (mémoire) si les 3 titres ≥ 75 % de l’initial, autocall dégressif 90 %→75 % dès l’an 2, capital protégé sous 50 % (barrière européenne, constatée à l’échéance seulement)',
+  badges: ['Worst-of', 'Dégressif', 'Effet mémoire'],
+  // Rename en attente : le fichier réel du dossier OneDrive s'appelle encore
+  // « TS - XS3468899185.pdf » — mon accès Graph est en lecture seule (pas de
+  // Files.ReadWrite.All), donc je n'ai pas pu le renommer moi-même. Cible :
+  // 260818_5Y_Phoenix Mémoire Wof BNP + Société Générale + Intesa Sanpaolo_Trimestriel_XS3468899185_BARCLAYS.pdf
+  termsheetFichier: 'TS - XS3468899185.pdf',
+  termsheetUrl:
+    'https://capitalmanagementfrance-my.sharepoint.com/personal/l_sebah_cmf_finance/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FTermsheets%2FTS%20-%20XS3468899185.pdf&parent=%2Fpersonal%2Fl_sebah_cmf_finance%2FDocuments%2FDocuments%2FTermsheets',
+}
+
 // ── Helper : CLN tranche d'indice iTraxx (capital à risque sur défauts) ───────
 function creditCLN(p: {
   isin: string
@@ -6820,7 +6899,7 @@ const detailed: Product[] = [
   bnpEnergie, bnpTechUs, bbvaSgoElRi, msMerqubeTtef,
   sgPhoenixCms10, sgBearish320, dbBearish350, bnpBearish325, sgBearish635,
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
-  bbvaBnpAcaIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
+  bbvaBnpAcaIntesa, barclaysBnpSgIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
   bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
   bnpBearishCms2y, sgBearishCms10_325, athenaNovoNordisk, sgBouyguesVinciEiffage,
   sgBearishCms10_270, bnpBearishCms10_280, sgBearishInFineCms10_300,
@@ -6928,7 +7007,17 @@ function minimal(isin: string): Product {
 // Portefeuille = positions réelles du feed (clé = ISIN), enrichies des
 // définitions, du prix/statut/montant et de l'allocation client. Le P&L et la
 // situation en découlent ; rien n'est figé en dur.
-export const products: Product[] = feedIsins.map((isin) => {
+//
+// `feedIsins` vient de l'export custodian (IsinPrix.xlsx → feed.json) : un
+// trade tout juste décodé (termsheet lue le jour du trade, avant l'Issue Date)
+// n'y figure pas encore — il y entrera au prochain réimport, des semaines plus
+// tard. Sans l'union avec les ISIN de `detailed`, décoder un produit à la main
+// ne le rendait pas visible pour autant : la commission apparaissait dans
+// Commissions (cf. `computeCoherence`, type "orpheline"), mais le produit lui-
+// même restait invisible partout ailleurs (Portefeuille, Calendrier, Synthèse)
+// jusqu'à ce que l'export officiel le rattrape (cas XS3468899185, 18/08/2026).
+const isinsPortefeuille = Array.from(new Set([...feedIsins, ...detailed.map((p) => p.isin)]))
+export const products: Product[] = isinsPortefeuille.map((isin) => {
   // Niveaux constatés connus (indices non-Yahoo) fusionnés AVANT toute dérivation
   // → un rappel constaté sur MXEADT50 & co est détecté au build comme pour un
   // sous-jacent Yahoo, et le calendrier/suivi s'arrêtent au bon endroit.
