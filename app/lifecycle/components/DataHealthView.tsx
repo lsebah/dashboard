@@ -135,6 +135,34 @@ export default function DataHealthView({ products }: { products: Product[] }) {
         </div>
       </div>
 
+      {/* Tous les contrôles ci-dessous lisent l'index du dossier, jamais le
+          dossier lui-même : un index figé les rend aveugles SANS les faire
+          rougir. Ce bandeau est le contrôle du contrôle. */}
+      <div
+        className={
+          h.indexTermsheets.perime
+            ? 'rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800'
+            : 'rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500'
+        }
+      >
+        {h.indexTermsheets.perime ? (
+          <>
+            <span className="font-semibold">Index du dossier Termsheets périmé</span> — dernier
+            alignement sur OneDrive le{' '}
+            {new Date(h.indexTermsheets.syncLe).toLocaleDateString('fr-FR')} (
+            {h.indexTermsheets.ageJours} jours). Tant qu’il n’est pas rafraîchi, « Termsheet sans
+            produit » et « Termsheet manquante » ne voient PAS les documents déposés depuis :
+            l’absence d’alerte ne vaut pas absence de trou.
+          </>
+        ) : (
+          <>
+            Index du dossier Termsheets aligné le{' '}
+            {new Date(h.indexTermsheets.syncLe).toLocaleDateString('fr-FR')} (
+            {h.indexTermsheets.ageJours} j).
+          </>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Section
           titre="Coupon manquant"

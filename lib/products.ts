@@ -3517,6 +3517,94 @@ const gsKering: Product = {
   termsheetFichier: '240715_10Y_Phoenix Memory Kering 7% _Annuel_XS2769351359_GS.pdf',
 }
 
+// ── XS3327842855 — GS Athéna MSFT quanto EUR (single, 5Y trimestriel) ────────
+// Décodé le 19/08/2026 depuis la TS FINALE Goldman Sachs du dossier
+// (260717_5Y_Athena Airbag MSFT_Trimestriel_XS3327842855_GS.pdf).
+// ATTENTION — le NOM du fichier dit « Airbag », le CONTENU dit le contraire :
+// sous barrière, le remboursement vaut « Nominal × Fixing (Final) ÷ Strike »
+// avec Strike = 100 % du fixing initial, donc une perte au premier euro depuis
+// le strike, PAS depuis la barrière. Aucun airbag n'est donc décodé ici : c'est
+// la TS qui fait foi, jamais le nom de fichier.
+// Le produit ne verse aucun coupon périodique : le rendement est capitalisé
+// dans l'Early Redemption Value, qui monte de 2,0375 % par trimestre
+// (108,15 % au 1er rappel à 1 an, 140,75 % à l'échéance) — soit 8,15 % p.a.,
+// lu sur l'échelle de la TS et non reconstitué.
+const msftObs = [
+  '2027-07-19', '2027-10-18', '2028-01-18', '2028-04-17', '2028-07-17',
+  '2028-10-17', '2029-01-17', '2029-04-17', '2029-07-17', '2029-10-17',
+  '2030-01-17', '2030-04-17', '2030-07-17', '2030-10-17', '2031-01-17',
+  '2031-04-17', '2031-07-17',
+]
+const msftPay = [
+  '2027-08-02', '2027-11-01', '2028-02-01', '2028-05-02', '2028-07-31',
+  '2028-10-31', '2029-01-31', '2029-05-02', '2029-07-31', '2029-10-31',
+  '2030-01-31', '2030-05-06', '2030-07-31', '2030-10-31', '2031-01-31',
+  '2031-05-02', '2031-07-31',
+]
+// Trigger Percentage : 100 % à chaque observation, sauf la dernière (80 %).
+const msftAer: number[] = [
+  100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+  100, 80,
+]
+// Early Redemption Value (% du nominal), telle qu'imprimée dans la TS.
+const msftErv: number[] = [
+  108.15, 110.1875, 112.225, 114.2625, 116.3, 118.3375, 120.375, 122.4125,
+  124.45, 126.4875, 128.525, 130.5625, 132.6, 134.6375, 136.675, 138.7125,
+  140.75,
+]
+const gsMsft: Product = {
+  id: 'XS3327842855',
+  nom: 'Athéna MSFT',
+  isin: 'XS3327842855',
+  valor: '154558947',
+  emetteur: 'Goldman Sachs Finance Corp International Ltd',
+  garant: 'The Goldman Sachs Group, Inc.',
+  notationEmetteur: 'A2 / BBB+ / A',
+  assetClass: 'equity',
+  family: 'autocall',
+  eusipa: '1260',
+  devise: 'EUR',
+  nominal: 5_000_000, // Issue Size de la TS — aucun ticket client connu à ce jour.
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-07-17', // Trade Date = Initial Fixing Date
+  dateEmission: '2026-09-15',
+  dateConstatationFinale: '2031-07-17',
+  dateEcheance: '2031-07-31',
+  frequence: 'trimestriel',
+  basket: 'single',
+  sousJacents: [
+    {
+      nom: 'Microsoft Corporation',
+      bloomberg: 'MSFT UW',
+      isin: 'US5949181045',
+      marche: 'NASDAQ Global Select Market',
+      devise: 'USD', // note quanto EUR : pas d'exposition de change pour le porteur
+      niveauInitial: 393.82,
+    },
+  ],
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    degressif: false,
+    couponPa: 8.15,
+    barriereRappelPct: 100,
+    protectionPct: 60,
+    protectionStyle: 'europeenne',
+  },
+  observations: buildObservations(msftObs, msftPay, {
+    niveauRappelPct: (n) => msftAer[n - 1],
+    montantRemboursementPct: (n) => msftErv[n - 1],
+    rappelActifAPartirDe: 1, // 1re observation à 1 an du strike (NC1Y de fait)
+  }),
+  productType: 'Athena',
+  description:
+    '5Y Athéna Microsoft quanto EUR — rappel 100 % dès 1 an, valeur de remboursement de 108,15 % à 140,75 %, barrière finale 60 % européenne',
+  badges: ['Single', 'Quanto EUR'],
+  termsheetFichier: '260717_5Y_Athena Airbag MSFT_Trimestriel_XS3327842855_GS.pdf',
+}
+
 // ── FR0013446333 — SG ODDO Snowball Unibail-Rodamco-Westfield (10Y annuel) ───
 const urwObs = [
   '2020-12-28', '2021-12-27', '2022-12-27', '2023-12-27', '2024-12-27',
@@ -6900,7 +6988,7 @@ const detailed: Product[] = [
   sgPhoenixCms10, sgBearish320, dbBearish350, bnpBearish325, sgBearish635,
   sgBearishInFine350, sgGeneraliBearish, bnpOddoBearish, bnpBearishTrim,
   bbvaBnpAcaIntesa, barclaysBnpSgIntesa, bnpClnCrossover, sgClnMain, bbvaClnZeroRecovery,
-  bnpTarn, sgBearAthenaSofr, gsKering, sgUnibailSnowball,
+  bnpTarn, sgBearAthenaSofr, gsKering, gsMsft, sgUnibailSnowball,
   bnpBearishCms2y, sgBearishCms10_325, athenaNovoNordisk, sgBouyguesVinciEiffage,
   sgBearishCms10_270, bnpBearishCms10_280, sgBearishInFineCms10_300,
   dbBearishCms10_315, bnpBearishCms10_315, cicBearishTec10,

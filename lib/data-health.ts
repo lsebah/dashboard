@@ -6,7 +6,14 @@
 import type { Product } from './types'
 import { couponPa } from './lifecycle'
 import { aAirbag, airbagNiveau, productTypeLabel } from './classification'
-import { termsheetUrl, TERMSHEET_FILES, TERMSHEET_ISINS, parseTermsheetName } from './termsheets'
+import {
+  termsheetUrl,
+  TERMSHEET_FILES,
+  TERMSHEET_ISINS,
+  parseTermsheetName,
+  INDEX_SYNC_LE,
+  indexAgeJours,
+} from './termsheets'
 import tsPdfs from './ts-pdfs.json'
 
 const TS_PDFS = tsPdfs as Record<string, string>
@@ -31,7 +38,15 @@ export interface DataHealth {
    *  termsheet neuve reste invisible tant que personne ne la remarque à
    *  l'œil : ni décodée, ni signalée, juste absente. */
   termsheetSansProduit: HealthItem[]
+  /** Fraîcheur de l'index du dossier. TOUS les contrôles ci-dessus lisent
+   *  l'index, jamais le dossier : si l'index cesse d'être rafraîchi, ils
+   *  deviennent silencieusement aveugles et restent au vert. Ce champ rend
+   *  cette panne-là visible. */
+  indexTermsheets: { syncLe: string; ageJours: number; perime: boolean }
 }
+
+/** Au-delà, l'index n'est plus une image du dossier (synchro quotidienne). */
+export const INDEX_PERIME_JOURS = 10
 
 /** Une TS est « disponible » si un PDF local, une URL produit ou l'index la résout. */
 export function aTermsheet(p: Product): boolean {
@@ -90,6 +105,8 @@ export function computeDataHealth(products: Product[]): DataHealth {
     },
   )
 
+  const ageJours = indexAgeJours()
+
   return {
     total: products.length,
     sansCoupon,
@@ -98,5 +115,10 @@ export function computeDataHealth(products: Product[]): DataHealth {
     deviseSuspecte,
     typeNonIdentifie,
     termsheetSansProduit,
+    indexTermsheets: {
+      syncLe: INDEX_SYNC_LE,
+      ageJours,
+      perime: ageJours > INDEX_PERIME_JOURS,
+    },
   }
 }

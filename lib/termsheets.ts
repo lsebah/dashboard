@@ -5,7 +5,23 @@
 //  Ajouter une termsheet = ajouter son nom dans l'index (re-synchro du dossier).
 // ─────────────────────────────────────────────────────────────────────────
 import index from './termsheets-index.json'
+import indexMeta from './termsheets-index-meta.json'
 import type { Frequency } from './types'
+
+// Date du dernier alignement de l'index sur le dossier OneDrive. Sans elle,
+// rien ne distingue « le dossier n'a pas bougé » de « la synchro est morte » :
+// l'index est resté figé du 20/07 au 19/08/2026 (secrets GRAPH_* absents) et
+// 5 termsheets — dont XS3327842855 — sont restées invisibles de TOUS les
+// contrôles, qui lisent l'index et non le dossier. Un index périmé n'est donc
+// pas un détail d'intendance : c'est l'angle mort lui-même.
+export const INDEX_SYNC_LE: string = indexMeta.syncLe
+
+/** Ancienneté de l'index, en jours pleins (référence : aujourd'hui par défaut). */
+export function indexAgeJours(aujourdhui: Date = new Date()): number {
+  const t = new Date(INDEX_SYNC_LE).getTime()
+  if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY
+  return Math.floor((aujourdhui.getTime() - t) / 86_400_000)
+}
 
 // Site OneDrive personnel + dossier (chemin relatif serveur) des termsheets.
 const ONEDRIVE_SITE =

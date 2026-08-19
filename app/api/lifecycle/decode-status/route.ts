@@ -37,7 +37,8 @@ export async function GET() {
   // En amont du décodage : des termsheets du dossier dont l'ISIN n'a même pas
   // encore de produit dans le feed — invisibles ailleurs, elles ne remonteraient
   // sinon qu'à l'œil, en parcourant le dossier OneDrive au hasard.
-  const nonRattachees = computeDataHealth(products).termsheetSansProduit.map((h) => ({
+  const sante = computeDataHealth(products)
+  const nonRattachees = sante.termsheetSansProduit.map((h) => ({
     isin: h.isin,
     nom: h.nom,
     emetteur: h.type,
@@ -49,5 +50,9 @@ export async function GET() {
     aDecoder,
     countNonRattachees: nonRattachees.length,
     nonRattachees,
+    // Les deux compteurs ci-dessus se calculent SUR l'index. Publier sa
+    // fraîcheur avec eux évite de lire « 0 termsheet non rattachée » comme une
+    // bonne nouvelle alors que l'index ne voit plus le dossier.
+    index: sante.indexTermsheets,
   })
 }
