@@ -1,10 +1,22 @@
 {
-  "_README": "Deals annonces par l equipe dans le dossier Outlook DEAL DONE. Transcription LITTERALE des mails : un champ absent du mail est absent ici, jamais reconstitue. `source` = sujet du mail d origine. Fenetre : 06/01/2026 au 12/08/2026 (toute l annee 2026 a ce jour).",
+  "_README": "Deals annonces par l equipe dans le dossier Outlook DEAL DONE. Transcription LITTERALE des mails : un champ absent du mail est absent ici, jamais reconstitue. `source` = sujet du mail d origine. Fenetre : 06/01/2026 au 19/08/2026 (toute l annee 2026 a ce jour).",
   "fenetre": {
     "du": "2026-01-06",
-    "au": "2026-08-12"
+    "au": "2026-08-19"
   },
   "deals": [
+    {
+      "id": "2026-08-18-phoenix-memoire-degressif-bnp-sg-intesa",
+      "date": "2026-08-18",
+      "rr": "LS",
+      "produit": "Phoenix Mémoire Dégressif Worst-of BNP / Société Générale / Intesa Sanpaolo",
+      "description": "CTO, No Listing · maturité 60 mois · observations trimestrielles · coupon conditionnel, barrière 75 % avec effet mémoire · rappel automatique 90 % (1er rappel NC1Y), dégressif de 2,5 %/trimestre jusqu'à 75 % (floor) · best strike close + 30 j · protection du capital 50 % (KI européenne) · reoffer indicatif 94 % · coupon 10,5 % précisé par L. Sebah en réponse à une question du fil (« quel coupon sur ce produit ? ») — l'annonce initiale ne le chiffrait pas",
+      "devise": "EUR",
+      "coupon": 10.5,
+      "isin": "XS3468899185",
+      "maturiteAns": 5,
+      "source": "Deal Done"
+    },
     {
       "id": "2026-08-12-athena-degressif-lvmh",
       "date": "2026-08-12",
