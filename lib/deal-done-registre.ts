@@ -31,6 +31,23 @@ import { codeEmetteur } from './emetteurs'
 const ISIN_AGREGE = new Set(['FEI'])
 
 /**
+ * ISIN dont la ressemblance avec un autre a été explicitement tranchée par
+ * Laurent comme DISTINCTE — jamais fusionnés, jamais re-signalés « à
+ * vérifier ». Un thème commercial (« Réarmement Europe », « Basket 50 Points
+ * DIV »…) se revend à plusieurs clients par plusieurs émetteurs sans être le
+ * même deal ; le motif du texte suffit à les rapprocher visuellement mais pas
+ * à prouver un doublon. N'ajouter une entrée qu'après confirmation explicite —
+ * c'est ce qui distingue une exception d'un doublon non détecté.
+ */
+const DISTINCT_CONFIRME = new Set<string>([
+  // Phoenix Mémoire Réarmement Europe — même thème, deux émissions distinctes :
+  // BNP/OPTIMAL (XS3266613416, 26/02) et BBVA/APPN (XS3250102665, 20/02).
+  // Confirmé par Laurent (19/08/2026).
+  'XS3266613416',
+  'XS3250102665',
+])
+
+/**
  * Mots vides : présents partout, ils ne prouvent aucune ressemblance.
  *
  * La première version ne listait que le vocabulaire de payoff, et le
@@ -214,6 +231,7 @@ export function croiserAvecRegistre(
       isin,
       dateEmission: ref.issue ?? undefined,
       source: 'registre des commissions',
+      distinctConfirme: DISTINCT_CONFIRME.has(isin) || undefined,
     })
   })
 
