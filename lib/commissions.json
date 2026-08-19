@@ -26,17 +26,17 @@
    "emetteur": "BARCLAYS",
    "description": "Phoenix Mémoire Wof BNP + Société Générale + Intesa Sanpaolo",
    "devise": "EUR",
-   "nominal": 2265000,
+   "nominal": 265000,
    "ufPct": 0.06,
-   "comCmf": 56625,
+   "comCmf": 6625,
    "retroPct": 0.035,
-   "comClient": 79275,
-   "comTotal": 135900,
+   "comClient": 9275,
+   "comTotal": 15900,
    "facture": null,
    "sent": null,
    "credited": null,
    "split": 1,
-   "net": 56625
+   "net": 6625
   },
   {
    "isin": "FR1459ABG521",
