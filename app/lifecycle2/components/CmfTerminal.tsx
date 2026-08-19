@@ -80,6 +80,12 @@ const toDonut = (parts: Part[]) => parts.map((p, i) => ({ label: p.label, value:
 
 export default function CmfTerminal({ products }: { products: Product[] }) {
   const [courant, setCourant] = useState<Record<string, number | null> | null>(null)
+  // Niveaux CONSTATÉS aux observations passées, par ISIN — SyntheseTete en a
+  // besoin pour son bilan des rappels (bilanRappels). Capturés ici pour que
+  // SyntheseTete n'ait plus à refaire le même appel /api/lifecycle/courant
+  // pour le même univers de produits (deux requêtes identiques par chargement
+  // de page avant ce correctif).
+  const [constates, setConstates] = useState<Record<string, Record<string, number>>>({})
 
   useEffect(() => {
     let annule = false
@@ -88,10 +94,18 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
       .then((r) => r.json())
       .then((d) => {
         if (annule) return
+        const c = (d?.courant ?? {}) as Record<
+          string,
+          { worstOf: number | null; niveaux?: Record<string, number> }
+        >
         const m: Record<string, number | null> = {}
-        for (const [isin, v] of Object.entries(d?.courant ?? {}))
-          m[isin] = (v as { worstOf: number | null }).worstOf
+        const n: Record<string, Record<string, number>> = {}
+        for (const [isin, v] of Object.entries(c)) {
+          m[isin] = v?.worstOf ?? null
+          if (v?.niveaux) n[isin] = v.niveaux
+        }
         setCourant(m)
+        setConstates(n)
       })
       .catch(() => !annule && setCourant({}))
     return () => {
@@ -163,7 +177,7 @@ export default function CmfTerminal({ products }: { products: Product[] }) {
       </div>
 
       {/* ── Tête de synthèse : indices, puis rappels probables sous 30 j ── */}
-      <SyntheseTete products={products} />
+      <SyntheseTete products={products} niveaux={courant} constates={constates} />
 
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
