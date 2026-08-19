@@ -1,9 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────
-import { pourcent } from './pourcentage'
 //  Facture « CMF FACTURE GABRIELLE » — construit l'email pré-rempli à envoyer
 //  à Gabrielle Salmon (office@cmf.finance), qui édite la facture pour
-//  l'émetteur. Format aligné sur le skill existant (onglet Commissions).
+//  l'émetteur. Source UNIQUE du gabarit — l'onglet Commissions l'importe,
+//  au lieu d'en garder sa propre copie (les deux avaient fini par diverger :
+//  seule celle de CommissionsView portait encore le détail Rétro/Net, et les
+//  deux partageaient le même bug d'encodage — voir plus bas).
 // ─────────────────────────────────────────────────────────────────────────
+import { pourcent } from './pourcentage'
+
 export const GABRIELLE_EMAIL = 'office@cmf.finance'
 export const FACTURE_CC = 'p.doize@cmf.finance,t.ballot@cmf.finance'
 
@@ -19,14 +23,17 @@ export interface FactureData {
   description?: string | null
   nominal?: number | null
   ufPct?: number | null // décimal (0.025 = 2,5 %)
-  comTotal?: number | null // montant upfront total (€)
-  comClient?: number | null // montant reversé au CGP (€)
+  comTotal?: number | null // upfront total (€)
+  retroPct?: number | null // décimal (0.035 = 3,5 %)
+  comClient?: number | null // rétro reversée au CGP (€)
+  comCmf?: number | null // net CMF, après rétro (€)
   client?: string | null
 }
 
 /** mailto: vers Gabrielle, corps tabulé reprenant les données de la commission. */
 export function factureMailto(l: FactureData): string {
   const d = dateFr(l.issue)
+  const avecRetro = typeof l.comClient === 'number' && l.comClient > 0 && !!l.client
   const lignes = [
     'Hello Gabrielle,',
     '',
@@ -38,14 +45,25 @@ export function factureMailto(l: FactureData): string {
     `Issue Date\t${d}`,
     `Payoff\t\t${l.description ?? ''}`,
     `Nominal\t\tEUR ${num(l.nominal)}`,
-    `Upfront\t\t${pct2(l.ufPct)}  —  EUR ${num(l.comTotal)}`,
+    `Upfront Total\tEUR ${num(l.comTotal)} (${pct2(l.ufPct)})`,
   ]
-  if (typeof l.comClient === 'number' && l.comClient > 0 && l.client)
-    lignes.push('', `Dès règlement reçu, merci de reverser EUR ${num(l.comClient)} à ${l.client}.`)
+  if (avecRetro) {
+    lignes.push(
+      `Rétro CGP\tEUR ${num(l.comClient)} (${pct2(l.retroPct)})`,
+      `Net CMF\t\tEUR ${num(l.comCmf)}`,
+      '',
+      `Dès le règlement de cette facture reçu, il faudra reverser à ${l.client}.`,
+    )
+  }
   lignes.push('', 'Merci')
-  const p = new URLSearchParams()
-  p.set('cc', FACTURE_CC)
-  p.set('subject', `Nouvelle Facture ${l.emetteur ?? ''}`.trim())
-  p.set('body', lignes.join('\n'))
-  return `mailto:${GABRIELLE_EMAIL}?${p.toString()}`
+  // mailto: exige un %-encodage RFC 3986 (espace → %20) — URLSearchParams encode
+  // en application/x-www-form-urlencoded (espace → +), que les clients mail
+  // n'interprètent PAS comme un espace pour un corps mailto : le message
+  // s'affichait avec des « + » littéraux à la place de chaque espace.
+  const q = [
+    `cc=${encodeURIComponent(FACTURE_CC)}`,
+    `subject=${encodeURIComponent(`Nouvelle Facture ${l.emetteur ?? ''}`.trim())}`,
+    `body=${encodeURIComponent(lignes.join('\n'))}`,
+  ].join('&')
+  return `mailto:${GABRIELLE_EMAIL}?${q}`
 }

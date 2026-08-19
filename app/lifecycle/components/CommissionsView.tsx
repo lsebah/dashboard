@@ -6,6 +6,7 @@ import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues, doublonsRegistreLocal } f
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
 import { useAllocations } from '@/lib/allocations'
+import { factureMailto as buildFactureMailto } from '@/lib/facture'
 import Modal from './Modal'
 import { dateFr as dateIso } from '@/lib/dates'
 import { codeEmetteur } from '@/lib/emetteurs'
@@ -35,10 +36,6 @@ const anneeAttr = (l: CommissionLigne) =>
   annee(l) !== ANNEE_COURANTE && (l.credited ?? '').startsWith(ANNEE_COURANTE)
     ? ANNEE_COURANTE
     : annee(l)
-
-// Email « Nouvelle Facture » à Gabrielle Salmon (skill cmf-facture-gabrielle).
-const GABRIELLE_EMAIL = 'office@cmf.finance'
-const FACTURE_CC = 'p.doize@cmf.finance,t.ballot@cmf.finance'
 
 // % saisi (« 6 », « 6,5 », « 6.00 ») → décimal (0.06 / 0.065).
 const parsePct = (raw: string): number | undefined => {
@@ -218,30 +215,10 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   const toggleSort = (key: string) =>
     setSort((s) => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' }))
 
-  const factureMailto = (l: ReturnType<typeof calc>): string => {
-    const d = dateFr(l.issue) ?? ''
-    const lignes = [
-      'Hello Gabrielle,',
-      '',
-      'Peux-tu éditer la facture suivante',
-      '',
-      `Émetteur\t${l.emetteur ?? ''}`,
-      `ISIN\t\t${l.isin}`,
-      `Trade Date\t${d}`,
-      `Issue Date\t${d}`,
-      `Payoff\t\t${l.description ?? ''}`,
-      `Nominal\t\tEUR ${num(l.nominal)}`,
-      `Upfront\t\t${PCT2(l.ufPct)}  —  EUR ${num(l.comTotal)}`,
-    ]
-    if (typeof l.comClient === 'number' && l.comClient > 0 && l.client)
-      lignes.push('', `Dès règlement reçu, merci de reverser EUR ${num(l.comClient)} à ${l.client}.`)
-    lignes.push('', 'Merci')
-    const p = new URLSearchParams()
-    p.set('cc', FACTURE_CC)
-    p.set('subject', `Nouvelle Facture ${l.emetteur ?? ''}`.trim())
-    p.set('body', lignes.join('\n'))
-    return `mailto:${GABRIELLE_EMAIL}?${p.toString()}`
-  }
+  // Gabarit partagé (lib/facture.ts) — évite qu'une correction faite ici (le
+  // détail Rétro/Net, le bug d'encodage « + ») ne divergent d'une copie oubliée
+  // ailleurs, comme c'était le cas jusqu'ici.
+  const factureMailto = (l: ReturnType<typeof calc>): string => buildFactureMailto(l)
 
   // Commissions Nettes (vrai net) de l'année courante = toutes les commissions
   // ATTRIBUÉES à l'année : émises dans l'année OU émises avant mais ENCAISSÉES
