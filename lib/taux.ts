@@ -29,8 +29,13 @@ export interface TauxRef {
 export const TAUX_REFERENCE: TauxRef[] = [
   // Swap EUR 10 ans. Aucune cotation libre fiable connue → Bloomberg seul.
   { cle: 'CMS10', nom: 'CMS 10Y', bloomberg: 'EUSA10 BGN Curncy', stooq: null },
-  // Rendement de l'OAT 10 ans (France).
-  { cle: 'OAT10', nom: 'OAT 10Y', bloomberg: 'GTFRF10YR @BGN Corp', stooq: '10fry.b' },
+  // TEC 10 — indice de référence CNO (Comité de Normalisation Obligataire),
+  // pas le rendement brut de l'OAT 10 ans : ticker confirmé sur les termsheets
+  // déjà décodées de produits Phoenix Bearish TEC10 du feed (FR001400SDV1,
+  // XS2979390502). Remplace l'ancien ticker OAT (GTFRF10YR), qui mesurait
+  // autre chose (demande de Laurent, 19/08/2026). Aucune cotation libre fiable
+  // connue pour ce ticker précis → Bloomberg seul, comme CMS10.
+  { cle: 'TEC10', nom: 'TEC 10', bloomberg: 'BFRTEC10 Index', stooq: null },
 ]
 
 /** Provenance d'un taux — affichée à côté de la valeur. */
