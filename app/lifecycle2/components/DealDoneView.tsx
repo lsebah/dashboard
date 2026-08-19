@@ -77,11 +77,17 @@ export default function DealDoneView({
   deals: bruts,
   fenetre,
   strikes = {},
+  couponsDecodes = {},
 }: {
   deals: Deal[]
   fenetre?: { du: string; au: string }
   /** ISIN → date de strike, pour dater les affaires reprises du registre. */
   strikes?: Record<string, string>
+  /** ISIN → coupon p.a. (%), pour les affaires (surtout reprises du registre)
+   *  dont le mail Deal Done ne porte pas ce chiffre — le registre des
+   *  commissions ne le connaît pas non plus. La termsheet décodée, si elle
+   *  existe pour ce produit, si.  */
+  couponsDecodes?: Record<string, number>
 }) {
   const [prix, setPrix] = useState<Record<string, number>>({})
   const [rr, setRr] = useState<string>('')
@@ -128,8 +134,20 @@ export default function DealDoneView({
     () => [...croisement.deals, ...croisement.ajoutes],
     [croisement],
   )
+  // Coupon manquant (surtout les affaires reprises du registre, qui ne le
+  // porte pas) complété depuis la termsheet DÉCODÉE du produit, quand elle
+  // existe — jamais une estimation, un chiffre déjà lu et vérifié ailleurs.
+  const avecCoupon = useMemo(
+    () =>
+      avecRegistre.map((d) =>
+        typeof d.coupon !== 'number' && d.isin && typeof couponsDecodes[d.isin] === 'number'
+          ? { ...d, coupon: couponsDecodes[d.isin] }
+          : d,
+      ),
+    [avecRegistre, couponsDecodes],
+  )
 
-  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecRegistre), [avecRegistre])
+  const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecCoupon), [avecCoupon])
 
   /**
    * Filet de sécurité : toute commission locale 2026 dont l'ISIN n'apparaît
