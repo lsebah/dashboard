@@ -95,7 +95,21 @@ function Delta({ pct }: { pct: number | null }) {
   )
 }
 
-export default function SyntheseTete({ products }: { products: Product[] }) {
+export default function SyntheseTete({
+  products,
+  niveaux: niveauxParent,
+  constates: constatesParent,
+}: {
+  products: Product[]
+  /** Worst-of courant par ISIN — remonté par CmfTerminal (SEULE requête
+   *  /api/lifecycle/courant de la page ; SyntheseTete la doublait jusqu'ici,
+   *  deux appels identiques à chaque chargement de la Synthèse). `undefined`
+   *  = pas encore fourni par le parent (rétro-compatible, l'ancien fetch
+   *  local prend le relais). */
+  niveaux?: Record<string, number | null> | null
+  /** Niveaux CONSTATÉS aux observations passées, par ISIN — même source. */
+  constates?: Record<string, Record<string, number>>
+}) {
   // Statuts forcés (rappelé / vendu…) : la page les LIT — sinon un produit marqué
   // ailleurs continuerait d'apparaître ici comme vivant — et les ÉCRIT.
   const { statut: statutMap, setStatut } = useAllocations()
@@ -128,10 +142,13 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
   }, [produits])
 
   const [marches, setMarches] = useState<MarketItem[] | null>(null)
-  const [niveaux, setNiveaux] = useState<Record<string, number | null> | null>(null)
-  // Niveaux CONSTATÉS aux observations passées, par ISIN — sans eux, un produit
-  // rappelé il y a deux mois s'affiche encore comme « rappel probable ».
-  const [constates, setConstates] = useState<Record<string, Record<string, number>>>({})
+  // Repli local : seulement si le parent (CmfTerminal) ne fournit pas encore
+  // niveaux/constates — permet à SyntheseTete de rester utilisable seule.
+  const [niveauxLocal, setNiveauxLocal] = useState<Record<string, number | null> | null>(null)
+  const [constatesLocal, setConstatesLocal] = useState<Record<string, Record<string, number>>>({})
+  const fetchCourantLocal = niveauxParent === undefined
+  const niveaux = niveauxParent !== undefined ? niveauxParent : niveauxLocal
+  const constates = constatesParent !== undefined ? constatesParent : constatesLocal
 
   useEffect(() => {
     let annule = false
@@ -147,8 +164,11 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
         // Marché indisponible : le bloc le dit, il n'affiche pas de faux niveau.
         if (!annule) setMarches([])
       })
-    // Niveaux courants de TOUS les produits en une requête (worst-of agrégé
-    // selon le type de panier, côté serveur).
+    // Niveaux courants de TOUS les produits — SEULEMENT si le parent (le
+    // terminal, qui les demande déjà pour son propre tableau de risque) ne
+    // les fournit pas : les deux appelaient /api/lifecycle/courant pour
+    // exactement le même univers de produits à chaque chargement de la page.
+    if (!fetchCourantLocal) return
     fetch('/api/lifecycle/courant', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
@@ -163,16 +183,16 @@ export default function SyntheseTete({ products }: { products: Product[] }) {
           m[isin] = c[isin]?.worstOf ?? null
           if (c[isin]?.niveaux) n[isin] = c[isin].niveaux as Record<string, number>
         }
-        setNiveaux(m)
-        setConstates(n)
+        setNiveauxLocal(m)
+        setConstatesLocal(n)
       })
       .catch(() => {
-        if (!annule) setNiveaux({})
+        if (!annule) setNiveauxLocal({})
       })
     return () => {
       annule = true
     }
-  }, [])
+  }, [fetchCourantLocal])
 
   const indices = useMemo(() => marches?.filter((i) => i.group === 'Indices') ?? [], [marches])
   const taux = useMemo(
