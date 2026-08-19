@@ -19,7 +19,7 @@ import { pourcent, ESPACE_FINE } from '@/lib/pourcentage'
 import Modal from '@/app/lifecycle/components/Modal'
 import ProductSynopsis from '@/app/lifecycle/components/ProductSynopsis'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
-import { useAllocations } from '@/lib/allocations'
+import { useAllocations, marquerRappele as marquerRappeleAction } from '@/lib/allocations'
 
 interface MarketItem {
   group: string
@@ -118,18 +118,10 @@ export default function SyntheseTete({
     [products, statutMap],
   )
 
-  /**
-   * Acte le rappel : statut « rappelé » + notification à L.sebah@cmf.finance.
-   * Même geste et même endpoint idempotent que dans le Portefeuille — recliquer
-   * n'envoie pas un second email.
-   */
+  // Acte le rappel : statut « rappelé » + notification (lib/allocations.ts —
+  // même geste, partagé avec Portefeuille et Calendrier).
   const marquerRappele = (isin: string) => {
-    setStatut(isin, 'rappele')
-    void fetch('/api/notifications/rappel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isin }),
-    }).catch(() => {})
+    marquerRappeleAction(isin, setStatut)
   }
 
   // Fiche produit ouverte depuis la liste des rappels.

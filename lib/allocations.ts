@@ -132,6 +132,25 @@ export function useAllocations() {
   return { map, setClients, statut, setStatut, noms, setNom }
 }
 
+/**
+ * Marque un produit « rappelé » et notifie L.sebah@cmf.finance (ISIN, payoff,
+ * client). Endpoint idempotent (dédup KV) : recliquer n'envoie pas de second
+ * email. Geste partagé — vivait en trois copies identiques (Synthèse,
+ * Portefeuille, Calendrier) ; un correctif fait sur une seule copie ne se
+ * serait pas propagé aux deux autres (19/08/2026).
+ */
+export function marquerRappele(
+  isin: string,
+  setStatut: (isin: string, s: ProductStatus | undefined) => void,
+): void {
+  setStatut(isin, 'rappele')
+  void fetch('/api/notifications/rappel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isin }),
+  }).catch(() => {})
+}
+
 /** Écrit les allocations d'un ISIN hors hook (utilisé par « Nouveau trade »). */
 export function setLocalAllocations(isin: string, allocs: ClientAlloc[]) {
   if (typeof window === 'undefined') return

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Product, Observation } from '@/lib/types'
 import { formatDateFr, formatPct, formatMontant, rappelConstate, dateRappel, estInverse } from '@/lib/lifecycle'
-import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
+import { useAllocations, tousLesClients, marquerRappele as marquerRappeleAction, type ClientAlloc } from '@/lib/allocations'
 import { useAugmentedProduct } from '@/lib/useProductLevels'
 import { useLiveProducts } from '@/lib/use-live-products'
 import ProductSynopsis from './ProductSynopsis'
@@ -94,16 +94,9 @@ export default function CalendarView({ products }: { products: Product[] }) {
   const allocsOf = (p: Product): ClientAlloc[] =>
     map[p.isin] ?? p.allocations ?? p.clients?.map((c) => ({ client: c })) ?? []
 
-  // Marque « rappelé » ET notifie L.sebah@cmf.finance (ISIN, payoff, client).
-  // L'endpoint est idempotent (dédup KV) : pas de double email si re-cliqué.
-  const marquerRappele = (isin: string) => {
-    setStatut(isin, 'rappele')
-    void fetch('/api/notifications/rappel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isin }),
-    }).catch(() => {})
-  }
+  // Marque « rappelé » ET notifie (lib/allocations.ts — même geste, partagé
+  // avec Synthèse et Portefeuille).
+  const marquerRappele = (isin: string) => marquerRappeleAction(isin, setStatut)
   const clients = useMemo(
     () => tousLesClients(map, prods.flatMap((p) => p.clients ?? [])),
     [map, prods],
