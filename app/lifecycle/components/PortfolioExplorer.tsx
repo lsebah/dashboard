@@ -17,7 +17,7 @@ import {
   formatPct,
   estInverse,
 } from '@/lib/lifecycle'
-import { useAllocations, tousLesClients, type ClientAlloc } from '@/lib/allocations'
+import { useAllocations, tousLesClients, marquerRappele as marquerRappeleAction, type ClientAlloc } from '@/lib/allocations'
 import { parseMontant } from '@/lib/montant'
 import { useLocalProducts } from '@/lib/local-products'
 import { augmentProduct, clientReportRows } from '@/lib/client-report'
@@ -239,16 +239,9 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
 
   const { map, setClients, statut: statutMap, setStatut, noms, setNom } = useAllocations()
 
-  // Marque « rappelé » + notifie L.sebah@cmf.finance (ISIN, payoff, client).
-  // Endpoint idempotent (dédup KV) : re-cliquer n'envoie pas de second email.
-  const marquerRappele = (isin: string) => {
-    setStatut(isin, 'rappele')
-    void fetch('/api/notifications/rappel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isin }),
-    }).catch(() => {})
-  }
+  // Marque « rappelé » + notifie (lib/allocations.ts — même geste, partagé
+  // avec Synthèse et Calendrier).
+  const marquerRappele = (isin: string) => marquerRappeleAction(isin, setStatut)
 
   // Produits créés/importés localement (masque « Nouveau produit ») → fusionnés
   // au feed pour une mise à jour instantanée du portefeuille.
