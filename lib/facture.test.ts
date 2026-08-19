@@ -40,14 +40,15 @@ test('le corps mailto ne contient jamais de « + » littéral à la place d’un
   assert.ok(!url.includes('body=Hello+Gabrielle'), 'pas d’espace encodé en +')
 })
 
-test('Upfront Total / Rétro CGP / Net CMF apparaissent, avec le bon rappel de reversement', () => {
+test('Upfront Total / Rétro CGP / Net CMF apparaissent, avec le montant de rétro dans le rappel de reversement', () => {
   const url = factureMailto(LIGNE)
   const body = decodeURIComponent(url.split('body=')[1].split('&')[0])
   assert.ok(body.includes(`Upfront Total\tEUR ${eur(15_900)} (${pourcent(6, 2)})`))
   assert.ok(body.includes(`Rétro CGP\tEUR ${eur(9_275)} (${pourcent(3.5, 2)})`))
   assert.ok(body.includes(`Net CMF\t\tEUR ${eur(6_625)}`))
-  assert.ok(body.includes('Dès le règlement de cette facture reçu, il faudra reverser à CAPITALL.'))
-  assert.ok(!body.includes(`${eur(9_275)} à CAPITALL.`), 'le montant ne se répète plus dans la phrase finale')
+  assert.ok(
+    body.includes(`Dès le règlement de cette facture reçu, il faudra reverser EUR ${eur(9_275)} à CAPITALL.`),
+  )
 })
 
 test('sans rétrocession, ni la ligne Rétro/Net ni la phrase de reversement ne s’affichent', () => {

@@ -52,7 +52,7 @@ export function factureMailto(l: FactureData): string {
       `Rétro CGP\tEUR ${num(l.comClient)} (${pct2(l.retroPct)})`,
       `Net CMF\t\tEUR ${num(l.comCmf)}`,
       '',
-      `Dès le règlement de cette facture reçu, il faudra reverser à ${l.client}.`,
+      `Dès le règlement de cette facture reçu, il faudra reverser EUR ${num(l.comClient)} à ${l.client}.`,
     )
   }
   lignes.push('', 'Merci')
