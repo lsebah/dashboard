@@ -19,3 +19,6 @@ scripts/refresh_prices.log
 
 # Claude Code session state
 .claude/
+
+# Rapport regénéré à chaque `npm run audit` — jamais versionné.
+data/audit-termsheets.json

@@ -48,6 +48,43 @@ export interface DataHealth {
 /** Au-delà, l'index n'est plus une image du dossier (synchro quotidienne). */
 export const INDEX_PERIME_JOURS = 10
 
+/** Statuts qui ferment un produit : plus rien à décoder ni à surveiller. */
+export const STATUTS_CLOS = new Set(['rappele', 'vendu', 'echu'])
+
+export interface ADecoder {
+  isin: string
+  nom: string
+  raison: string
+  client: string | null
+}
+
+/**
+ * Produits VIVANTS qui disposent d'une termsheet mais dont le payoff n'est pas
+ * (complètement) décodé. Partagé par /api/lifecycle/decode-status et par
+ * l'audit hebdomadaire : deux copies de ce filtre finiraient par diverger, et
+ * c'est précisément un contrôle qui ne doit pas pouvoir mentir.
+ */
+export function produitsADecoder(products: Product[]): ADecoder[] {
+  return products
+    .filter((p) => !STATUTS_CLOS.has(p.statut ?? ''))
+    .filter((p) => aTermsheet(p))
+    .filter((p) => {
+      if (!p.terms) return true // aucune mécanique décodée
+      // Vrai autocall/phoenix (barrière de rappel définie) : le calendrier
+      // d'observations doit être décodé. Les participations/airbags sans rappel
+      // (in fine) n'ont pas de calendrier attendu → pas signalés.
+      const t = p.terms
+      const aRappel = t.kind === 'autocall' && typeof t.barriereRappelPct === 'number'
+      return aRappel && (!p.observations || p.observations.length === 0)
+    })
+    .map((p) => ({
+      isin: p.isin,
+      nom: p.nom,
+      raison: !p.terms ? 'mécanique (terms) non décodée' : 'calendrier d’observations absent',
+      client: (p.clients ?? []).join(', ') || null,
+    }))
+}
+
 /** Une TS est « disponible » si un PDF local, une URL produit ou l'index la résout. */
 export function aTermsheet(p: Product): boolean {
   return !!(TS_PDFS[p.isin] || p.termsheetUrl || termsheetUrl(p.isin))
