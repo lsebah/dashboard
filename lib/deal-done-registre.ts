@@ -71,7 +71,7 @@ const VIDES = new Set([
   'sur', 'de', 'du', 'la', 'le', 'les', 'et', 'aux', 'des', 'avec', 'pour',
 ])
 
-const mots = (s?: string | null): Set<string> =>
+export const mots = (s?: string | null): Set<string> =>
   new Set(
     clefProduit(s ?? '')
       .split(' ')
@@ -89,7 +89,7 @@ const memeMot = (a: string, b: string): boolean => {
   return n >= 4 && a.slice(0, n) === b.slice(0, n)
 }
 
-const communs = (a: Set<string>, b: Set<string>): number => {
+export const communs = (a: Set<string>, b: Set<string>): number => {
   let n = 0
   a.forEach((m) => {
     let trouve = false
@@ -132,7 +132,7 @@ export function memeAffaire(deal: Deal, ligne: CommissionLigne): boolean {
 }
 
 /** Écart en jours entre deux dates ISO ; `Infinity` si l'une manque. */
-const joursEntre = (a?: string, b?: string | null): number => {
+export const joursEntre = (a?: string, b?: string | null): number => {
   if (!a || !b) return Number.POSITIVE_INFINITY
   const x = new Date(a).getTime()
   const y = new Date(b).getTime()
