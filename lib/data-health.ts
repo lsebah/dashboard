@@ -6,7 +6,14 @@
 import type { Product } from './types'
 import { couponPa } from './lifecycle'
 import { aAirbag, airbagNiveau, productTypeLabel } from './classification'
-import { termsheetUrl, TERMSHEET_FILES, TERMSHEET_ISINS, parseTermsheetName } from './termsheets'
+import {
+  termsheetUrl,
+  TERMSHEET_FILES,
+  TERMSHEET_ISINS,
+  parseTermsheetName,
+  INDEX_SYNC_LE,
+  indexAgeJours,
+} from './termsheets'
 import tsPdfs from './ts-pdfs.json'
 
 const TS_PDFS = tsPdfs as Record<string, string>
@@ -31,6 +38,51 @@ export interface DataHealth {
    *  termsheet neuve reste invisible tant que personne ne la remarque à
    *  l'œil : ni décodée, ni signalée, juste absente. */
   termsheetSansProduit: HealthItem[]
+  /** Fraîcheur de l'index du dossier. TOUS les contrôles ci-dessus lisent
+   *  l'index, jamais le dossier : si l'index cesse d'être rafraîchi, ils
+   *  deviennent silencieusement aveugles et restent au vert. Ce champ rend
+   *  cette panne-là visible. */
+  indexTermsheets: { syncLe: string; ageJours: number; perime: boolean }
+}
+
+/** Au-delà, l'index n'est plus une image du dossier (synchro quotidienne). */
+export const INDEX_PERIME_JOURS = 10
+
+/** Statuts qui ferment un produit : plus rien à décoder ni à surveiller. */
+export const STATUTS_CLOS = new Set(['rappele', 'vendu', 'echu'])
+
+export interface ADecoder {
+  isin: string
+  nom: string
+  raison: string
+  client: string | null
+}
+
+/**
+ * Produits VIVANTS qui disposent d'une termsheet mais dont le payoff n'est pas
+ * (complètement) décodé. Partagé par /api/lifecycle/decode-status et par
+ * l'audit hebdomadaire : deux copies de ce filtre finiraient par diverger, et
+ * c'est précisément un contrôle qui ne doit pas pouvoir mentir.
+ */
+export function produitsADecoder(products: Product[]): ADecoder[] {
+  return products
+    .filter((p) => !STATUTS_CLOS.has(p.statut ?? ''))
+    .filter((p) => aTermsheet(p))
+    .filter((p) => {
+      if (!p.terms) return true // aucune mécanique décodée
+      // Vrai autocall/phoenix (barrière de rappel définie) : le calendrier
+      // d'observations doit être décodé. Les participations/airbags sans rappel
+      // (in fine) n'ont pas de calendrier attendu → pas signalés.
+      const t = p.terms
+      const aRappel = t.kind === 'autocall' && typeof t.barriereRappelPct === 'number'
+      return aRappel && (!p.observations || p.observations.length === 0)
+    })
+    .map((p) => ({
+      isin: p.isin,
+      nom: p.nom,
+      raison: !p.terms ? 'mécanique (terms) non décodée' : 'calendrier d’observations absent',
+      client: (p.clients ?? []).join(', ') || null,
+    }))
 }
 
 /** Une TS est « disponible » si un PDF local, une URL produit ou l'index la résout. */
@@ -90,6 +142,8 @@ export function computeDataHealth(products: Product[]): DataHealth {
     },
   )
 
+  const ageJours = indexAgeJours()
+
   return {
     total: products.length,
     sansCoupon,
@@ -98,5 +152,10 @@ export function computeDataHealth(products: Product[]): DataHealth {
     deviseSuspecte,
     typeNonIdentifie,
     termsheetSansProduit,
+    indexTermsheets: {
+      syncLe: INDEX_SYNC_LE,
+      ageJours,
+      perime: ageJours > INDEX_PERIME_JOURS,
+    },
   }
 }

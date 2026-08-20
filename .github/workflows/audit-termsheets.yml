@@ -1,0 +1,147 @@
+name: Audit hebdomadaire des termsheets
+
+# Contrôle de cohérence des termsheets qui tourne UNIQUEMENT sur les données
+# versionnées du dépôt (index des termsheets, produits décodés, feed). Aucun
+# secret, aucun appel réseau. Les filtres ne sont pas réimplémentés côté script :
+# il importe `computeDataHealth` / `produitsADecoder` de lib/data-health.ts,
+# ceux-là mêmes qu'utilisent l'app et l'API — un audit qui recalcule à sa façon
+# finit par diverger de ce qu'il contrôle.
+#
+# POURQUOI cette contrainte : la synchro OneDrive (sync-termsheets.yml) exige les
+# secrets GRAPH_*. Ces secrets étant absents, elle « skippait proprement » chaque
+# matin — run VERT, aucune alerte — et l'index est resté figé du 2026-07-20 au
+# 2026-08-19, laissant 5 termsheets invisibles pendant un mois. Tous les autres
+# contrôles lisant eux aussi l'INDEX, aucun n'a pu voir la panne : un contrôle
+# adossé à la brique qu'il surveille ne détecte jamais la panne de cette brique.
+#
+# Ce job n'a donc RIEN à skipper : il lit des fichiers présents dans le dépôt et
+# rend toujours un verdict. Il ne peut pas repartir au vert en silence comme la
+# synchro Graph. Si l'audit lui-même échoue, le script renvoie AUDIT_ANOMALIES=1
+# et l'issue de suivi le dit.
+on:
+  schedule:
+    # Lundi 07:17 UTC (09:17 Paris en été) : volontairement décalé des heures
+    # rondes, où la file d'attente des runners GitHub est la plus chargée et où
+    # les jobs planifiés partent avec plusieurs dizaines de minutes de retard.
+    - cron: '17 7 * * 1'
+  workflow_dispatch:
+
+# Lecture seule sur le code : ce job n'écrit jamais dans le dépôt. Il n'a besoin
+# d'écrire que sur les issues, pour ouvrir/mettre à jour/fermer le suivi.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Node 22 : l'audit importe directement les modules TypeScript de lib/
+      # (--experimental-strip-types), comme `npm test`.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Le rapport est capturé dans un fichier : il sert à la fois de log, de
+      # corps d'issue et de source pour le compteur d'anomalies.
+      - name: Lancer l'audit (hors ligne)
+        id: audit
+        run: |
+          set -o pipefail
+          RAPPORT="$RUNNER_TEMP/audit-termsheets.txt"
+          npm run --silent audit | tee "$RAPPORT"
+          # Le script sort toujours en 0 ; la dernière ligne AUDIT_ANOMALIES=<n>
+          # porte le verdict. Marqueur absent = audit interrompu : on compte 1
+          # anomalie plutôt que de laisser le job passer au vert par défaut.
+          ANOMALIES=$(grep -oE '^AUDIT_ANOMALIES=[0-9]+$' "$RAPPORT" | tail -n 1 | cut -d= -f2)
+          if [ -z "$ANOMALIES" ]; then
+            echo "::warning::Ligne AUDIT_ANOMALIES absente du rapport — audit considéré en échec."
+            ANOMALIES=1
+          fi
+          echo "anomalies=$ANOMALIES" >> "$GITHUB_OUTPUT"
+          echo "rapport=$RAPPORT" >> "$GITHUB_OUTPUT"
+          echo "Anomalies détectées : $ANOMALIES"
+
+      # Une SEULE issue de suivi, réutilisée d'une semaine sur l'autre : mise à
+      # jour tant qu'il reste des anomalies, fermée dès qu'il n'y en a plus.
+      # Évite d'empiler 52 issues par an tout en gardant l'historique au même
+      # endroit.
+      - name: Ouvrir, mettre à jour ou fermer l'issue de suivi
+        uses: actions/github-script@v7
+        env:
+          ANOMALIES: ${{ steps.audit.outputs.anomalies }}
+          RAPPORT: ${{ steps.audit.outputs.rapport }}
+        with:
+          script: |
+            const fs = require('node:fs')
+            const TITRE = 'Audit termsheets — anomalies à traiter'
+            const anomalies = Number(process.env.ANOMALIES || '0')
+            const rapport = fs.readFileSync(process.env.RAPPORT, 'utf8').trimEnd()
+            const lien = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+
+            // Recherche de l'issue OUVERTE portant exactement ce titre. On
+            // pagine listForRepo plutôt que d'utiliser la recherche globale,
+            // dont l'index met parfois plusieurs minutes à se rafraîchir et qui
+            // ferait alors ouvrir un doublon.
+            const ouvertes = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            })
+            const existante = ouvertes.find((i) => !i.pull_request && i.title === TITRE)
+
+            const corps = [
+              `Audit automatique du ${new Date().toISOString().slice(0, 10)} — **${anomalies} anomalie(s)**.`,
+              '',
+              'Rapport intégral (généré sans secret ni appel réseau, uniquement à partir des fichiers du dépôt) :',
+              '',
+              '```text',
+              rapport,
+              '```',
+              '',
+              `Détail du run : ${lien}`,
+              '',
+              "_Issue gérée automatiquement par `.github/workflows/audit-termsheets.yml` : mise à jour à chaque audit, refermée dès qu'il n'y a plus d'anomalie._",
+            ].join('\n')
+
+            if (anomalies > 0) {
+              if (existante) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existante.number,
+                  body: corps,
+                })
+                core.info(`Issue #${existante.number} mise à jour (${anomalies} anomalie(s)).`)
+              } else {
+                const { data: creee } = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: TITRE,
+                  body: corps,
+                })
+                core.info(`Issue #${creee.number} créée (${anomalies} anomalie(s)).`)
+              }
+              core.warning(`${anomalies} anomalie(s) de termsheets — voir l'issue « ${TITRE} ».`)
+            } else if (existante) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existante.number,
+                body: `✅ Plus aucune anomalie détectée par l'audit du ${new Date().toISOString().slice(0, 10)} : index à jour, toutes les termsheets du dossier sont rattachées à un produit, tous les produits vivants ont leur document et leur payoff est décodé. Clôture automatique — l'issue sera rouverte si un prochain audit détecte de nouveau quelque chose.\n\nDétail du run : ${lien}`,
+              })
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existante.number,
+                state: 'closed',
+                state_reason: 'completed',
+              })
+              core.info(`Issue #${existante.number} fermée : plus aucune anomalie.`)
+            } else {
+              core.info('Aucune anomalie et aucune issue ouverte — rien à faire.')
+            }
