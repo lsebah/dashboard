@@ -15,6 +15,7 @@ const TABS: { name: string; href: string }[] = [
   { name: 'FRN', href: '/lifecycle2/frn' },
   { name: 'iTraxx', href: '/lifecycle2/itraxx' },
   { name: 'Commissions', href: '/lifecycle2/commissions' },
+  { name: 'Volatilité', href: '/lifecycle2/volatilite' },
   { name: 'Bloomberg', href: '/lifecycle2/bloomberg' },
   { name: 'Client', href: '/lifecycle2/client' },
   { name: 'Maintenance', href: '/lifecycle2/maintenance' },
