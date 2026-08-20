@@ -1,32 +1,44 @@
 'use client'
 // ─────────────────────────────────────────────────────────────────────────
-//  RADAR DE VOLATILITÉ — reprise de l'outil Leonteq (note de S. Noujaim du
-//  27/08/2024), sans Bloomberg.
+//  RADAR DE VOLATILITÉ — d'après l'outil « Volatility Radar » de Leonteq
+//  (S. Noujaim, 27/08/2024).
 //
-//  Ordonnée : niveau de volatilité. Abscisse : percentile sur douze mois —
-//  part du temps où la volatilité était plus basse qu'aujourd'hui. Haut à
-//  droite : candidats AUTOCALL (vol chère, au sommet de son année). Bas à
-//  gauche : candidats PARTICIPATIFS (vol basse, au creux).
+//  On trace des TITRES, pas des indices. C'est la lecture d'origine et la
+//  seule qui serve : le radar existe pour choisir une VALEUR sur laquelle
+//  monter un autocall ou un participatif. L'indice n'est ici qu'un univers —
+//  on le choisit, on ne le trace pas (Laurent, 20/08/2026).
 //
-//  Les noms des indices sont TOUJOURS écrits dans le graphe, jamais seulement
-//  en légende : la planche part en PDF chez des clients, où une couleur sans
-//  étiquette ne se lit pas.
+//  LECTURE :
+//   • ordonnée : niveau de volatilité ;
+//   • abscisse : percentile — part du temps, sur douze mois, où la volatilité
+//     était plus basse qu'aujourd'hui ;
+//   • haut-droite : vol chère et au sommet de son année → candidats AUTOCALL ;
+//   • bas-gauche : vol basse et au creux → candidats PARTICIPATIFS.
 // ─────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { quadrant, type PointRadar, type Quadrant } from '@/lib/volatilite'
+import { INDICES_RADAR } from '@/lib/indices-radar'
 
 interface Point extends PointRadar {
-  devise: string
+  poids?: number | null
 }
 
-interface Charge {
-  genereLe: string
-  mesure: string
-  fenetreJours: number
-  fenetrePercentileJours: number
+interface ChargeComposants {
+  genereLe?: string
+  indice: { cle: string; nom: string }
+  composition: {
+    source: string
+    majLe: string
+    ageJours: number
+    perimee: boolean
+    total: number
+    traces: number
+    tronque: number
+  } | null
+  raison?: string
   volMediane: number
   points: Point[]
-  indisponibles: { cle: string; nom: string; symbole: string; raison: string }[]
+  indisponibles: { symbole: string; nom: string; raison: string }[]
 }
 
 const QUADRANT_LABEL: Record<Quadrant, string> = {
@@ -41,194 +53,250 @@ const QUADRANT_CLS: Record<Quadrant, string> = {
 }
 
 const pct = (v: number, d = 1) => `${v.toFixed(d).replace('.', ',')} %`
-const niveau = (v: number) => v.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
 const dateFr = (iso: string) => new Date(iso).toLocaleDateString('fr-FR')
 
 // ── Le graphe ────────────────────────────────────────────────────────────
-const W = 860
-const H = 520
-const M = { haut: 24, droite: 28, bas: 54, gauche: 62 }
+const W = 900
+const H = 560
+const M = { haut: 26, droite: 30, bas: 56, gauche: 64 }
 
-function Radar({
-  points,
-  volMediane,
-  selection,
-  onSelect,
-}: {
-  points: Point[]
-  volMediane: number
-  selection: string | null
-  onSelect: (cle: string) => void
-}) {
+/**
+ * Nuage volatilité × percentile. Chaque point porte SON NOM : la planche part
+ * en pièce jointe, et un point sans étiquette n'y sert à rien.
+ */
+function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) {
   const vols = points.map((p) => p.vol)
-  const volMax = Math.max(...vols, volMediane) * 1.18
-  const volMin = Math.max(0, Math.min(...vols) * 0.82)
+  const volMax = Math.max(...vols, 1) * 1.12
+  const volMin = Math.max(0, Math.min(...vols, volMediane) * 0.88)
 
-  const x = (percentile: number) => M.gauche + (percentile / 100) * (W - M.gauche - M.droite)
-  const y = (vol: number) =>
-    H - M.bas - ((vol - volMin) / (volMax - volMin || 1)) * (H - M.haut - M.bas)
+  const x = (p: number) => M.gauche + (p / 100) * (W - M.gauche - M.droite)
+  const y = (v: number) =>
+    H - M.bas - ((v - volMin) / Math.max(volMax - volMin, 1e-9)) * (H - M.haut - M.bas)
 
-  const xMed = x(50)
-  const yMed = y(volMediane)
+  const yMediane = y(volMediane)
+  const xMilieu = x(50)
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Radar de volatilité">
-      {/* Quadrants : seuls les deux coins « actionnables » sont teintés. */}
-      <rect x={xMed} y={M.haut} width={W - M.droite - xMed} height={yMed - M.haut} fill="#ecfdf5" />
-      <rect x={M.gauche} y={yMed} width={xMed - M.gauche} height={H - M.bas - yMed} fill="#f0f9ff" />
+      {/* Quadrants : le fond dit la conclusion avant même de lire les points. */}
+      <rect
+        x={xMilieu}
+        y={M.haut}
+        width={W - M.droite - xMilieu}
+        height={Math.max(0, yMediane - M.haut)}
+        fill="#ecfdf5"
+      />
+      <rect
+        x={M.gauche}
+        y={yMediane}
+        width={xMilieu - M.gauche}
+        height={Math.max(0, H - M.bas - yMediane)}
+        fill="#f0f9ff"
+      />
 
-      <text x={W - M.droite - 8} y={M.haut + 18} textAnchor="end" className="fill-emerald-700" fontSize="12" fontWeight="600">
-        Autocall — vol chère, au sommet de son année
-      </text>
-      <text x={M.gauche + 8} y={H - M.bas - 8} className="fill-sky-700" fontSize="12" fontWeight="600">
-        Participatif — vol basse, au creux
-      </text>
-
-      {/* Grille */}
       {[0, 25, 50, 75, 100].map((p) => (
         <g key={p}>
-          <line x1={x(p)} y1={M.haut} x2={x(p)} y2={H - M.bas} stroke="#e2e8f0" strokeWidth={p === 50 ? 1.5 : 1} strokeDasharray={p === 50 ? '4 3' : undefined} />
-          <text x={x(p)} y={H - M.bas + 18} textAnchor="middle" fontSize="11" className="fill-slate-500">
+          <line x1={x(p)} y1={M.haut} x2={x(p)} y2={H - M.bas} stroke="#e2e8f0" strokeWidth={1} />
+          <text x={x(p)} y={H - M.bas + 18} textAnchor="middle" className="fill-slate-500 text-[11px]">
             {p} %
           </text>
         </g>
       ))}
-      <line x1={M.gauche} y1={yMed} x2={W - M.droite} y2={yMed} stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="4 3" />
-      <text x={W - M.droite} y={yMed - 6} textAnchor="end" fontSize="10" className="fill-slate-500">
-        médiane {pct(volMediane)}
+      <line
+        x1={M.gauche}
+        y1={yMediane}
+        x2={W - M.droite}
+        y2={yMediane}
+        stroke="#94a3b8"
+        strokeDasharray="4 4"
+      />
+      <text x={W - M.droite} y={yMediane - 6} textAnchor="end" className="fill-slate-400 text-[10px]">
+        médiane {pct(volMediane, 1)}
       </text>
 
-      {/* Axes */}
-      <line x1={M.gauche} y1={M.haut} x2={M.gauche} y2={H - M.bas} stroke="#334155" />
-      <line x1={M.gauche} y1={H - M.bas} x2={W - M.droite} y2={H - M.bas} stroke="#334155" />
-      <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="12" fontWeight="600" className="fill-slate-700">
-        Percentile sur 12 mois — part du temps où la volatilité était plus basse qu’aujourd’hui
+      <text x={xMilieu + 12} y={M.haut + 18} className="fill-emerald-700 text-[12px] font-medium">
+        Autocall — vol chère, au sommet de son année
       </text>
-      <text x={16} y={H / 2} textAnchor="middle" fontSize="12" fontWeight="600" transform={`rotate(-90 16 ${H / 2})`} className="fill-slate-700">
-        Volatilité réalisée annualisée
+      <text x={M.gauche + 12} y={H - M.bas - 10} className="fill-sky-700 text-[12px] font-medium">
+        Participatif — vol basse, au creux
       </text>
 
-      {/* Points — étiquette toujours écrite, décalée pour ne pas mordre le bord. */}
       {points.map((p) => {
         const cx = x(p.percentile)
         const cy = y(p.vol)
         const q = quadrant(p, volMediane)
         const couleur = q === 'autocall' ? '#059669' : q === 'participatif' ? '#0284c7' : '#475569'
+        // Étiquette à gauche du point quand il est trop à droite, pour qu'elle
+        // ne sorte jamais du cadre à l'impression.
         const aGauche = cx > W - M.droite - 130
-        const actif = selection === p.cle
         return (
-          <g key={p.cle} onClick={() => onSelect(p.cle)} className="cursor-pointer">
-            {actif && <circle cx={cx} cy={cy} r={13} fill={couleur} opacity={0.18} />}
-            <circle cx={cx} cy={cy} r={actif ? 7 : 5.5} fill={couleur} stroke="#fff" strokeWidth={1.5} />
+          <g key={p.cle}>
+            <circle cx={cx} cy={cy} r={5} fill={couleur} />
             <text
-              x={aGauche ? cx - 11 : cx + 11}
-              y={cy - 9}
+              x={aGauche ? cx - 9 : cx + 9}
+              y={cy - 5}
               textAnchor={aGauche ? 'end' : 'start'}
-              fontSize="12.5"
-              fontWeight="700"
-              className="fill-slate-900"
+              className="fill-slate-800 text-[11px] font-semibold"
             >
               {p.nom}
             </text>
             <text
-              x={aGauche ? cx - 11 : cx + 11}
-              y={cy + 6}
+              x={aGauche ? cx - 9 : cx + 9}
+              y={cy + 8}
               textAnchor={aGauche ? 'end' : 'start'}
-              fontSize="11"
-              className="fill-slate-600"
+              className="fill-slate-500 text-[10px]"
             >
-              {pct(p.vol)} · P{Math.round(p.percentile)}
+              {pct(p.vol, 1)} · P{Math.round(p.percentile)}
             </text>
           </g>
         )
       })}
+
+      <text
+        transform={`translate(14 ${H / 2}) rotate(-90)`}
+        textAnchor="middle"
+        className="fill-slate-500 text-[12px]"
+      >
+        Volatilité réalisée annualisée
+      </text>
+      <text x={W / 2} y={H - 10} textAnchor="middle" className="fill-slate-500 text-[12px]">
+        Percentile sur 12 mois — part du temps où la volatilité était plus basse qu’aujourd’hui
+      </text>
     </svg>
   )
 }
 
-// ── Fiche d'un indice ────────────────────────────────────────────────────
-function FicheIndice({ p, volMediane }: { p: Point; volMediane: number }) {
-  const q = quadrant(p, volMediane)
+/** Une planche : le radar d'un univers, avec son entête — l'unité imprimée. */
+function Planche({ c }: { c: ChargeComposants }) {
   return (
-    <div className="break-inside-avoid rounded-lg border border-slate-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[15px] font-semibold text-cmf-navy">{p.nom}</div>
-          <div className="text-[11px] text-slate-500">
-            {niveau(p.dernierNiveau)} {p.devise} au {dateFr(p.dateNiveau)}
-          </div>
+    <section className="flex break-inside-avoid flex-col gap-2">
+      <h2 className="text-[15px] font-semibold text-cmf-navy">{c.indice.nom}</h2>
+
+      {c.composition == null ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-[12px] text-amber-900">
+          <strong>Composition non disponible</strong> —{' '}
+          {c.raison ??
+            'le job mensuel « Rafraîchit les membres des indices » ne l’a pas encore écrite.'}{' '}
+          Rien n’est tracé plutôt qu’un univers inventé.
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${QUADRANT_CLS[q]}`}>
-          {QUADRANT_LABEL[q]}
-        </span>
-      </div>
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
-        <dt className="text-slate-500">Volatilité réalisée</dt>
-        <dd className="tabular-nums font-semibold">{pct(p.vol, 2)}</dd>
-        <dt className="text-slate-500">Percentile 12 mois</dt>
-        <dd className="tabular-nums font-semibold">{pct(p.percentile)}</dd>
-        <dt className="text-slate-500">Performance 12 mois</dt>
-        <dd className="tabular-nums">{p.perf12m == null ? '—' : pct(p.perf12m)}</dd>
-        {p.implicite && (
-          <>
-            <dt className="text-slate-500">
-              {p.implicite.nom} <span className="text-slate-400">({p.implicite.horizonJours} j)</span>
-            </dt>
-            <dd className="tabular-nums">{pct(p.implicite.valeur, 2)}</dd>
-          </>
-        )}
-      </dl>
-      <p className="mt-2 text-[11px] text-slate-400">
-        Percentile calculé sur {p.observations} observations.
-      </p>
-    </div>
+      ) : (
+        <>
+          <p className="text-[12px] text-slate-500">
+            {c.composition.traces} titre(s) tracé(s) sur {c.composition.total}
+            {c.composition.tronque > 0 && (
+              <>
+                {' '}
+                — <strong>{c.composition.tronque} hors du graphe</strong>, les plus faibles
+                pondérations
+              </>
+            )}
+            . Composition : {c.composition.source}, relevée le{' '}
+            {c.composition.majLe ? dateFr(c.composition.majLe) : '—'}
+            {c.composition.perimee && (
+              <strong className="text-red-700"> — périmée, à rafraîchir</strong>
+            )}
+            .
+          </p>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-3">
+            <Radar points={c.points} volMediane={c.volMediane} />
+          </div>
+
+          {c.indisponibles.length > 0 && (
+            <p className="text-[11px] text-red-700">
+              {c.indisponibles.length} titre(s) sans historique, absents du graphe :{' '}
+              {c.indisponibles.map((i) => i.symbole).join(', ')}
+            </p>
+          )}
+        </>
+      )}
+    </section>
   )
 }
 
 export default function VolatiliteRadar() {
-  const [data, setData] = useState<Charge | null>(null)
-  const [erreur, setErreur] = useState<string | null>(null)
-  const [selection, setSelection] = useState<string | null>(null)
+  const [selection, setSelection] = useState<string>(INDICES_RADAR[0]?.cle ?? '')
+  const [charges, setCharges] = useState<Record<string, ChargeComposants>>({})
+  const [enCours, setEnCours] = useState<Set<string>>(new Set())
+  const [toutCharger, setToutCharger] = useState(false)
+
+  // Les univers à charger : celui qu'on regarde, ou tous quand on prépare la
+  // planche mensuelle. Chaque titre coûte un historique — on ne les récupère
+  // donc pas « au cas où ».
+  const aCharger = useMemo(
+    () => (toutCharger ? INDICES_RADAR.map((i) => i.cle) : selection ? [selection] : []),
+    [toutCharger, selection],
+  )
 
   useEffect(() => {
     let vivant = true
-    fetch('/api/lifecycle/volatilite', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((j) => vivant && setData(j as Charge))
-      .catch((e) => vivant && setErreur((e as Error).message))
+    for (const cle of aCharger) {
+      if (charges[cle] || enCours.has(cle)) continue
+      setEnCours((s) => new Set(s).add(cle))
+      fetch(`/api/lifecycle/volatilite/composants?indice=${encodeURIComponent(cle)}`, {
+        cache: 'no-store',
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((j) => vivant && setCharges((c) => ({ ...c, [cle]: j as ChargeComposants })))
+        .catch(() => {
+          if (!vivant) return
+          const idx = INDICES_RADAR.find((i) => i.cle === cle)
+          setCharges((c) => ({
+            ...c,
+            [cle]: {
+              indice: { cle, nom: idx?.nom ?? cle },
+              composition: null,
+              raison: 'les cotations n’ont pas répondu.',
+              volMediane: 0,
+              points: [],
+              indisponibles: [],
+            },
+          }))
+        })
+        .finally(() => {
+          if (!vivant) return
+          setEnCours((s) => {
+            const n = new Set(s)
+            n.delete(cle)
+            return n
+          })
+        })
+    }
     return () => {
       vivant = false
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aCharger])
 
   const imprimer = useCallback(() => window.print(), [])
 
-  const selectionne = useMemo(
-    () => data?.points.find((p) => p.cle === selection) ?? null,
-    [data, selection],
-  )
-
-  if (erreur)
-    return (
-      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-        Radar indisponible — {erreur}. Aucune volatilité n’est affichée plutôt qu’une valeur périmée.
-      </div>
-    )
-  if (!data) return <div className="text-sm text-slate-500">Chargement des cotations…</div>
+  const courant = charges[selection]
+  const pretPourImpression = INDICES_RADAR.every((i) => charges[i.cle])
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3 print:hidden">
         <p className="max-w-3xl text-[13px] text-slate-500">
-          Volatilité <strong>réalisée</strong> annualisée sur {data.fenetreJours} séances, et son
-          percentile sur {data.fenetrePercentileJours} séances. Cliquez un indice pour sa fiche.
+          Les <strong>titres</strong> d’un indice, placés par leur volatilité et par son percentile
+          sur douze mois. Choisissez l’univers ci-dessous.
         </p>
-        <button
-          onClick={imprimer}
-          className="rounded-md bg-cmf-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0b1d36]"
-        >
-          Imprimer / PDF
-        </button>
+        <div className="flex items-center gap-2">
+          {!toutCharger && (
+            <button
+              onClick={() => setToutCharger(true)}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              title="Charge tous les univers pour imprimer la planche complète"
+            >
+              Charger tous les indices
+            </button>
+          )}
+          <button
+            onClick={imprimer}
+            className="rounded-md bg-cmf-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0b1d36]"
+          >
+            Imprimer / PDF
+          </button>
+        </div>
       </div>
 
       {/* Avertissement de mesure — il DOIT rester sur la version imprimée. */}
@@ -239,91 +307,102 @@ export default function VolatiliteRadar() {
         anticipe. La lecture du radar est la même, la grandeur ne l’est pas.
       </div>
 
-      {data.indisponibles.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[12px] text-red-900">
-          <strong>{data.indisponibles.length} indice(s) absent(s) du radar</strong> — un univers
-          amputé qui se tait ferait croire qu’il est complet.
-          <ul className="mt-1 space-y-0.5">
-            {data.indisponibles.map((i) => (
-              <li key={i.cle}>
-                {i.nom} <span className="font-mono text-[11px]">({i.symbole})</span> — {i.raison}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="rounded-lg border border-slate-200 bg-white p-3">
-        <Radar
-          points={data.points}
-          volMediane={data.volMediane}
-          selection={selection}
-          onSelect={(c) => setSelection((s) => (s === c ? null : c))}
-        />
-      </div>
-
-      {/* La fiche cliquée à l'écran ; toutes les fiches à l'impression, pour que
-          la planche mensuelle parte complète sans manipulation. */}
-      {selectionne && (
-        <div className="print:hidden">
-          <FicheIndice p={selectionne} volMediane={data.volMediane} />
-        </div>
-      )}
-      <div className="hidden grid-cols-2 gap-3 print:grid">
-        {data.points.map((p) => (
-          <FicheIndice key={p.cle} p={p} volMediane={data.volMediane} />
+      {/* Sélecteur d'univers — l'indice se choisit, il ne se trace pas. */}
+      <div className="flex flex-wrap items-center gap-1.5 print:hidden">
+        {INDICES_RADAR.map((i) => (
+          <button
+            key={i.cle}
+            onClick={() => setSelection(i.cle)}
+            className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors ${
+              selection === i.cle
+                ? 'bg-cmf-navy text-white'
+                : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+            }`}
+          >
+            {i.nom}
+          </button>
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 print:hidden">
-        <table className="w-full text-[12px]">
-          <thead className="bg-slate-50 text-slate-500">
-            <tr>
-              {['Indice', 'Niveau', 'Vol. réalisée', 'Percentile 12 m', 'Perf. 12 m', 'Implicite', 'Lecture'].map(
-                (h) => (
-                  <th key={h} className="px-3 py-2 text-left font-medium">
-                    {h}
-                  </th>
-                ),
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {data.points.map((p) => {
-              const q = quadrant(p, data.volMediane)
-              return (
-                <tr
-                  key={p.cle}
-                  onClick={() => setSelection((s) => (s === p.cle ? null : p.cle))}
-                  className={`cursor-pointer border-t border-slate-100 ${selection === p.cle ? 'bg-orange-50' : 'hover:bg-slate-50'}`}
-                >
-                  <td className="px-3 py-1.5 font-medium">{p.nom}</td>
-                  <td className="px-3 py-1.5 tabular-nums">
-                    {niveau(p.dernierNiveau)} {p.devise}
-                  </td>
-                  <td className="px-3 py-1.5 tabular-nums font-semibold">{pct(p.vol, 2)}</td>
-                  <td className="px-3 py-1.5 tabular-nums">{pct(p.percentile)}</td>
-                  <td className={`px-3 py-1.5 tabular-nums ${(p.perf12m ?? 0) < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                    {p.perf12m == null ? '—' : pct(p.perf12m)}
-                  </td>
-                  <td className="px-3 py-1.5 tabular-nums text-slate-500">
-                    {p.implicite ? `${p.implicite.nom} ${pct(p.implicite.valeur, 1)}` : '—'}
-                  </td>
-                  <td className="px-3 py-1.5">
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${QUADRANT_CLS[q]}`}>
-                      {QUADRANT_LABEL[q]}
-                    </span>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      {/* À l'écran : l'univers choisi. */}
+      <div className="print:hidden">
+        {enCours.has(selection) && !courant ? (
+          <div className="text-sm text-slate-500">Chargement des titres…</div>
+        ) : courant ? (
+          <Planche c={courant} />
+        ) : null}
       </div>
 
+      {/* À l'impression : toutes les planches chargées, une par univers. */}
+      <div className="hidden flex-col gap-6 print:flex">
+        {INDICES_RADAR.map((i) => charges[i.cle])
+          .filter((c): c is ChargeComposants => !!c)
+          .map((c) => (
+            <Planche key={c.indice.cle} c={c} />
+          ))}
+      </div>
+
+      {toutCharger && !pretPourImpression && (
+        <p className="text-[12px] text-slate-500 print:hidden">
+          Chargement des autres univers en cours — attendez qu’ils soient tous là avant d’imprimer,
+          sinon la planche partira incomplète.
+        </p>
+      )}
+
+      {/* Tableau des titres de l'univers affiché. */}
+      {courant?.composition && courant.points.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-slate-200 print:hidden">
+          <table className="w-full text-[12px]">
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                {['Titre', 'Vol. réalisée', 'Percentile 12 m', 'Perf. 12 m', 'Poids', 'Lecture'].map(
+                  (h) => (
+                    <th key={h} className="px-3 py-2 text-left font-medium">
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {[...courant.points]
+                .sort((a, b) => b.percentile - a.percentile)
+                .map((p) => {
+                  const q = quadrant(p, courant.volMediane)
+                  return (
+                    <tr key={p.cle} className="border-t border-slate-100 hover:bg-slate-50">
+                      <td className="px-3 py-1.5 font-medium">
+                        {p.nom} <span className="font-mono text-[11px] text-slate-400">{p.cle}</span>
+                      </td>
+                      <td className="px-3 py-1.5 tabular-nums font-semibold">{pct(p.vol, 2)}</td>
+                      <td className="px-3 py-1.5 tabular-nums">{pct(p.percentile)}</td>
+                      <td
+                        className={`px-3 py-1.5 tabular-nums ${(p.perf12m ?? 0) < 0 ? 'text-red-600' : 'text-emerald-600'}`}
+                      >
+                        {p.perf12m == null ? '—' : pct(p.perf12m)}
+                      </td>
+                      <td className="px-3 py-1.5 tabular-nums text-slate-500">
+                        {typeof p.poids === 'number' ? pct(p.poids, 2) : '—'}
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${QUADRANT_CLS[q]}`}
+                        >
+                          {QUADRANT_LABEL[q]}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <p className="text-[11px] text-slate-400">
-        Cotations Yahoo Finance, relevées le {dateFr(data.genereLe)}. D’après l’outil « Volatility
-        Radar » de Leonteq (S. Noujaim, 27/08/2024).
+        Cotations Yahoo Finance. Composition des indices rafraîchie mensuellement depuis les sources
+        publiques citées sur chaque planche. D’après l’outil « Volatility Radar » de Leonteq
+        (S. Noujaim, 27/08/2024).
       </p>
     </div>
   )

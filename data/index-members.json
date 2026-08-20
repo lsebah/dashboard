@@ -1,0 +1,28 @@
+{
+  "_README": "Composition des indices du radar de volatilité. Fichier ÉCRIT PAR scripts/refresh-index-members.mjs (job mensuel), jamais à la main. Les listes sont volontairement vides à la création : aucune composition n'est écrite de mémoire, elle est lue chez la source ou elle n'existe pas. Tant qu'un indice est vide, l'écran le dit et ne trace pas ses composants.",
+  "SPX": {
+    "source": "stockanalysis.com/list/sp-500-stocks/",
+    "majLe": "",
+    "membres": []
+  },
+  "DJIA": {
+    "source": "stockanalysis.com/list/dow-jones-stocks/",
+    "majLe": "",
+    "membres": []
+  },
+  "CAC": {
+    "source": "live.euronext.com — fiche indice PX1",
+    "majLe": "",
+    "membres": []
+  },
+  "SX5E": {
+    "source": "stoxx.com — index-details?symbol=SX5E",
+    "majLe": "",
+    "membres": []
+  },
+  "WORLD": {
+    "source": "ishares.com — holdings CSV de l'ETF URTH (iShares MSCI World)",
+    "majLe": "",
+    "membres": []
+  }
+}
