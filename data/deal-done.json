@@ -2,9 +2,22 @@
   "_README": "Deals annonces par l equipe dans le dossier Outlook DEAL DONE. Transcription LITTERALE des mails : un champ absent du mail est absent ici, jamais reconstitue. `source` = sujet du mail d origine. Fenetre : 06/01/2026 au 19/08/2026 (toute l annee 2026 a ce jour).",
   "fenetre": {
     "du": "2026-01-06",
-    "au": "2026-08-19"
+    "au": "2026-08-20"
   },
   "deals": [
+    {
+      "id": "2026-08-20-phoenix-memoire-wof-stmicro-klarna",
+      "date": "2026-08-20",
+      "rr": "MM",
+      "produit": "Phoenix Mémoire Wof STMICRO / Klarna",
+      "description": "maturité 2 ans · autocall trimestriel 100 % à partir du T2, puis dégressif de 5 % par trimestre · barrière de coupon mémoire −60 % (40 %) · barrière de capital −60 % (40 %) · coupon à effet mémoire 17,00 % p.a. (soit 4,25 %/T) · best strike sur deux dates : close + 15/9 · effet One Star à 100 % à maturité · reoffer 99,3 (aucun upfront chiffré dans l’annonce)",
+      "devise": "USD",
+      "nominal": 300000,
+      "coupon": 17,
+      "maturiteAns": 2,
+      "emetteur": "Marex",
+      "source": "Deal Done : Phoenix Wof"
+    },
     {
       "id": "2026-08-18-phoenix-memoire-degressif-bnp-sg-intesa",
       "date": "2026-08-18",
