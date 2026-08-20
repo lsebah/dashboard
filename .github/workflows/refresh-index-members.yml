@@ -1,0 +1,125 @@
+name: Rafraîchit les membres des indices
+
+# Révision MENSUELLE de la composition des indices du radar de volatilité
+# (data/index-members.json). Bloomberg donnait cette liste par `members()` ;
+# sans terminal, scripts/refresh-index-members.mjs va la lire chez les sources
+# publiques que Laurent a retenues : stockanalysis.com (S&P 500, Dow), le CSV de
+# détention de l'ETF URTH d'iShares (MSCI World), live.euronext.com (CAC 40) et
+# stoxx.com (Euro Stoxx 50).
+#
+# POURQUOI UNE PULL REQUEST ET JAMAIS UN PUSH DIRECT — cette composition part
+# dans une planche client. Une page publique qui change de forme ne renvoie pas
+# une erreur : elle renvoie une liste tronquée ou décalée. Le script s'en
+# protège par des garde-fous (planchers de membres, format des symboles, refus
+# d'une chute de plus de 25 %) et conserve l'ancienne liste plutôt que d'écrire
+# du faux — mais aucun garde-fou automatique ne remplace un œil humain sur le
+# diff : ce sont des entrées et des sorties d'indice, elles se relisent. Un push
+# direct sur main enverrait la nouvelle composition en production sans que
+# personne ne l'ait vue.
+#
+# Le job n'a besoin d'AUCUN secret : que des sources publiques et le GITHUB_TOKEN
+# du runner. Il ne peut donc pas « skipper proprement » faute de credentials,
+# panne silencieuse qui avait figé l'index des termsheets un mois durant.
+on:
+  schedule:
+    # Le 2 de chaque mois à 06:31 UTC. Le 2 plutôt que le 1er : les révisions
+    # trimestrielles d'indices prennent effet en début de mois et les sources
+    # mettent une journée à s'aligner. Et 06:31 plutôt qu'une heure ronde, où la
+    # file des runners planifiés part avec des dizaines de minutes de retard.
+    - cron: '31 6 2 * *'
+  workflow_dispatch:
+
+# Écriture sur le dépôt et sur les pull requests : l'action de PR pousse une
+# branche puis ouvre la demande. Rien d'autre.
+# NB : le dépôt doit autoriser « Allow GitHub Actions to create and approve pull
+# requests » (Settings › Actions), sinon l'ouverture de la PR échoue en 403.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  membres:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 22 : le script s'appuie sur `fetch` global et n'a aucune dépendance
+      # npm. `npm ci` reste là pour que le dépôt soit dans le même état qu'en
+      # local si le script venait à importer un module du projet.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Le rapport est capturé : il sert de log, de corps de pull request et de
+      # source pour le compteur d'échecs.
+      - name: Rafraîchir la composition des indices
+        id: refresh
+        run: |
+          set -o pipefail
+          RAPPORT="$RUNNER_TEMP/membres-indices.txt"
+          node scripts/refresh-index-members.mjs | tee "$RAPPORT"
+
+          # Le script sort toujours en 0 ; la dernière ligne MEMBRES_ECHECS=<n>
+          # porte le verdict. Marqueur absent = script interrompu avant la fin :
+          # on compte les 5 indices en échec plutôt que de passer au vert.
+          ECHECS=$(grep -oE '^MEMBRES_ECHECS=[0-9]+$' "$RAPPORT" | tail -n 1 | cut -d= -f2)
+          if [ -z "$ECHECS" ]; then
+            echo "::warning::Ligne MEMBRES_ECHECS absente du rapport — rafraîchissement considéré en échec."
+            ECHECS=5
+          fi
+          echo "echecs=$ECHECS" >> "$GITHUB_OUTPUT"
+
+          # Un indice qui a gardé son ancienne composition n'est pas une panne
+          # de CI, mais ça ne doit pas passer inaperçu dans la liste des runs.
+          if [ "$ECHECS" != "0" ]; then
+            echo "::warning::$ECHECS indice(s) ont conservé leur ancienne composition — voir le rapport."
+          fi
+
+          # Le fichier n'est réécrit que s'il a changé : pas de pull request
+          # vide quand la composition est stable d'un mois sur l'autre.
+          if [ -n "$(git status --porcelain -- data/index-members.json)" ]; then
+            echo "diff=oui" >> "$GITHUB_OUTPUT"
+          else
+            echo "diff=non" >> "$GITHUB_OUTPUT"
+            echo "Composition inchangée — aucune pull request à ouvrir."
+          fi
+
+          # Corps de la pull request : le rapport intégral, pour que le relecteur
+          # ait sous les yeux ce que le script a accepté ET ce qu'il a refusé.
+          CORPS="$RUNNER_TEMP/pr-body.md"
+          {
+            echo "Révision mensuelle de la composition des indices du radar de volatilité."
+            echo
+            echo "**À relire** : les entrées et sorties d'indice de ce diff finissent dans les planches clients. Les listes refusées par les garde-fous ont conservé leur composition précédente — elles apparaissent en ÉCHEC ci-dessous et devront être reprises."
+            echo
+            echo '```text'
+            cat "$RAPPORT"
+            echo '```'
+          } > "$CORPS"
+          echo "corps=$CORPS" >> "$GITHUB_OUTPUT"
+
+      # peter-evans/create-pull-request pousse la modification sur une branche
+      # dédiée et ouvre (ou met à jour) la demande. Branche fixe et
+      # `delete-branch` : une seule PR de composition à la fois, réutilisée d'un
+      # mois sur l'autre plutôt que douze branches orphelines par an.
+      - name: Ouvrir la pull request de révision
+        if: steps.refresh.outputs.diff == 'oui'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: data/index-members.json
+          branch: auto/membres-indices
+          delete-branch: true
+          commit-message: |
+            chore(indices): révision mensuelle de la composition
+
+            Écrit par scripts/refresh-index-members.mjs depuis les sources
+            publiques. ${{ steps.refresh.outputs.echecs }} indice(s) ont conservé
+            leur composition précédente.
+          title: 'Composition des indices — révision du mois'
+          body-path: ${{ steps.refresh.outputs.corps }}
+          labels: |
+            indices
+            automatique
