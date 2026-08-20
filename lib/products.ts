@@ -3995,6 +3995,127 @@ const efgChinaParticipation: Product = {
   badges: ['Worst-of', 'Airbag 80 %', 'Participation 70 %'],
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+//  Les deux notes ARCHE d'août 2026 — décodées le 20/08/2026 depuis les
+//  termsheets du dossier.
+//
+//  Ce sont des COUSSINS (buffers), pas des airbags ni des barrières
+//  désactivantes, et la nuance porte sur l'argent : sous le seuil, on ne perd
+//  pas depuis le strike (KI) ni amorti depuis la barrière (airbag), mais
+//  seulement ce qui dépasse le coussin. `AutocallTerms` n'a pas de variante
+//  pour ça : `protectionPct` porte donc le SEUIL — ce qu'il est bien —, et la
+//  forme de la perte en dessous vit dans la description et le pdiText. Rien
+//  n'est marqué `airbag`, qui désignerait une autre formule.
+// ─────────────────────────────────────────────────────────────────────────
+
+// ── XS3468086080 — CIBC Buffered Participation Euro Stoxx 50 (3,5Y in fine) ──
+// TS FINALE (« Term Sheet Finale », réf. interne SN10547DB).
+// Remboursement à maturité, par dénomination :
+//   a) si SX5E > Strike Price (80 % de l'initial) : 100 % + Max(0 % ; 110 % ×
+//      (Final/Initial − 1)) → entre 80 % et 100 %, on rend 100 % ;
+//   b) sinon : 100 % − (Strike Price − Final)/Initial → coussin de 20 %, puis
+//      perte au premier euro AU-DELÀ, remboursement plancher 20 %.
+// ANOMALIE SIGNALÉE À LAURENT : la TS écrit par ailleurs « This product is
+// 18.80% principal protected », alors que sa propre formule donne 20 %
+// (Strike Price = 5 189,36 = exactement 80 % de 6 486,70). Le dossier contient
+// une autre note CIBC nommée « KG 18.8 % » : tout indique un résidu de gabarit.
+// On décode la FORMULE, jamais la phrase — et la question reste à poser à CIBC.
+const cibcBufferSx5e: Product = {
+  id: 'XS3468086080',
+  nom: 'Buffered Participation Euro Stoxx 50',
+  isin: 'XS3468086080',
+  valor: '112287629',
+  emetteur: 'Canadian Imperial Bank of Commerce',
+  notationEmetteur: 'Aa2 / A+ / AA',
+  assetClass: 'equity',
+  family: 'participation',
+  devise: 'EUR',
+  nominal: 528_000, // Principal Amount de la TS
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-08-04', // Trade Date = Strike Date
+  dateEmission: '2026-08-18',
+  dateConstatationFinale: '2030-02-04', // Valuation Date
+  dateEcheance: '2030-02-18', // Maturity Date
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [
+    {
+      nom: 'Euro Stoxx 50 Index',
+      bloomberg: 'SX5E Index',
+      devise: 'EUR',
+      niveauInitial: 6486.7,
+    },
+  ],
+  pdiPct: 80,
+  pdiText: '80 % (coussin 20 %)',
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    protectionPct: 80,
+    protectionStyle: 'europeenne',
+  },
+  productType: 'Participation (coussin)',
+  description:
+    '3,5Y Participation Euro Stoxx 50 — 110 % de la hausse au-delà de 100 %, capital rendu entre 80 % et 100 %, coussin de 20 % puis perte 1:1 (plancher 20 %), in fine',
+  badges: ['Single', 'Coussin 20 %', 'Participation 110 %'],
+  termsheetFichier: '260804_3.5Y_Buffered Participation SX5E_In Fine_XS3468086080_CIBC.pdf',
+}
+
+// ── XS3461528773 — BNP Buffered Return Enhanced S&P 500 Equal Weighted (USD) ──
+// La termsheet est INDICATIVE et ses deux formules de remboursement sont des
+// images : elles ne s'extraient pas. La mécanique ci-dessous vient donc du KID
+// du même produit — même ISIN, même référence interne (CE13515MDY), même date
+// (07/08/2026) —, qui l'énonce en toutes lettres. C'est une lecture, pas une
+// reconstitution ; à défaut, rien n'aurait été décodé.
+//   1) Final ≥ 100 % : nominal + 103 % de la performance ;
+//   2) Final < 100 % et ≥ 85 % : nominal (coussin) ;
+//   3) Final < 85 % : 115 % du nominal − 100 % de |performance|.
+// Le plancher est donc 15 % (KID : « entitled to receive back at least 15% »),
+// et la jointure est continue : à 85 %, 115 − 15 = 100 %.
+// Le niveau initial n'est imprimé NULLE PART (ni TS ni KID) : il n'est pas
+// renseigné plutôt que supposé.
+const bnpBufferSpw: Product = {
+  id: 'XS3461528773',
+  nom: 'Buffered Return Enhanced S&P 500 Equal Weighted',
+  isin: 'XS3461528773',
+  valor: '159325124',
+  emetteur: 'BNP Paribas Issuance B.V.',
+  garant: 'BNP Paribas',
+  notationEmetteur: 'A+ / A1 / AA-',
+  assetClass: 'equity',
+  family: 'participation',
+  devise: 'USD',
+  nominal: 2_500_000, // Issue Amount de la TS
+  valeurNominale: 1000,
+  prixEmission: 100,
+  dateConstatationInitiale: '2026-08-07', // Trade Date = Strike Date
+  dateEmission: '2026-08-21',
+  dateConstatationFinale: '2030-02-07', // Redemption Valuation Date
+  dateEcheance: '2030-02-22', // Redemption Date
+  frequence: 'in_fine',
+  basket: 'single',
+  sousJacents: [
+    { nom: 'S&P 500 Equal Weighted Index', bloomberg: 'SPW Index', devise: 'USD' },
+  ],
+  pdiPct: 85,
+  pdiText: '85 % (coussin 15 %)',
+  terms: {
+    kind: 'autocall',
+    sens: 'standard',
+    effetMemoire: false,
+    protectionPct: 85,
+    protectionStyle: 'europeenne',
+  },
+  productType: 'Participation (coussin)',
+  description:
+    '3,5Y Return Enhanced S&P 500 Equal Weighted USD — 103 % de la hausse, capital rendu entre 85 % et 100 %, coussin de 15 % puis perte 1:1 (plancher 15 %), in fine',
+  badges: ['Single', 'Coussin 15 %', 'Participation 103 %', 'USD'],
+  termsheetFichier:
+    '260807_3.5Y_Buffered Return Enhanced S&P 500 Equal Weighted USD_In Fine_XS3461528773_BNP.pdf',
+}
+
 // ── CH0587314615 — EFG Call Warrant sur indice Leonteq European Senior Loans ──
 const efgWarrantSeniorLoans: Product = {
   id: 'CH0587314615',
@@ -6972,7 +7093,8 @@ const detailed: Product[] = [
   bnpClnItraxx42, bnpGoldCallSpread, bnpTryCallable, sipChabanais, feiDettePrivee, msLuxeBonus, bnpSphinx15,
   barclaysEssMt,
   santanderEngieVeoliaSchneider, bnpAthenaBoosterIndices, bnpCallableCsi500,
-  msMxeadt50, gsClnSgSub, efgChinaParticipation, efgWarrantSeniorLoans,
+  msMxeadt50, gsClnSgSub, efgChinaParticipation, cibcBufferSx5e, bnpBufferSpw,
+  efgWarrantSeniorLoans,
   cibcParticipationSpx,
   ...metaProducts, ...metaProducts2,
   bnpSx5e, bnpDefense, socgenEnergy, marexUso, bbvaRaceAcaNovob,
