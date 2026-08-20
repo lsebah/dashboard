@@ -16,6 +16,7 @@ import { pourcent, insecable } from '@/lib/pourcentage'
 import { commissions } from '@/lib/commissions'
 import { useLocalCommissions } from '@/lib/local-commissions'
 import { croiserAvecRegistre } from '@/lib/deal-done-registre'
+import { croiserAvecTermsheets } from '@/lib/deal-done-termsheets'
 import { useLocalProducts } from '@/lib/local-products'
 import { STRIKE_TERMSHEET } from '@/lib/strikes-termsheets'
 import { IsinLink } from '@/app/lifecycle/components/FicheProduit'
@@ -79,6 +80,7 @@ export default function DealDoneView({
   fenetre,
   strikes = {},
   couponsDecodes = {},
+  payoffsDecodes = [],
 }: {
   deals: Deal[]
   fenetre?: { du: string; au: string }
@@ -89,6 +91,10 @@ export default function DealDoneView({
    *  commissions ne le connaît pas non plus. La termsheet décodée, si elle
    *  existe pour ce produit, si.  */
   couponsDecodes?: Record<string, number>
+  /** ISIN dont le payoff est décodé au portefeuille — sert à dire, pour une
+   *  termsheet du dossier sans ligne Deal Done, si le travail de décodage
+   *  reste à faire ou si seule l'affaire manque. */
+  payoffsDecodes?: string[]
 }) {
   const [prix, setPrix] = useState<Record<string, number>>({})
   const [rr, setRr] = useState<string>('')
@@ -135,17 +141,25 @@ export default function DealDoneView({
     () => [...croisement.deals, ...croisement.ajoutes],
     [croisement],
   )
+  // Troisième source : le dossier des termsheets. Le registre ne connaît que
+  // les affaires facturées ; une annonce dont la commission n'est pas encore
+  // saisie restait sans ISIN, donc sans lien vers son produit ni son payoff.
+  // La termsheet finale, elle, porte l'ISIN — et prouve que l'affaire est faite.
+  const croisementTs = useMemo(
+    () => croiserAvecTermsheets(avecRegistre, { annee: '2026', decodes: new Set(payoffsDecodes) }),
+    [avecRegistre, payoffsDecodes],
+  )
   // Coupon manquant (surtout les affaires reprises du registre, qui ne le
   // porte pas) complété depuis la termsheet DÉCODÉE du produit, quand elle
   // existe — jamais une estimation, un chiffre déjà lu et vérifié ailleurs.
   const avecCoupon = useMemo(
     () =>
-      avecRegistre.map((d) =>
+      croisementTs.deals.map((d) =>
         typeof d.coupon !== 'number' && d.isin && typeof couponsDecodes[d.isin] === 'number'
           ? { ...d, coupon: couponsDecodes[d.isin] }
           : d,
       ),
-    [avecRegistre, couponsDecodes],
+    [croisementTs, couponsDecodes],
   )
 
   const { deals, doublons, aVerifier } = useMemo(() => dedoublonner(avecCoupon), [avecCoupon])
@@ -225,6 +239,31 @@ export default function DealDoneView({
             {manquants.map((l) => (
               <li key={`${l.isin}|${l.client ?? ''}`} className="font-mono">
                 {l.isin} · {l.client ?? '—'} · {l.description ?? '—'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Filet symétrique : une termsheet FINALE datée de l'année, dans le
+          dossier, mais aucune ligne Deal Done. La termsheet prouve que le
+          produit existe — pas qui l'a vendu ni pour combien : on signale, on
+          ne fabrique pas l'affaire manquante. */}
+      {croisementTs.sansDeal.length > 0 && (
+        <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-2.5 text-[12px] text-sky-900">
+          <strong>
+            {croisementTs.sansDeal.length} termsheet(s) du dossier sans affaire annoncée
+          </strong>{' '}
+          — le document est classé, l&apos;affaire n&apos;apparaît nulle part ici. Rien n&apos;est
+          ajouté d&apos;office : une termsheet ne dit ni le client ni le nominal.
+          <ul className="mt-1 space-y-0.5">
+            {croisementTs.sansDeal.map((t) => (
+              <li key={t.isin}>
+                <span className="font-mono">{t.isin}</span> · {jour(t.date)} · {t.emetteur} ·{' '}
+                {t.nom}
+                <span className={t.decode ? 'text-sky-600' : 'font-medium text-amber-700'}>
+                  {t.decode ? ' — payoff décodé' : ' — payoff NON décodé'}
+                </span>
               </li>
             ))}
           </ul>
