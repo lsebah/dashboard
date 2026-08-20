@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Lifecycle2Nav from './components/Lifecycle2Nav'
+import { FicheProduitProvider } from '@/app/lifecycle/components/FicheProduit'
 
 export const metadata: Metadata = {
   title: 'LIFECYCLE 2 — Terminal CMF',
@@ -35,7 +36,10 @@ export default function Lifecycle2Layout({ children }: { children: React.ReactNo
           <Lifecycle2Nav />
         </div>
       </header>
-      <main className="mx-auto max-w-[1700px] px-4 py-5 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-[1700px] px-4 py-5 sm:px-6">
+        {/* Un ISIN cliquable ouvre la même fiche, quel que soit l'onglet. */}
+        <FicheProduitProvider>{children}</FicheProduitProvider>
+      </main>
     </div>
   )
 }

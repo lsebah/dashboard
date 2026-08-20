@@ -8,6 +8,7 @@ import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissio
 import { useAllocations } from '@/lib/allocations'
 import { factureMailto as buildFactureMailto } from '@/lib/facture'
 import Modal from './Modal'
+import { IsinLink } from './FicheProduit'
 import { dateFr as dateIso } from '@/lib/dates'
 import { codeEmetteur } from '@/lib/emetteurs'
 import { pourcent } from '@/lib/pourcentage'
@@ -410,7 +411,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
                     <span className="ml-1.5 rounded bg-amber-100 px-1 py-0.5 text-[10px] font-medium text-amber-700" title={`Émis en ${annee(l)}, encaissé en ${ANNEE_COURANTE} — report ponctuel`}>report {anneeAttr(l)}</span>
                   )}
                 </td>
-                <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.isin}</td>
+                {/* ISIN cliquable comme dans tous les onglets — depuis le seul registre, le produit était jusqu'ici inatteignable. */}
+                <td className="px-2 py-1.5 whitespace-nowrap"><IsinLink isin={l.isin} /></td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{l.client ?? '—'}</td>
                 <td
                   className={`px-2 py-1.5 whitespace-nowrap ${impaye ? 'font-semibold text-red-600' : ''}`}

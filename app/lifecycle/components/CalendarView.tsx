@@ -9,6 +9,7 @@ import { useLiveProducts } from '@/lib/use-live-products'
 import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
 import Modal from './Modal'
+import { IsinLink } from './FicheProduit'
 
 type Filtre = 'toutes' | 'maturite' | 'autocall' | 'coupon'
 
@@ -235,9 +236,20 @@ export default function CalendarView({ products }: { products: Product[] }) {
     const emet = (p.emetteur ?? '').split(' ')[0]
     const clients = allocsOf(p).map((x) => x.client).join(', ')
     return (
-      <button
+      // Div plutôt que <button> : la carte contient désormais l'ISIN cliquable,
+      // et un bouton dans un bouton est du HTML invalide — le navigateur sort
+      // l'un des deux à l'analyse, ce qui casse l'hydratation.
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setSelId(p.id)}
-        className={`w-full text-left rounded-md border px-2 py-1.5 hover:ring-1 hover:ring-cmf-blue/40 ${a.cls} ${
+        onKeyDown={(ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault()
+            setSelId(p.id)
+          }
+        }}
+        className={`w-full cursor-pointer text-left rounded-md border px-2 py-1.5 hover:ring-1 hover:ring-cmf-blue/40 ${a.cls} ${
           selId === p.id ? 'ring-1 ring-cmf-blue' : ''
         }`}
         title={`${p.nom} · ${a.titre}`}
@@ -250,11 +262,12 @@ export default function CalendarView({ products }: { products: Product[] }) {
           <span className="text-[11px]" title={a.titre}>{a.icone}</span>
         </div>
         <div className="text-[11px] text-slate-500 truncate">
-          <span className="font-mono">{p.isin}</span>
+          {/* ISIN cliquable comme dans tous les onglets, mais vers la popup locale — plus riche ici (reconstruction). */}
+          <IsinLink isin={p.isin} onOuvrir={() => setSelId(p.id)} className="text-[11px]" />
           {emet && <span> · {emet}</span>}
         </div>
         <div className="text-[11px] text-slate-400 truncate">{clients || '—'}</div>
-      </button>
+      </div>
     )
   }
 

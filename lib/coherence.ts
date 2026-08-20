@@ -69,6 +69,17 @@ const canonique = (s: string): string => {
   return ALIAS_CLIENT[r] ?? r
 }
 
+/**
+ * Libellé canonique d'un client — racine du nom, alias résolus.
+ * « CAPITALL - 01227 » et « CAPITALL » désignent le même compte : sans cette
+ * normalisation, les filtres client de l'onglet Portefeuille affichent deux
+ * boutons pour un seul client, et chacun ne montre que la moitié des lignes.
+ */
+export function clientCanonique(s?: string | null): string | null {
+  const v = (s ?? '').trim()
+  return v ? canonique(v) : null
+}
+
 /** Vrai si deux libellés désignent le même compte (alias compris). */
 export function memeClient(a: string, b: string): boolean {
   return canonique(a) === canonique(b)
