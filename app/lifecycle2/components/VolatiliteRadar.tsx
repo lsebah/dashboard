@@ -16,7 +16,26 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { quadrant, type PointRadar, type Quadrant } from '@/lib/volatilite'
 
 interface Point extends PointRadar {
-  devise: string
+  devise?: string
+  /** Pondération dans l'indice, en % — présente pour un composant. */
+  poids?: number | null
+}
+
+interface ChargeComposants {
+  indice: { cle: string; nom: string }
+  composition: {
+    source: string
+    majLe: string
+    ageJours: number
+    perimee: boolean
+    total: number
+    traces: number
+    tronque: number
+  } | null
+  raison?: string
+  volMediane: number
+  points: Point[]
+  indisponibles: { symbole: string; nom: string; raison: string }[]
 }
 
 interface Charge {
@@ -201,6 +220,32 @@ export default function VolatiliteRadar() {
     }
   }, [])
 
+  const [composants, setComposants] = useState<ChargeComposants | null>(null)
+  const [chargeComposants, setChargeComposants] = useState(false)
+
+  // Le radar des COMPOSANTS est la lecture d'origine de l'outil Leonteq : on
+  // y choisit une VALEUR, pas un indice. Il se charge à la demande — soixante
+  // historiques ne se récupèrent pas pour rien à l'ouverture de l'onglet.
+  useEffect(() => {
+    if (!selection) {
+      setComposants(null)
+      return
+    }
+    let vivant = true
+    setChargeComposants(true)
+    setComposants(null)
+    fetch(`/api/lifecycle/volatilite/composants?indice=${encodeURIComponent(selection)}`, {
+      cache: 'no-store',
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j) => vivant && setComposants(j as ChargeComposants))
+      .catch(() => vivant && setComposants(null))
+      .finally(() => vivant && setChargeComposants(false))
+    return () => {
+      vivant = false
+    }
+  }, [selection])
+
   const imprimer = useCallback(() => window.print(), [])
 
   const selectionne = useMemo(
@@ -274,6 +319,65 @@ export default function VolatiliteRadar() {
           <FicheIndice key={p.cle} p={p} volMediane={data.volMediane} />
         ))}
       </div>
+
+      {/* ── Composants de l'indice sélectionné ─────────────────────────── */}
+      {selection && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-[15px] font-semibold text-cmf-navy">
+            Composants — {selectionne?.nom ?? selection}
+          </h2>
+
+          {chargeComposants && (
+            <div className="text-sm text-slate-500">Chargement des composants…</div>
+          )}
+
+          {!chargeComposants && composants?.composition == null && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-[12px] text-amber-900">
+              <strong>Composition non disponible</strong> —{' '}
+              {composants?.raison ??
+                'le job mensuel « Rafraîchit les membres des indices » ne l’a pas encore écrite.'}{' '}
+              Rien n’est tracé plutôt qu’un univers inventé.
+            </div>
+          )}
+
+          {!chargeComposants && composants?.composition && (
+            <>
+              <p className="text-[12px] text-slate-500">
+                {composants.composition.traces} valeur(s) tracée(s) sur {composants.composition.total}
+                {composants.composition.tronque > 0 && (
+                  <>
+                    {' '}
+                    — <strong>{composants.composition.tronque} hors du graphe</strong>, les plus
+                    faibles pondérations
+                  </>
+                )}
+                . Composition : {composants.composition.source}, relevée le{' '}
+                {composants.composition.majLe ? dateFr(composants.composition.majLe) : '—'}
+                {composants.composition.perimee && (
+                  <strong className="text-red-700"> — périmée, à rafraîchir</strong>
+                )}
+                .
+              </p>
+
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <Radar
+                  points={composants.points}
+                  volMediane={composants.volMediane}
+                  selection={null}
+                  onSelect={() => {}}
+                />
+              </div>
+
+              {composants.indisponibles.length > 0 && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[12px] text-red-900 print:hidden">
+                  <strong>{composants.indisponibles.length} valeur(s) sans historique</strong> :{' '}
+                  {composants.indisponibles.map((i) => i.symbole).join(', ')}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 print:hidden">
         <table className="w-full text-[12px]">
