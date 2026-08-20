@@ -21,10 +21,15 @@ export default function DealDonePage() {
   // reprise du registre, lequel ne connaît que la date d'émission.
   const strikes: Record<string, string> = {}
   const couponsDecodes: Record<string, number> = {}
+  // ISIN dont la mécanique est décodée : sert à distinguer, parmi les
+  // termsheets du dossier sans affaire annoncée, celles qui n'attendent qu'une
+  // ligne Deal Done de celles dont le payoff reste entièrement à lire.
+  const payoffsDecodes: string[] = []
   for (const p of products) {
     if (p.dateConstatationInitiale) strikes[p.isin] = p.dateConstatationInitiale
     const cpn = couponPa(p)
     if (typeof cpn === 'number') couponsDecodes[p.isin] = cpn
+    if (p.terms) payoffsDecodes.push(p.isin)
   }
   return (
     <div className="flex flex-col gap-4">
@@ -36,7 +41,13 @@ export default function DealDonePage() {
           directement dans Lifecycle.
         </p>
       </div>
-      <DealDoneView deals={deals} fenetre={fenetre} strikes={strikes} couponsDecodes={couponsDecodes} />
+      <DealDoneView
+        deals={deals}
+        fenetre={fenetre}
+        strikes={strikes}
+        couponsDecodes={couponsDecodes}
+        payoffsDecodes={payoffsDecodes}
+      />
     </div>
   )
 }

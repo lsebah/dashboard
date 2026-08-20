@@ -5,6 +5,7 @@ import type { CommissionsData, CommissionLigne } from '@/lib/commissions'
 import { ligneKey, ligneKeyLegacy, clesLegacyAmbigues, doublonsRegistreLocal } from '@/lib/commissions'
 import { useCommissionsStore } from '@/lib/commissions-store'
 import { useLocalCommissions, type LocalCommission } from '@/lib/local-commissions'
+import type { LigneAFacturer } from '@/lib/facturation'
 import { useAllocations } from '@/lib/allocations'
 import { factureMailto as buildFactureMailto } from '@/lib/facture'
 import Modal from './Modal'
@@ -46,9 +47,21 @@ const parsePct = (raw: string): number | undefined => {
 
 const rowKey = ligneKey
 
-type StatutFacture = 'toutes' | 'a_facturer' | 'envoyee' | 'payee'
+type StatutFacture = 'toutes' | 'sans_ligne' | 'a_facturer' | 'envoyee' | 'payee'
 
-export default function CommissionsView({ data }: { data: CommissionsData }) {
+export default function CommissionsView({
+  data,
+  aFacturer = [],
+}: {
+  data: CommissionsData
+  /**
+   * Tickets clients d'un deal qui n'ont AUCUNE ligne au registre — construits
+   * à partir de l'ISIN, du client et du nominal réels (cf. lib/facturation.ts).
+   * Tout ce qui relève de la facturation y est vide : ce sont précisément les
+   * lignes qu'il reste à établir. Elles pèsent donc zéro dans tous les totaux.
+   */
+  aFacturer?: LigneAFacturer[]
+}) {
   const { ov, patch, reset, restore, backup, serverSync } = useCommissionsStore()
   // Commissions créées localement (depuis « Nouveau trade ») → fusionnées.
   // Celles-ci sont entièrement éditables / supprimables (elles t'appartiennent),
@@ -57,7 +70,28 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   // Noms d'affichage renommés manuellement (par ISIN) dans le Portefeuille →
   // on les applique aussi ici pour que la description suive le renommage.
   const { noms } = useAllocations()
-  const lignesAll = useMemo(() => [...data.lignes, ...localCommissions], [data, localCommissions])
+  // Les lignes à établir sont calculées côté serveur, qui ne voit QUE le
+  // registre versionné. Un deal facturé par un ticket saisi dans Lifecycle
+  // (KV, invisible du serveur) en ressortirait donc « à facturer » alors qu'il
+  // l'est déjà — et la ligne apparaîtrait deux fois. On écarte ici tout ISIN
+  // déjà porté par une facturation, d'où qu'elle vienne.
+  const isinsFactures = useMemo(
+    () => new Set([...data.lignes, ...localCommissions].map((l) => l.isin)),
+    [data, localCommissions],
+  )
+  const aEtablir = useMemo(
+    () => aFacturer.filter((l) => !isinsFactures.has(l.isin)),
+    [aFacturer, isinsFactures],
+  )
+  // L'onglet repart de l'ISIN : au registre et aux saisies locales s'ajoutent
+  // les deals dont RIEN n'est encore facturé. Sans eux, un trade fait mais non
+  // encore facturé n'apparaissait nulle part — ni ligne, ni trou, ni rappel.
+  const lignesAll = useMemo(
+    () => [...data.lignes, ...localCommissions, ...aEtablir],
+    [data, localCommissions, aEtablir],
+  )
+  // Clés des lignes à établir — elles ne sont ni du registre, ni des saisies.
+  const clesAFacturer = useMemo(() => new Set(aEtablir.map((l) => rowKey(l))), [aEtablir])
   // Clés des lignes locales — pour distinguer « tes trades » du classeur.
   const localKeys = useMemo(() => new Set(localCommissions.map((l) => rowKey(l))), [localCommissions])
   // Anciennes clés que plusieurs lignes se partagent : leur surcharge n'est
@@ -128,7 +162,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     const fait = !!facture || (editable ? !!o.fait : false) || !!credited
     // Renommage manuel (Portefeuille) prioritaire sur la description du classeur.
     const description = noms[l.isin] ?? l.description
-    return { ...l, description, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal }
+    return { ...l, description, ufPct: uf, retroPct: retro, comTotal, comClient, net, credited, facture, factureClasseur: l.facture, fait, editable, split, isLocal, aFacturer: clesAFacturer.has(rowKey(l)) }
   }
 
   // ── Paiement ───────────────────────────────────────────────────────────
@@ -165,6 +199,8 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
   const filtered = useMemo(() => {
     let l = lignesAll.map(calc)
     if (an !== 'tous') l = l.filter((x) => anneeAttr(x) === an)
+    // « Sans ligne » : le deal existe, sa facturation n'a jamais été établie.
+    if (statut === 'sans_ligne') l = l.filter((x) => x.aFacturer)
     if (statut === 'a_facturer') l = l.filter((x) => !x.fait)
     if (statut === 'envoyee') l = l.filter((x) => x.fait && !x.credited)
     if (statut === 'payee') l = l.filter((x) => x.credited)
@@ -188,6 +224,10 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lignesAll, ov, noms, an, statut, q, sort])
+
+  // Lignes « à établir » présentes dans le jeu affiché — le total de nominal
+  // les inclut, il faut donc pouvoir les compter.
+  const nbAEtablir = useMemo(() => filtered.filter((l) => l.aFacturer).length, [filtered])
 
   const tot = useMemo(() => {
     const sum = (k: 'comClient' | 'comTotal' | 'net' | 'nominal') =>
@@ -310,7 +350,7 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
           ))}
         </div>
         <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
-          {([['toutes', 'Toutes'], ['a_facturer', 'À facturer'], ['envoyee', 'En attente'], ['payee', 'Payée']] as [StatutFacture, string][]).map(([v, lab]) => (
+          {([['toutes', 'Toutes'], ['sans_ligne', 'Sans ligne'], ['a_facturer', 'À facturer'], ['envoyee', 'En attente'], ['payee', 'Payée']] as [StatutFacture, string][]).map(([v, lab]) => (
             <button key={v} onClick={() => setStatut(v)} className={`px-3 py-1.5 ${statut === v ? 'bg-cmf-blue text-white' : 'bg-white text-slate-600'}`}>{lab}</button>
           ))}
         </div>
@@ -374,6 +414,20 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
         ))}
       </div>
 
+      {/* Le nominal ci-dessus inclut les deals dont la facturation reste à
+          établir : leur commission est nulle, pas leur montant placé. Le dire
+          évite de lire « Nominal placé » comme « nominal facturé ». */}
+      {nbAEtablir > 0 && (
+        <p className="text-[11px] text-sky-700">
+          Dont <strong>{nbAEtablir}</strong> ligne(s) « à établir » — le deal existe au
+          portefeuille, aucune facturation n&apos;y est encore rattachée. Elles comptent pour zéro
+          en commission ; leur nominal, lui, est réel.{' '}
+          <button onClick={() => setStatut('sans_ligne')} className="underline">
+            Les afficher seules
+          </button>
+        </p>
+      )}
+
       {/* Table détail */}
       <div className="overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full text-[12px]">
@@ -401,11 +455,28 @@ export default function CommissionsView({ data }: { data: CommissionsData }) {
               // Non payé : commission émise (passée) sans date d'encaissement.
               const impaye = !l.credited && !!l.issue && l.issue <= TODAY
               return (
-              <tr key={`${rowKey(l)}|${i}`} className={impaye ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-orange-50'}>
+              <tr
+                key={`${rowKey(l)}|${i}`}
+                className={
+                  l.aFacturer
+                    ? 'bg-sky-50/70 hover:bg-sky-100'
+                    : impaye
+                      ? 'bg-red-50 hover:bg-red-100'
+                      : 'hover:bg-orange-50'
+                }
+              >
                 <td className="px-2 py-1.5 whitespace-nowrap">
                   {dateFr(l.issue) ?? '—'}
                   {l.issue && l.issue > TODAY && (
                     <span className="ml-1.5 rounded bg-violet-100 px-1 py-0.5 text-[10px] font-medium text-violet-700" title="Émission à venir">à venir</span>
+                  )}
+                  {l.aFacturer && (
+                    <span
+                      className="ml-1.5 rounded bg-sky-100 px-1 py-0.5 text-[10px] font-medium text-sky-700"
+                      title="Deal du portefeuille sans aucune ligne au registre — la facturation reste à établir. ISIN, client et nominal viennent de l'allocation réelle ; rien d'autre n'est renseigné."
+                    >
+                      à établir
+                    </span>
                   )}
                   {anneeAttr(l) !== annee(l) && (
                     <span className="ml-1.5 rounded bg-amber-100 px-1 py-0.5 text-[10px] font-medium text-amber-700" title={`Émis en ${annee(l)}, encaissé en ${ANNEE_COURANTE} — report ponctuel`}>report {anneeAttr(l)}</span>
