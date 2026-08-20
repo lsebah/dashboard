@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import LifecycleNav from './components/LifecycleNav'
 import SyncIndicator from './components/SyncIndicator'
+import { FicheProduitProvider } from './components/FicheProduit'
 
 export const metadata: Metadata = {
   title: 'Lifecycle CMF — Suivi des produits structurés',
@@ -32,7 +33,10 @@ export default function LifecycleLayout({
           <LifecycleNav />
         </div>
       </header>
-      <main className="mx-auto max-w-[1800px] px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-[1800px] px-4 py-6">
+        {/* Un ISIN cliquable ouvre la même fiche, quel que soit l'onglet. */}
+        <FicheProduitProvider>{children}</FicheProduitProvider>
+      </main>
     </div>
   )
 }

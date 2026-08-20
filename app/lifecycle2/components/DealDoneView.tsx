@@ -18,6 +18,7 @@ import { useLocalCommissions } from '@/lib/local-commissions'
 import { croiserAvecRegistre } from '@/lib/deal-done-registre'
 import { useLocalProducts } from '@/lib/local-products'
 import { STRIKE_TERMSHEET } from '@/lib/strikes-termsheets'
+import { IsinLink } from '@/app/lifecycle/components/FicheProduit'
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Onglet DEAL DONE — les affaires annoncées par l'équipe (dossier Outlook
@@ -327,7 +328,8 @@ export default function DealDoneView({
                     {d.description && (
                       <div className="mt-0.5 leading-snug text-slate-500">{insecable(d.description)}</div>
                     )}
-                    {d.isin && <div className="mt-0.5 font-mono text-[11px] text-slate-400">{d.isin}</div>}
+                    {/* ISIN cliquable comme dans tous les onglets — le mail de deal ne menait à aucune fiche produit. */}
+                    {d.isin && <div className="mt-0.5"><IsinLink isin={d.isin} className="text-[11px] text-slate-400" /></div>}
                   </td>
                   <td className="px-2 py-2 font-medium text-slate-700">{codeEmetteur(d.emetteur)}</td>
                   {/* Devise : EUR par défaut. Toute autre devise ressort en rouge italique —

@@ -34,6 +34,9 @@ import ProductSynopsis from './ProductSynopsis'
 import ProductReconstruction from './ProductReconstruction'
 import ClientAssign from './ClientAssign'
 import Modal from './Modal'
+import { IsinLink } from './FicheProduit'
+import { clientsActifs, type OperationClient } from '@/lib/revue-client'
+import { clientCanonique } from '@/lib/coherence'
 
 function annees(p: Product): number | null {
   const d0 = new Date(p.dateConstatationInitiale).getTime()
@@ -278,14 +281,39 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
     [map],
   )
 
+  // Libellés canoniques : « CAPITALL » et « CAPITALL - 01227 » désignent le
+  // même compte. Deux entrées de filtre pour un seul client, c'est deux demi-
+  // portefeuilles et aucune vue juste.
   const clients = useMemo(
-    () => tousLesClients(map, products.flatMap((p) => p.clients ?? [])),
+    () =>
+      Array.from(
+        new Set(
+          tousLesClients(map, products.flatMap((p) => p.clients ?? []))
+            .map((c) => clientCanonique(c))
+            .filter((c): c is string => !!c),
+        ),
+      ).sort(),
     [map, products],
   )
 
+  // Clients ayant TRAITÉ au cours des douze derniers mois — la liste courte
+  // proposée en boutons. La date retenue est le strike, jamais l'émission :
+  // dater à l'émission ferait sortir de la fenêtre un client qui vient de
+  // traiter. La liste est revue le 1er de chaque mois (lib/revue-client.ts).
+  const clientsRecents = useMemo(() => {
+    const operations: OperationClient[] = []
+    for (const p of productsO) {
+      for (const a of allocsOf(p)) {
+        const k = clientCanonique(a.client)
+        if (k) operations.push({ client: k, cle: p.isin, date: p.dateConstatationInitiale ?? null })
+      }
+    }
+    return clientsActifs(operations)
+  }, [productsO, allocsOf])
+
   const filtered = useMemo(() => {
     let l = productsO
-    if (client) l = l.filter((p) => allocsOf(p).some((a) => a.client === client))
+    if (client) l = l.filter((p) => allocsOf(p).some((a) => clientCanonique(a.client) === client))
     if (liveOnly) l = l.filter(estEnCours)
     const needle = q.trim().toLowerCase()
     if (needle)
@@ -545,7 +573,10 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
               title={prob ? 'Rappel probable à la prochaine observation' : undefined}
             >
               <span className={`w-2 h-2 rounded-full ${SITUATION_COLOR[s]}`} title={SITUATION_LABEL[s]} />
-              {p.isin}
+              {/* ISIN cliquable comme dans tous les onglets. Ici il ouvre la
+                  popup locale, plus riche (prix augmentés, affectation client,
+                  reconstruction) que la fiche partagée. */}
+              <IsinLink isin={p.isin} onOuvrir={() => setOpenId(p.id)} />
             </span>
           </td>
         )
@@ -952,6 +983,53 @@ export default function PortfolioExplorer({ products }: { products: Product[] })
           )}
         </div>
       </div>
+
+      {/* Filtres client, à la manière d'un filtre Excel : un bouton par client
+          ayant TRAITÉ au cours des douze derniers mois, un seul actif à la
+          fois — cliquer n'affiche que ce client. La liste est revue le 1er de
+          chaque mois ; les clients plus anciens restent joignables par la
+          liste déroulante ci-dessus, qui garde le portefeuille entier. */}
+      {clientsRecents.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            Clients 12 mois
+          </span>
+          <button
+            onClick={() => setClient('')}
+            className={`rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors ${
+              client
+                ? 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                : 'bg-cmf-navy text-white'
+            }`}
+            title="Retirer le filtre client"
+          >
+            Tous
+          </button>
+          {clientsRecents.map((c) => (
+            <button
+              key={c.client}
+              onClick={() => setClient(client === c.client ? '' : c.client)}
+              className={`rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                client === c.client
+                  ? 'bg-cmf-navy text-white'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+              }`}
+              title={`${c.produits} produit(s) au portefeuille · dernier traité le ${formatDateFr(
+                c.derniereOperation,
+              )}`}
+            >
+              {c.client}
+              <span
+                className={`ml-1.5 tabular-nums ${
+                  client === c.client ? 'text-white/70' : 'text-slate-400'
+                }`}
+              >
+                {c.produits}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {showReport && client && (
         <ClientReport client={client} rows={reportRows} perfMap={perfMap} onClose={() => setShowReport(false)} />
