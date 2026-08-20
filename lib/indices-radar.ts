@@ -47,6 +47,15 @@ export const INDICES_RADAR: IndiceRadar[] = [
     implicite: null,
   },
   {
+    cle: 'DJIA',
+    nom: 'Dow Jones Industrial',
+    symbole: '^DJI',
+    devise: 'USD',
+    // VXD : indice de volatilité CBOE sur le Dow. S'il ne répond pas, le point
+    // reste juste — l'implicite est un complément, jamais un axe du radar.
+    implicite: { symbole: '^VXD', nom: 'VXD', horizonJours: 30 },
+  },
+  {
     cle: 'WORLD',
     nom: 'MSCI World',
     symbole: '^990100-USD-STRD',
