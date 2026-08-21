@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { quadrant, type PointRadar, type Quadrant } from '@/lib/volatilite'
 import { INDICES_RADAR } from '@/lib/indices-radar'
 import { nomCourt } from '@/lib/nom-court'
+import { placer } from '@/lib/etiquettes'
 
 interface Point extends PointRadar {
   poids?: number | null
@@ -121,6 +122,31 @@ function Radar({
   const y = (v: number) =>
     H - M.bas - ((v - volMin) / Math.max(volMax - volMin, 1e-9)) * (H - M.haut - M.bas)
   const graduations = zoom ? [50, 60, 70, 80, 90, 100] : [0, 25, 50, 75, 100]
+
+  // Placement des étiquettes : automatique, déterministe, sans chevauchement.
+  // La police descend à 10 px — le levier le plus simple avant tout algorithme
+  // — et le reste est arbitré par lib/etiquettes.ts.
+  const TAILLE = 10
+  const RAYON = 4.5
+  const { etiquettes, nonPlacees } = useMemo(
+    () =>
+      placer(
+        points.map((p) => ({
+          id: p.cle,
+          cx: x(p.percentile),
+          cy: y(p.vol),
+          texte: nomCourt(p.nom, p.cle),
+          // Le poids dans l'indice décide qui garde son nom quand tout ne peut
+          // pas tenir : on sacrifie une petite ligne, jamais une grosse.
+          priorite: typeof p.poids === 'number' ? p.poids : p.vol,
+        })),
+        { xMin: M.gauche, yMin: M.haut, xMax: W - M.droite, yMax: H - M.bas },
+        { taille: TAILLE, rayon: RAYON },
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [points, volMin, volMax, xMin],
+  )
+  const parId = new Map(points.map((p) => [p.cle, p]))
   void pcts
 
   const yMediane = y(volMediane)
@@ -175,25 +201,48 @@ function Radar({
         </text>
       )}
 
+      {/* Les points d'abord, les étiquettes ensuite : un nom ne doit jamais
+          passer sous un point, ni un point sous un nom. */}
       {points.map((p) => {
-        const cx = x(p.percentile)
-        const cy = y(p.vol)
         const q = quadrant(p, volMediane)
         const couleur = q === 'autocall' ? '#059669' : q === 'participatif' ? '#0284c7' : '#475569'
-        // Étiquette à gauche du point quand il est trop à droite, pour qu'elle
-        // ne sorte jamais du cadre à l'impression.
-        const aGauche = cx > W - M.droite - 130
         return (
-          <g key={p.cle}>
-            <circle cx={cx} cy={cy} r={5} fill={couleur} />
-            {/* Le NOM seul. Le niveau et le percentile se lisent déjà sur
-                les axes ; les répéter sous soixante points rendait la planche
-                illisible (Laurent, 21/08/2026). Ils restent dans l'infobulle. */}
+          <circle key={p.cle} cx={x(p.percentile)} cy={y(p.vol)} r={RAYON} fill={couleur}>
+            <title>{`${p.nom} — ${pct(p.vol, 1)} · P${Math.round(p.percentile)}`}</title>
+          </circle>
+        )
+      })}
+
+      {etiquettes.map((e) => {
+        const p = parId.get(e.id)
+        if (!p) return null
+        const q = quadrant(p, volMediane)
+        const couleur = q === 'autocall' ? '#065f46' : q === 'participatif' ? '#075985' : '#334155'
+        return (
+          <g key={`et-${e.id}`}>
+            {/* Trait de rappel quand l'étiquette a dû s'écarter de son point. */}
+            {e.trait && (
+              <line
+                x1={e.trait.x1}
+                y1={e.trait.y1}
+                x2={e.trait.x2}
+                y2={e.trait.y2}
+                stroke="#94a3b8"
+                strokeWidth={0.6}
+              />
+            )}
+            {/* Halo blanc : le nom reste lisible par-dessus la grille et les
+                aplats de quadrant, y compris à l'impression. */}
             <text
-              x={aGauche ? cx - 8 : cx + 8}
-              y={cy + 4}
-              textAnchor={aGauche ? 'end' : 'start'}
-              className="fill-slate-800 text-[11px] font-medium"
+              x={e.x}
+              y={e.y}
+              textAnchor={e.ancrage}
+              fontSize={TAILLE}
+              fill={couleur}
+              stroke="#ffffff"
+              strokeWidth={2.6}
+              paintOrder="stroke"
+              strokeLinejoin="round"
             >
               <title>{`${p.nom} — ${pct(p.vol, 1)} · P${Math.round(p.percentile)}`}</title>
               {nomCourt(p.nom, p.cle)}
@@ -201,6 +250,14 @@ function Radar({
           </g>
         )
       })}
+
+      {/* Ce qu'on n'a pas pu étiqueter est DIT : une planche où des noms
+          manquent sans le signaler laisse croire à des points anonymes. */}
+      {nonPlacees.length > 0 && (
+        <text x={W - M.droite} y={H - M.bas - 8} textAnchor="end" fontSize={9} className="fill-slate-400">
+          {nonPlacees.length} nom(s) non placé(s) faute de place — au survol du point
+        </text>
+      )}
 
       <text
         transform={`translate(14 ${H / 2}) rotate(-90)`}

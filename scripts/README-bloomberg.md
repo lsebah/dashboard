@@ -58,6 +58,42 @@ L'étape fait partie du run par défaut : `--members` l'explicite, `--no-members
 la coupe, `--dry-run` interroge et affiche le nombre de membres par indice sans
 rien envoyer.
 
+### À quelle fréquence ?
+
+**Une fois par an** (Laurent, 21/08/2026). La composition d'un grand indice ne
+bouge que de quelques lignes par an ; la tirer tous les jours coûterait des
+requêtes pour un diff presque toujours vide. Le prix des produits, lui, reste
+quotidien — ce sont deux rythmes différents dans le même script.
+
+Le rendez-vous annuel est le **1er décembre**, après les révisions de novembre.
+Une tâche planifiée suffit :
+
+```bat
+schtasks /Create /TN "CMF Composants indices" /TR "C:\bbg\refresh_members.bat" /SC YEARLY /MO 1 /M DEC /D 1 /ST 19:00
+```
+
+avec `C:\bbg\refresh_members.bat` :
+
+```bat
+@echo off
+set DASHBOARD_URL=https://TON-DOMAINE.vercel.app
+set PRICES_API_KEY=le-meme-secret-que-sur-vercel
+python "%~dp0bloomberg_prices.py" --members --no-levels >> "%~dp0refresh_members.log" 2>&1
+```
+
+**Le premier tirage se fait à la main**, sans attendre décembre — c'est lui qui
+peuple le CAC, l'Euro Stoxx et le MSCI World, aujourd'hui vides :
+
+```powershell
+python C:\bbg\bloomberg_prices.py --members --no-levels --dry-run   # vérifie les comptes
+python C:\bbg\bloomberg_prices.py --members --no-levels             # envoie
+```
+
+Le `--dry-run` doit afficher environ **40 membres pour le CAC**, **50 pour
+l'Euro Stoxx** et **1 300 à 1 500 pour le MSCI World**. Si les comptes n'y sont
+pas, c'est que la forme des lignes `INDX_MWEIGHT` diffère de ce qui est attendu :
+envoyer la sortie plutôt que de forcer.
+
 Le mappage **ticker Bloomberg → symbole Yahoo** se fait côté dashboard, avec la
 table qui sert déjà aux sous-jacents. Un ticker dont la place n'y figure pas
 (Tokyo, Toronto, Hong Kong…) est **écarté et compté** dans la réponse, jamais

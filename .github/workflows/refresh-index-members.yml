@@ -22,11 +22,17 @@ name: Rafraîchit les membres des indices
 # panne silencieuse qui avait figé l'index des termsheets un mois durant.
 on:
   schedule:
-    # Le 2 de chaque mois à 06:31 UTC. Le 2 plutôt que le 1er : les révisions
-    # trimestrielles d'indices prennent effet en début de mois et les sources
-    # mettent une journée à s'aligner. Et 06:31 plutôt qu'une heure ronde, où la
-    # file des runners planifiés part avec des dizaines de minutes de retard.
-    - cron: '31 6 2 * *'
+    # LA VEILLE DU 1er de chaque mois (Laurent, 21/08/2026) : la planche part en
+    # début de mois, la composition doit donc être fraîche la veille au soir.
+    #
+    # Cron ne sait pas dire « dernier jour du mois » — la longueur des mois
+    # varie. On déclenche donc du 28 au 31, et une étape en tête vérifie que
+    # DEMAIN est bien le 1er ; sinon le job s'arrête là. C'est le seul moyen
+    # d'obtenir « la veille du 1er » quel que soit le mois, février compris.
+    #
+    # 17:41 UTC plutôt qu'une heure ronde : la file des runners planifiés part
+    # avec des dizaines de minutes de retard aux heures pleines.
+    - cron: '41 17 28-31 * *'
   workflow_dispatch:
 
 # Écriture sur le dépôt et sur les pull requests : l'action de PR pousse une
@@ -41,20 +47,41 @@ jobs:
   membres:
     runs-on: ubuntu-latest
     steps:
+      # « La veille du 1er » ne s'exprime pas en cron : on filtre ici. Un
+      # déclenchement manuel (workflow_dispatch) passe toujours — c'est le
+      # refresh à la demande, qui ne doit dépendre d'aucune date.
+      - name: Ne continuer que la veille du 1er
+        id: veille
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Déclenchement manuel — on continue."
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          elif [ "$(date -u -d 'tomorrow' +%d)" = "01" ]; then
+            echo "Demain est le 1er — on continue."
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Ni la veille du 1er, ni un déclenchement manuel — rien à faire."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.veille.outputs.go == 'true'
 
       # Node 22 : le script s'appuie sur `fetch` global et n'a aucune dépendance
       # npm. `npm ci` reste là pour que le dépôt soit dans le même état qu'en
       # local si le script venait à importer un module du projet.
       - uses: actions/setup-node@v4
+        if: steps.veille.outputs.go == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.veille.outputs.go == 'true'
 
       # Le rapport est capturé : il sert de log, de corps de pull request et de
       # source pour le compteur d'échecs.
       - name: Rafraîchir la composition des indices
+        if: steps.veille.outputs.go == 'true'
         id: refresh
         run: |
           set -o pipefail
@@ -105,7 +132,7 @@ jobs:
       # `delete-branch` : une seule PR de composition à la fois, réutilisée d'un
       # mois sur l'autre plutôt que douze branches orphelines par an.
       - name: Ouvrir la pull request de révision
-        if: steps.refresh.outputs.diff == 'oui'
+        if: steps.veille.outputs.go == 'true' && steps.refresh.outputs.diff == 'oui'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
