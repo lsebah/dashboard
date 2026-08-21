@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Collecte des prix mark-to-market des produits structurés (PR005 par ISIN) ET des
-niveaux des sous-jacents (PX_Last par ticker) depuis Bloomberg (Desktop API /
-BLPAPI), puis les POSTe au dashboard (-> Vercel KV).
+Collecte des prix mark-to-market des produits structurés (PR005 par ISIN), des
+niveaux des sous-jacents (PX_Last par ticker) ET de la composition des indices
+du radar de volatilité (INDX_MWEIGHT) depuis Bloomberg (Desktop API / BLPAPI),
+puis les POSTe au dashboard (-> Vercel KV).
 
 ROUTE SANS GIT : sur le PC Bloomberg, seuls Python + blpapi sont nécessaires.
 Pas de dépôt cloné : les listes (ISIN + sous-jacents) sont récupérées depuis le
@@ -13,6 +14,15 @@ Réplique tes formules Excel :
   • Prix produit  : =BDP(isin & "@" & source & " Corp"; "PR005")  sur la liste de
     sources, 1re source numérique gagne.
   • Niveau sous-j : =BDP(ticker [+ " Index"/" Equity" si absent]; "PX_Last").
+  • Membres d'un indice : =BDS("CAC Index"; "INDX_MWEIGHT") — champ BULK, une
+    ligne par valeur (« Index Member » + « Percent Weight »).
+
+POURQUOI LA COMPOSITION PASSE PAR ICI — le radar de volatilité trace les TITRES
+d'un indice, il lui faut donc la liste de ses membres. Le job mensuel du
+dashboard la scrape pour le S&P 500 et le Dow, mais Euronext, STOXX et iShares
+ne répondent pas : CAC 40, Euro Stoxx 50 et MSCI World restaient sans radar.
+Laurent a tranché (21/08/2026) : puisque aucune source internet ne marche pour
+ces trois-là, on passe par ce run quotidien, qui parle déjà à Bloomberg.
 
 Pré-requis :
   1. Terminal Bloomberg lancé et connecté (service local « bbcomm »).
@@ -25,13 +35,15 @@ Usage (PowerShell) :
   $env:DASHBOARD_URL = "https://ton-domaine.vercel.app"
   $env:PRICES_API_KEY = "********"
   python bloomberg_prices.py --dry-run     # interroge Bloomberg, n'envoie rien
-  python bloomberg_prices.py               # POSTe prix + niveaux au dashboard
+  python bloomberg_prices.py               # POSTe prix + niveaux + membres
   python bloomberg_prices.py --no-levels   # prix produits uniquement
+  python bloomberg_prices.py --no-members  # sans la composition des indices
 
 Conformité : l'API Desktop est licenciée pour l'usage de l'utilisateur loggé
 (valorisation de ton propre book). La redistribution de ces prix (publication
 externe, reportings clients) peut relever du Data License Bloomberg — à cadrer
-avec ton account manager avant diffusion.
+avec ton account manager avant diffusion. La composition d'un indice y est
+d'autant plus exposée qu'elle finit citée telle quelle dans une planche client.
 """
 import argparse
 import json
@@ -56,6 +68,22 @@ SOURCES = [
     "DBXM", "GSSD", "MARE", "MLEQ", "MSIP", "NOMX", "BVAL", "BSEQ", "SGIN",
     "SGFR", "UBSF", "BPSP", "BPSL",
 ]
+
+
+# Indices dont la composition est rapportée par ce run, et le ticker Bloomberg
+# à interroger. Volontairement PAS le S&P 500 ni le Dow : le job mensuel du
+# dashboard les scrape déjà chez stockanalysis.com, et une liste relue en pull
+# request vaut mieux qu'une liste écrite chaque nuit sans témoin.
+INDICES_MEMBRES = [
+    ("CAC", "CAC Index"),
+    ("SX5E", "SX5E Index"),
+    ("WORLD", "MXWO Index"),
+]
+
+# Champ BULK donnant la composition pondérée, et champ texte donnant la raison
+# sociale (le radar étiquette ses points avec le nom, pas avec le ticker).
+CHAMP_MEMBRES = "INDX_MWEIGHT"
+CHAMP_NOM = "NAME"
 
 
 def http_get_json(url, headers=None):
@@ -245,6 +273,148 @@ def fetch_strikes(session, needed, field="PX_LAST"):
     return out
 
 
+def bdp_bulk(session, security, field):
+    """Champ BULK (=BDS) pour UNE security -> liste de dict {sous-champ: texte}.
+
+    Fonction SEPAREE de bdp() a dessein : bdp() lit une valeur scalaire numerique
+    (getElementAsFloat) et sert le chemin des prix, qui tourne tous les jours.
+    Un champ bulk n'est pas un nombre mais un tableau de lignes a sous-champs
+    ('Index Member', 'Percent Weight'), et rien ne justifie de faire porter les
+    deux formes a la meme fonction — surtout pas au prix d'un risque sur les prix.
+    Les valeurs sont rendues en texte : la conversion appartient a l'appelant,
+    qui sait lequel de ses sous-champs est un nombre."""
+    refdata = session.getService("//blp/refdata")
+    req = refdata.createRequest("ReferenceDataRequest")
+    req.getElement("securities").appendValue(security)
+    req.getElement("fields").appendValue(field)
+    session.sendRequest(req)
+    lignes = []
+    while True:
+        ev = session.nextEvent(500)
+        for msg in ev:
+            if not msg.hasElement("securityData"):
+                continue
+            arr = msg.getElement("securityData")
+            for j in range(arr.numValues()):
+                sd = arr.getValueAsElement(j)
+                if sd.hasElement("securityError"):
+                    continue
+                fd = sd.getElement("fieldData")
+                if not fd.hasElement(field):
+                    continue
+                bulk = fd.getElement(field)
+                for k in range(bulk.numValues()):
+                    row = bulk.getValueAsElement(k)
+                    d = {}
+                    for n in range(row.numElements()):
+                        el = row.getElement(n)
+                        try:
+                            d[str(el.name())] = el.getValueAsString()
+                        except Exception:
+                            pass
+                    if d:
+                        lignes.append(d)
+        if ev.eventType() == blpapi.Event.RESPONSE:
+            break
+    return lignes
+
+
+def bdp_text(session, securities, field):
+    """Variante TEXTE de bdp() -> {security: chaine}. Meme requete, meme
+    decoupage par lots ; seule la lecture differe (une raison sociale n'est pas
+    un float). bdp() reste intacte pour ne pas toucher au chemin des prix."""
+    refdata = session.getService("//blp/refdata")
+    out = {}
+    for start in range(0, len(securities), 100):
+        batch = securities[start : start + 100]
+        req = refdata.createRequest("ReferenceDataRequest")
+        for sec in batch:
+            req.getElement("securities").appendValue(sec)
+        req.getElement("fields").appendValue(field)
+        session.sendRequest(req)
+        while True:
+            ev = session.nextEvent(500)
+            for msg in ev:
+                if not msg.hasElement("securityData"):
+                    continue
+                arr = msg.getElement("securityData")
+                for j in range(arr.numValues()):
+                    sd = arr.getValueAsElement(j)
+                    name = sd.getElementAsString("security")
+                    if sd.hasElement("securityError"):
+                        continue
+                    fd = sd.getElement("fieldData")
+                    if fd.hasElement(field):
+                        try:
+                            v = fd.getElementAsString(field).strip()
+                        except Exception:
+                            continue
+                        if v:
+                            out[name] = v
+            if ev.eventType() == blpapi.Event.RESPONSE:
+                break
+    return out
+
+
+def _ligne_membre(d):
+    """Une ligne INDX_MWEIGHT -> (ticker, poids). Les sous-champs sont reperes
+    par leur libelle ('Index Member', 'Percent Weight') sans presumer de leur
+    ordre ni de leur graphie exacte, qui varient d'un indice a l'autre."""
+    ticker = None
+    poids = None
+    for k, v in d.items():
+        kl = k.lower()
+        if ticker is None and ("member" in kl or "ticker" in kl):
+            ticker = (v or "").strip()
+        elif poids is None and "weight" in kl:
+            try:
+                poids = float(v)
+            except (TypeError, ValueError):
+                poids = None
+    return ticker, poids
+
+
+def fetch_index_members(session, indices, name_field=CHAMP_NOM):
+    """indices = [(cle, 'CAC Index'), ...] -> {cle: [{ticker, nom, poids}]}.
+
+    Un indice qui ne renvoie rien est ABSENT du resultat, jamais present avec
+    une liste vide : le dashboard doit garder la composition qu'il avait plutot
+    que de l'effacer parce que le terminal a mal repondu ce matin-la."""
+    out = {}
+    for cle, sec in indices:
+        try:
+            lignes = bdp_bulk(session, sec, CHAMP_MEMBRES)
+        except Exception as e:  # une erreur sur un indice n'annule pas les autres
+            print(f"  {cle} ({sec}) : echec de {CHAMP_MEMBRES} - {e}")
+            continue
+        membres = []
+        vus = set()
+        for d in lignes:
+            ticker, poids = _ligne_membre(d)
+            if not ticker or ticker in vus:
+                continue
+            vus.add(ticker)
+            m = {"ticker": ticker}
+            if poids is not None:
+                m["poids"] = round(poids, 4)
+            membres.append(m)
+        if not membres:
+            print(f"  {cle} ({sec}) : aucun membre renvoye - indice laisse en l'etat.")
+            continue
+        # Le radar etiquette ses points avec la raison sociale ; sans elle il
+        # afficherait 'SAF FP' sur une planche client. Le ticker reste le repli.
+        noms = bdp_text(session, [bbg_security(m["ticker"]) for m in membres], name_field)
+        nommes = 0
+        for m in membres:
+            n = noms.get(bbg_security(m["ticker"]))
+            if n:
+                m["nom"] = n
+                nommes += 1
+        out[cle] = membres
+        print(f"  {cle} ({sec}) : {len(membres)} membres, {nommes} avec raison sociale.")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_URL"))
@@ -254,6 +424,12 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="interroge Bloomberg, n'envoie rien")
     ap.add_argument("--no-levels", action="store_true", help="prix produits uniquement")
     ap.add_argument("--no-decrement", action="store_true", help="ne pas pricer les indices a decrement")
+    # La composition des indices fait partie du run par defaut ; les deux flags
+    # partagent la meme destination, le dernier ecrit sur la ligne l'emporte.
+    ap.add_argument("--members", dest="members", action="store_true", default=True,
+                    help="rapporter la composition des indices (inclus par defaut)")
+    ap.add_argument("--no-members", dest="members", action="store_false",
+                    help="ne pas rapporter la composition des indices")
     ap.add_argument("--field", default="PR005", help="champ de prix produit (def. PR005)")
     ap.add_argument("--level-field", default="PX_LAST", help="champ de niveau sous-jacent (def. PX_LAST)")
     ap.add_argument("--host", default="localhost")
@@ -314,6 +490,16 @@ def main():
         strikes = fetch_strikes(session, strikes_needed, args.level_field)
         print(f"{len(strikes)} strike(s) recuperes, {len(strikes_needed) - len(strikes)} sans valeur.")
 
+    # Composition des indices (CAC, SX5E, MXWO) — le job mensuel du dashboard ne
+    # sait pas les scraper, le terminal, si.
+    membres = {}
+    if args.members:
+        print(f"{len(INDICES_MEMBRES)} indice(s) - composition (champ {CHAMP_MEMBRES})...")
+        membres = fetch_index_members(session, INDICES_MEMBRES)
+        manquants = [c for c, _ in INDICES_MEMBRES if c not in membres]
+        if manquants:
+            print("Indices sans composition Bloomberg :", ", ".join(manquants))
+
     session.stop()
 
     if args.dry_run:
@@ -321,10 +507,13 @@ def main():
             print(f"  PRIX   {i}: {prices.get(i)}")
         for t in tickers:
             print(f"  NIVEAU {t}: {levels.get(t)}")
+        for cle, liste in membres.items():
+            apercu = ", ".join(m["ticker"] for m in liste[:5])
+            print(f"  MEMBRES {cle}: {len(liste)} ({apercu}{', ...' if len(liste) > 5 else ''})")
         print("\n[dry-run] rien envoye au dashboard.")
         return
 
-    if not got and not levels and not strikes:
+    if not got and not levels and not strikes and not membres:
         print("Rien a envoyer (Bloomberg n'a renvoye aucune valeur) - POST ignore.")
         return
 
@@ -337,6 +526,8 @@ def main():
         payload["levels"] = levels
     if strikes:
         payload["strikes"] = strikes
+    if membres:
+        payload["membres"] = membres
     res = http_post_json(
         base + "/api/prices/ingest",
         payload,

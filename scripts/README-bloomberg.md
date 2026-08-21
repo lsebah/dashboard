@@ -44,6 +44,63 @@ pour les indices à décrément que Yahoo ne sait pas pricer. Il applique ta for
 Excel : ajoute `" Index"`/`" Equity"` au ticker si le yellow-key est absent.
 Pour ne collecter que les prix produits : `--no-levels`.
 
+### La composition des indices du radar de volatilité
+
+Le radar trace les **titres** d'un indice : il lui faut donc la liste de ses
+membres. Le job mensuel du dashboard sait la scraper pour le S&P 500 et le Dow,
+mais ni Euronext, ni STOXX, ni iShares ne répondent — CAC 40, Euro Stoxx 50 et
+MSCI World restaient sans composants à tracer. Ce run les rapporte, avec le
+champ **bulk** `INDX_MWEIGHT` (= `BDS`) sur `CAC Index`, `SX5E Index` et
+`MXWO Index` : une ligne par valeur (« Index Member » + « Percent Weight »), plus
+la raison sociale (champ `NAME`) qui étiquette les points de la planche.
+
+L'étape fait partie du run par défaut : `--members` l'explicite, `--no-members`
+la coupe, `--dry-run` interroge et affiche le nombre de membres par indice sans
+rien envoyer.
+
+### À quelle fréquence ?
+
+**Une fois par an** (Laurent, 21/08/2026). La composition d'un grand indice ne
+bouge que de quelques lignes par an ; la tirer tous les jours coûterait des
+requêtes pour un diff presque toujours vide. Le prix des produits, lui, reste
+quotidien — ce sont deux rythmes différents dans le même script.
+
+Le rendez-vous annuel est le **1er décembre**, après les révisions de novembre.
+Une tâche planifiée suffit :
+
+```bat
+schtasks /Create /TN "CMF Composants indices" /TR "C:\bbg\refresh_members.bat" /SC YEARLY /MO 1 /M DEC /D 1 /ST 19:00
+```
+
+avec `C:\bbg\refresh_members.bat` :
+
+```bat
+@echo off
+set DASHBOARD_URL=https://TON-DOMAINE.vercel.app
+set PRICES_API_KEY=le-meme-secret-que-sur-vercel
+python "%~dp0bloomberg_prices.py" --members --no-levels >> "%~dp0refresh_members.log" 2>&1
+```
+
+**Le premier tirage se fait à la main**, sans attendre décembre — c'est lui qui
+peuple le CAC, l'Euro Stoxx et le MSCI World, aujourd'hui vides :
+
+```powershell
+python C:\bbg\bloomberg_prices.py --members --no-levels --dry-run   # vérifie les comptes
+python C:\bbg\bloomberg_prices.py --members --no-levels             # envoie
+```
+
+Le `--dry-run` doit afficher environ **40 membres pour le CAC**, **50 pour
+l'Euro Stoxx** et **1 300 à 1 500 pour le MSCI World**. Si les comptes n'y sont
+pas, c'est que la forme des lignes `INDX_MWEIGHT` diffère de ce qui est attendu :
+envoyer la sortie plutôt que de forcer.
+
+Le mappage **ticker Bloomberg → symbole Yahoo** se fait côté dashboard, avec la
+table qui sert déjà aux sous-jacents. Un ticker dont la place n'y figure pas
+(Tokyo, Toronto, Hong Kong…) est **écarté et compté** dans la réponse, jamais
+complété au jugé : un mauvais suffixe ne rend pas une erreur, il rend le cours
+d'une **autre** société. Et un indice dont le terminal ne renvoie rien garde la
+composition qu'il avait — on n'efface pas une bonne liste par une liste vide.
+
 ## 3. Automatiser (quotidien, sans git)
 
 Créer `C:\bbg\refresh_prices.bat` :
@@ -69,13 +126,21 @@ L'API Desktop est licenciée pour ton usage (valoriser ton book). La
 **redistribution** de ces prix (site externe, PDF clients) peut relever du
 Data License Bloomberg — à cadrer avec ton account manager avant diffusion.
 
+Cette section vaut **particulièrement** pour la composition des indices : une
+liste `INDX_MWEIGHT` finit citée telle quelle sur une planche, et une planche
+part en pièce jointe chez un client. Redistribuer une composition d'indice
+Bloomberg relève potentiellement du Data License — à cadrer avec l'account
+manager avant qu'un PDF ne sorte.
+
 ## 5. Endpoints utilisés
 
 - `GET /api/isins` — liste des ISIN vivants à pricer (public, lecture seule).
 - `GET /api/underlyings` — tickers Bloomberg des sous-jacents à pricer (public).
 - `POST /api/prices/ingest` — ingestion (protégé par `x-prices-api-key`). Corps :
   `{ "prices": { ISIN: nombre } }`, `{ "levels": { ticker: nombre } }`,
-  `{ "remove": [ISIN, …] }` (purge) — au moins un champ.
+  `{ "membres": { "CAC": [ { "ticker": "SAF FP", "nom": "SAFRAN SA", "poids": 3.1 }, … ] } }`
+  (composition, upsert **par indice** — un POST qui ne porte que le CAC laisse
+  les autres intacts), `{ "remove": [ISIN, …] }` (purge) — au moins un champ.
 - `GET /api/prices` — surcouche de prix produits (lue par le portefeuille).
 - `GET /api/levels` — surcouche de niveaux des sous-jacents (lue par les fiches).
 

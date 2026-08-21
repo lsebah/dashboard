@@ -18,6 +18,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { quadrant, type PointRadar, type Quadrant } from '@/lib/volatilite'
 import { INDICES_RADAR } from '@/lib/indices-radar'
+import { nomCourt } from '@/lib/nom-court'
+import { placer } from '@/lib/etiquettes'
 
 interface Point extends PointRadar {
   poids?: number | null
@@ -41,6 +43,16 @@ interface ChargeComposants {
   indisponibles: { symbole: string; nom: string; raison: string }[]
 }
 
+/**
+ * Univers dont on ne montre QUE le quadrant autocall.
+ *
+ * Sur cinq cents titres, le nuage entier écrase la zone qui sert vraiment à
+ * décider : on cherche une vol chère au sommet de son année, pas une carte du
+ * marché. Le S&P 500 est dans ce cas (Laurent, 21/08/2026) ; un indice de
+ * quarante valeurs se lit encore en entier.
+ */
+const ZOOM_AUTOCALL = new Set(['SPX'])
+
 const QUADRANT_LABEL: Record<Quadrant, string> = {
   autocall: 'Autocall',
   participatif: 'Participatif',
@@ -50,6 +62,24 @@ const QUADRANT_CLS: Record<Quadrant, string> = {
   autocall: 'bg-emerald-100 text-emerald-800',
   participatif: 'bg-sky-100 text-sky-800',
   neutre: 'bg-slate-100 text-slate-600',
+}
+
+/**
+ * Traduit l'échec d'un appel en motif ACTIONNABLE. Un 504 (la route a dépassé
+ * son délai), un 429 (Yahoo nous limite) et une coupure réseau se corrigent de
+ * trois façons différentes ; les afficher sous un même « ça n'a pas répondu »
+ * oblige à rouvrir les logs pour savoir laquelle.
+ */
+function motifEchec(e: Error): string {
+  const m = /HTTP (\d{3})/.exec(e.message ?? '')
+  const code = m ? Number(m[1]) : null
+  if (code === 504 || code === 408)
+    return 'le calcul a dépassé son délai — trop de titres à récupérer d’un coup (HTTP ' + code + ').'
+  if (code === 429) return 'Yahoo a limité le débit des cotations (HTTP 429) — réessayer dans un moment.'
+  if (code === 404) return 'route introuvable (HTTP 404) — déploiement incomplet.'
+  if (code && code >= 500) return `le serveur a échoué (HTTP ${code}).`
+  if (code) return `appel refusé (HTTP ${code}).`
+  return 'les cotations n’ont pas répondu (réseau).'
 }
 
 const pct = (v: number, d = 1) => `${v.toFixed(d).replace('.', ',')} %`
@@ -64,14 +94,60 @@ const M = { haut: 26, droite: 30, bas: 56, gauche: 64 }
  * Nuage volatilité × percentile. Chaque point porte SON NOM : la planche part
  * en pièce jointe, et un point sans étiquette n'y sert à rien.
  */
-function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) {
+function Radar({
+  points: tous,
+  volMediane,
+  zoom = false,
+}: {
+  points: Point[]
+  volMediane: number
+  /** Ne montrer que le quadrant autocall, à son échelle. Sur un univers large,
+   *  les cinq cents titres écrasent la zone qui sert vraiment à décider. */
+  zoom: boolean
+}) {
+  const points = zoom
+    ? tous.filter((p) => p.percentile >= 50 && p.vol >= volMediane)
+    : tous
   const vols = points.map((p) => p.vol)
+  const pcts = points.map((p) => p.percentile)
+  // Zoomé, l'origine des axes est le coin du quadrant, pas zéro.
+  const xMin = zoom ? 50 : 0
   const volMax = Math.max(...vols, 1) * 1.12
-  const volMin = Math.max(0, Math.min(...vols, volMediane) * 0.88)
+  const volMin = zoom
+    ? Math.max(0, Math.min(...vols, volMediane) * 0.98)
+    : Math.max(0, Math.min(...vols, volMediane) * 0.88)
 
-  const x = (p: number) => M.gauche + (p / 100) * (W - M.gauche - M.droite)
+  const x = (p: number) =>
+    M.gauche + ((p - xMin) / Math.max(100 - xMin, 1e-9)) * (W - M.gauche - M.droite)
   const y = (v: number) =>
     H - M.bas - ((v - volMin) / Math.max(volMax - volMin, 1e-9)) * (H - M.haut - M.bas)
+  const graduations = zoom ? [50, 60, 70, 80, 90, 100] : [0, 25, 50, 75, 100]
+
+  // Placement des étiquettes : automatique, déterministe, sans chevauchement.
+  // La police descend à 10 px — le levier le plus simple avant tout algorithme
+  // — et le reste est arbitré par lib/etiquettes.ts.
+  const TAILLE = 10
+  const RAYON = 4.5
+  const { etiquettes, nonPlacees } = useMemo(
+    () =>
+      placer(
+        points.map((p) => ({
+          id: p.cle,
+          cx: x(p.percentile),
+          cy: y(p.vol),
+          texte: nomCourt(p.nom, p.cle),
+          // Le poids dans l'indice décide qui garde son nom quand tout ne peut
+          // pas tenir : on sacrifie une petite ligne, jamais une grosse.
+          priorite: typeof p.poids === 'number' ? p.poids : p.vol,
+        })),
+        { xMin: M.gauche, yMin: M.haut, xMax: W - M.droite, yMax: H - M.bas },
+        { taille: TAILLE, rayon: RAYON },
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [points, volMin, volMax, xMin],
+  )
+  const parId = new Map(points.map((p) => [p.cle, p]))
+  void pcts
 
   const yMediane = y(volMediane)
   const xMilieu = x(50)
@@ -86,15 +162,17 @@ function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) 
         height={Math.max(0, yMediane - M.haut)}
         fill="#ecfdf5"
       />
-      <rect
-        x={M.gauche}
-        y={yMediane}
-        width={xMilieu - M.gauche}
-        height={Math.max(0, H - M.bas - yMediane)}
-        fill="#f0f9ff"
-      />
+      {!zoom && (
+        <rect
+          x={M.gauche}
+          y={yMediane}
+          width={xMilieu - M.gauche}
+          height={Math.max(0, H - M.bas - yMediane)}
+          fill="#f0f9ff"
+        />
+      )}
 
-      {[0, 25, 50, 75, 100].map((p) => (
+      {graduations.map((p) => (
         <g key={p}>
           <line x1={x(p)} y1={M.haut} x2={x(p)} y2={H - M.bas} stroke="#e2e8f0" strokeWidth={1} />
           <text x={x(p)} y={H - M.bas + 18} textAnchor="middle" className="fill-slate-500 text-[11px]">
@@ -117,40 +195,69 @@ function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) 
       <text x={xMilieu + 12} y={M.haut + 18} className="fill-emerald-700 text-[12px] font-medium">
         Autocall — vol chère, au sommet de son année
       </text>
-      <text x={M.gauche + 12} y={H - M.bas - 10} className="fill-sky-700 text-[12px] font-medium">
-        Participatif — vol basse, au creux
-      </text>
+      {!zoom && (
+        <text x={M.gauche + 12} y={H - M.bas - 10} className="fill-sky-700 text-[12px] font-medium">
+          Participatif — vol basse, au creux
+        </text>
+      )}
 
+      {/* Les points d'abord, les étiquettes ensuite : un nom ne doit jamais
+          passer sous un point, ni un point sous un nom. */}
       {points.map((p) => {
-        const cx = x(p.percentile)
-        const cy = y(p.vol)
         const q = quadrant(p, volMediane)
         const couleur = q === 'autocall' ? '#059669' : q === 'participatif' ? '#0284c7' : '#475569'
-        // Étiquette à gauche du point quand il est trop à droite, pour qu'elle
-        // ne sorte jamais du cadre à l'impression.
-        const aGauche = cx > W - M.droite - 130
         return (
-          <g key={p.cle}>
-            <circle cx={cx} cy={cy} r={5} fill={couleur} />
+          <circle key={p.cle} cx={x(p.percentile)} cy={y(p.vol)} r={RAYON} fill={couleur}>
+            <title>{`${p.nom} — ${pct(p.vol, 1)} · P${Math.round(p.percentile)}`}</title>
+          </circle>
+        )
+      })}
+
+      {etiquettes.map((e) => {
+        const p = parId.get(e.id)
+        if (!p) return null
+        const q = quadrant(p, volMediane)
+        const couleur = q === 'autocall' ? '#065f46' : q === 'participatif' ? '#075985' : '#334155'
+        return (
+          <g key={`et-${e.id}`}>
+            {/* Trait de rappel quand l'étiquette a dû s'écarter de son point. */}
+            {e.trait && (
+              <line
+                x1={e.trait.x1}
+                y1={e.trait.y1}
+                x2={e.trait.x2}
+                y2={e.trait.y2}
+                stroke="#94a3b8"
+                strokeWidth={0.6}
+              />
+            )}
+            {/* Halo blanc : le nom reste lisible par-dessus la grille et les
+                aplats de quadrant, y compris à l'impression. */}
             <text
-              x={aGauche ? cx - 9 : cx + 9}
-              y={cy - 5}
-              textAnchor={aGauche ? 'end' : 'start'}
-              className="fill-slate-800 text-[11px] font-semibold"
+              x={e.x}
+              y={e.y}
+              textAnchor={e.ancrage}
+              fontSize={TAILLE}
+              fill={couleur}
+              stroke="#ffffff"
+              strokeWidth={2.6}
+              paintOrder="stroke"
+              strokeLinejoin="round"
             >
-              {p.nom}
-            </text>
-            <text
-              x={aGauche ? cx - 9 : cx + 9}
-              y={cy + 8}
-              textAnchor={aGauche ? 'end' : 'start'}
-              className="fill-slate-500 text-[10px]"
-            >
-              {pct(p.vol, 1)} · P{Math.round(p.percentile)}
+              <title>{`${p.nom} — ${pct(p.vol, 1)} · P${Math.round(p.percentile)}`}</title>
+              {nomCourt(p.nom, p.cle)}
             </text>
           </g>
         )
       })}
+
+      {/* Ce qu'on n'a pas pu étiqueter est DIT : une planche où des noms
+          manquent sans le signaler laisse croire à des points anonymes. */}
+      {nonPlacees.length > 0 && (
+        <text x={W - M.droite} y={H - M.bas - 8} textAnchor="end" fontSize={9} className="fill-slate-400">
+          {nonPlacees.length} nom(s) non placé(s) faute de place — au survol du point
+        </text>
+      )}
 
       <text
         transform={`translate(14 ${H / 2}) rotate(-90)`}
@@ -198,8 +305,20 @@ function Planche({ c }: { c: ChargeComposants }) {
             .
           </p>
 
+          {ZOOM_AUTOCALL.has(c.indice.cle) && (
+            <p className="text-[11px] font-medium text-emerald-800">
+              Vue resserrée sur le quadrant AUTOCALL — {c.points.filter((p) => p.percentile >= 50 && p.vol >= c.volMediane).length}{' '}
+              titre(s) sur {c.points.length} tracés. Les autres ne sont pas absents, ils sont
+              hors de la zone qui sert à décider.
+            </p>
+          )}
+
           <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <Radar points={c.points} volMediane={c.volMediane} />
+            <Radar
+              points={c.points}
+              volMediane={c.volMediane}
+              zoom={ZOOM_AUTOCALL.has(c.indice.cle)}
+            />
           </div>
 
           {c.indisponibles.length > 0 && (
@@ -238,7 +357,7 @@ export default function VolatiliteRadar() {
       })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
         .then((j) => vivant && setCharges((c) => ({ ...c, [cle]: j as ChargeComposants })))
-        .catch(() => {
+        .catch((e: Error) => {
           if (!vivant) return
           const idx = INDICES_RADAR.find((i) => i.cle === cle)
           setCharges((c) => ({
@@ -246,7 +365,11 @@ export default function VolatiliteRadar() {
             [cle]: {
               indice: { cle, nom: idx?.nom ?? cle },
               composition: null,
-              raison: 'les cotations n’ont pas répondu.',
+              // Le motif EXACT, pas un « ça n'a pas répondu » générique : un
+              // dépassement de délai, une limitation de débit et une coupure
+              // réseau appellent trois corrections différentes, et les
+              // confondre coûte un aller-retour à chaque fois.
+              raison: motifEchec(e),
               volMediane: 0,
               points: [],
               indisponibles: [],
@@ -400,9 +523,10 @@ export default function VolatiliteRadar() {
       )}
 
       <p className="text-[11px] text-slate-400">
-        Cotations Yahoo Finance. Composition des indices rafraîchie mensuellement depuis les sources
-        publiques citées sur chaque planche. D’après l’outil « Volatility Radar » de Leonteq
-        (S. Noujaim, 27/08/2024).
+        Cotations Yahoo Finance. Composition des indices : sources publiques rafraîchies
+        mensuellement, ou run Bloomberg quotidien pour les indices qu’aucune source publique ne
+        rend — celle qui a servi est citée au-dessus du graphe. D’après l’outil « Volatility
+        Radar » de Leonteq (S. Noujaim, 27/08/2024).
       </p>
     </div>
   )

@@ -48,22 +48,99 @@ export const COMPOSITIONS = brut as unknown as Compositions
 /** Au-delà, la composition n'est plus à jour (révision mensuelle). */
 export const COMPOSITION_PERIMEE_JOURS = 45
 
+// ─────────────────────────────────────────────────────────────────────────
+//  LA SURCOUCHE BLOOMBERG — pour les indices qu'aucune source publique ne rend.
+//
+//  Le job mensuel rapporte le S&P 500 et le Dow (stockanalysis.com), mais il
+//  rentre les mains vides pour le CAC 40, l'Euro Stoxx 50 et le MSCI World :
+//  Euronext, STOXX et iShares ne se laissent pas lire par un scraper. Trois
+//  indices du radar restaient donc sans composants — c'est-à-dire sans radar.
+//
+//  Laurent a tranché (21/08/2026) : puisque aucune source internet ne marche
+//  pour ces trois-là, la composition passe par le run Bloomberg quotidien qui
+//  récupère déjà les prix des produits. Elle arrive par /api/prices/ingest et
+//  vit dans le KV, comme la surcouche de prix.
+//
+//  Elle ne REMPLACE pas le fichier, elle se pose PAR-DESSUS, indice par
+//  indice : le fichier reste la référence de ce qu'une source publique sait
+//  rendre, et le KV comble le reste. Quand les deux parlent du même indice,
+//  c'est le plus récent qui gagne — la même règle que les prix. Un fichier
+//  révisé après le dernier run Bloomberg reprend donc la main, parce qu'il est
+//  passé, lui, par une relecture humaine.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Clé KV de la surcouche — partagée par la route d'ingestion et le radar. */
+export const CLE_KV_MEMBRES = 'indices:membres:overlay'
+
+/**
+ * Source citée à l'écran quand la composition vient du terminal. Elle doit
+ * nommer Bloomberg : la planche affiche d'où sort sa liste, et cette phrase-là
+ * est ce qu'on oppose à quelqu'un qui la conteste.
+ */
+export const SOURCE_MEMBRES_BLOOMBERG = 'Bloomberg — INDX_MWEIGHT (run quotidien du terminal)'
+
+export interface CompositionSurcouche {
+  /** Horodatage du run Bloomberg qui l'a écrite (ISO complet). */
+  asof: string
+  source?: string
+  membres: Membre[]
+  /** Membres écartés faute de symbole Yahoo connu — comptés, jamais devinés. */
+  ecartes?: number
+}
+
+export interface SurcoucheMembres {
+  asof: string
+  indices: Record<string, CompositionSurcouche>
+}
+
 export function composition(cle: string): CompositionIndice | undefined {
   const c = COMPOSITIONS[cle]
   return c && c.membres.length > 0 ? c : undefined
 }
 
-/** Ancienneté de la composition, en jours pleins. `Infinity` si inconnue. */
-export function ageComposition(cle: string, aujourdhui: Date = new Date()): number {
-  const c = COMPOSITIONS[cle]
-  if (!c?.majLe) return Number.POSITIVE_INFINITY
-  const t = new Date(c.majLe).getTime()
+/**
+ * Composition réellement servie : celle du KV si elle porte cet indice, sinon
+ * celle du fichier. Fonction PURE — c'est elle qui porte la règle d'arbitrage,
+ * et elle se teste sans KV.
+ */
+export function compositionEffective(
+  cle: string,
+  surcouche?: SurcoucheMembres | null,
+): CompositionIndice | undefined {
+  const fichier = composition(cle)
+  const sur = surcouche?.indices?.[cle]
+  // Une surcouche vide n'est pas une surcouche : un run Bloomberg qui n'a rien
+  // rapporté ne doit pas effacer ce que le fichier tenait déjà.
+  if (!sur || !Array.isArray(sur.membres) || sur.membres.length === 0) return fichier
+  const majLe = typeof sur.asof === 'string' ? sur.asof.slice(0, 10) : ''
+  if (fichier && fichier.majLe > majLe) return fichier
+  return {
+    source: sur.source?.trim() || SOURCE_MEMBRES_BLOOMBERG,
+    majLe,
+    membres: sur.membres,
+  }
+}
+
+/** Ancienneté d'une composition, en jours pleins. `Infinity` si non datée. */
+export function ageDepuis(majLe: string | undefined, aujourdhui: Date = new Date()): number {
+  if (!majLe) return Number.POSITIVE_INFINITY
+  const t = new Date(majLe).getTime()
   if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY
   return Math.floor((aujourdhui.getTime() - t) / 86_400_000)
 }
 
+/** Une fraîcheur qu'on ne sait pas dater n'est pas une fraîcheur : périmée. */
+export function perimeeDepuis(majLe: string | undefined, aujourdhui: Date = new Date()): boolean {
+  return ageDepuis(majLe, aujourdhui) > COMPOSITION_PERIMEE_JOURS
+}
+
+/** Ancienneté de la composition du fichier, en jours pleins. */
+export function ageComposition(cle: string, aujourdhui: Date = new Date()): number {
+  return ageDepuis(COMPOSITIONS[cle]?.majLe, aujourdhui)
+}
+
 export function compositionPerimee(cle: string, aujourdhui: Date = new Date()): boolean {
-  return ageComposition(cle, aujourdhui) > COMPOSITION_PERIMEE_JOURS
+  return perimeeDepuis(COMPOSITIONS[cle]?.majLe, aujourdhui)
 }
 
 /**
@@ -75,16 +152,27 @@ export function compositionPerimee(cle: string, aujourdhui: Date = new Date()): 
  * restées dehors, et l'écran l'affiche. Un radar tronqué qui se tait laisse
  * croire que l'univers tient en soixante points.
  */
+export function retenirMembres(
+  compo: CompositionIndice | undefined,
+  plafond: number,
+): { membres: Membre[]; total: number; tronque: number } {
+  if (!compo) return { membres: [], total: 0, tronque: 0 }
+  // Tri par poids décroissant quand la source le publie ; sinon ordre d'origine.
+  const tries = compo.membres.some((m) => typeof m.poids === 'number')
+    ? [...compo.membres].sort((a, b) => (b.poids ?? 0) - (a.poids ?? 0))
+    : compo.membres
+  const retenus = tries.slice(0, plafond)
+  return {
+    membres: retenus,
+    total: compo.membres.length,
+    tronque: Math.max(0, compo.membres.length - retenus.length),
+  }
+}
+
+/** Même chose, à partir de la seule composition du fichier. */
 export function membresRetenus(
   cle: string,
   plafond: number,
 ): { membres: Membre[]; total: number; tronque: number } {
-  const c = composition(cle)
-  if (!c) return { membres: [], total: 0, tronque: 0 }
-  // Tri par poids décroissant quand la source le publie ; sinon ordre d'origine.
-  const tries = c.membres.some((m) => typeof m.poids === 'number')
-    ? [...c.membres].sort((a, b) => (b.poids ?? 0) - (a.poids ?? 0))
-    : c.membres
-  const retenus = tries.slice(0, plafond)
-  return { membres: retenus, total: c.membres.length, tronque: Math.max(0, c.membres.length - retenus.length) }
+  return retenirMembres(composition(cle), plafond)
 }

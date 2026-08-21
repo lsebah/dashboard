@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
 import { fetchHistory } from '@/lib/yahoo'
 import { indiceParCle } from '@/lib/indices-radar'
-import { membresRetenus, composition, ageComposition, compositionPerimee } from '@/lib/index-members'
+import {
+  COMPOSITIONS,
+  CLE_KV_MEMBRES,
+  ageDepuis,
+  compositionEffective,
+  perimeeDepuis,
+  retenirMembres,
+  type SurcoucheMembres,
+} from '@/lib/index-members'
+import { kvConfigured, kvGet } from '@/lib/kv'
 import { pointRadar, mediane, FENETRE_6M, FENETRE_PERCENTILE } from '@/lib/volatilite'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +22,11 @@ export const runtime = 'nodejs'
 //  participatif, pas un indice.
 //
 //  La composition vient d'un fichier versionné, rafraîchi mensuellement
-//  (cf. lib/index-members.ts) ; les prix, de Yahoo, comme le reste du site.
+//  (cf. lib/index-members.ts), ou du KV quand c'est le run Bloomberg quotidien
+//  qui l'a rapportée — le CAC 40, l'Euro Stoxx 50 et le MSCI World n'ont pas de
+//  source publique scrapable. Les deux origines suivent la règle des prix : le
+//  plus récent gagne, et l'écran CITE celle qui a servi. Les cours, eux,
+//  viennent de Yahoo comme le reste du site.
 //
 //  DEUX PLAFONDS, TOUS DEUX DITS À VOIX HAUTE :
 //   • le nombre de valeurs tracées — chaque valeur coûte un historique, et le
@@ -25,8 +38,26 @@ export const runtime = 'nodejs'
 // ─────────────────────────────────────────────────────────────────────────
 
 const PLAFOND_DEFAUT = 60
-const CONCURRENCE = 6
+// Yahoo encaisse largement douze requêtes de front ; six faisaient dix vagues
+// là où cinq suffisent, et c'est ce qui poussait la route au-delà du délai.
+const CONCURRENCE = 12
 const ANNEES_HISTORIQUE = 3
+
+// ─────────────────────────────────────────────────────────────────────────
+//  POURQUOI CE `maxDuration`
+//
+//  Soixante historiques à récupérer, c'est long — et sans cette ligne, Vercel
+//  applique son délai par défaut (dix secondes), qui coupe la route AVANT
+//  qu'elle ait fini. Le navigateur reçoit alors une erreur, l'écran reste
+//  vide, et rien ne dit pourquoi : le radar « ne marche pas » alors que la
+//  composition est bonne et que Yahoo répond. C'est exactement le défaut
+//  constaté en production le 20/08/2026.
+//
+//  Le budget est donc porté à soixante secondes. Ce n'est pas un pansement :
+//  le travail est réellement long, et mieux vaut une planche qui met cinq
+//  secondes à s'afficher qu'une planche qui n'arrive jamais.
+// ─────────────────────────────────────────────────────────────────────────
+export const maxDuration = 60
 
 /** Exécute `taches` par vagues de `n` — un ordonnanceur minimal, sans dépendance. */
 async function parVagues<T, R>(items: T[], n: number, f: (x: T) => Promise<R>): Promise<R[]> {
@@ -45,7 +76,10 @@ export async function GET(req: Request) {
   const indice = indiceParCle(cle)
   if (!indice) return NextResponse.json({ error: `indice inconnu : ${cle || '(vide)'}` }, { status: 400 })
 
-  const compo = composition(cle)
+  // Le KV n'est pas indispensable : sans lui, on retombe exactement sur le
+  // fichier versionné, comportement d'avant la surcouche.
+  const surcouche = kvConfigured() ? await kvGet<SurcoucheMembres>(CLE_KV_MEMBRES) : null
+  const compo = compositionEffective(cle, surcouche)
   if (!compo) {
     // Pas de liste = pas de radar. On le dit, avec la source à interroger —
     // plutôt qu'un graphique vide qui laisserait croire à un marché calme.
@@ -54,8 +88,8 @@ export async function GET(req: Request) {
         indice: { cle, nom: indice.nom },
         composition: null,
         raison:
-          'composition non renseignée — le job mensuel « Rafraîchit les membres des indices » ne l’a pas encore écrite.',
-        source: (compo as { source?: string } | undefined)?.source ?? null,
+          'composition non renseignée — ni le job mensuel « Rafraîchit les membres des indices » ni le run Bloomberg quotidien ne l’ont écrite.',
+        source: COMPOSITIONS[cle]?.source ?? null,
         points: [],
         indisponibles: [],
       },
@@ -63,7 +97,7 @@ export async function GET(req: Request) {
     )
   }
 
-  const { membres, total, tronque } = membresRetenus(cle, plafond)
+  const { membres, total, tronque } = retenirMembres(compo, plafond)
   const debut = Math.floor(Date.now() / 1000) - ANNEES_HISTORIQUE * 365 * 24 * 3600
 
   const resultats = await parVagues(membres, CONCURRENCE, async (m) => {
@@ -95,11 +129,17 @@ export async function GET(req: Request) {
     composition: {
       source: compo.source,
       majLe: compo.majLe,
-      ageJours: ageComposition(cle),
-      perimee: compositionPerimee(cle),
+      ageJours: ageDepuis(compo.majLe),
+      perimee: perimeeDepuis(compo.majLe),
       total,
       traces: points.length,
       tronque,
+      // Membres que Bloomberg a rendus mais qu'aucun symbole Yahoo ne suit
+      // (places asiatiques, canadiennes…) : ils ne sont pas dans `total`, et
+      // taire leur nombre laisserait croire l'indice plus petit qu'il n'est.
+      ...(surcouche?.indices?.[cle]?.ecartes
+        ? { nonMappes: surcouche.indices[cle].ecartes }
+        : {}),
     },
     volMediane: mediane(points.map((p) => p.vol)),
     points,
