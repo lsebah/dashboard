@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
 import { kvConfigured, kvGet, kvSet } from '@/lib/kv'
+import { yahooSymbol } from '@/lib/underlyings'
+import { INDICES_RADAR } from '@/lib/indices-radar'
+import {
+  CLE_KV_MEMBRES,
+  SOURCE_MEMBRES_BLOOMBERG,
+  type Membre,
+  type SurcoucheMembres,
+} from '@/lib/index-members'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -11,11 +19,20 @@ export const runtime = 'nodejs'
 //   { "prices": { "ISIN": 99.5, … } }            prix mark-to-market par ISIN
 //   { "levels": { "SAF FP": 187.2, … } }          niveaux (PX_Last) par ticker Bloomberg
 //   { "remove": ["ISIN", …] }                     purge de clés du surcouche prix
+//   { "membres": { "CAC": [ { ticker, nom, poids } … ] } }  composition d'indices
 //   [ { "isin": "...", "price": 99.5 }, … ]        forme tableau (prix uniquement)
 //
 // Upsert (fusion) dans Vercel KV : `prices:overlay` et `levels:overlay`.
 // Le surcouche est lue par /api/prices et /api/levels puis appliquée par-dessus
 // feed.json côté portefeuille (le plus récent gagne).
+//
+// LA COMPOSITION DES INDICES passe par la même porte, pour la même raison que
+// les prix : le terminal est sur le PC de Laurent, le dashboard sur Vercel, et
+// rien ne les relie sinon ce POST. Euronext, STOXX et iShares ne se laissant
+// pas scraper (job mensuel bredouille sur CAC, SX5E et WORLD), le run Bloomberg
+// quotidien rapporte aussi `INDX_MWEIGHT` — cf. scripts/bloomberg_prices.py. Elle
+// va dans `indices:membres:overlay`, que le radar pose par-dessus
+// data/index-members.json (cf. lib/index-members.ts).
 const PRICES_KEY = 'prices:overlay'
 const LEVELS_KEY = 'levels:overlay'
 const STRIKES_KEY = 'decrement:strikes:overlay'
@@ -39,6 +56,57 @@ interface LevelsOverlay {
 
 const num = (v: unknown): number | null =>
   typeof v === 'number' && Number.isFinite(v) ? Math.round(v * 10000) / 10000 : null
+
+/** Indices connus du radar : rien d'autre n'a de sens à stocker ici. */
+const CLES_RADAR = new Set(INDICES_RADAR.map((i) => i.cle))
+
+interface MembresLus {
+  retenus: Membre[]
+  /** Tickers Bloomberg sans symbole Yahoo connu — écartés, et dits. */
+  ecartes: string[]
+}
+
+/**
+ * Traduit la liste Bloomberg d'un indice en membres exploitables par le radar.
+ *
+ * Le radar lit des historiques Yahoo : un membre sans symbole Yahoo ne sert à
+ * rien. La conversion se fait ICI, côté serveur, avec la table qui sert déjà
+ * aux sous-jacents (lib/underlyings.ts) — et elle refuse de deviner. Un suffixe
+ * inventé ne rend pas une erreur, il rend le cours d'une AUTRE société : c'est
+ * la pire panne possible sur une planche client. Un ticker non mappable est
+ * donc écarté et compté dans la réponse, jamais complété au jugé.
+ */
+function lireMembres(liste: unknown[]): MembresLus {
+  const retenus: Membre[] = []
+  const ecartes: string[] = []
+  const vus = new Set<string>()
+  for (const brut of liste) {
+    const e = brut as { ticker?: unknown; nom?: unknown; poids?: unknown }
+    const ticker = typeof e?.ticker === 'string' ? e.ticker.trim() : ''
+    if (!ticker) {
+      ecartes.push('(sans ticker)')
+      continue
+    }
+    const symbole = yahooSymbol(ticker)
+    if (!symbole) {
+      ecartes.push(ticker)
+      continue
+    }
+    // Deux lignes Bloomberg peuvent retomber sur le même symbole Yahoo (double
+    // cotation) : le radar tracerait deux fois le même point.
+    if (vus.has(symbole)) continue
+    vus.add(symbole)
+    const poids = num(e?.poids)
+    retenus.push({
+      symbole,
+      // Le nom est ce qui étiquette le point sur la planche ; à défaut, le
+      // ticker reste lisible — on n'invente pas une raison sociale.
+      nom: typeof e?.nom === 'string' && e.nom.trim() ? e.nom.trim() : ticker,
+      ...(poids !== null ? { poids } : {}),
+    })
+  }
+  return { retenus, ecartes }
+}
 
 export async function POST(req: Request) {
   const secret = process.env.PRICES_API_KEY
@@ -123,9 +191,48 @@ export async function POST(req: Request) {
     if (Array.isArray(r)) for (const k of r) if (typeof k === 'string') removeKeys.push(k)
   }
 
-  if (!hasPrices && !hasLevels && !hasStrikes && removeKeys.length === 0) {
+  // — Composition des indices, telle que la rapporte le run Bloomberg —
+  //   { membres: { "CAC": [ { ticker, nom, poids }, … ], "SX5E": […] } }
+  // L'upsert se fait PAR INDICE : un POST qui ne porte que le CAC laisse
+  // l'Euro Stoxx et le MSCI World intacts. À l'intérieur d'un indice, en
+  // revanche, la liste reçue remplace l'ancienne — une composition est un tout,
+  // fusionner deux photos donnerait un indice qui n'existe pas.
+  const incomingMembres: Record<string, MembresLus> = {}
+  const indicesInconnus: string[] = []
+  const indicesVides: string[] = []
+  let hasMembres = false
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    const m = (body as { membres?: unknown }).membres
+    if (m && typeof m === 'object' && !Array.isArray(m)) {
+      for (const [brute, liste] of Object.entries(m)) {
+        if (!Array.isArray(liste)) continue
+        const cle = brute.trim().toUpperCase()
+        if (!CLES_RADAR.has(cle)) {
+          indicesInconnus.push(brute)
+          continue
+        }
+        const lu = lireMembres(liste)
+        // Un indice dont rien n'est exploitable garde ce qu'il avait : écraser
+        // une bonne liste par une liste vide, c'est éteindre le radar en
+        // silence le jour où le terminal répond mal.
+        if (lu.retenus.length === 0) {
+          indicesVides.push(cle)
+          continue
+        }
+        hasMembres = true
+        incomingMembres[cle] = lu
+      }
+    }
+  }
+
+  if (!hasPrices && !hasLevels && !hasStrikes && !hasMembres && removeKeys.length === 0) {
     return NextResponse.json(
-      { error: 'Rien à ingérer. Attendu { prices }, { levels }, { strikes } et/ou { remove }.' },
+      {
+        error:
+          'Rien à ingérer. Attendu { prices }, { levels }, { strikes }, { membres } et/ou { remove }.',
+        ...(indicesInconnus.length ? { indicesInconnus } : {}),
+        ...(indicesVides.length ? { indicesVides } : {}),
+      },
       { status: 400 },
     )
   }
@@ -161,6 +268,36 @@ export async function POST(req: Request) {
     out.persisted = (out.persisted as boolean) && ok
     out.strikes = { accepted: Object.keys(incomingStrikes).length, total: Object.keys(strikes).length }
   }
+
+  if (hasMembres) {
+    const prev = (await kvGet<SurcoucheMembres>(CLE_KV_MEMBRES)) ?? { asof: '', indices: {} }
+    const indices = { ...(prev.indices ?? {}) }
+    for (const [cle, lu] of Object.entries(incomingMembres)) {
+      indices[cle] = {
+        asof,
+        source: SOURCE_MEMBRES_BLOOMBERG,
+        membres: lu.retenus,
+        ecartes: lu.ecartes.length,
+      }
+    }
+    const ok = await kvSet(CLE_KV_MEMBRES, { asof, indices })
+    out.persisted = (out.persisted as boolean) && ok
+    out.membres = Object.fromEntries(
+      Object.entries(incomingMembres).map(([cle, lu]) => [
+        cle,
+        {
+          accepted: lu.retenus.length,
+          dropped: lu.ecartes.length,
+          // Un échantillon suffit à diagnostiquer un mappage manquant sans
+          // renvoyer huit cents tickers au script.
+          droppedSample: lu.ecartes.slice(0, 12),
+        },
+      ]),
+    )
+    out.indices = Object.keys(indices).length
+  }
+  if (indicesInconnus.length) out.indicesInconnus = indicesInconnus
+  if (indicesVides.length) out.indicesVides = indicesVides
 
   return NextResponse.json(out)
 }

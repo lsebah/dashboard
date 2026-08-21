@@ -44,6 +44,27 @@ pour les indices à décrément que Yahoo ne sait pas pricer. Il applique ta for
 Excel : ajoute `" Index"`/`" Equity"` au ticker si le yellow-key est absent.
 Pour ne collecter que les prix produits : `--no-levels`.
 
+### La composition des indices du radar de volatilité
+
+Le radar trace les **titres** d'un indice : il lui faut donc la liste de ses
+membres. Le job mensuel du dashboard sait la scraper pour le S&P 500 et le Dow,
+mais ni Euronext, ni STOXX, ni iShares ne répondent — CAC 40, Euro Stoxx 50 et
+MSCI World restaient sans composants à tracer. Ce run les rapporte, avec le
+champ **bulk** `INDX_MWEIGHT` (= `BDS`) sur `CAC Index`, `SX5E Index` et
+`MXWO Index` : une ligne par valeur (« Index Member » + « Percent Weight »), plus
+la raison sociale (champ `NAME`) qui étiquette les points de la planche.
+
+L'étape fait partie du run par défaut : `--members` l'explicite, `--no-members`
+la coupe, `--dry-run` interroge et affiche le nombre de membres par indice sans
+rien envoyer.
+
+Le mappage **ticker Bloomberg → symbole Yahoo** se fait côté dashboard, avec la
+table qui sert déjà aux sous-jacents. Un ticker dont la place n'y figure pas
+(Tokyo, Toronto, Hong Kong…) est **écarté et compté** dans la réponse, jamais
+complété au jugé : un mauvais suffixe ne rend pas une erreur, il rend le cours
+d'une **autre** société. Et un indice dont le terminal ne renvoie rien garde la
+composition qu'il avait — on n'efface pas une bonne liste par une liste vide.
+
 ## 3. Automatiser (quotidien, sans git)
 
 Créer `C:\bbg\refresh_prices.bat` :
@@ -69,13 +90,21 @@ L'API Desktop est licenciée pour ton usage (valoriser ton book). La
 **redistribution** de ces prix (site externe, PDF clients) peut relever du
 Data License Bloomberg — à cadrer avec ton account manager avant diffusion.
 
+Cette section vaut **particulièrement** pour la composition des indices : une
+liste `INDX_MWEIGHT` finit citée telle quelle sur une planche, et une planche
+part en pièce jointe chez un client. Redistribuer une composition d'indice
+Bloomberg relève potentiellement du Data License — à cadrer avec l'account
+manager avant qu'un PDF ne sorte.
+
 ## 5. Endpoints utilisés
 
 - `GET /api/isins` — liste des ISIN vivants à pricer (public, lecture seule).
 - `GET /api/underlyings` — tickers Bloomberg des sous-jacents à pricer (public).
 - `POST /api/prices/ingest` — ingestion (protégé par `x-prices-api-key`). Corps :
   `{ "prices": { ISIN: nombre } }`, `{ "levels": { ticker: nombre } }`,
-  `{ "remove": [ISIN, …] }` (purge) — au moins un champ.
+  `{ "membres": { "CAC": [ { "ticker": "SAF FP", "nom": "SAFRAN SA", "poids": 3.1 }, … ] } }`
+  (composition, upsert **par indice** — un POST qui ne porte que le CAC laisse
+  les autres intacts), `{ "remove": [ISIN, …] }` (purge) — au moins un champ.
 - `GET /api/prices` — surcouche de prix produits (lue par le portefeuille).
 - `GET /api/levels` — surcouche de niveaux des sous-jacents (lue par les fiches).
 

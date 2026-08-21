@@ -3,9 +3,12 @@ import assert from 'node:assert/strict'
 import {
   COMPOSITIONS,
   composition,
+  compositionEffective,
   ageComposition,
   compositionPerimee,
   membresRetenus,
+  perimeeDepuis,
+  retenirMembres,
   COMPOSITION_PERIMEE_JOURS,
 } from './index-members'
 import { INDICES_RADAR } from './indices-radar'
@@ -102,4 +105,98 @@ test('sans pondération publiée, l’ordre de la source est respecté', () => {
 test('un indice sans composition ne retient rien, et ne prétend rien', () => {
   const r = membresRetenus('CLE_INCONNUE', 60)
   assert.deepEqual(r, { membres: [], total: 0, tronque: 0 })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+//  LA SURCOUCHE BLOOMBERG — trois indices du radar (CAC, SX5E, WORLD) n'ont
+//  aucune source publique scrapable et arrivent par le run quotidien du
+//  terminal. Ce qui se joue ici : elle doit combler les trous SANS jamais
+//  effacer ce que le fichier tenait déjà, ni ce que les autres indices ont.
+// ─────────────────────────────────────────────────────────────────────────
+
+test('la surcouche prime pour l’indice qu’elle porte, et cite Bloomberg', () => {
+  const cle = '__SURCOUCHE__'
+  COMPOSITIONS[cle] = { source: 'fichier', majLe: '2026-07-01', membres: [{ symbole: 'A', nom: 'A' }] }
+  try {
+    const c = compositionEffective(cle, {
+      asof: '2026-08-21T06:00:00.000Z',
+      indices: {
+        [cle]: { asof: '2026-08-21T06:00:00.000Z', membres: [{ symbole: 'SAF.PA', nom: 'Safran' }] },
+      },
+    })
+    assert.deepEqual(c?.membres.map((m) => m.symbole), ['SAF.PA'])
+    // La date affichée est celle du run, pas celle du fichier : l'écran cite sa
+    // source, elle doit être exacte.
+    assert.equal(c?.majLe, '2026-08-21')
+    assert.match(c!.source, /Bloomberg/)
+  } finally {
+    delete COMPOSITIONS[cle]
+  }
+})
+
+test('un indice absent de la surcouche garde le fichier', () => {
+  const cle = '__SURCOUCHE2__'
+  COMPOSITIONS[cle] = { source: 'fichier', majLe: '2026-07-01', membres: [{ symbole: 'A', nom: 'A' }] }
+  try {
+    const c = compositionEffective(cle, {
+      asof: '2026-08-21T06:00:00.000Z',
+      indices: { AUTRE: { asof: '2026-08-21T06:00:00.000Z', membres: [{ symbole: 'B', nom: 'B' }] } },
+    })
+    assert.equal(c?.source, 'fichier')
+  } finally {
+    delete COMPOSITIONS[cle]
+  }
+})
+
+test('une surcouche vide n’efface pas la composition du fichier', () => {
+  // Un run où le terminal a mal répondu ne doit pas éteindre le radar.
+  const cle = '__SURCOUCHE3__'
+  COMPOSITIONS[cle] = { source: 'fichier', majLe: '2026-07-01', membres: [{ symbole: 'A', nom: 'A' }] }
+  try {
+    const c = compositionEffective(cle, {
+      asof: '2026-08-21T06:00:00.000Z',
+      indices: { [cle]: { asof: '2026-08-21T06:00:00.000Z', membres: [] } },
+    })
+    assert.equal(c?.source, 'fichier')
+    // Et sans KV du tout, le comportement est celui d'avant la surcouche.
+    assert.equal(compositionEffective(cle, null)?.source, 'fichier')
+    assert.equal(compositionEffective(cle)?.source, 'fichier')
+  } finally {
+    delete COMPOSITIONS[cle]
+  }
+})
+
+test('c’est le plus récent qui gagne : un fichier relu après le run reprend la main', () => {
+  const cle = '__SURCOUCHE4__'
+  COMPOSITIONS[cle] = { source: 'fichier', majLe: '2026-08-22', membres: [{ symbole: 'A', nom: 'A' }] }
+  try {
+    const c = compositionEffective(cle, {
+      asof: '2026-08-21T06:00:00.000Z',
+      indices: { [cle]: { asof: '2026-08-21T06:00:00.000Z', membres: [{ symbole: 'B', nom: 'B' }] } },
+    })
+    assert.equal(c?.source, 'fichier')
+  } finally {
+    delete COMPOSITIONS[cle]
+  }
+})
+
+test('la surcouche comble un indice que le fichier a laissé vide', () => {
+  // Le cas réel : Euronext ne répond pas, le CAC est vide dans le fichier.
+  const cle = '__SURCOUCHE5__'
+  COMPOSITIONS[cle] = { source: 'live.euronext.com', majLe: '2026-08-20', membres: [] }
+  try {
+    const c = compositionEffective(cle, {
+      asof: '2026-08-21T06:00:00.000Z',
+      indices: {
+        [cle]: {
+          asof: '2026-08-21T06:00:00.000Z',
+          membres: [{ symbole: 'SAF.PA', nom: 'Safran', poids: 3.1 }],
+        },
+      },
+    })
+    assert.equal(retenirMembres(c, 60).total, 1)
+    assert.equal(perimeeDepuis(c?.majLe, new Date('2026-08-21')), false)
+  } finally {
+    delete COMPOSITIONS[cle]
+  }
 })

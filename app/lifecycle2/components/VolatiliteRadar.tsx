@@ -466,9 +466,10 @@ export default function VolatiliteRadar() {
       )}
 
       <p className="text-[11px] text-slate-400">
-        Cotations Yahoo Finance. Composition des indices rafraîchie mensuellement depuis les sources
-        publiques citées sur chaque planche. D’après l’outil « Volatility Radar » de Leonteq
-        (S. Noujaim, 27/08/2024).
+        Cotations Yahoo Finance. Composition des indices : sources publiques rafraîchies
+        mensuellement, ou run Bloomberg quotidien pour les indices qu’aucune source publique ne
+        rend — celle qui a servi est citée au-dessus du graphe. D’après l’outil « Volatility
+        Radar » de Leonteq (S. Noujaim, 27/08/2024).
       </p>
     </div>
   )
