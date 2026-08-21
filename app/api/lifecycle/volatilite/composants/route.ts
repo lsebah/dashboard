@@ -25,8 +25,26 @@ export const runtime = 'nodejs'
 // ─────────────────────────────────────────────────────────────────────────
 
 const PLAFOND_DEFAUT = 60
-const CONCURRENCE = 6
+// Yahoo encaisse largement douze requêtes de front ; six faisaient dix vagues
+// là où cinq suffisent, et c'est ce qui poussait la route au-delà du délai.
+const CONCURRENCE = 12
 const ANNEES_HISTORIQUE = 3
+
+// ─────────────────────────────────────────────────────────────────────────
+//  POURQUOI CE `maxDuration`
+//
+//  Soixante historiques à récupérer, c'est long — et sans cette ligne, Vercel
+//  applique son délai par défaut (dix secondes), qui coupe la route AVANT
+//  qu'elle ait fini. Le navigateur reçoit alors une erreur, l'écran reste
+//  vide, et rien ne dit pourquoi : le radar « ne marche pas » alors que la
+//  composition est bonne et que Yahoo répond. C'est exactement le défaut
+//  constaté en production le 20/08/2026.
+//
+//  Le budget est donc porté à soixante secondes. Ce n'est pas un pansement :
+//  le travail est réellement long, et mieux vaut une planche qui met cinq
+//  secondes à s'afficher qu'une planche qui n'arrive jamais.
+// ─────────────────────────────────────────────────────────────────────────
+export const maxDuration = 60
 
 /** Exécute `taches` par vagues de `n` — un ordonnanceur minimal, sans dépendance. */
 async function parVagues<T, R>(items: T[], n: number, f: (x: T) => Promise<R>): Promise<R[]> {

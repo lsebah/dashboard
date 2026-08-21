@@ -29,6 +29,10 @@ export async function fetchHistory(symbol: string, period1: number): Promise<Bar
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0' },
     next: { revalidate: 900 }, // 15 min — niveaux plus frais
+    // Un seul symbole qui traîne ne doit pas manger le budget de toute la
+    // route : le radar de volatilité en enchaîne soixante, et sans ce garde-fou
+    // une requête suspendue emportait la planche entière avec elle.
+    signal: AbortSignal.timeout(8_000),
   })
   if (!res.ok) throw new Error(`Yahoo ${symbol} ${res.status}`)
   const data: YahooChart = await res.json()
