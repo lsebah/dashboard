@@ -52,6 +52,24 @@ const QUADRANT_CLS: Record<Quadrant, string> = {
   neutre: 'bg-slate-100 text-slate-600',
 }
 
+/**
+ * Traduit l'échec d'un appel en motif ACTIONNABLE. Un 504 (la route a dépassé
+ * son délai), un 429 (Yahoo nous limite) et une coupure réseau se corrigent de
+ * trois façons différentes ; les afficher sous un même « ça n'a pas répondu »
+ * oblige à rouvrir les logs pour savoir laquelle.
+ */
+function motifEchec(e: Error): string {
+  const m = /HTTP (\d{3})/.exec(e.message ?? '')
+  const code = m ? Number(m[1]) : null
+  if (code === 504 || code === 408)
+    return 'le calcul a dépassé son délai — trop de titres à récupérer d’un coup (HTTP ' + code + ').'
+  if (code === 429) return 'Yahoo a limité le débit des cotations (HTTP 429) — réessayer dans un moment.'
+  if (code === 404) return 'route introuvable (HTTP 404) — déploiement incomplet.'
+  if (code && code >= 500) return `le serveur a échoué (HTTP ${code}).`
+  if (code) return `appel refusé (HTTP ${code}).`
+  return 'les cotations n’ont pas répondu (réseau).'
+}
+
 const pct = (v: number, d = 1) => `${v.toFixed(d).replace('.', ',')} %`
 const dateFr = (iso: string) => new Date(iso).toLocaleDateString('fr-FR')
 
@@ -238,7 +256,7 @@ export default function VolatiliteRadar() {
       })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
         .then((j) => vivant && setCharges((c) => ({ ...c, [cle]: j as ChargeComposants })))
-        .catch(() => {
+        .catch((e: Error) => {
           if (!vivant) return
           const idx = INDICES_RADAR.find((i) => i.cle === cle)
           setCharges((c) => ({
@@ -246,7 +264,11 @@ export default function VolatiliteRadar() {
             [cle]: {
               indice: { cle, nom: idx?.nom ?? cle },
               composition: null,
-              raison: 'les cotations n’ont pas répondu.',
+              // Le motif EXACT, pas un « ça n'a pas répondu » générique : un
+              // dépassement de délai, une limitation de débit et une coupure
+              // réseau appellent trois corrections différentes, et les
+              // confondre coûte un aller-retour à chaque fois.
+              raison: motifEchec(e),
               volMediane: 0,
               points: [],
               indisponibles: [],
