@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { quadrant, type PointRadar, type Quadrant } from '@/lib/volatilite'
 import { INDICES_RADAR } from '@/lib/indices-radar'
+import { nomCourt } from '@/lib/nom-court'
 
 interface Point extends PointRadar {
   poids?: number | null
@@ -40,6 +41,16 @@ interface ChargeComposants {
   points: Point[]
   indisponibles: { symbole: string; nom: string; raison: string }[]
 }
+
+/**
+ * Univers dont on ne montre QUE le quadrant autocall.
+ *
+ * Sur cinq cents titres, le nuage entier écrase la zone qui sert vraiment à
+ * décider : on cherche une vol chère au sommet de son année, pas une carte du
+ * marché. Le S&P 500 est dans ce cas (Laurent, 21/08/2026) ; un indice de
+ * quarante valeurs se lit encore en entier.
+ */
+const ZOOM_AUTOCALL = new Set(['SPX'])
 
 const QUADRANT_LABEL: Record<Quadrant, string> = {
   autocall: 'Autocall',
@@ -82,14 +93,35 @@ const M = { haut: 26, droite: 30, bas: 56, gauche: 64 }
  * Nuage volatilité × percentile. Chaque point porte SON NOM : la planche part
  * en pièce jointe, et un point sans étiquette n'y sert à rien.
  */
-function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) {
+function Radar({
+  points: tous,
+  volMediane,
+  zoom = false,
+}: {
+  points: Point[]
+  volMediane: number
+  /** Ne montrer que le quadrant autocall, à son échelle. Sur un univers large,
+   *  les cinq cents titres écrasent la zone qui sert vraiment à décider. */
+  zoom: boolean
+}) {
+  const points = zoom
+    ? tous.filter((p) => p.percentile >= 50 && p.vol >= volMediane)
+    : tous
   const vols = points.map((p) => p.vol)
+  const pcts = points.map((p) => p.percentile)
+  // Zoomé, l'origine des axes est le coin du quadrant, pas zéro.
+  const xMin = zoom ? 50 : 0
   const volMax = Math.max(...vols, 1) * 1.12
-  const volMin = Math.max(0, Math.min(...vols, volMediane) * 0.88)
+  const volMin = zoom
+    ? Math.max(0, Math.min(...vols, volMediane) * 0.98)
+    : Math.max(0, Math.min(...vols, volMediane) * 0.88)
 
-  const x = (p: number) => M.gauche + (p / 100) * (W - M.gauche - M.droite)
+  const x = (p: number) =>
+    M.gauche + ((p - xMin) / Math.max(100 - xMin, 1e-9)) * (W - M.gauche - M.droite)
   const y = (v: number) =>
     H - M.bas - ((v - volMin) / Math.max(volMax - volMin, 1e-9)) * (H - M.haut - M.bas)
+  const graduations = zoom ? [50, 60, 70, 80, 90, 100] : [0, 25, 50, 75, 100]
+  void pcts
 
   const yMediane = y(volMediane)
   const xMilieu = x(50)
@@ -104,15 +136,17 @@ function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) 
         height={Math.max(0, yMediane - M.haut)}
         fill="#ecfdf5"
       />
-      <rect
-        x={M.gauche}
-        y={yMediane}
-        width={xMilieu - M.gauche}
-        height={Math.max(0, H - M.bas - yMediane)}
-        fill="#f0f9ff"
-      />
+      {!zoom && (
+        <rect
+          x={M.gauche}
+          y={yMediane}
+          width={xMilieu - M.gauche}
+          height={Math.max(0, H - M.bas - yMediane)}
+          fill="#f0f9ff"
+        />
+      )}
 
-      {[0, 25, 50, 75, 100].map((p) => (
+      {graduations.map((p) => (
         <g key={p}>
           <line x1={x(p)} y1={M.haut} x2={x(p)} y2={H - M.bas} stroke="#e2e8f0" strokeWidth={1} />
           <text x={x(p)} y={H - M.bas + 18} textAnchor="middle" className="fill-slate-500 text-[11px]">
@@ -135,9 +169,11 @@ function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) 
       <text x={xMilieu + 12} y={M.haut + 18} className="fill-emerald-700 text-[12px] font-medium">
         Autocall — vol chère, au sommet de son année
       </text>
-      <text x={M.gauche + 12} y={H - M.bas - 10} className="fill-sky-700 text-[12px] font-medium">
-        Participatif — vol basse, au creux
-      </text>
+      {!zoom && (
+        <text x={M.gauche + 12} y={H - M.bas - 10} className="fill-sky-700 text-[12px] font-medium">
+          Participatif — vol basse, au creux
+        </text>
+      )}
 
       {points.map((p) => {
         const cx = x(p.percentile)
@@ -150,21 +186,17 @@ function Radar({ points, volMediane }: { points: Point[]; volMediane: number }) 
         return (
           <g key={p.cle}>
             <circle cx={cx} cy={cy} r={5} fill={couleur} />
+            {/* Le NOM seul. Le niveau et le percentile se lisent déjà sur
+                les axes ; les répéter sous soixante points rendait la planche
+                illisible (Laurent, 21/08/2026). Ils restent dans l'infobulle. */}
             <text
-              x={aGauche ? cx - 9 : cx + 9}
-              y={cy - 5}
+              x={aGauche ? cx - 8 : cx + 8}
+              y={cy + 4}
               textAnchor={aGauche ? 'end' : 'start'}
-              className="fill-slate-800 text-[11px] font-semibold"
+              className="fill-slate-800 text-[11px] font-medium"
             >
-              {p.nom}
-            </text>
-            <text
-              x={aGauche ? cx - 9 : cx + 9}
-              y={cy + 8}
-              textAnchor={aGauche ? 'end' : 'start'}
-              className="fill-slate-500 text-[10px]"
-            >
-              {pct(p.vol, 1)} · P{Math.round(p.percentile)}
+              <title>{`${p.nom} — ${pct(p.vol, 1)} · P${Math.round(p.percentile)}`}</title>
+              {nomCourt(p.nom, p.cle)}
             </text>
           </g>
         )
@@ -216,8 +248,20 @@ function Planche({ c }: { c: ChargeComposants }) {
             .
           </p>
 
+          {ZOOM_AUTOCALL.has(c.indice.cle) && (
+            <p className="text-[11px] font-medium text-emerald-800">
+              Vue resserrée sur le quadrant AUTOCALL — {c.points.filter((p) => p.percentile >= 50 && p.vol >= c.volMediane).length}{' '}
+              titre(s) sur {c.points.length} tracés. Les autres ne sont pas absents, ils sont
+              hors de la zone qui sert à décider.
+            </p>
+          )}
+
           <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <Radar points={c.points} volMediane={c.volMediane} />
+            <Radar
+              points={c.points}
+              volMediane={c.volMediane}
+              zoom={ZOOM_AUTOCALL.has(c.indice.cle)}
+            />
           </div>
 
           {c.indisponibles.length > 0 && (
